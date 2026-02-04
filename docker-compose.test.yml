@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Redis service for caching and task queue
+  redis:
+    image: redis:7-alpine
+    container_name: media_tool_redis_test
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data_test:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI application
+  app:
+    build: .
+    container_name: media_tool_app_test
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./media_test.db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DEBUG=True
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./app:/app/app
+      - ./media:/app/media
+      - ./media_test.db:/app/media_test.db
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  redis_data_test:
+
+networks:
+  default:
+    name: media_tool_network_test
