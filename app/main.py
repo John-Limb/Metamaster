@@ -1,16 +1,24 @@
 """FastAPI application entry point"""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import logging
+import time
+import uuid
 
 from app.config import settings
 from app.database import init_db
 from app.api import health
 
-# Configure logging
-logging.basicConfig(level=settings.log_level)
+# Configure logging with structured format
+logging.basicConfig(
+    level=settings.log_level,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 
@@ -34,6 +42,60 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Add middleware stack (order matters - innermost first)
+
+# Request/Response logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all HTTP requests and responses"""
+    request_id = str(uuid.uuid4())
+    request.state.request_id = request_id
+    
+    start_time = time.time()
+    logger.info(
+        f"[{request_id}] {request.method} {request.url.path} - "
+        f"Client: {request.client.host if request.client else 'unknown'}"
+    )
+    
+    try:
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        logger.info(
+            f"[{request_id}] {request.method} {request.url.path} - "
+            f"Status: {response.status_code} - Duration: {process_time:.3f}s"
+        )
+        response.headers["X-Request-ID"] = request_id
+        response.headers["X-Process-Time"] = str(process_time)
+        return response
+    except Exception as e:
+        process_time = time.time() - start_time
+        logger.error(
+            f"[{request_id}] {request.method} {request.url.path} - "
+            f"Error: {str(e)} - Duration: {process_time:.3f}s",
+            exc_info=True
+        )
+        raise
+
+
+# Error handling middleware
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle validation errors with structured response"""
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        f"[{request_id}] Validation error: {exc.error_count()} error(s)",
+        extra={"errors": exc.errors()}
+    )
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": "Validation error",
+            "errors": exc.errors(),
+            "request_id": request_id,
+        },
+    )
+
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -41,6 +103,12 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# Add trusted host middleware
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["*"],
 )
 
 
