@@ -13,6 +13,8 @@ import uuid
 from app.config import settings
 from app.database import init_db
 from app.api import health
+from app.api import movies
+from app.api import tv_shows
 
 # Configure logging with structured format
 logging.basicConfig(
@@ -45,18 +47,20 @@ app = FastAPI(
 # Add middleware stack (order matters - innermost first)
 
 # Request/Response logging middleware
+
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     """Log all HTTP requests and responses"""
     request_id = str(uuid.uuid4())
     request.state.request_id = request_id
-    
+
     start_time = time.time()
     logger.info(
         f"[{request_id}] {request.method} {request.url.path} - "
         f"Client: {request.client.host if request.client else 'unknown'}"
     )
-    
+
     try:
         response = await call_next(request)
         process_time = time.time() - start_time
@@ -114,6 +118,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router, tags=["Health"])
+app.include_router(movies.router)
+app.include_router(tv_shows.router)
 
 
 @app.get("/", tags=["Root"])
