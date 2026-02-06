@@ -1,6 +1,7 @@
 """Database initialization script"""
 
 import logging
+from sqlalchemy import inspect
 from app.database import engine, Base, SessionLocal
 from app.models import (
     Movie, MovieFile, TVShow, Season, Episode, EpisodeFile,
@@ -18,7 +19,8 @@ def init_database():
         logger.info("Database tables created successfully")
         
         # Verify tables were created
-        inspector_tables = engine.inspect(engine).get_table_names()
+        inspector_obj = inspect(engine)
+        inspector_tables = inspector_obj.get_table_names()
         logger.info(f"Created tables: {inspector_tables}")
         
         return True

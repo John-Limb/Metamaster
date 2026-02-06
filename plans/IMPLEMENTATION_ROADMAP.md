@@ -153,6 +153,7 @@ This document provides a phased implementation roadmap for the media management 
    - Set up recursive directory watching
    - Create event handlers for file creation/modification
    - Implement file filtering by extension
+   - File rename and organization logic
 
 2. **Pattern Recognition**
    - Implement movie pattern matching (Title Year)

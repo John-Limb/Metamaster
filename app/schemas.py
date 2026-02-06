@@ -225,3 +225,96 @@ class PaginatedEpisodeResponse(BaseModel):
     total: int = Field(..., description="Total number of episodes")
     limit: int = Field(..., description="Items per page")
     offset: int = Field(..., description="Offset from start")
+
+
+# ============================================================================
+# Cache Schemas
+# ============================================================================
+
+class CacheStatsResponse(BaseModel):
+    """Schema for cache statistics response"""
+    total_entries: int = Field(..., description="Total number of cache entries")
+    active_entries: int = Field(..., description="Number of active (non-expired) entries")
+    expired_entries: int = Field(..., description="Number of expired entries")
+    total_size_bytes: int = Field(..., description="Total cache size in bytes")
+    total_size_mb: float = Field(..., description="Total cache size in megabytes")
+    by_api_type: dict = Field(..., description="Breakdown of entries by API type")
+    timestamp: str = Field(..., description="Timestamp of statistics generation")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "total_entries": 150,
+                "active_entries": 120,
+                "expired_entries": 30,
+                "total_size_bytes": 5242880,
+                "total_size_mb": 5.0,
+                "by_api_type": {"omdb": 80, "tvdb": 70},
+                "timestamp": "2026-02-06T12:34:23.380Z"
+            }
+        }
+    )
+
+
+class CacheEntryResponse(BaseModel):
+    """Schema for individual cache entry"""
+    id: int = Field(..., description="Cache entry ID")
+    api_type: str = Field(..., description="API type (omdb, tvdb, etc.)")
+    query_key: str = Field(..., description="Cache query key")
+    expires_at: datetime = Field(..., description="Expiration timestamp")
+    created_at: datetime = Field(..., description="Creation timestamp")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PaginatedCacheResponse(BaseModel):
+    """Paginated response for cache entries"""
+    items: List[CacheEntryResponse] = Field(..., description="List of cache entries")
+    total: int = Field(..., description="Total number of cache entries")
+    limit: int = Field(..., description="Items per page")
+    offset: int = Field(..., description="Offset from start")
+
+
+class CacheOperationResponse(BaseModel):
+    """Schema for cache operation responses"""
+    success: bool = Field(..., description="Whether operation was successful")
+    message: str = Field(..., description="Operation message")
+    affected_entries: int = Field(..., description="Number of entries affected")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "success": True,
+                "message": "Expired cache entries cleared",
+                "affected_entries": 25
+            }
+        }
+    )
+
+
+class MetadataSyncResponse(BaseModel):
+    """Schema for metadata sync operation response"""
+    success: bool = Field(..., description="Whether sync was successful")
+    message: str = Field(..., description="Operation message")
+    movie_id: Optional[int] = Field(None, description="Movie ID (for movie sync)")
+    show_id: Optional[int] = Field(None, description="TV show ID (for show sync)")
+    updated_fields: List[str] = Field(..., description="List of fields that were updated")
+    metadata: dict = Field(..., description="Updated metadata")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "success": True,
+                "message": "Movie metadata synced successfully",
+                "movie_id": 1,
+                "show_id": None,
+                "updated_fields": ["rating", "plot", "runtime"],
+                "metadata": {
+                    "title": "The Shawshank Redemption",
+                    "rating": 9.3,
+                    "plot": "Two imprisoned men bond...",
+                    "runtime": 142
+                }
+            }
+        }
+    )

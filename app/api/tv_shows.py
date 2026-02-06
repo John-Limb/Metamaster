@@ -12,9 +12,11 @@ from app.schemas import (
     PaginatedEpisodeResponse,
     SeasonResponse,
     EpisodeResponse,
+    MetadataSyncResponse,
 )
-from app.services import TVShowService
+from app.services import TVShowService, TVDBService
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -159,3 +161,126 @@ async def delete_tv_show(
     if not success:
         raise HTTPException(status_code=404, detail="TV show not found")
     return None
+
+
+@router.post("/{show_id}/sync-metadata", response_model=MetadataSyncResponse)
+async def sync_tv_show_metadata(
+    show_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Fetch TV show metadata from TVDB and update the TV show record.
+    
+    This endpoint:
+    1. Retrieves the TV show from the database
+    2. Fetches updated metadata from TVDB using the show's TVDB ID
+    3. Updates the TV show record with new metadata
+    4. Returns the updated TV show information
+    
+    Parameters:
+    - **show_id**: ID of the TV show to sync
+    
+    Returns:
+    - **success**: Whether sync was successful
+    - **message**: Operation message
+    - **show_id**: ID of the synced TV show
+    - **updated_fields**: List of fields that were updated
+    - **metadata**: Updated metadata
+    """
+    try:
+        # Get the TV show
+        show = TVShowService.get_tv_show_by_id(db, show_id)
+        if not show:
+            raise HTTPException(status_code=404, detail="TV show not found")
+        
+        # Check if show has TVDB ID
+        if not show.tvdb_id:
+            raise HTTPException(
+                status_code=400,
+                detail="TV show does not have a TVDB ID. Cannot sync metadata."
+            )
+        
+        logger.info(f"Syncing metadata for TV show {show_id} (TVDB ID: {show.tvdb_id})")
+        
+        # Fetch metadata from TVDB
+        tvdb_data = await TVDBService.get_series_details(db, show.tvdb_id)
+        if not tvdb_data:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to fetch metadata from TVDB. Please try again later."
+            )
+        
+        # Parse TVDB response
+        parsed_data = TVDBService.parse_tvdb_series_response(tvdb_data)
+        if not parsed_data:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to parse TVDB response"
+            )
+        
+        # Track which fields were updated
+        updated_fields = []
+        old_values = {}
+        
+        # Update TV show fields
+        if "title" in parsed_data and parsed_data["title"] != show.title:
+            old_values["title"] = show.title
+            show.title = parsed_data["title"]
+            updated_fields.append("title")
+        
+        if "plot" in parsed_data and parsed_data["plot"] != show.plot:
+            old_values["plot"] = show.plot
+            show.plot = parsed_data["plot"]
+            updated_fields.append("plot")
+        
+        if "rating" in parsed_data and parsed_data["rating"] != show.rating:
+            old_values["rating"] = show.rating
+            show.rating = parsed_data["rating"]
+            updated_fields.append("rating")
+        
+        if "status" in parsed_data and parsed_data["status"] != show.status:
+            old_values["status"] = show.status
+            show.status = parsed_data["status"]
+            updated_fields.append("status")
+        
+        if "genres" in parsed_data and parsed_data["genres"] != show.genres:
+            old_values["genres"] = show.genres
+            show.genres = parsed_data["genres"]
+            updated_fields.append("genres")
+        
+        # Commit changes
+        db.commit()
+        db.refresh(show)
+        
+        logger.info(
+            f"Successfully synced metadata for TV show {show_id}. "
+            f"Updated fields: {', '.join(updated_fields) if updated_fields else 'none'}"
+        )
+        
+        # Prepare response metadata
+        response_metadata = {
+            "title": show.title,
+            "plot": show.plot,
+            "rating": show.rating,
+            "status": show.status,
+            "genres": json.loads(show.genres) if show.genres else [],
+            "tvdb_id": show.tvdb_id,
+        }
+        
+        return {
+            "success": True,
+            "message": f"TV show metadata synced successfully. Updated {len(updated_fields)} field(s).",
+            "movie_id": None,
+            "show_id": show_id,
+            "updated_fields": updated_fields,
+            "metadata": response_metadata,
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error syncing metadata for TV show {show_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while syncing metadata"
+        )

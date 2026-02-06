@@ -15,6 +15,7 @@ from app.database import init_db
 from app.api import health
 from app.api import movies
 from app.api import tv_shows
+from app.api import cache
 
 # Configure logging with structured format
 logging.basicConfig(
@@ -120,6 +121,7 @@ app.add_middleware(
 app.include_router(health.router, tags=["Health"])
 app.include_router(movies.router)
 app.include_router(tv_shows.router)
+app.include_router(cache.router)
 
 
 @app.get("/", tags=["Root"])
