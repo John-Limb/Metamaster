@@ -146,6 +146,7 @@ This document provides a phased implementation roadmap for the media management 
 - Create file pattern recognition
 - Implement file analysis with FFPROBE
 - Queue file processing tasks
+- Handle file renaming and organization
 
 ### Tasks
 1. **File Monitoring Service**
