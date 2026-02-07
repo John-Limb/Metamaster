@@ -96,9 +96,7 @@ class TestScenario1CompleteFileProcessingPipeline:
         # Verify file was detected
         assert len(queued_files) > 0
         # Use resolve() to handle symlinks and /private prefix on macOS
-        assert str(test_file.resolve()) in [
-            Path(f).resolve().__str__() for f in queued_files
-        ]
+        assert str(test_file.resolve()) in [Path(f).resolve().__str__() for f in queued_files]
 
         # Classify file using pattern recognition
         classification = pattern_service.classify_file(str(test_file))
@@ -140,9 +138,7 @@ class TestScenario1CompleteFileProcessingPipeline:
         # Verify file was detected
         assert len(queued_files) > 0
         # Use resolve() to handle symlinks and /private prefix on macOS
-        assert str(test_file.resolve()) in [
-            Path(f).resolve().__str__() for f in queued_files
-        ]
+        assert str(test_file.resolve()) in [Path(f).resolve().__str__() for f in queued_files]
 
         # Classify file using pattern recognition
         classification = pattern_service.classify_file(str(test_file))
@@ -204,9 +200,7 @@ class TestScenario2MovieFileDetectionAndProcessing:
         assert len(queued_files) >= len(movie_files)
         for test_file in created_files:
             # Use resolve() to handle symlinks and /private prefix on macOS
-            assert str(test_file.resolve()) in [
-                Path(f).resolve().__str__() for f in queued_files
-            ]
+            assert str(test_file.resolve()) in [Path(f).resolve().__str__() for f in queued_files]
 
         # Process each file
         for test_file in created_files:
@@ -286,9 +280,7 @@ class TestScenario3TVShowFileDetectionAndProcessing:
         assert len(queued_files) >= len(tv_files)
         for test_file in created_files:
             # Use resolve() to handle symlinks and /private prefix on macOS
-            assert str(test_file.resolve()) in [
-                Path(f).resolve().__str__() for f in queued_files
-            ]
+            assert str(test_file.resolve()) in [Path(f).resolve().__str__() for f in queued_files]
 
         # Process each file
         for test_file in created_files:
@@ -348,9 +340,7 @@ class TestScenario4MixedContentProcessing:
     """
 
     @pytest.mark.asyncio
-    async def test_mixed_content_processing(
-        self, temp_watch_dir, queue_manager, pattern_service
-    ):
+    async def test_mixed_content_processing(self, temp_watch_dir, queue_manager, pattern_service):
         """Test processing of mixed movie and TV show files."""
         # Create mixed content
         mixed_files = {
@@ -399,14 +389,10 @@ class TestScenario4MixedContentProcessing:
 
         # Verify correct counts by type
         movies = (
-            queue_manager.session.query(FileQueue)
-            .filter(FileQueue.media_type == "movie")
-            .count()
+            queue_manager.session.query(FileQueue).filter(FileQueue.media_type == "movie").count()
         )
         tv_shows = (
-            queue_manager.session.query(FileQueue)
-            .filter(FileQueue.media_type == "tv_show")
-            .count()
+            queue_manager.session.query(FileQueue).filter(FileQueue.media_type == "tv_show").count()
         )
 
         assert movies >= 2  # At least 2 movies
@@ -685,9 +671,7 @@ class TestIntegrationEdgeCases:
     """Test edge cases and integration scenarios."""
 
     @pytest.mark.asyncio
-    async def test_rapid_file_creation(
-        self, temp_watch_dir, queue_manager, pattern_service
-    ):
+    async def test_rapid_file_creation(self, temp_watch_dir, queue_manager, pattern_service):
         """Test handling of rapid file creation."""
         # Initialize file monitor
         monitor = FileMonitorService(watch_path=temp_watch_dir)
@@ -713,10 +697,7 @@ class TestIntegrationEdgeCases:
     def test_large_batch_processing(self, queue_manager):
         """Test processing of large batch of files."""
         # Create large batch
-        files = [
-            {"file_path": f"/path/to/movie{i}.mp4", "file_type": "movie"}
-            for i in range(100)
-        ]
+        files = [{"file_path": f"/path/to/movie{i}.mp4", "file_type": "movie"} for i in range(100)]
 
         queue_ids = queue_manager.add_files_batch(files)
 

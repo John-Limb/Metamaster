@@ -272,9 +272,7 @@ class TestPaginatedMovieResponseSchema:
         """Test valid paginated movie response"""
         now = datetime.utcnow()
         response = PaginatedMovieResponse(
-            items=[
-                MovieResponse(id=1, title="Movie 1", created_at=now, updated_at=now)
-            ],
+            items=[MovieResponse(id=1, title="Movie 1", created_at=now, updated_at=now)],
             total=100,
             limit=10,
             offset=0,
@@ -297,9 +295,7 @@ class TestPaginatedTVShowResponseSchema:
         """Test valid paginated TV show response"""
         now = datetime.utcnow()
         response = PaginatedTVShowResponse(
-            items=[
-                TVShowResponse(id=1, title="Show 1", created_at=now, updated_at=now)
-            ],
+            items=[TVShowResponse(id=1, title="Show 1", created_at=now, updated_at=now)],
             total=50,
             limit=10,
             offset=0,
@@ -436,9 +432,7 @@ class TestTaskCancelResponseSchema:
 
     def test_valid_task_cancel_response(self):
         """Test valid task cancel response"""
-        response = TaskCancelResponse(
-            success=True, message="Task cancelled", task_id="abc123"
-        )
+        response = TaskCancelResponse(success=True, message="Task cancelled", task_id="abc123")
         assert response.success is True
         assert response.task_id == "abc123"
 

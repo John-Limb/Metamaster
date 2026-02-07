@@ -652,11 +652,7 @@ class TestPhase5Integration:
                 retry_count=0,
             )
 
-        error = (
-            test_db.query(TaskError)
-            .filter(TaskError.task_id == "integration-final")
-            .first()
-        )
+        error = test_db.query(TaskError).filter(TaskError.task_id == "integration-final").first()
         assert error is not None
 
 

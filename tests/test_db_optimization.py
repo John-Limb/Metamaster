@@ -345,9 +345,7 @@ class TestDatabaseOptimizationService:
 
     def test_get_optimization_report(self, test_db, test_engine):
         """Test generating optimization report"""
-        report = DatabaseOptimizationService.get_optimization_report(
-            test_db, test_engine
-        )
+        report = DatabaseOptimizationService.get_optimization_report(test_db, test_engine)
 
         assert "timestamp" in report
         assert "query_performance" in report
@@ -389,9 +387,7 @@ class TestDatabaseOptimizationIntegration:
         recommendations = IndexAnalyzer.recommend_indexes(test_db)
 
         # Check that search-related indexes are recommended
-        search_recommendations = [
-            r for r in recommendations if "search" in r["reason"].lower()
-        ]
+        search_recommendations = [r for r in recommendations if "search" in r["reason"].lower()]
         assert len(search_recommendations) > 0
 
     def test_index_recommendations_for_filtering(self, test_db):
@@ -399,9 +395,7 @@ class TestDatabaseOptimizationIntegration:
         recommendations = IndexAnalyzer.recommend_indexes(test_db)
 
         # Check that filter-related indexes are recommended
-        filter_recommendations = [
-            r for r in recommendations if "filter" in r["reason"].lower()
-        ]
+        filter_recommendations = [r for r in recommendations if "filter" in r["reason"].lower()]
         assert len(filter_recommendations) > 0
 
     def test_composite_index_recommendations(self, test_db):
@@ -409,9 +403,7 @@ class TestDatabaseOptimizationIntegration:
         recommendations = IndexAnalyzer.recommend_indexes(test_db)
 
         # Check that composite indexes are recommended
-        composite_recommendations = [
-            r for r in recommendations if r.get("composite", False)
-        ]
+        composite_recommendations = [r for r in recommendations if r.get("composite", False)]
         assert len(composite_recommendations) > 0
 
 

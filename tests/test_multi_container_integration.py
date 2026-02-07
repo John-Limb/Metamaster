@@ -101,9 +101,7 @@ class TestFastAPIAppContainer:
         ]
 
         for var in required_vars:
-            assert (
-                var in app_section
-            ), f"Environment variable {var} not configured for app"
+            assert var in app_section, f"Environment variable {var} not configured for app"
 
     def test_app_container_volume_mounts(self):
         """Test app container has required volume mounts"""
@@ -221,9 +219,7 @@ class TestDatabaseContainer:
         app_section = content[content.find("app:") : content.find("celery_worker:")]
         assert "media.db" in app_section, "Database not mounted to app"
 
-        worker_section = content[
-            content.find("celery_worker:") : content.find("celery_beat:")
-        ]
+        worker_section = content[content.find("celery_worker:") : content.find("celery_beat:")]
         assert "media.db" in worker_section, "Database not mounted to worker"
 
 
@@ -251,9 +247,7 @@ class TestCeleryWorkerContainer:
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        worker_section = content[
-            content.find("celery_worker:") : content.find("celery_beat:")
-        ]
+        worker_section = content[content.find("celery_worker:") : content.find("celery_beat:")]
 
         required_vars = [
             "DATABASE_URL",
@@ -263,18 +257,14 @@ class TestCeleryWorkerContainer:
         ]
 
         for var in required_vars:
-            assert (
-                var in worker_section
-            ), f"Environment variable {var} not configured for worker"
+            assert var in worker_section, f"Environment variable {var} not configured for worker"
 
     def test_celery_worker_startup_command(self):
         """Test Celery worker startup command"""
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        worker_section = content[
-            content.find("celery_worker:") : content.find("celery_beat:")
-        ]
+        worker_section = content[content.find("celery_worker:") : content.find("celery_beat:")]
 
         assert "celery" in worker_section, "Celery command not found"
         assert "worker" in worker_section, "Worker command not found"
@@ -285,9 +275,7 @@ class TestCeleryWorkerContainer:
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        worker_section = content[
-            content.find("celery_worker:") : content.find("celery_beat:")
-        ]
+        worker_section = content[content.find("celery_worker:") : content.find("celery_beat:")]
 
         assert "depends_on:" in worker_section, "Dependencies not configured"
         assert "redis" in worker_section, "Redis dependency missing"
@@ -298,9 +286,7 @@ class TestCeleryWorkerContainer:
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        worker_section = content[
-            content.find("celery_worker:") : content.find("celery_beat:")
-        ]
+        worker_section = content[content.find("celery_worker:") : content.find("celery_beat:")]
 
         assert "restart:" in worker_section, "Restart policy not configured"
 
@@ -354,9 +340,7 @@ class TestContainerCommunication:
             content = f.read()
 
         # Check Redis URL uses service name
-        assert (
-            "redis://redis:" in content
-        ), "Redis URL should use service name for discovery"
+        assert "redis://redis:" in content, "Redis URL should use service name for discovery"
 
     def test_app_to_database_communication(self):
         """Test app can communicate with database"""
@@ -372,9 +356,7 @@ class TestContainerCommunication:
             content = f.read()
 
         # Check Celery broker URL uses service name
-        assert (
-            "redis://redis:" in content
-        ), "Celery broker should use Redis service name"
+        assert "redis://redis:" in content, "Celery broker should use Redis service name"
 
     def test_network_connectivity_configuration(self):
         """Test network connectivity is properly configured"""
@@ -443,9 +425,7 @@ class TestLoadBalancingAndScaling:
             content = f.read()
 
         # Redis should be used for both broker and result backend
-        assert (
-            "CELERY_BROKER_URL=redis://redis:" in content
-        ), "Redis not configured as broker"
+        assert "CELERY_BROKER_URL=redis://redis:" in content, "Redis not configured as broker"
         assert (
             "CELERY_RESULT_BACKEND=redis://redis:" in content
         ), "Redis not configured as result backend"
@@ -481,9 +461,7 @@ class TestDataFlow:
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        worker_section = content[
-            content.find("celery_worker:") : content.find("celery_beat:")
-        ]
+        worker_section = content[content.find("celery_worker:") : content.find("celery_beat:")]
 
         # Worker should have database access
         assert "DATABASE_URL" in worker_section, "Worker database access not configured"
@@ -524,9 +502,7 @@ class TestContainerOrchestration:
         app_section = content[content.find("app:") : content.find("celery_worker:")]
 
         # App should wait for Redis health check
-        assert (
-            "condition: service_healthy" in app_section
-        ), "Health check condition not set"
+        assert "condition: service_healthy" in app_section, "Health check condition not set"
 
     def test_volume_sharing_between_services(self):
         """Test volumes are properly shared between services"""
@@ -572,9 +548,7 @@ class TestErrorHandlingAndRecovery:
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        worker_section = content[
-            content.find("celery_worker:") : content.find("celery_beat:")
-        ]
+        worker_section = content[content.find("celery_worker:") : content.find("celery_beat:")]
 
         # Worker should have restart policy
         assert "restart:" in worker_section, "Restart policy not configured"

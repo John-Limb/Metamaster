@@ -109,9 +109,7 @@ class TestTaskErrorHandler:
             offset=0,
         )
         assert critical_total >= 3
-        assert all(
-            e.severity == TaskErrorHandler.SEVERITY_CRITICAL for e in critical_errors
-        )
+        assert all(e.severity == TaskErrorHandler.SEVERITY_CRITICAL for e in critical_errors)
 
     def test_get_error_by_id(self):
         """Test retrieving a specific error by ID"""
@@ -212,9 +210,7 @@ class TestTaskErrorHandler:
             assert error2 is not None
             assert error2.error_message == "Second error"
             assert error2.retry_count == 1
-            assert (
-                error2.created_at == initial_created_at
-            )  # Created at should not change
+            assert error2.created_at == initial_created_at  # Created at should not change
         finally:
             db.close()
 

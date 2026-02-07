@@ -189,9 +189,7 @@ class TestRedisCachingWithSearchFilters:
         cache_key = "search:movies:drama:1994"
         # Convert movies to dictionaries for JSON serialization
         search_results = [
-            {"id": m.id, "title": m.title}
-            for m in sample_movies
-            if "Drama" in json.loads(m.genres)
+            {"id": m.id, "title": m.title} for m in sample_movies if "Drama" in json.loads(m.genres)
         ]
 
         # Set cache
@@ -212,9 +210,7 @@ class TestRedisCachingWithSearchFilters:
 
         # Set cache
         search_data = {
-            "results": [
-                m.title for m in sample_movies if "Action" in json.loads(m.genres)
-            ]
+            "results": [m.title for m in sample_movies if "Action" in json.loads(m.genres)]
         }
         cache_service.redis_client.get.return_value = json.dumps(search_data)
 
@@ -245,9 +241,7 @@ class TestRedisCachingWithSearchFilters:
         cache_service.set(cache_key, data, ttl=1800)
 
         # Verify TTL was set correctly
-        cache_service.redis_client.setex.assert_called_with(
-            cache_key, 1800, json.dumps(data)
-        )
+        cache_service.redis_client.setex.assert_called_with(cache_key, 1800, json.dumps(data))
 
 
 class TestDatabaseOptimizationWithBatchOperations:
@@ -322,9 +316,7 @@ class TestDatabaseOptimizationWithBatchOperations:
 class TestEndToEndWorkflows:
     """Test end-to-end workflows combining all Phase 6 features"""
 
-    def test_search_with_caching_and_optimization(
-        self, test_db, cache_service, sample_movies
-    ):
+    def test_search_with_caching_and_optimization(self, test_db, cache_service, sample_movies):
         """Test complete workflow: search -> cache -> optimize"""
         cache_key = "search:movies:drama"
 
@@ -343,9 +335,7 @@ class TestEndToEndWorkflows:
         assert cached_result is not None
         assert len(cached_result) > 0
 
-    def test_batch_import_with_search_and_cache(
-        self, test_db, cache_service, sample_movies
-    ):
+    def test_batch_import_with_search_and_cache(self, test_db, cache_service, sample_movies):
         """Test batch import workflow with search and caching"""
         batch_service = BatchOperationService(test_db)
 
@@ -473,18 +463,14 @@ class TestErrorScenariosAndEdgeCases:
         """Test batch operation with empty dataset"""
         batch_service = BatchOperationService(test_db)
 
-        batch_op = batch_service.create_batch_operation(
-            operation_type="file_import", total_items=0
-        )
+        batch_op = batch_service.create_batch_operation(operation_type="file_import", total_items=0)
 
         assert batch_op.total_items == 0
         assert batch_op.progress_percentage == 0.0
 
     def test_cache_with_large_data(self, cache_service):
         """Test caching with large data objects"""
-        large_data = {
-            "results": [{"id": i, "title": f"Movie {i}"} for i in range(1000)]
-        }
+        large_data = {"results": [{"id": i, "title": f"Movie {i}"} for i in range(1000)]}
 
         result = cache_service.set("large_cache", large_data, ttl=3600)
         assert result is True
@@ -575,9 +561,7 @@ class TestPhase6APIEndpoints:
 class TestCompletePhase6Scenarios:
     """Test complete Phase 6 scenarios"""
 
-    def test_scenario_1_search_cache_optimize(
-        self, test_db, cache_service, sample_movies
-    ):
+    def test_scenario_1_search_cache_optimize(self, test_db, cache_service, sample_movies):
         """Scenario 1: Search -> Cache -> Optimize"""
         # 1. Search for movies
         drama_movies = [m for m in sample_movies if "Drama" in json.loads(m.genres)]
@@ -594,9 +578,7 @@ class TestCompletePhase6Scenarios:
 
         assert result is not None
 
-    def test_scenario_2_batch_with_search_and_cache(
-        self, test_db, cache_service, sample_movies
-    ):
+    def test_scenario_2_batch_with_search_and_cache(self, test_db, cache_service, sample_movies):
         """Scenario 2: Batch Operation with Search and Cache"""
         batch_service = BatchOperationService(test_db)
 

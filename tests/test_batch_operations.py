@@ -122,9 +122,7 @@ class TestBatchOperationRetrieval:
     def test_list_batch_operations_with_pagination(self, batch_service):
         """Test listing batch operations with pagination"""
         for i in range(10):
-            batch_service.create_batch_operation(
-                operation_type="metadata_sync", total_items=10
-            )
+            batch_service.create_batch_operation(operation_type="metadata_sync", total_items=10)
 
         operations, total = batch_service.list_batch_operations(limit=5, offset=0)
         assert total == 10
@@ -137,23 +135,15 @@ class TestBatchOperationRetrieval:
     def test_list_batch_operations_filter_by_type(self, batch_service):
         """Test filtering batch operations by type"""
         for i in range(3):
-            batch_service.create_batch_operation(
-                operation_type="metadata_sync", total_items=10
-            )
+            batch_service.create_batch_operation(operation_type="metadata_sync", total_items=10)
 
         for i in range(2):
-            batch_service.create_batch_operation(
-                operation_type="file_import", total_items=10
-            )
+            batch_service.create_batch_operation(operation_type="file_import", total_items=10)
 
-        sync_ops, sync_total = batch_service.list_batch_operations(
-            operation_type="metadata_sync"
-        )
+        sync_ops, sync_total = batch_service.list_batch_operations(operation_type="metadata_sync")
         assert sync_total == 3
 
-        import_ops, import_total = batch_service.list_batch_operations(
-            operation_type="file_import"
-        )
+        import_ops, import_total = batch_service.list_batch_operations(operation_type="file_import")
         assert import_total == 2
 
     def test_list_batch_operations_filter_by_status(self, batch_service):
@@ -167,14 +157,10 @@ class TestBatchOperationRetrieval:
 
         batch_service.start_batch_operation(batch1.id)
 
-        pending_ops, pending_total = batch_service.list_batch_operations(
-            status="pending"
-        )
+        pending_ops, pending_total = batch_service.list_batch_operations(status="pending")
         assert pending_total == 1
 
-        running_ops, running_total = batch_service.list_batch_operations(
-            status="running"
-        )
+        running_ops, running_total = batch_service.list_batch_operations(status="running")
         assert running_total == 1
 
 
@@ -316,9 +302,7 @@ class TestBulkMetadataSync:
 
         media_ids = [m.id for m in sample_movies]
 
-        with patch(
-            "app.services.batch_operations.OMDBService.get_movie_details"
-        ) as mock_omdb:
+        with patch("app.services.batch_operations.OMDBService.get_movie_details") as mock_omdb:
             mock_omdb.return_value = {
                 "Title": "Test Movie",
                 "imdbRating": "8.5",
@@ -326,9 +310,7 @@ class TestBulkMetadataSync:
                 "Runtime": "120 min",
             }
 
-            result = await batch_service.bulk_metadata_sync(
-                batch_op.id, media_ids, "movie"
-            )
+            result = await batch_service.bulk_metadata_sync(batch_op.id, media_ids, "movie")
 
             assert result["status"] == "success"
             assert result["completed"] > 0
@@ -344,18 +326,14 @@ class TestBulkMetadataSync:
 
         media_ids = [s.id for s in sample_tv_shows]
 
-        with patch(
-            "app.services.batch_operations.TVDBService.get_series_details"
-        ) as mock_tvdb:
+        with patch("app.services.batch_operations.TVDBService.get_series_details") as mock_tvdb:
             mock_tvdb.return_value = {
                 "seriesName": "Test Show",
                 "siteRating": "8.0",
                 "overview": "Test overview",
             }
 
-            result = await batch_service.bulk_metadata_sync(
-                batch_op.id, media_ids, "tv_show"
-            )
+            result = await batch_service.bulk_metadata_sync(batch_op.id, media_ids, "tv_show")
 
             assert result["status"] == "success"
 
@@ -370,9 +348,7 @@ class TestBulkMetadataSync:
 
         media_ids = [m.id for m in sample_movies]
 
-        with patch(
-            "app.services.batch_operations.OMDBService.get_movie_details"
-        ) as mock_omdb:
+        with patch("app.services.batch_operations.OMDBService.get_movie_details") as mock_omdb:
             # Simulate some failures
             mock_omdb.side_effect = [
                 {"Title": "Movie 1", "imdbRating": "8.0"},
@@ -382,9 +358,7 @@ class TestBulkMetadataSync:
                 {"Title": "Movie 5", "imdbRating": "8.5"},
             ]
 
-            result = await batch_service.bulk_metadata_sync(
-                batch_op.id, media_ids, "movie"
-            )
+            result = await batch_service.bulk_metadata_sync(batch_op.id, media_ids, "movie")
 
             assert result["status"] == "success"
             assert result["failed"] > 0
@@ -409,9 +383,7 @@ class TestBulkFileImport:
             metadata={"media_type": "movie"},
         )
 
-        with patch(
-            "app.services.batch_operations.FFProbeWrapper.get_metadata"
-        ) as mock_ffprobe:
+        with patch("app.services.batch_operations.FFProbeWrapper.get_metadata") as mock_ffprobe:
             mock_ffprobe.return_value = {
                 "resolution": {"width": 1920, "height": 1080},
                 "codecs": {"video": "h264", "audio": "aac"},
@@ -419,9 +391,7 @@ class TestBulkFileImport:
                 "bitrate": {"total": "5000k"},
             }
 
-            result = await batch_service.bulk_file_import(
-                batch_op.id, test_files, "movie"
-            )
+            result = await batch_service.bulk_file_import(batch_op.id, test_files, "movie")
 
             assert result["status"] == "success"
             assert result["completed"] == len(test_files)

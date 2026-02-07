@@ -89,9 +89,7 @@ class TestMovieEndpoints:
     def test_get_movie(self, client, test_db):
         """Test retrieving a movie by ID"""
         # Create a movie first
-        movie = Movie(
-            title="Inception", year=2010, rating=8.8, runtime=148, omdb_id="tt1375666"
-        )
+        movie = Movie(title="Inception", year=2010, rating=8.8, runtime=148, omdb_id="tt1375666")
         test_db.add(movie)
         test_db.commit()
         test_db.refresh(movie)
@@ -257,15 +255,11 @@ class TestTVShowEndpoints:
 
         # Add episodes
         for i in range(1, 8):
-            episode = Episode(
-                season_id=season.id, episode_number=i, title=f"Episode {i}"
-            )
+            episode = Episode(season_id=season.id, episode_number=i, title=f"Episode {i}")
             test_db.add(episode)
         test_db.commit()
 
-        response = client.get(
-            f"/tv-shows/{show.id}/seasons/{season.id}/episodes?limit=10&offset=0"
-        )
+        response = client.get(f"/tv-shows/{show.id}/seasons/{season.id}/episodes?limit=10&offset=0")
         assert response.status_code == 200
         data = response.json()
         assert data["total"] == 7

@@ -367,9 +367,7 @@ async def test_make_request_with_retry_success(sample_series_response):
 async def test_make_request_with_retry_api_error():
     """Test request with API error response"""
     mock_response = AsyncMock()
-    mock_response.json = AsyncMock(
-        return_value={"status": "failed", "message": "Not found"}
-    )
+    mock_response.json = AsyncMock(return_value={"status": "failed", "message": "Not found"})
     mock_response.raise_for_status = AsyncMock()
 
     with patch("httpx.AsyncClient") as mock_client_class:

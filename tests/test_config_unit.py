@@ -459,9 +459,7 @@ class TestConfigurationConsistency:
         """Test Redis URLs are consistent"""
         test_settings = Settings()
         # Celery broker and Redis URL should be on same server
-        assert (
-            "localhost" in test_settings.redis_url or "redis" in test_settings.redis_url
-        )
+        assert "localhost" in test_settings.redis_url or "redis" in test_settings.redis_url
 
     def test_cache_ttl_values_reasonable(self):
         """Test cache TTL values are reasonable"""
@@ -488,7 +486,4 @@ class TestConfigurationConsistency:
         """Test Celery timeouts are reasonable"""
         test_settings = Settings()
         assert test_settings.celery_task_soft_time_limit > 0
-        assert (
-            test_settings.celery_task_time_limit
-            > test_settings.celery_task_soft_time_limit
-        )
+        assert test_settings.celery_task_time_limit > test_settings.celery_task_soft_time_limit

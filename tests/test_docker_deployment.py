@@ -21,9 +21,7 @@ class DockerTestHelper:
     def run_command(cmd: str) -> tuple[int, str, str]:
         """Run a shell command and return exit code, stdout, stderr"""
         try:
-            result = subprocess.run(
-                cmd, shell=True, capture_output=True, text=True, timeout=30
-            )
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
             return result.returncode, result.stdout, result.stderr
         except subprocess.TimeoutExpired:
             return 1, "", "Command timeout"
@@ -49,9 +47,7 @@ class DockerTestHelper:
     @staticmethod
     def get_container_status(container_name: str) -> Optional[Dict[str, Any]]:
         """Get container status information"""
-        code, stdout, _ = DockerTestHelper.run_command(
-            f"docker inspect {container_name}"
-        )
+        code, stdout, _ = DockerTestHelper.run_command(f"docker inspect {container_name}")
         if code == 0:
             try:
                 data = json.loads(stdout)
@@ -192,9 +188,7 @@ class TestMultiContainerOrchestration:
 
     def test_docker_compose_file_valid(self):
         """Test docker-compose.yml is valid"""
-        code, _, stderr = DockerTestHelper.run_command(
-            "docker-compose config > /dev/null 2>&1"
-        )
+        code, _, stderr = DockerTestHelper.run_command("docker-compose config > /dev/null 2>&1")
         assert code == 0, f"docker-compose.yml validation failed: {stderr}"
 
     def test_docker_compose_services_defined(self):
@@ -204,9 +198,7 @@ class TestMultiContainerOrchestration:
 
         required_services = ["redis", "app", "celery_worker", "celery_beat"]
         for service in required_services:
-            assert (
-                service in content
-            ), f"Service {service} not defined in docker-compose"
+            assert service in content, f"Service {service} not defined in docker-compose"
 
     def test_docker_compose_volumes_defined(self):
         """Test volumes are properly defined"""
@@ -372,9 +364,7 @@ class TestNetworkConnectivity:
             content = f.read()
 
         # Redis URL should use service name
-        assert (
-            "redis://redis:" in content
-        ), "Redis connection string should use service name"
+        assert "redis://redis:" in content, "Redis connection string should use service name"
 
 
 # ============================================================================
@@ -401,9 +391,7 @@ class TestServiceDependenciesAndStartupOrder:
             content = f.read()
 
         # Find celery_worker section
-        worker_section = content[
-            content.find("celery_worker:") : content.find("celery_beat:")
-        ]
+        worker_section = content[content.find("celery_worker:") : content.find("celery_beat:")]
         assert "depends_on:" in worker_section, "Celery worker missing depends_on"
         assert "redis" in worker_section, "Celery worker should depend on Redis"
 
@@ -473,9 +461,7 @@ class TestDockerComposeTestConfiguration:
 
     def test_test_compose_file_exists(self):
         """Test docker-compose.test.yml exists"""
-        assert os.path.exists(
-            "docker-compose.test.yml"
-        ), "docker-compose.test.yml not found"
+        assert os.path.exists("docker-compose.test.yml"), "docker-compose.test.yml not found"
 
     def test_test_compose_file_valid(self):
         """Test docker-compose.test.yml is valid"""
@@ -508,9 +494,7 @@ class TestDockerComposeTestConfiguration:
         with open("docker-compose.test.yml", "r") as f:
             content = f.read()
 
-        assert (
-            "DEBUG=True" in content or 'DEBUG: "True"' in content
-        ), "Debug mode not enabled"
+        assert "DEBUG=True" in content or 'DEBUG: "True"' in content, "Debug mode not enabled"
 
 
 # ============================================================================
@@ -560,7 +544,5 @@ class TestDockerComposeOverride:
         """Test docker-compose.override.yml is optional"""
         # Override file is optional, so this just checks the pattern
         if os.path.exists("docker-compose.override.yml"):
-            code, _, stderr = DockerTestHelper.run_command(
-                "docker-compose config > /dev/null 2>&1"
-            )
+            code, _, stderr = DockerTestHelper.run_command("docker-compose config > /dev/null 2>&1")
             assert code == 0, f"Override file causes validation error: {stderr}"

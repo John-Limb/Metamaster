@@ -164,11 +164,7 @@ class TestIndexEffectiveness:
 
         for i in range(50):
             start = time.time()
-            movie = (
-                test_db.query(Movie)
-                .filter(Movie.omdb_id == f"tt{1000000 + (i % 100)}")
-                .first()
-            )
+            movie = test_db.query(Movie).filter(Movie.omdb_id == f"tt{1000000 + (i % 100)}").first()
             end = time.time()
             analyzer.add_response_time(end - start)
 
@@ -325,9 +321,7 @@ class TestQueryOptimization:
 
         for page in range(10):
             start = time.time()
-            movies = (
-                test_db.query(Movie).offset(page * page_size).limit(page_size).all()
-            )
+            movies = test_db.query(Movie).offset(page * page_size).limit(page_size).all()
             end = time.time()
             times.append(end - start)
 
@@ -362,9 +356,7 @@ class TestDatabaseThroughput:
 
         total_time = end - start
         throughput = num_inserts / total_time
-        assert (
-            throughput > 50
-        ), f"Insert throughput {throughput} items/sec is below 50 items/sec"
+        assert throughput > 50, f"Insert throughput {throughput} items/sec is below 50 items/sec"
 
     def test_select_throughput(self, test_db, sample_movies):
         """Test select throughput"""
@@ -400,9 +392,7 @@ class TestDatabaseMemoryUsage:
         metrics = profiler.metrics[0]
         assert len(movies) == 100
         # Memory usage should be reasonable
-        assert (
-            metrics.memory_used < 100
-        ), f"Memory usage {metrics.memory_used}MB is too high"
+        assert metrics.memory_used < 100, f"Memory usage {metrics.memory_used}MB is too high"
 
     def test_batch_processing_memory(self, test_db, sample_movies):
         """Test memory usage during batch processing"""

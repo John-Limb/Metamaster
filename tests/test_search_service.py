@@ -347,9 +347,7 @@ class TestMovieSearch:
 
     def test_search_combined_filters(self, db: Session, sample_movies):
         """Test combining multiple filters"""
-        filters = SearchFilters(
-            genre="Drama", min_rating=8.5, year=1994, skip=0, limit=100
-        )
+        filters = SearchFilters(genre="Drama", min_rating=8.5, year=1994, skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)
         assert total > 0
         # All returned movies should match all criteria

@@ -96,9 +96,7 @@ def mock_redis_cache():
 class TestMovieImportWorkflow:
     """Tests for complete movie import workflow"""
 
-    def test_movie_import_workflow_complete(
-        self, db_session, temp_media_dir, mock_redis_cache
-    ):
+    def test_movie_import_workflow_complete(self, db_session, temp_media_dir, mock_redis_cache):
         """Test complete movie import workflow: file detection → pattern recognition → metadata sync → database storage"""
         # Step 1: Create movie file in temp directory
         movie_file_path = os.path.join(temp_media_dir, "The.Matrix.1999.1080p.mkv")
@@ -170,14 +168,10 @@ class TestMovieImportWorkflow:
         assert len(retrieved_movie.files) == 1
         assert retrieved_movie.files[0].file_path == movie_file_path
 
-        queue_status = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_item.id).first()
-        )
+        queue_status = db_session.query(FileQueue).filter(FileQueue.id == queue_item.id).first()
         assert queue_status.status == "completed"
 
-    def test_movie_import_workflow_with_metadata_enrichment(
-        self, db_session, temp_media_dir
-    ):
+    def test_movie_import_workflow_with_metadata_enrichment(self, db_session, temp_media_dir):
         """Test movie import with metadata enrichment from external API"""
         # Create movie
         movie = Movie(title="Inception", year=2010, omdb_id="tt1375666")
@@ -282,9 +276,7 @@ class TestTVShowImportWorkflow:
         db_session.commit()
 
         # Step 4: Create episode files
-        episodes = (
-            db_session.query(Episode).filter(Episode.season_id == season_1.id).all()
-        )
+        episodes = db_session.query(Episode).filter(Episode.season_id == season_1.id).all()
         for episode in episodes:
             file_path = os.path.join(
                 temp_media_dir, f"Breaking.Bad.S01E{episode.episode_number:02d}.mkv"
@@ -310,9 +302,7 @@ class TestTVShowImportWorkflow:
         assert retrieved_show is not None
         assert len(retrieved_show.seasons) == 5
 
-        retrieved_season = (
-            db_session.query(Season).filter(Season.id == season_1.id).first()
-        )
+        retrieved_season = db_session.query(Season).filter(Season.id == season_1.id).first()
         assert len(retrieved_season.episodes) == 7
 
         retrieved_episode = retrieved_season.episodes[0]
@@ -430,17 +420,13 @@ class TestSearchAndFilterWorkflow:
 
         # Test filter: Sci-Fi movies from 2000+
         scifi_recent = (
-            db_session.query(Movie)
-            .filter(Movie.year >= 2000, Movie.genres.like("%Sci-Fi%"))
-            .all()
+            db_session.query(Movie).filter(Movie.year >= 2000, Movie.genres.like("%Sci-Fi%")).all()
         )
         assert len(scifi_recent) == 2  # Inception (2010) and Interstellar (2014)
 
         # Test filter: High-rated movies (8.8+)
         high_rated = db_session.query(Movie).filter(Movie.rating >= 8.8).all()
-        assert (
-            len(high_rated) == 3
-        )  # Inception (8.8), The Dark Knight (9.0), Pulp Fiction (8.9)
+        assert len(high_rated) == 3  # Inception (8.8), The Dark Knight (9.0), Pulp Fiction (8.9)
 
 
 # ============================================================================
@@ -481,9 +467,7 @@ class TestBatchMetadataSyncWorkflow:
         assert batch_op.status == "running"
 
         # Simulate progress updates
-        batch_service.update_batch_progress(
-            batch_op.id, completed_items=2, failed_items=0
-        )
+        batch_service.update_batch_progress(batch_op.id, completed_items=2, failed_items=0)
         batch_op = batch_service.get_batch_operation(batch_op.id)
         assert batch_op.completed_items == 2
         assert batch_op.progress_percentage == 40.0
@@ -551,9 +535,7 @@ class TestBatchFileImportWorkflow:
 
         # Simulate file processing
         for i, file_path in enumerate(file_paths):
-            queue_item = FileQueue(
-                file_path=file_path, status="completed", media_type="movie"
-            )
+            queue_item = FileQueue(file_path=file_path, status="completed", media_type="movie")
             db_session.add(queue_item)
 
             if (i + 1) % 2 == 0:
@@ -790,14 +772,9 @@ class TestDataConsistencyWorkflow:
         db_session.commit()
 
         show_id = show.id
-        season_count_before = (
-            db_session.query(Season).filter(Season.show_id == show_id).count()
-        )
+        season_count_before = db_session.query(Season).filter(Season.show_id == show_id).count()
         episode_count_before = (
-            db_session.query(Episode)
-            .join(Season)
-            .filter(Season.show_id == show_id)
-            .count()
+            db_session.query(Episode).join(Season).filter(Season.show_id == show_id).count()
         )
 
         assert season_count_before == 3
@@ -808,14 +785,9 @@ class TestDataConsistencyWorkflow:
         db_session.commit()
 
         # Verify cascade delete
-        season_count_after = (
-            db_session.query(Season).filter(Season.show_id == show_id).count()
-        )
+        season_count_after = db_session.query(Season).filter(Season.show_id == show_id).count()
         episode_count_after = (
-            db_session.query(Episode)
-            .join(Season)
-            .filter(Season.show_id == show_id)
-            .count()
+            db_session.query(Episode).join(Season).filter(Season.show_id == show_id).count()
         )
 
         assert season_count_after == 0

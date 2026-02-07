@@ -250,16 +250,12 @@ class TestRelationshipIntegrity:
         db_session.refresh(season)
 
         for i in range(1, 11):
-            episode = Episode(
-                season_id=season.id, episode_number=i, title=f"Episode {i}"
-            )
+            episode = Episode(season_id=season.id, episode_number=i, title=f"Episode {i}")
             db_session.add(episode)
         db_session.commit()
 
         # Verify relationship
-        retrieved_season = (
-            db_session.query(Season).filter(Season.id == season.id).first()
-        )
+        retrieved_season = db_session.query(Season).filter(Season.id == season.id).first()
         assert len(retrieved_season.episodes) == 10
 
     def test_episode_file_relationship(self, db_session):
@@ -285,9 +281,7 @@ class TestRelationshipIntegrity:
         db_session.commit()
 
         # Verify relationship
-        retrieved_episode = (
-            db_session.query(Episode).filter(Episode.id == episode.id).first()
-        )
+        retrieved_episode = db_session.query(Episode).filter(Episode.id == episode.id).first()
         assert len(retrieved_episode.files) == 2
 
 
@@ -352,9 +346,7 @@ class TestCascadeDelete:
         db_session.refresh(season)
 
         for i in range(1, 6):
-            episode = Episode(
-                season_id=season.id, episode_number=i, title=f"Episode {i}"
-            )
+            episode = Episode(season_id=season.id, episode_number=i, title=f"Episode {i}")
             db_session.add(episode)
         db_session.commit()
 
@@ -363,9 +355,7 @@ class TestCascadeDelete:
         db_session.commit()
 
         # Verify cascade delete
-        episodes = (
-            db_session.query(Episode).filter(Episode.season_id == season_id).all()
-        )
+        episodes = db_session.query(Episode).filter(Episode.season_id == season_id).all()
         assert len(episodes) == 0
 
     def test_delete_episode_cascades_files(self, db_session):
@@ -395,11 +385,7 @@ class TestCascadeDelete:
         db_session.commit()
 
         # Verify cascade delete
-        files = (
-            db_session.query(EpisodeFile)
-            .filter(EpisodeFile.episode_id == episode_id)
-            .all()
-        )
+        files = db_session.query(EpisodeFile).filter(EpisodeFile.episode_id == episode_id).all()
         assert len(files) == 0
 
 
@@ -546,9 +532,7 @@ class TestIndexEffectiveness:
             db_session.add(queue)
         db_session.commit()
 
-        pending = (
-            db_session.query(FileQueue).filter(FileQueue.status == "pending").all()
-        )
+        pending = db_session.query(FileQueue).filter(FileQueue.status == "pending").all()
         assert len(pending) >= 1
 
 
@@ -610,9 +594,7 @@ class TestAPICache:
         db_session.commit()
 
         # Delete expired
-        db_session.query(APICache).filter(
-            APICache.expires_at < datetime.utcnow()
-        ).delete()
+        db_session.query(APICache).filter(APICache.expires_at < datetime.utcnow()).delete()
         db_session.commit()
 
         # Verify
@@ -631,9 +613,7 @@ class TestFileQueue:
 
     def test_create_queue_entry(self, db_session):
         """Test creating a file queue entry"""
-        queue = FileQueue(
-            file_path="/path/to/file.mp4", status="pending", media_type="movie"
-        )
+        queue = FileQueue(file_path="/path/to/file.mp4", status="pending", media_type="movie")
         db_session.add(queue)
         db_session.commit()
         db_session.refresh(queue)
@@ -664,9 +644,7 @@ class TestFileQueue:
             db_session.add(queue)
         db_session.commit()
 
-        pending = (
-            db_session.query(FileQueue).filter(FileQueue.status == "pending").all()
-        )
+        pending = db_session.query(FileQueue).filter(FileQueue.status == "pending").all()
         assert len(pending) == 3
 
 
@@ -706,9 +684,7 @@ class TestTaskError:
             db_session.add(error)
         db_session.commit()
 
-        critical = (
-            db_session.query(TaskError).filter(TaskError.severity == "critical").all()
-        )
+        critical = db_session.query(TaskError).filter(TaskError.severity == "critical").all()
         assert len(critical) == 1
 
 
@@ -769,9 +745,5 @@ class TestBatchOperation:
             db_session.add(batch)
         db_session.commit()
 
-        running = (
-            db_session.query(BatchOperation)
-            .filter(BatchOperation.status == "running")
-            .all()
-        )
+        running = db_session.query(BatchOperation).filter(BatchOperation.status == "running").all()
         assert len(running) == 2

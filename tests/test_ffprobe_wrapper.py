@@ -76,9 +76,7 @@ class TestRunFFProbe:
                 mock_run.side_effect = subprocess.CalledProcessError(
                     1, "ffprobe", stderr="Corrupted file"
                 )
-                with pytest.raises(
-                    RuntimeError, match="FFProbe failed to process file"
-                ):
+                with pytest.raises(RuntimeError, match="FFProbe failed to process file"):
                     wrapper._run_ffprobe(str(test_file))
         finally:
             test_file.unlink()
@@ -91,9 +89,7 @@ class TestRunFFProbe:
         try:
             with patch("subprocess.run") as mock_run:
                 mock_run.return_value = Mock(stdout="invalid json")
-                with pytest.raises(
-                    RuntimeError, match="Failed to parse FFProbe output"
-                ):
+                with pytest.raises(RuntimeError, match="Failed to parse FFProbe output"):
                     wrapper._run_ffprobe(str(test_file))
         finally:
             test_file.unlink()

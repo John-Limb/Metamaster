@@ -217,9 +217,7 @@ class TestFFProbeWrapper:
     def test_run_ffprobe_success(self, mock_exists, mock_run, wrapper):
         """Test successful ffprobe execution"""
         mock_exists.return_value = True
-        mock_run.return_value = MagicMock(
-            stdout=json.dumps({"streams": [], "format": {}})
-        )
+        mock_run.return_value = MagicMock(stdout=json.dumps({"streams": [], "format": {}}))
         result = wrapper._run_ffprobe("/path/to/file.mp4")
         assert isinstance(result, dict)
         assert "streams" in result
@@ -311,9 +309,7 @@ class TestFFProbeWrapper:
     @patch.object(FFProbeWrapper, "_run_ffprobe")
     def test_get_frame_rate(self, mock_run, wrapper):
         """Test frame rate extraction"""
-        mock_run.return_value = {
-            "streams": [{"codec_type": "video", "r_frame_rate": "30/1"}]
-        }
+        mock_run.return_value = {"streams": [{"codec_type": "video", "r_frame_rate": "30/1"}]}
         result = wrapper.get_frame_rate("/path/to/file.mp4")
         assert result == 30.0
 
@@ -358,9 +354,7 @@ class TestFileQueueManager:
         """Test adding duplicate file"""
         existing = MagicMock()
         existing.id = 5
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            existing
-        )
+        mock_session.query.return_value.filter.return_value.first.return_value = existing
 
         queue_id = manager.add_file("/path/to/file.mp4", "movie")
         assert queue_id == 5
@@ -422,9 +416,7 @@ class TestFileQueueManager:
     def test_mark_processing(self, manager, mock_session):
         """Test marking file as processing"""
         mock_file = MagicMock()
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            mock_file
-        )
+        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
 
         result = manager.mark_processing(1)
         assert result is True
@@ -433,9 +425,7 @@ class TestFileQueueManager:
     def test_mark_completed(self, manager, mock_session):
         """Test marking file as completed"""
         mock_file = MagicMock()
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            mock_file
-        )
+        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
 
         result = manager.mark_completed(1)
         assert result is True
@@ -444,9 +434,7 @@ class TestFileQueueManager:
     def test_mark_failed(self, manager, mock_session):
         """Test marking file as failed"""
         mock_file = MagicMock()
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            mock_file
-        )
+        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
 
         result = manager.mark_failed(1, "Test error")
         assert result is True
@@ -469,9 +457,7 @@ class TestFileQueueManager:
         mock_file.created_at = datetime.utcnow()
         mock_file.processed_at = None
 
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            mock_file
-        )
+        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
 
         status = manager.get_file_status(1)
         assert status["id"] == 1
@@ -493,9 +479,7 @@ class TestFileQueueManager:
 
     def test_is_duplicate_true(self, manager, mock_session):
         """Test duplicate detection - file exists"""
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            MagicMock()
-        )
+        mock_session.query.return_value.filter.return_value.first.return_value = MagicMock()
 
         result = manager.is_duplicate("/path/to/file.mp4")
         assert result is True
@@ -511,9 +495,7 @@ class TestFileQueueManager:
         """Test retrying failed file"""
         mock_file = MagicMock()
         mock_file.status = "failed"
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            mock_file
-        )
+        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
 
         result = manager.retry_failed_file(1)
         assert result is True
@@ -620,9 +602,7 @@ class TestTaskErrorHandler:
         mock_session = MagicMock()
         mock_session_local.return_value = mock_session
         mock_error = MagicMock()
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            mock_error
-        )
+        mock_session.query.return_value.filter.return_value.first.return_value = mock_error
 
         TaskErrorHandler.mark_error_resolved("task123")
 
@@ -649,9 +629,7 @@ class TestTaskErrorHandler:
         mock_ordered.offset.return_value = mock_offset
         mock_offset.limit.return_value.all.return_value = [mock_error]
 
-        errors, total = TaskErrorHandler.get_recent_errors(
-            severity="critical", limit=10
-        )
+        errors, total = TaskErrorHandler.get_recent_errors(severity="critical", limit=10)
 
         assert len(errors) == 1
         assert total == 1

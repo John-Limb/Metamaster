@@ -440,9 +440,7 @@ class TestClearCompletedFiles:
         manager.mark_completed(queue_id)
 
         # Manually set processed_at to 8 days ago using manager's session
-        entry = (
-            manager.session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        entry = manager.session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         entry.processed_at = datetime.utcnow() - timedelta(days=8)
         manager.session.commit()
 
@@ -573,10 +571,7 @@ class TestIntegration:
 
     def test_batch_workflow(self, manager):
         """Test batch workflow."""
-        files = [
-            {"file_path": f"/path/to/movie{i}.mp4", "file_type": "movie"}
-            for i in range(5)
-        ]
+        files = [{"file_path": f"/path/to/movie{i}.mp4", "file_type": "movie"} for i in range(5)]
 
         queue_ids = manager.add_files_batch(files)
         assert len(queue_ids) == 5

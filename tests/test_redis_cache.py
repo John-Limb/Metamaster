@@ -91,9 +91,7 @@ class TestRedisCacheService:
         result = cache_service.set("movie:1", test_data, ttl=3600)
 
         assert result is True
-        cache_service.redis_client.setex.assert_called_with(
-            "movie:1", 3600, json.dumps(test_data)
-        )
+        cache_service.redis_client.setex.assert_called_with("movie:1", 3600, json.dumps(test_data))
 
     def test_set_cache_default_ttl(self, cache_service):
         """Test setting a value with default TTL"""
@@ -148,9 +146,7 @@ class TestRedisCacheService:
 
         assert result == 3
         cache_service.redis_client.keys.assert_called_with("movie:*")
-        cache_service.redis_client.delete.assert_called_with(
-            "movie:1", "movie:2", "movie:3"
-        )
+        cache_service.redis_client.delete.assert_called_with("movie:1", "movie:2", "movie:3")
 
     def test_delete_pattern_no_keys(self, cache_service):
         """Test deleting pattern with no matching keys"""

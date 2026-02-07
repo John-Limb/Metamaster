@@ -193,11 +193,7 @@ class ResponseTimeAnalyzer:
             "max": max(self.response_times),
             "mean": statistics.mean(self.response_times),
             "median": statistics.median(self.response_times),
-            "stdev": (
-                statistics.stdev(self.response_times)
-                if len(self.response_times) > 1
-                else 0
-            ),
+            "stdev": (statistics.stdev(self.response_times) if len(self.response_times) > 1 else 0),
             "p50": self.get_percentile(50),
             "p95": self.get_percentile(95),
             "p99": self.get_percentile(99),
@@ -307,11 +303,7 @@ class ConcurrencyTester:
             "min_operation_time": min(self.operation_times),
             "max_operation_time": max(self.operation_times),
             "success_rate": (
-                (
-                    len(self.operation_times)
-                    / (len(self.operation_times) + len(self.errors))
-                    * 100
-                )
+                (len(self.operation_times) / (len(self.operation_times) + len(self.errors)) * 100)
                 if (len(self.operation_times) + len(self.errors)) > 0
                 else 0
             ),

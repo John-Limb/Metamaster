@@ -90,9 +90,7 @@ class TestFileDetection:
         # Filter for media files
         media_extensions = [".mp4", ".mkv", ".avi", ".mov"]
         media_files = [
-            f
-            for f in Path(temp_media_dir).glob("*")
-            if f.suffix.lower() in media_extensions
+            f for f in Path(temp_media_dir).glob("*") if f.suffix.lower() in media_extensions
         ]
 
         assert len(media_files) == 1
@@ -115,9 +113,7 @@ class TestQueueManagement:
         assert queue_id is not None
 
         # Verify in database
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry is not None
         assert queue_entry.file_path == "/path/to/file.mp4"
         assert queue_entry.status == "pending"
@@ -144,9 +140,7 @@ class TestQueueManagement:
         assert success is True
 
         # Verify status changed
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry.status == "processing"
 
     def test_mark_file_completed(self, db_session):
@@ -160,9 +154,7 @@ class TestQueueManagement:
         assert success is True
 
         # Verify status changed
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry.status == "completed"
 
     def test_mark_file_failed(self, db_session):
@@ -175,9 +167,7 @@ class TestQueueManagement:
         assert success is True
 
         # Verify status and error message
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry.status == "failed"
         assert queue_entry.error_message == "File corrupted"
 
@@ -304,9 +294,7 @@ class TestFileImportWorkflow:
         manager.mark_completed(queue_id)
 
         # Verify final status
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry.status == "completed"
 
     def test_import_tv_show_workflow(self, db_session, temp_media_dir):
@@ -335,9 +323,7 @@ class TestFileImportWorkflow:
         manager.mark_completed(queue_id)
 
         # Verify final status
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry.status == "completed"
 
     def test_import_with_error_handling(self, db_session):
@@ -355,9 +341,7 @@ class TestFileImportWorkflow:
         manager.mark_failed(queue_id, error_msg)
 
         # Verify error status
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry.status == "failed"
         assert queue_entry.error_message == error_msg
 
@@ -380,9 +364,7 @@ class TestFileMonitoringErrorHandling:
         # Simulate file not found error
         manager.mark_failed(queue_id, "File not found")
 
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry.status == "failed"
 
     def test_handle_corrupted_file(self, db_session):
@@ -395,9 +377,7 @@ class TestFileMonitoringErrorHandling:
         # Simulate corruption error
         manager.mark_failed(queue_id, "File is corrupted")
 
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry.status == "failed"
 
     def test_handle_invalid_media_type(self, db_session):
@@ -439,9 +419,7 @@ class TestConcurrentFileProcessing:
             manager.mark_completed(queue_id)
 
         # Verify all completed
-        completed = (
-            db_session.query(FileQueue).filter(FileQueue.status == "completed").all()
-        )
+        completed = db_session.query(FileQueue).filter(FileQueue.status == "completed").all()
         assert len(completed) == 5
 
     def test_process_mixed_media_types(self, db_session):
@@ -454,12 +432,8 @@ class TestConcurrentFileProcessing:
             manager.add_file(f"/path/to/show{i}.mkv", "tv_show")
 
         # Verify counts
-        movies = (
-            db_session.query(FileQueue).filter(FileQueue.media_type == "movie").all()
-        )
-        shows = (
-            db_session.query(FileQueue).filter(FileQueue.media_type == "tv_show").all()
-        )
+        movies = db_session.query(FileQueue).filter(FileQueue.media_type == "movie").all()
+        shows = db_session.query(FileQueue).filter(FileQueue.media_type == "tv_show").all()
 
         assert len(movies) == 3
         assert len(shows) == 3
@@ -479,9 +453,7 @@ class TestConcurrentFileProcessing:
         assert success is True
 
         # Verify status reset to pending
-        queue_entry = (
-            db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
-        )
+        queue_entry = db_session.query(FileQueue).filter(FileQueue.id == queue_id).first()
         assert queue_entry.status == "pending"
 
 

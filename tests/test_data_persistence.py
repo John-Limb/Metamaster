@@ -78,9 +78,7 @@ class TestDatabasePersistence:
     def test_movie_persistence_across_sessions(self, db_session):
         """Test movie data persists across database sessions"""
         # Create movie in first session
-        movie = Movie(
-            title="The Shawshank Redemption", year=1994, rating=9.3, omdb_id="tt0111161"
-        )
+        movie = Movie(title="The Shawshank Redemption", year=1994, rating=9.3, omdb_id="tt0111161")
         db_session.add(movie)
         db_session.commit()
         movie_id = movie.id
@@ -128,9 +126,7 @@ class TestDatabasePersistence:
         file_id = file.id
 
         # Retrieve
-        retrieved_file = (
-            db_session.query(MovieFile).filter(MovieFile.id == file_id).first()
-        )
+        retrieved_file = db_session.query(MovieFile).filter(MovieFile.id == file_id).first()
         assert retrieved_file is not None
         assert retrieved_file.file_path == "/path/to/movie.mkv"
         assert retrieved_file.resolution == "1920x1080"
@@ -166,9 +162,7 @@ class TestDatabasePersistence:
         file_id = ep_file.id
 
         # Retrieve
-        retrieved_file = (
-            db_session.query(EpisodeFile).filter(EpisodeFile.id == file_id).first()
-        )
+        retrieved_file = db_session.query(EpisodeFile).filter(EpisodeFile.id == file_id).first()
         assert retrieved_file is not None
         assert retrieved_file.file_path == "/path/to/episode.mkv"
         assert retrieved_file.duration == 2700
@@ -251,12 +245,8 @@ class TestCachePersistence:
         db_session.commit()
 
         # Retrieve and verify expiration times
-        retrieved1 = (
-            db_session.query(APICache).filter(APICache.query_key == "key1").first()
-        )
-        retrieved2 = (
-            db_session.query(APICache).filter(APICache.query_key == "key2").first()
-        )
+        retrieved1 = db_session.query(APICache).filter(APICache.query_key == "key1").first()
+        retrieved2 = db_session.query(APICache).filter(APICache.query_key == "key2").first()
 
         assert retrieved1.expires_at > now
         assert retrieved2.expires_at > retrieved1.expires_at
@@ -284,9 +274,7 @@ class TestCachePersistence:
         db_session.commit()
 
         # Query for expired entries
-        expired_entries = (
-            db_session.query(APICache).filter(APICache.expires_at < now).all()
-        )
+        expired_entries = db_session.query(APICache).filter(APICache.expires_at < now).all()
 
         assert len(expired_entries) == 1
         assert expired_entries[0].query_key == "expired"
@@ -321,9 +309,7 @@ class TestFileQueuePersistence:
         db_session.commit()
 
         # Retrieve all pending items
-        pending = (
-            db_session.query(FileQueue).filter(FileQueue.status == "pending").all()
-        )
+        pending = db_session.query(FileQueue).filter(FileQueue.status == "pending").all()
         assert len(pending) == 5
 
     def test_file_queue_status_transitions(self, db_session):
@@ -392,11 +378,7 @@ class TestBatchOperationStatePersistence:
         batch_id = batch_op.id
 
         # Retrieve
-        retrieved = (
-            db_session.query(BatchOperation)
-            .filter(BatchOperation.id == batch_id)
-            .first()
-        )
+        retrieved = db_session.query(BatchOperation).filter(BatchOperation.id == batch_id).first()
         assert retrieved is not None
         assert retrieved.operation_type == "metadata_sync"
         assert retrieved.total_items == 100
@@ -424,11 +406,7 @@ class TestBatchOperationStatePersistence:
         db_session.commit()
 
         # Retrieve and verify
-        retrieved = (
-            db_session.query(BatchOperation)
-            .filter(BatchOperation.id == batch_id)
-            .first()
-        )
+        retrieved = db_session.query(BatchOperation).filter(BatchOperation.id == batch_id).first()
         assert retrieved.completed_items == 25
         assert retrieved.progress_percentage == 50.0
 
@@ -450,11 +428,7 @@ class TestBatchOperationStatePersistence:
         batch_id = batch_op.id
 
         # Retrieve and verify completion
-        retrieved = (
-            db_session.query(BatchOperation)
-            .filter(BatchOperation.id == batch_id)
-            .first()
-        )
+        retrieved = db_session.query(BatchOperation).filter(BatchOperation.id == batch_id).first()
         assert retrieved.status == "completed"
         assert retrieved.progress_percentage == 100.0
         assert retrieved.completed_at is not None
@@ -479,11 +453,7 @@ class TestBatchOperationStatePersistence:
         batch_id = batch_op.id
 
         # Retrieve and verify metadata
-        retrieved = (
-            db_session.query(BatchOperation)
-            .filter(BatchOperation.id == batch_id)
-            .first()
-        )
+        retrieved = db_session.query(BatchOperation).filter(BatchOperation.id == batch_id).first()
         retrieved_metadata = json.loads(retrieved.operation_metadata)
         assert retrieved_metadata["media_type"] == "movie"
         assert retrieved_metadata["filters"]["year"] == 2020
@@ -546,9 +516,7 @@ class TestTransactionRollbackScenarios:
             db_session.rollback()
 
         # Verify rollback - movie and files should still exist
-        movie_exists = (
-            db_session.query(Movie).filter(Movie.id == movie_id).first() is not None
-        )
+        movie_exists = db_session.query(Movie).filter(Movie.id == movie_id).first() is not None
         file_count_after = (
             db_session.query(MovieFile).filter(MovieFile.movie_id == movie_id).count()
         )
@@ -579,11 +547,7 @@ class TestTransactionRollbackScenarios:
             db_session.rollback()
 
         # Verify rollback - values should not have changed
-        retrieved = (
-            db_session.query(BatchOperation)
-            .filter(BatchOperation.id == batch_id)
-            .first()
-        )
+        retrieved = db_session.query(BatchOperation).filter(BatchOperation.id == batch_id).first()
         assert retrieved.completed_items == 0
         assert retrieved.progress_percentage == 0.0
 
@@ -613,9 +577,7 @@ class TestDataIntegrityVerification:
     def test_foreign_key_constraint_enforcement(self, db_session):
         """Test foreign key constraints are enforced"""
         # Attempt to create file with non-existent movie
-        file = MovieFile(
-            movie_id=99999, file_path="/path/to/file.mkv"  # Non-existent movie
-        )
+        file = MovieFile(movie_id=99999, file_path="/path/to/file.mkv")  # Non-existent movie
         db_session.add(file)
 
         with pytest.raises(Exception):  # IntegrityError

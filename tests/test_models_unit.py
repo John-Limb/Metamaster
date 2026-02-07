@@ -132,11 +132,7 @@ class TestMovieFileModel:
         db_session.add(movie_file)
         db_session.commit()
 
-        retrieved = (
-            db_session.query(MovieFile)
-            .filter_by(file_path="/path/to/movie.mp4")
-            .first()
-        )
+        retrieved = db_session.query(MovieFile).filter_by(file_path="/path/to/movie.mp4").first()
         assert retrieved is not None
         assert retrieved.movie_id == movie.id
         assert retrieved.resolution == "1920x1080"
@@ -169,9 +165,7 @@ class TestMovieFileModel:
         db_session.commit()
 
         orphaned_file = (
-            db_session.query(MovieFile)
-            .filter_by(file_path="/path/to/movie.mp4")
-            .first()
+            db_session.query(MovieFile).filter_by(file_path="/path/to/movie.mp4").first()
         )
         assert orphaned_file is None
 
@@ -388,9 +382,7 @@ class TestEpisodeFileModel:
         db_session.commit()
 
         retrieved = (
-            db_session.query(EpisodeFile)
-            .filter_by(file_path="/path/to/episode.mp4")
-            .first()
+            db_session.query(EpisodeFile).filter_by(file_path="/path/to/episode.mp4").first()
         )
         assert retrieved is not None
         assert retrieved.episode_id == episode.id
@@ -403,9 +395,7 @@ class TestEpisodeFileModel:
         db_session.add_all([show, season, episode])
         db_session.commit()
 
-        episode_file = EpisodeFile(
-            episode_id=episode.id, file_path="/path/to/episode.mp4"
-        )
+        episode_file = EpisodeFile(episode_id=episode.id, file_path="/path/to/episode.mp4")
         db_session.add(episode_file)
         db_session.commit()
 
@@ -413,9 +403,7 @@ class TestEpisodeFileModel:
         db_session.commit()
 
         orphaned_file = (
-            db_session.query(EpisodeFile)
-            .filter_by(file_path="/path/to/episode.mp4")
-            .first()
+            db_session.query(EpisodeFile).filter_by(file_path="/path/to/episode.mp4").first()
         )
         assert orphaned_file is None
 
@@ -459,9 +447,7 @@ class TestAPICacheModel:
         db_session.commit()
 
         active_entries = (
-            db_session.query(APICache)
-            .filter(APICache.expires_at > datetime.utcnow())
-            .all()
+            db_session.query(APICache).filter(APICache.expires_at > datetime.utcnow()).all()
         )
         assert len(active_entries) == 1
 
@@ -476,23 +462,17 @@ class TestFileQueueModel:
 
     def test_create_file_queue_entry(self, db_session):
         """Test creating file queue entry"""
-        queue_entry = FileQueue(
-            file_path="/path/to/file.mp4", status="pending", media_type="movie"
-        )
+        queue_entry = FileQueue(file_path="/path/to/file.mp4", status="pending", media_type="movie")
         db_session.add(queue_entry)
         db_session.commit()
 
-        retrieved = (
-            db_session.query(FileQueue).filter_by(file_path="/path/to/file.mp4").first()
-        )
+        retrieved = db_session.query(FileQueue).filter_by(file_path="/path/to/file.mp4").first()
         assert retrieved is not None
         assert retrieved.status == "pending"
 
     def test_file_queue_status_transitions(self, db_session):
         """Test file queue status transitions"""
-        queue_entry = FileQueue(
-            file_path="/path/to/file.mp4", status="pending", media_type="movie"
-        )
+        queue_entry = FileQueue(file_path="/path/to/file.mp4", status="pending", media_type="movie")
         db_session.add(queue_entry)
         db_session.commit()
 
@@ -509,12 +489,8 @@ class TestFileQueueModel:
 
     def test_file_queue_unique_path(self, db_session):
         """Test unique constraint on file_path"""
-        entry1 = FileQueue(
-            file_path="/path/to/file.mp4", status="pending", media_type="movie"
-        )
-        entry2 = FileQueue(
-            file_path="/path/to/file.mp4", status="pending", media_type="movie"
-        )
+        entry1 = FileQueue(file_path="/path/to/file.mp4", status="pending", media_type="movie")
+        entry2 = FileQueue(file_path="/path/to/file.mp4", status="pending", media_type="movie")
 
         db_session.add(entry1)
         db_session.commit()
@@ -582,9 +558,7 @@ class TestTaskErrorModel:
 
         db_session.commit()
 
-        critical_errors = (
-            db_session.query(TaskError).filter_by(severity="critical").all()
-        )
+        critical_errors = db_session.query(TaskError).filter_by(severity="critical").all()
         assert len(critical_errors) == 1
 
 
@@ -610,9 +584,7 @@ class TestBatchOperationModel:
         db_session.commit()
 
         retrieved = (
-            db_session.query(BatchOperation)
-            .filter_by(operation_type="metadata_sync")
-            .first()
+            db_session.query(BatchOperation).filter_by(operation_type="metadata_sync").first()
         )
         assert retrieved is not None
         assert retrieved.total_items == 100
@@ -696,9 +668,7 @@ class TestModelRelationships:
         db_session.add(episode)
         db_session.commit()
 
-        episode_file = EpisodeFile(
-            episode_id=episode.id, file_path="/path/to/episode.mp4"
-        )
+        episode_file = EpisodeFile(episode_id=episode.id, file_path="/path/to/episode.mp4")
         db_session.add(episode_file)
         db_session.commit()
 
@@ -734,7 +704,4 @@ class TestModelRelationships:
         assert db_session.query(TVShow).filter_by(id=show.id).first() is None
         assert db_session.query(Season).filter_by(show_id=show.id).first() is None
         assert db_session.query(Episode).filter_by(season_id=season.id).first() is None
-        assert (
-            db_session.query(EpisodeFile).filter_by(episode_id=episode.id).first()
-            is None
-        )
+        assert db_session.query(EpisodeFile).filter_by(episode_id=episode.id).first() is None

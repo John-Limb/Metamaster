@@ -270,9 +270,7 @@ async def test_make_request_with_retry_http_error():
         mock_client.get.side_effect = Exception("Connection error")
         mock_client_class.return_value = mock_client
 
-        result = await OMDBService._make_request_with_retry(
-            "http://test.com", max_retries=1
-        )
+        result = await OMDBService._make_request_with_retry("http://test.com", max_retries=1)
 
         # Should return None after retries exhausted
         assert result is None

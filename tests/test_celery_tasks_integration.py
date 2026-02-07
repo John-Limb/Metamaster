@@ -204,9 +204,7 @@ class TestTaskErrorHandling:
         db_session.refresh(error)
 
         # Verify error is persisted
-        retrieved = (
-            db_session.query(TaskError).filter(TaskError.task_id == "task-123").first()
-        )
+        retrieved = db_session.query(TaskError).filter(TaskError.task_id == "task-123").first()
         assert retrieved is not None
         assert retrieved.severity == "critical"
 
@@ -597,9 +595,7 @@ class TestTaskResultBackend:
         db_session.add(error)
         db_session.commit()
 
-        retrieved = (
-            db_session.query(TaskError).filter(TaskError.task_id == "task-456").first()
-        )
+        retrieved = db_session.query(TaskError).filter(TaskError.task_id == "task-456").first()
 
         assert retrieved is not None
         assert retrieved.task_name == "app.tasks.enrich_metadata"

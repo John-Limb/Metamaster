@@ -108,11 +108,7 @@ class TestTaskErrorEndpoints:
         # Get first error ID
         db = SessionLocal()
         try:
-            error = (
-                db.query(TaskError)
-                .filter(TaskError.task_id == self.test_errors[0])
-                .first()
-            )
+            error = db.query(TaskError).filter(TaskError.task_id == self.test_errors[0]).first()
             assert error is not None
             error_id = error.id
         finally:
@@ -170,11 +166,7 @@ class TestTaskErrorEndpoints:
         # Get first error ID
         db = SessionLocal()
         try:
-            error = (
-                db.query(TaskError)
-                .filter(TaskError.task_id == self.test_errors[0])
-                .first()
-            )
+            error = db.query(TaskError).filter(TaskError.task_id == self.test_errors[0]).first()
             assert error is not None
             error_id = error.id
         finally:
@@ -201,9 +193,7 @@ class TestTaskErrorEndpoints:
         if len(items) > 1:
             # Verify items are ordered by created_at descending
             for i in range(len(items) - 1):
-                current_time = datetime.fromisoformat(
-                    items[i]["created_at"].replace("Z", "+00:00")
-                )
+                current_time = datetime.fromisoformat(items[i]["created_at"].replace("Z", "+00:00"))
                 next_time = datetime.fromisoformat(
                     items[i + 1]["created_at"].replace("Z", "+00:00")
                 )
@@ -270,9 +260,7 @@ class TestTaskErrorIntegration:
         assert response_critical.status_code == 200
         critical_data = response_critical.json()
 
-        critical_found = any(
-            item["task_id"] == "critical-test" for item in critical_data["items"]
-        )
+        critical_found = any(item["task_id"] == "critical-test" for item in critical_data["items"])
         assert critical_found
 
         # Get warning errors
@@ -280,9 +268,7 @@ class TestTaskErrorIntegration:
         assert response_warning.status_code == 200
         warning_data = response_warning.json()
 
-        warning_found = any(
-            item["task_id"] == "warning-test" for item in warning_data["items"]
-        )
+        warning_found = any(item["task_id"] == "warning-test" for item in warning_data["items"])
         assert warning_found
 
 
