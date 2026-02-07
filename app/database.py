@@ -4,7 +4,6 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import StaticPool, QueuePool
 from app.config import settings
-from app.services.db_optimization import DatabaseOptimizationService
 import logging
 import time
 
@@ -41,10 +40,21 @@ else:
         pool_timeout=settings.db_pool_timeout,
     )
 
+
 # Setup query logging and pool monitoring if enabled
-if settings.db_query_logging_enabled:
-    DatabaseOptimizationService.setup_query_logging(engine)
-    DatabaseOptimizationService.setup_pool_monitoring(engine)
+# Import here to avoid circular dependency
+def _setup_db_optimization():
+    """Setup database optimization - called after models are loaded"""
+    try:
+        if settings.db_query_logging_enabled:
+            from app.services.db_optimization import DatabaseOptimizationService
+
+            DatabaseOptimizationService.setup_query_logging(engine)
+            DatabaseOptimizationService.setup_pool_monitoring(engine)
+    except ImportError:
+        # If db_optimization cannot be imported, continue without it
+        logger.debug("Database optimization setup skipped")
+
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
