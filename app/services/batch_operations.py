@@ -34,7 +34,7 @@ class BatchOperationService:
 
     def __init__(self, db: Session):
         """Initialize batch operation service
-        
+
         Args:
             db: SQLAlchemy database session
         """
@@ -48,12 +48,12 @@ class BatchOperationService:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> BatchOperation:
         """Create a new batch operation
-        
+
         Args:
             operation_type: Type of operation (metadata_sync, file_import)
             total_items: Total number of items to process
             metadata: Optional operation-specific metadata
-            
+
         Returns:
             Created BatchOperation instance
         """
@@ -69,19 +69,23 @@ class BatchOperationService:
         self.db.add(batch_op)
         self.db.commit()
         self.db.refresh(batch_op)
-        logger.info(f"Created batch operation {batch_op.id} of type {operation_type} with {total_items} items")
+        logger.info(
+            f"Created batch operation {batch_op.id} of type {operation_type} with {total_items} items"
+        )
         return batch_op
 
     def get_batch_operation(self, batch_id: int) -> Optional[BatchOperation]:
         """Get batch operation by ID
-        
+
         Args:
             batch_id: Batch operation ID
-            
+
         Returns:
             BatchOperation instance or None if not found
         """
-        return self.db.query(BatchOperation).filter(BatchOperation.id == batch_id).first()
+        return (
+            self.db.query(BatchOperation).filter(BatchOperation.id == batch_id).first()
+        )
 
     def list_batch_operations(
         self,
@@ -91,13 +95,13 @@ class BatchOperationService:
         offset: int = 0,
     ) -> Tuple[List[BatchOperation], int]:
         """List batch operations with optional filtering
-        
+
         Args:
             operation_type: Filter by operation type
             status: Filter by status
             limit: Number of items to return
             offset: Offset from start
-            
+
         Returns:
             Tuple of (list of BatchOperation instances, total count)
         """
@@ -110,7 +114,12 @@ class BatchOperationService:
             query = query.filter(BatchOperation.status == status)
 
         total = query.count()
-        operations = query.order_by(BatchOperation.created_at.desc()).offset(offset).limit(limit).all()
+        operations = (
+            query.order_by(BatchOperation.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
         return operations, total
 
@@ -122,13 +131,13 @@ class BatchOperationService:
         error_message: Optional[str] = None,
     ) -> Optional[BatchOperation]:
         """Update batch operation progress
-        
+
         Args:
             batch_id: Batch operation ID
             completed_items: Number of completed items
             failed_items: Number of failed items
             error_message: Optional error message
-            
+
         Returns:
             Updated BatchOperation instance or None if not found
         """
@@ -142,7 +151,9 @@ class BatchOperationService:
         # Calculate progress percentage
         total_processed = completed_items + failed_items
         if batch_op.total_items > 0:
-            batch_op.progress_percentage = (total_processed / batch_op.total_items) * 100.0
+            batch_op.progress_percentage = (
+                total_processed / batch_op.total_items
+            ) * 100.0
 
         # Calculate ETA
         if batch_op.started_at and total_processed > 0:
@@ -170,10 +181,10 @@ class BatchOperationService:
 
     def start_batch_operation(self, batch_id: int) -> Optional[BatchOperation]:
         """Mark batch operation as started
-        
+
         Args:
             batch_id: Batch operation ID
-            
+
         Returns:
             Updated BatchOperation instance or None if not found
         """
@@ -192,10 +203,10 @@ class BatchOperationService:
 
     def complete_batch_operation(self, batch_id: int) -> Optional[BatchOperation]:
         """Mark batch operation as completed
-        
+
         Args:
             batch_id: Batch operation ID
-            
+
         Returns:
             Updated BatchOperation instance or None if not found
         """
@@ -213,13 +224,15 @@ class BatchOperationService:
         logger.info(f"Completed batch operation {batch_id}")
         return batch_op
 
-    def fail_batch_operation(self, batch_id: int, error_message: str) -> Optional[BatchOperation]:
+    def fail_batch_operation(
+        self, batch_id: int, error_message: str
+    ) -> Optional[BatchOperation]:
         """Mark batch operation as failed
-        
+
         Args:
             batch_id: Batch operation ID
             error_message: Error message
-            
+
         Returns:
             Updated BatchOperation instance or None if not found
         """
@@ -239,10 +252,10 @@ class BatchOperationService:
 
     def cancel_batch_operation(self, batch_id: int) -> Optional[BatchOperation]:
         """Cancel batch operation
-        
+
         Args:
             batch_id: Batch operation ID
-            
+
         Returns:
             Updated BatchOperation instance or None if not found
         """
@@ -266,12 +279,12 @@ class BatchOperationService:
         media_type: str,
     ) -> Dict[str, Any]:
         """Perform bulk metadata sync for multiple items
-        
+
         Args:
             batch_id: Batch operation ID
             media_ids: List of media IDs to sync
             media_type: Type of media ("movie" or "tv_show")
-            
+
         Returns:
             Dictionary with sync results
         """
@@ -297,7 +310,9 @@ class BatchOperationService:
                         completed += 1
                     else:
                         failed += 1
-                        errors.append(f"Item {media_id}: {result.get('error', 'Unknown error')}")
+                        errors.append(
+                            f"Item {media_id}: {result.get('error', 'Unknown error')}"
+                        )
 
                 except Exception as e:
                     failed += 1
@@ -333,10 +348,10 @@ class BatchOperationService:
 
     async def _sync_movie_metadata(self, movie_id: int) -> Dict[str, Any]:
         """Sync metadata for a single movie
-        
+
         Args:
             movie_id: Movie ID
-            
+
         Returns:
             Dictionary with sync result
         """
@@ -368,10 +383,10 @@ class BatchOperationService:
 
     async def _sync_tvshow_metadata(self, show_id: int) -> Dict[str, Any]:
         """Sync metadata for a single TV show
-        
+
         Args:
             show_id: TV show ID
-            
+
         Returns:
             Dictionary with sync result
         """
@@ -408,12 +423,12 @@ class BatchOperationService:
         media_type: str,
     ) -> Dict[str, Any]:
         """Perform bulk file import for multiple files
-        
+
         Args:
             batch_id: Batch operation ID
             file_paths: List of file paths to import
             media_type: Type of media ("movie" or "tv_show")
-            
+
         Returns:
             Dictionary with import results
         """
@@ -439,7 +454,9 @@ class BatchOperationService:
                     metadata = self.ffprobe.get_metadata(file_path)
                     if "error" in metadata:
                         failed += 1
-                        errors.append(f"Failed to analyze {file_path}: {metadata['error']}")
+                        errors.append(
+                            f"Failed to analyze {file_path}: {metadata['error']}"
+                        )
                         continue
 
                     # Store file metadata (implementation depends on your file storage strategy)
@@ -447,8 +464,12 @@ class BatchOperationService:
                         "path": file_path,
                         "size": os.path.getsize(file_path),
                         "resolution": f"{metadata.get('resolution', {}).get('width', 0)}x{metadata.get('resolution', {}).get('height', 0)}",
-                        "codec_video": metadata.get("codecs", {}).get("video", "Unknown"),
-                        "codec_audio": metadata.get("codecs", {}).get("audio", "Unknown"),
+                        "codec_video": metadata.get("codecs", {}).get(
+                            "video", "Unknown"
+                        ),
+                        "codec_audio": metadata.get("codecs", {}).get(
+                            "audio", "Unknown"
+                        ),
                         "duration": metadata.get("duration", -1),
                         "bitrate": metadata.get("bitrate", {}).get("total", "Unknown"),
                     }
@@ -491,10 +512,10 @@ class BatchOperationService:
 
     def get_batch_metadata(self, batch_id: int) -> Optional[Dict[str, Any]]:
         """Get operation-specific metadata for a batch
-        
+
         Args:
             batch_id: Batch operation ID
-            
+
         Returns:
             Dictionary with metadata or None if not found
         """
@@ -510,11 +531,11 @@ class BatchOperationService:
 
     def set_batch_metadata(self, batch_id: int, metadata: Dict[str, Any]) -> bool:
         """Set operation-specific metadata for a batch
-        
+
         Args:
             batch_id: Batch operation ID
             metadata: Metadata dictionary
-            
+
         Returns:
             True if successful, False otherwise
         """

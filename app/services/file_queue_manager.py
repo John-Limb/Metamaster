@@ -25,7 +25,12 @@ class FileQueueManager:
     STATUS_COMPLETED = "completed"
     STATUS_FAILED = "failed"
 
-    VALID_STATUSES = {STATUS_PENDING, STATUS_PROCESSING, STATUS_COMPLETED, STATUS_FAILED}
+    VALID_STATUSES = {
+        STATUS_PENDING,
+        STATUS_PROCESSING,
+        STATUS_COMPLETED,
+        STATUS_FAILED,
+    }
 
     def __init__(self, session: Optional[Session] = None):
         """
@@ -64,13 +69,17 @@ class FileQueueManager:
             raise ValueError("file_path cannot be empty")
 
         if file_type not in ("movie", "tv_show"):
-            raise ValueError(f"file_type must be 'movie' or 'tv_show', got '{file_type}'")
+            raise ValueError(
+                f"file_type must be 'movie' or 'tv_show', got '{file_type}'"
+            )
 
         try:
             # Check for duplicate
-            existing = self.session.query(FileQueue).filter(
-                FileQueue.file_path == file_path
-            ).first()
+            existing = (
+                self.session.query(FileQueue)
+                .filter(FileQueue.file_path == file_path)
+                .first()
+            )
 
             if existing:
                 logger.warning(f"File already in queue: {file_path}")
@@ -131,7 +140,9 @@ class FileQueueManager:
                     continue
 
                 if file_type not in ("movie", "tv_show"):
-                    logger.warning(f"Skipping entry with invalid file_type: {file_type}")
+                    logger.warning(
+                        f"Skipping entry with invalid file_type: {file_type}"
+                    )
                     continue
 
                 # Check for duplicate within this batch
@@ -140,9 +151,11 @@ class FileQueueManager:
                     continue
 
                 # Check for duplicate in database
-                existing = self.session.query(FileQueue).filter(
-                    FileQueue.file_path == file_path
-                ).first()
+                existing = (
+                    self.session.query(FileQueue)
+                    .filter(FileQueue.file_path == file_path)
+                    .first()
+                )
 
                 if existing:
                     logger.warning(f"File already in queue, skipping: {file_path}")
@@ -164,9 +177,9 @@ class FileQueueManager:
             # Add all new entries and flush to get IDs
             for entry in entries_to_add:
                 self.session.add(entry)
-            
+
             self.session.flush()
-            
+
             # Collect IDs from newly added entries
             for entry in entries_to_add:
                 queue_ids.append(entry.id)
@@ -235,9 +248,9 @@ class FileQueueManager:
             RuntimeError: If database operation fails
         """
         try:
-            queue_entry = self.session.query(FileQueue).filter(
-                FileQueue.id == queue_id
-            ).first()
+            queue_entry = (
+                self.session.query(FileQueue).filter(FileQueue.id == queue_id).first()
+            )
 
             if not queue_entry:
                 logger.warning(f"Queue entry not found: {queue_id}")
@@ -271,9 +284,9 @@ class FileQueueManager:
             RuntimeError: If database operation fails
         """
         try:
-            queue_entry = self.session.query(FileQueue).filter(
-                FileQueue.id == queue_id
-            ).first()
+            queue_entry = (
+                self.session.query(FileQueue).filter(FileQueue.id == queue_id).first()
+            )
 
             if not queue_entry:
                 logger.warning(f"Queue entry not found: {queue_id}")
@@ -311,9 +324,9 @@ class FileQueueManager:
             raise ValueError("error_message cannot be empty")
 
         try:
-            queue_entry = self.session.query(FileQueue).filter(
-                FileQueue.id == queue_id
-            ).first()
+            queue_entry = (
+                self.session.query(FileQueue).filter(FileQueue.id == queue_id).first()
+            )
 
             if not queue_entry:
                 logger.warning(f"Queue entry not found: {queue_id}")
@@ -324,7 +337,9 @@ class FileQueueManager:
             queue_entry.processed_at = datetime.utcnow()
             self.session.commit()
 
-            logger.warning(f"Marked queue entry as failed: {queue_id} - {error_message}")
+            logger.warning(
+                f"Marked queue entry as failed: {queue_id} - {error_message}"
+            )
             return True
 
         except Exception as e:
@@ -346,9 +361,9 @@ class FileQueueManager:
             RuntimeError: If database operation fails or entry not found
         """
         try:
-            queue_entry = self.session.query(FileQueue).filter(
-                FileQueue.id == queue_id
-            ).first()
+            queue_entry = (
+                self.session.query(FileQueue).filter(FileQueue.id == queue_id).first()
+            )
 
             if not queue_entry:
                 raise RuntimeError(f"Queue entry not found: {queue_id}")
@@ -381,18 +396,26 @@ class FileQueueManager:
         """
         try:
             total = self.session.query(FileQueue).count()
-            pending = self.session.query(FileQueue).filter(
-                FileQueue.status == self.STATUS_PENDING
-            ).count()
-            processing = self.session.query(FileQueue).filter(
-                FileQueue.status == self.STATUS_PROCESSING
-            ).count()
-            completed = self.session.query(FileQueue).filter(
-                FileQueue.status == self.STATUS_COMPLETED
-            ).count()
-            failed = self.session.query(FileQueue).filter(
-                FileQueue.status == self.STATUS_FAILED
-            ).count()
+            pending = (
+                self.session.query(FileQueue)
+                .filter(FileQueue.status == self.STATUS_PENDING)
+                .count()
+            )
+            processing = (
+                self.session.query(FileQueue)
+                .filter(FileQueue.status == self.STATUS_PROCESSING)
+                .count()
+            )
+            completed = (
+                self.session.query(FileQueue)
+                .filter(FileQueue.status == self.STATUS_COMPLETED)
+                .count()
+            )
+            failed = (
+                self.session.query(FileQueue)
+                .filter(FileQueue.status == self.STATUS_FAILED)
+                .count()
+            )
 
             return {
                 "total": total,
@@ -424,9 +447,11 @@ class FileQueueManager:
             raise ValueError("file_path cannot be empty")
 
         try:
-            existing = self.session.query(FileQueue).filter(
-                FileQueue.file_path == file_path
-            ).first()
+            existing = (
+                self.session.query(FileQueue)
+                .filter(FileQueue.file_path == file_path)
+                .first()
+            )
 
             return existing is not None
 
@@ -448,9 +473,9 @@ class FileQueueManager:
             RuntimeError: If database operation fails
         """
         try:
-            queue_entry = self.session.query(FileQueue).filter(
-                FileQueue.id == queue_id
-            ).first()
+            queue_entry = (
+                self.session.query(FileQueue).filter(FileQueue.id == queue_id).first()
+            )
 
             if not queue_entry:
                 logger.warning(f"Queue entry not found: {queue_id}")
@@ -508,7 +533,9 @@ class FileQueueManager:
 
             self.session.commit()
 
-            logger.info(f"Cleared {deleted_count} completed files older than {days_old} days")
+            logger.info(
+                f"Cleared {deleted_count} completed files older than {days_old} days"
+            )
             return deleted_count
 
         except Exception as e:

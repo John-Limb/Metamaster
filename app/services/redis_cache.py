@@ -19,7 +19,7 @@ class RedisCacheService:
     TV_SHOW_PREFIX = "tvshow:"
     TV_SHOW_LIST_PREFIX = "tvshows:list:"
     STATS_PREFIX = "cache:stats:"
-    
+
     # Default TTLs (in seconds)
     DEFAULT_TTL = 3600  # 1 hour
     MOVIE_TTL = 86400  # 24 hours
@@ -55,10 +55,10 @@ class RedisCacheService:
     def get(self, key: str) -> Optional[Any]:
         """
         Get a value from cache
-        
+
         Args:
             key: Cache key
-            
+
         Returns:
             Cached value or None if not found/expired
         """
@@ -88,12 +88,12 @@ class RedisCacheService:
     def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """
         Set a value in cache
-        
+
         Args:
             key: Cache key
             value: Value to cache (will be JSON serialized)
             ttl: Time to live in seconds (uses DEFAULT_TTL if not specified)
-            
+
         Returns:
             True if successful, False otherwise
         """
@@ -107,7 +107,7 @@ class RedisCacheService:
 
             # Serialize value to JSON
             serialized_value = json.dumps(value)
-            
+
             # Set with expiration
             self.redis_client.setex(key, ttl, serialized_value)
             logger.debug(f"Cache set for key: {key} with TTL: {ttl}s")
@@ -119,10 +119,10 @@ class RedisCacheService:
     def delete(self, key: str) -> bool:
         """
         Delete a key from cache
-        
+
         Args:
             key: Cache key to delete
-            
+
         Returns:
             True if key was deleted, False otherwise
         """
@@ -141,10 +141,10 @@ class RedisCacheService:
     def delete_pattern(self, pattern: str) -> int:
         """
         Delete all keys matching a pattern
-        
+
         Args:
             pattern: Key pattern (e.g., "movie:*")
-            
+
         Returns:
             Number of keys deleted
         """
@@ -166,7 +166,7 @@ class RedisCacheService:
     def clear_all(self) -> bool:
         """
         Clear all cache
-        
+
         Returns:
             True if successful, False otherwise
         """
@@ -185,7 +185,7 @@ class RedisCacheService:
     def get_stats(self) -> Dict[str, Any]:
         """
         Get cache statistics
-        
+
         Returns:
             Dictionary with cache statistics
         """
@@ -203,7 +203,7 @@ class RedisCacheService:
         try:
             info = self.redis_client.info()
             keys = self.redis_client.keys("*")
-            
+
             total_hits = self._get_stat("total_hits", 0)
             total_misses = self._get_stat("total_misses", 0)
             total_requests = total_hits + total_misses
@@ -284,11 +284,11 @@ class RedisCacheService:
     def warmup_cache(self, movies: list, tv_shows: list) -> Dict[str, int]:
         """
         Pre-populate cache with frequently accessed data
-        
+
         Args:
             movies: List of movie objects to cache
             tv_shows: List of TV show objects to cache
-            
+
         Returns:
             Dictionary with count of cached items
         """
@@ -331,7 +331,9 @@ class RedisCacheService:
                 if self.set(key, show_dict, ttl=self.TV_SHOW_TTL):
                     tv_show_count += 1
 
-            logger.info(f"Cache warmup completed: {movie_count} movies, {tv_show_count} TV shows")
+            logger.info(
+                f"Cache warmup completed: {movie_count} movies, {tv_show_count} TV shows"
+            )
             return {"movies": movie_count, "tv_shows": tv_show_count}
         except Exception as e:
             logger.error(f"Error during cache warmup: {e}")

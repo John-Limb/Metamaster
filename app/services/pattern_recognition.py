@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ClassificationResult:
     """Data class for classification results"""
+
     type: str  # "movie" or "tv_show"
     title: Optional[str] = None
     show_name: Optional[str] = None
@@ -28,7 +29,7 @@ class ClassificationResult:
             "confidence": self.confidence,
             "pattern_matched": self.pattern_matched,
         }
-        
+
         if self.title:
             result["title"] = self.title
         if self.show_name:
@@ -39,7 +40,7 @@ class ClassificationResult:
             result["season"] = self.season
         if self.episode is not None:
             result["episode"] = self.episode
-            
+
         return result
 
 
@@ -49,21 +50,21 @@ class PatternRecognitionService:
     # Regex patterns for TV show detection
     TV_SHOW_PATTERNS = [
         # Standard format: S01E01, s01e01, etc. (with optional separators before)
-        r'[._-]?[Ss](\d{1,2})[._-]?[Ee](\d{1,2})',
+        r"[._-]?[Ss](\d{1,2})[._-]?[Ee](\d{1,2})",
         # Format: Season 1 Episode 1
-        r'[Ss]eason\s+(\d{1,2})\s+[Ee]pisode\s+(\d{1,2})',
+        r"[Ss]eason\s+(\d{1,2})\s+[Ee]pisode\s+(\d{1,2})",
         # Format: 1x01, 1x1
-        r'(\d{1,2})x(\d{1,2})',
+        r"(\d{1,2})x(\d{1,2})",
     ]
 
     # Regex patterns for movie detection (Title Year)
     MOVIE_PATTERNS = [
         # Format: Title (Year) or Title [Year]
-        r'(.+?)\s*[\(\[](\d{4})[\)\]]',
+        r"(.+?)\s*[\(\[](\d{4})[\)\]]",
         # Format: Title Year (with various separators, including dots/hyphens/underscores)
-        r'(.+?)[._-](\d{4})(?:[._-]|$)',
+        r"(.+?)[._-](\d{4})(?:[._-]|$)",
         # Format: Title Year (space separated)
-        r'(.+?)\s+(\d{4})\s*(?:\.|$)',
+        r"(.+?)\s+(\d{4})\s*(?:\.|$)",
     ]
 
     def __init__(self):
@@ -116,7 +117,7 @@ class PatternRecognitionService:
         """
         base_name = Path(filename).stem
         result = self._match_movie_pattern(base_name)
-        
+
         if result:
             return {
                 "title": result.title,
@@ -137,7 +138,7 @@ class PatternRecognitionService:
         """
         base_name = Path(filename).stem
         result = self._match_tv_show_pattern(base_name)
-        
+
         if result:
             return {
                 "show_name": result.show_name,
@@ -187,13 +188,13 @@ class PatternRecognitionService:
             match = regex.search(filename)
             if match:
                 season, episode = self._extract_season_episode(match, pattern_idx)
-                
+
                 # Extract show name (everything before the season/episode indicator)
                 show_name = self._extract_show_name_from_tv(filename, match)
-                
+
                 confidence = "high" if season and episode else "medium"
                 pattern_name = self._get_tv_pattern_name(pattern_idx)
-                
+
                 return ClassificationResult(
                     type="tv_show",
                     show_name=show_name,
@@ -202,7 +203,7 @@ class PatternRecognitionService:
                     confidence=confidence,
                     pattern_matched=pattern_name,
                 )
-        
+
         return None
 
     def _match_movie_pattern(self, filename: str) -> Optional[ClassificationResult]:
@@ -219,14 +220,14 @@ class PatternRecognitionService:
             match = regex.search(filename)
             if match:
                 title, year = self._extract_title_year(match, pattern_idx)
-                
+
                 # Validate year is reasonable (between 1800 and current year + 10)
                 if year and (year < 1800 or year > 2100):
                     continue
-                
+
                 confidence = "high" if year else "medium"
                 pattern_name = self._get_movie_pattern_name(pattern_idx)
-                
+
                 return ClassificationResult(
                     type="movie",
                     title=title,
@@ -234,7 +235,7 @@ class PatternRecognitionService:
                     confidence=confidence,
                     pattern_matched=pattern_name,
                 )
-        
+
         return None
 
     def _fallback_classification(self, filename: str) -> ClassificationResult:
@@ -248,14 +249,16 @@ class PatternRecognitionService:
             ClassificationResult with fallback classification
         """
         # Check for any season/episode indicators
-        if re.search(r'[Ss]eason|[Ee]pisode|[Ss]\d{1,2}[Ee]\d{1,2}|\d{1,2}x\d{1,2}', filename):
+        if re.search(
+            r"[Ss]eason|[Ee]pisode|[Ss]\d{1,2}[Ee]\d{1,2}|\d{1,2}x\d{1,2}", filename
+        ):
             return ClassificationResult(
                 type="tv_show",
                 show_name=self._clean_filename(filename),
                 confidence="low",
                 pattern_matched="fallback_tv_indicators",
             )
-        
+
         # Default to movie classification
         return ClassificationResult(
             type="movie",
@@ -264,7 +267,9 @@ class PatternRecognitionService:
             pattern_matched="fallback_default",
         )
 
-    def _extract_season_episode(self, match, pattern_idx: int) -> Tuple[Optional[int], Optional[int]]:
+    def _extract_season_episode(
+        self, match, pattern_idx: int
+    ) -> Tuple[Optional[int], Optional[int]]:
         """
         Extract season and episode numbers from regex match.
 
@@ -282,7 +287,9 @@ class PatternRecognitionService:
         except (IndexError, ValueError):
             return None, None
 
-    def _extract_title_year(self, match, pattern_idx: int) -> Tuple[Optional[str], Optional[int]]:
+    def _extract_title_year(
+        self, match, pattern_idx: int
+    ) -> Tuple[Optional[str], Optional[int]]:
         """
         Extract title and year from regex match.
 
@@ -297,10 +304,10 @@ class PatternRecognitionService:
             title = match.group(1).strip()
             year_str = match.group(2)
             year = int(year_str) if year_str else None
-            
+
             # Clean up title
             title = self._clean_title(title)
-            
+
             return title, year
         except (IndexError, ValueError):
             return None, None
@@ -318,13 +325,13 @@ class PatternRecognitionService:
         """
         # Get the position where the match starts
         match_start = match.start()
-        
+
         # Extract everything before the match
         show_name = filename[:match_start].strip()
-        
+
         # Clean up the show name
         show_name = self._clean_filename(show_name)
-        
+
         return show_name if show_name else "Unknown"
 
     def _clean_title(self, title: str) -> str:
@@ -338,9 +345,9 @@ class PatternRecognitionService:
             Cleaned title
         """
         # Replace common separators with spaces
-        title = re.sub(r'[._-]+', ' ', title)
+        title = re.sub(r"[._-]+", " ", title)
         # Remove extra whitespace
-        title = re.sub(r'\s+', ' ', title).strip()
+        title = re.sub(r"\s+", " ", title).strip()
         return title
 
     def _clean_filename(self, filename: str) -> str:
@@ -354,9 +361,9 @@ class PatternRecognitionService:
             Cleaned filename
         """
         # Replace common separators with spaces
-        filename = re.sub(r'[._-]+', ' ', filename)
+        filename = re.sub(r"[._-]+", " ", filename)
         # Remove extra whitespace
-        filename = re.sub(r'\s+', ' ', filename).strip()
+        filename = re.sub(r"\s+", " ", filename).strip()
         return filename
 
     def _get_tv_pattern_name(self, pattern_idx: int) -> str:

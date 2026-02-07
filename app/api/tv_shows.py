@@ -47,20 +47,20 @@ async def list_tv_shows(
     - **skip**: Offset from start (default: 0)
     """
     cache_service = get_cache_service()
-    
+
     # Build cache key including all filter parameters
     cache_key = (
         f"{cache_service.TV_SHOW_LIST_PREFIX}"
         f"genre={genre}:min_rating={min_rating}:max_rating={max_rating}:"
         f"sort_by={sort_by}:limit={limit}:skip={skip}"
     )
-    
+
     # Try to get from cache
     cached_result = cache_service.get(cache_key)
     if cached_result:
         logger.debug(f"Returning cached TV show list with filters")
         return cached_result
-    
+
     # Create search filters
     filters = SearchFilters(
         genre=genre,
@@ -71,15 +71,15 @@ async def list_tv_shows(
         skip=skip,
         limit=limit,
     )
-    
+
     # Validate filters
     is_valid, error_msg = filters.validate()
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
-    
+
     # Perform search
     shows, total = TVShowSearchService.search(db, filters)
-    
+
     # Build applied filters dict
     applied_filters = {}
     if genre:
@@ -88,7 +88,7 @@ async def list_tv_shows(
         applied_filters["min_rating"] = min_rating
     if max_rating is not None:
         applied_filters["max_rating"] = max_rating
-    
+
     result = {
         "items": shows,
         "total": total,
@@ -98,12 +98,12 @@ async def list_tv_shows(
             "applied_filters": applied_filters,
             "sort_by": sort_by,
             "total_results": total,
-        }
+        },
     }
-    
+
     # Cache the result
     cache_service.set(cache_key, result, ttl=cache_service.LIST_TTL)
-    
+
     return result
 
 
@@ -115,20 +115,20 @@ async def get_tv_show(
     """Get a specific TV show by ID"""
     cache_service = get_cache_service()
     cache_key = f"{cache_service.TV_SHOW_PREFIX}{show_id}"
-    
+
     # Try to get from cache
     cached_show = cache_service.get(cache_key)
     if cached_show:
         logger.debug(f"Returning cached TV show: {show_id}")
         return cached_show
-    
+
     show = TVShowService.get_tv_show_by_id(db, show_id)
     if not show:
         raise HTTPException(status_code=404, detail="TV show not found")
-    
+
     # Cache the result
     cache_service.set(cache_key, show, ttl=cache_service.TV_SHOW_TTL)
-    
+
     return show
 
 
@@ -172,7 +172,9 @@ async def get_tv_show_seasons(
     }
 
 
-@router.get("/{show_id}/seasons/{season_id}/episodes", response_model=PaginatedEpisodeResponse)
+@router.get(
+    "/{show_id}/seasons/{season_id}/episodes", response_model=PaginatedEpisodeResponse
+)
 async def get_season_episodes(
     show_id: int,
     season_id: int,
@@ -192,8 +194,7 @@ async def get_season_episodes(
         db, show_id=show_id, season_id=season_id, limit=limit, offset=offset
     )
     if episodes is None:
-        raise HTTPException(
-            status_code=404, detail="TV show or season not found")
+        raise HTTPException(status_code=404, detail="TV show or season not found")
 
     return {
         "items": episodes,
@@ -210,12 +211,12 @@ async def create_tv_show(
 ):
     """Create a new TV show"""
     show = TVShowService.create_tv_show(db, show_data)
-    
+
     # Invalidate TV show list cache
     cache_service = get_cache_service()
     cache_service.delete_pattern(f"{cache_service.TV_SHOW_LIST_PREFIX}*")
     logger.debug("Invalidated TV show list cache after create")
-    
+
     return show
 
 
@@ -229,12 +230,12 @@ async def update_tv_show(
     show = TVShowService.update_tv_show(db, show_id, show_data)
     if not show:
         raise HTTPException(status_code=404, detail="TV show not found")
-    
+
     # Invalidate cache for this TV show and TV show lists
     cache_service = get_cache_service()
     cache_service.invalidate_tv_show(show_id)
     logger.debug(f"Invalidated cache for TV show {show_id} after update")
-    
+
     return show
 
 
@@ -247,12 +248,12 @@ async def delete_tv_show(
     success = TVShowService.delete_tv_show(db, show_id)
     if not success:
         raise HTTPException(status_code=404, detail="TV show not found")
-    
+
     # Invalidate cache for this TV show and TV show lists
     cache_service = get_cache_service()
     cache_service.invalidate_tv_show(show_id)
     logger.debug(f"Invalidated cache for TV show {show_id} after delete")
-    
+
     return None
 
 
@@ -263,16 +264,16 @@ async def sync_tv_show_metadata(
 ):
     """
     Fetch TV show metadata from TVDB and update the TV show record.
-    
+
     This endpoint:
     1. Retrieves the TV show from the database
     2. Fetches updated metadata from TVDB using the show's TVDB ID
     3. Updates the TV show record with new metadata
     4. Returns the updated TV show information
-    
+
     Parameters:
     - **show_id**: ID of the TV show to sync
-    
+
     Returns:
     - **success**: Whether sync was successful
     - **message**: Operation message
@@ -285,71 +286,68 @@ async def sync_tv_show_metadata(
         show = TVShowService.get_tv_show_by_id(db, show_id)
         if not show:
             raise HTTPException(status_code=404, detail="TV show not found")
-        
+
         # Check if show has TVDB ID
         if not show.tvdb_id:
             raise HTTPException(
                 status_code=400,
-                detail="TV show does not have a TVDB ID. Cannot sync metadata."
+                detail="TV show does not have a TVDB ID. Cannot sync metadata.",
             )
-        
+
         logger.info(f"Syncing metadata for TV show {show_id} (TVDB ID: {show.tvdb_id})")
-        
+
         # Fetch metadata from TVDB
         tvdb_data = await TVDBService.get_series_details(db, show.tvdb_id)
         if not tvdb_data:
             raise HTTPException(
                 status_code=500,
-                detail="Failed to fetch metadata from TVDB. Please try again later."
+                detail="Failed to fetch metadata from TVDB. Please try again later.",
             )
-        
+
         # Parse TVDB response
         parsed_data = TVDBService.parse_tvdb_series_response(tvdb_data)
         if not parsed_data:
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to parse TVDB response"
-            )
-        
+            raise HTTPException(status_code=500, detail="Failed to parse TVDB response")
+
         # Track which fields were updated
         updated_fields = []
         old_values = {}
-        
+
         # Update TV show fields
         if "title" in parsed_data and parsed_data["title"] != show.title:
             old_values["title"] = show.title
             show.title = parsed_data["title"]
             updated_fields.append("title")
-        
+
         if "plot" in parsed_data and parsed_data["plot"] != show.plot:
             old_values["plot"] = show.plot
             show.plot = parsed_data["plot"]
             updated_fields.append("plot")
-        
+
         if "rating" in parsed_data and parsed_data["rating"] != show.rating:
             old_values["rating"] = show.rating
             show.rating = parsed_data["rating"]
             updated_fields.append("rating")
-        
+
         if "status" in parsed_data and parsed_data["status"] != show.status:
             old_values["status"] = show.status
             show.status = parsed_data["status"]
             updated_fields.append("status")
-        
+
         if "genres" in parsed_data and parsed_data["genres"] != show.genres:
             old_values["genres"] = show.genres
             show.genres = parsed_data["genres"]
             updated_fields.append("genres")
-        
+
         # Commit changes
         db.commit()
         db.refresh(show)
-        
+
         logger.info(
             f"Successfully synced metadata for TV show {show_id}. "
             f"Updated fields: {', '.join(updated_fields) if updated_fields else 'none'}"
         )
-        
+
         # Prepare response metadata
         response_metadata = {
             "title": show.title,
@@ -359,7 +357,7 @@ async def sync_tv_show_metadata(
             "genres": json.loads(show.genres) if show.genres else [],
             "tvdb_id": show.tvdb_id,
         }
-        
+
         return {
             "success": True,
             "message": f"TV show metadata synced successfully. Updated {len(updated_fields)} field(s).",
@@ -368,12 +366,13 @@ async def sync_tv_show_metadata(
             "updated_fields": updated_fields,
             "metadata": response_metadata,
         }
-    
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error syncing metadata for TV show {show_id}: {e}", exc_info=True)
+        logger.error(
+            f"Error syncing metadata for TV show {show_id}: {e}", exc_info=True
+        )
         raise HTTPException(
-            status_code=500,
-            detail="An error occurred while syncing metadata"
+            status_code=500, detail="An error occurred while syncing metadata"
         )

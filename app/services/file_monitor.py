@@ -17,22 +17,64 @@ class MediaFileEventHandler(FileSystemEventHandler):
     # Comprehensive list of supported media extensions
     MEDIA_EXTENSIONS: Set[str] = {
         # Video formats
-        ".mp4", ".mkv", ".avi", ".mov", ".flv", ".wmv",
-        ".webm", ".m4v", ".ts", ".m2ts", ".mts", ".3gp",
-        ".3g2", ".ogv", ".f4v", ".asf", ".rm", ".rmvb",
-        ".vob", ".divx", ".dv", ".m2v", ".mxf", ".mpeg",
-        ".mpg", ".m1v", ".m2p",
+        ".mp4",
+        ".mkv",
+        ".avi",
+        ".mov",
+        ".flv",
+        ".wmv",
+        ".webm",
+        ".m4v",
+        ".ts",
+        ".m2ts",
+        ".mts",
+        ".3gp",
+        ".3g2",
+        ".ogv",
+        ".f4v",
+        ".asf",
+        ".rm",
+        ".rmvb",
+        ".vob",
+        ".divx",
+        ".dv",
+        ".m2v",
+        ".mxf",
+        ".mpeg",
+        ".mpg",
+        ".m1v",
+        ".m2p",
         # Audio formats
-        ".ogg", ".ogm", ".m4a", ".aac", ".flac", ".wma",
-        ".wav", ".alac", ".ape", ".opus", ".wv", ".tta",
-        ".dsf", ".dff", ".dsd", ".mp2", ".mpa",
+        ".ogg",
+        ".ogm",
+        ".m4a",
+        ".aac",
+        ".flac",
+        ".wma",
+        ".wav",
+        ".alac",
+        ".ape",
+        ".opus",
+        ".wv",
+        ".tta",
+        ".dsf",
+        ".dff",
+        ".dsd",
+        ".mp2",
+        ".mpa",
         # Subtitle formats
-        ".srt", ".ass", ".ssa", ".sub", ".vtt",
+        ".srt",
+        ".ass",
+        ".ssa",
+        ".sub",
+        ".vtt",
         # Container formats
         ".iso",
     }
 
-    def __init__(self, file_queue: List[str], watch_extensions: Optional[List[str]] = None):
+    def __init__(
+        self, file_queue: List[str], watch_extensions: Optional[List[str]] = None
+    ):
         """
         Initialize the event handler.
 
@@ -42,11 +84,11 @@ class MediaFileEventHandler(FileSystemEventHandler):
         """
         super().__init__()
         self.file_queue = file_queue
-        
+
         # Use provided extensions or fall back to config, then to defaults
         if watch_extensions:
             self.extensions = set(ext.lower() for ext in watch_extensions)
-        elif hasattr(settings, 'watch_extensions') and settings.watch_extensions:
+        elif hasattr(settings, "watch_extensions") and settings.watch_extensions:
             self.extensions = set(ext.lower() for ext in settings.watch_extensions)
         else:
             self.extensions = self.MEDIA_EXTENSIONS
@@ -116,7 +158,11 @@ class MediaFileEventHandler(FileSystemEventHandler):
 class FileMonitorService:
     """Service for monitoring media directories using Watchdog"""
 
-    def __init__(self, watch_path: Optional[str] = None, watch_extensions: Optional[List[str]] = None):
+    def __init__(
+        self,
+        watch_path: Optional[str] = None,
+        watch_extensions: Optional[List[str]] = None,
+    ):
         """
         Initialize the file monitor service.
 
@@ -148,22 +194,21 @@ class FileMonitorService:
             # Validate watch path
             watch_path_obj = Path(self.watch_path)
             if not watch_path_obj.exists():
-                logger.warning(f"Watch path does not exist, creating: {self.watch_path}")
+                logger.warning(
+                    f"Watch path does not exist, creating: {self.watch_path}"
+                )
                 watch_path_obj.mkdir(parents=True, exist_ok=True)
 
             try:
                 # Create event handler
                 event_handler = MediaFileEventHandler(
-                    self.file_queue,
-                    self.watch_extensions
+                    self.file_queue, self.watch_extensions
                 )
 
                 # Create and configure observer
                 self.observer = Observer()
                 self.observer.schedule(
-                    event_handler,
-                    path=self.watch_path,
-                    recursive=True
+                    event_handler, path=self.watch_path, recursive=True
                 )
 
                 # Start observer in a separate thread
@@ -213,10 +258,10 @@ class FileMonitorService:
         """
         queued = self.file_queue.copy()
         self.file_queue.clear()
-        
+
         if queued:
             logger.info(f"Retrieved {len(queued)} queued files")
-        
+
         return queued
 
     def peek_queued_files(self) -> List[str]:

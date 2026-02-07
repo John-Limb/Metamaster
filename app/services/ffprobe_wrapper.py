@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ResolutionInfo:
     """Resolution information"""
+
     width: int
     height: int
     label: str
@@ -43,13 +44,14 @@ class FFProbeWrapper:
         """Verify that ffprobe is installed and available on the system"""
         try:
             subprocess.run(
-                ["ffprobe", "-version"],
-                capture_output=True,
-                check=True,
-                timeout=5
+                ["ffprobe", "-version"], capture_output=True, check=True, timeout=5
             )
             logger.info("FFProbe is available on the system")
-        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired) as e:
+        except (
+            subprocess.CalledProcessError,
+            FileNotFoundError,
+            subprocess.TimeoutExpired,
+        ) as e:
             error_msg = (
                 "FFProbe is not installed or not available on the system. "
                 "Please install FFmpeg (which includes ffprobe) to use this service. "
@@ -80,20 +82,24 @@ class FFProbeWrapper:
             result = subprocess.run(
                 [
                     "ffprobe",
-                    "-v", "error",
+                    "-v",
+                    "error",
                     "-show_format",
                     "-show_streams",
-                    "-of", "json",
-                    str(file_path_obj)
+                    "-of",
+                    "json",
+                    str(file_path_obj),
                 ],
                 capture_output=True,
                 text=True,
                 check=True,
-                timeout=30
+                timeout=30,
             )
             return json.loads(result.stdout)
         except subprocess.CalledProcessError as e:
-            error_msg = f"FFProbe failed to process file: {file_path}. Error: {e.stderr}"
+            error_msg = (
+                f"FFProbe failed to process file: {file_path}. Error: {e.stderr}"
+            )
             logger.error(error_msg)
             raise RuntimeError(error_msg) from e
         except json.JSONDecodeError as e:
@@ -144,8 +150,7 @@ class FFProbeWrapper:
 
             # Find video stream
             video_stream = next(
-                (s for s in streams if s.get("codec_type") == "video"),
-                None
+                (s for s in streams if s.get("codec_type") == "video"), None
             )
 
             if not video_stream:
@@ -160,11 +165,7 @@ class FFProbeWrapper:
             # Determine resolution label
             label = self._get_resolution_label(width, height)
 
-            return {
-                "width": width,
-                "height": height,
-                "label": label
-            }
+            return {"width": width, "height": height, "label": label}
         except (FileNotFoundError, RuntimeError) as e:
             return {"error": str(e)}
 
@@ -185,7 +186,7 @@ class FFProbeWrapper:
 
         # Check for common aspect ratios with height-based matching
         aspect_ratio = width / height if height > 0 else 0
-        
+
         # Standard aspect ratios (16:9, 4:3, etc.)
         if 1.7 < aspect_ratio < 1.9:  # 16:9
             if height >= 2160:
@@ -202,7 +203,7 @@ class FFProbeWrapper:
                 return "360p"
             else:
                 return "240p"
-        
+
         # For other aspect ratios, use height as fallback
         if height >= 2160:
             return "4K"
@@ -245,21 +246,23 @@ class FFProbeWrapper:
 
             # Get video bitrate
             video_stream = next(
-                (s for s in streams if s.get("codec_type") == "video"),
-                None
+                (s for s in streams if s.get("codec_type") == "video"), None
             )
             if video_stream and video_stream.get("bit_rate"):
-                result["video"] = self._format_bitrate(int(video_stream.get("bit_rate")))
+                result["video"] = self._format_bitrate(
+                    int(video_stream.get("bit_rate"))
+                )
             else:
                 result["video"] = "Unknown"
 
             # Get audio bitrate
             audio_stream = next(
-                (s for s in streams if s.get("codec_type") == "audio"),
-                None
+                (s for s in streams if s.get("codec_type") == "audio"), None
             )
             if audio_stream and audio_stream.get("bit_rate"):
-                result["audio"] = self._format_bitrate(int(audio_stream.get("bit_rate")))
+                result["audio"] = self._format_bitrate(
+                    int(audio_stream.get("bit_rate"))
+                )
             else:
                 result["audio"] = "Unknown"
 
@@ -303,8 +306,7 @@ class FFProbeWrapper:
 
             # Get video codec
             video_stream = next(
-                (s for s in streams if s.get("codec_type") == "video"),
-                None
+                (s for s in streams if s.get("codec_type") == "video"), None
             )
             if video_stream:
                 result["video"] = video_stream.get("codec_name", "Unknown")
@@ -317,8 +319,7 @@ class FFProbeWrapper:
 
             # Get audio codec
             audio_stream = next(
-                (s for s in streams if s.get("codec_type") == "audio"),
-                None
+                (s for s in streams if s.get("codec_type") == "audio"), None
             )
             if audio_stream:
                 result["audio"] = audio_stream.get("codec_name", "Unknown")
@@ -343,7 +344,7 @@ class FFProbeWrapper:
             data = self._run_ffprobe(file_path)
             format_info = data.get("format", {})
             duration = format_info.get("duration")
-            
+
             if duration:
                 return float(duration)
             else:
@@ -369,8 +370,7 @@ class FFProbeWrapper:
 
             # Find video stream
             video_stream = next(
-                (s for s in streams if s.get("codec_type") == "video"),
-                None
+                (s for s in streams if s.get("codec_type") == "video"), None
             )
 
             if not video_stream:
@@ -444,7 +444,7 @@ class FFProbeWrapper:
                 "codecs": {"error": str(e)},
                 "duration": -1.0,
                 "frame_rate": -1.0,
-                "streams": []
+                "streams": [],
             }
 
     @staticmethod

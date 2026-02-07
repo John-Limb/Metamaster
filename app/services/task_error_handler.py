@@ -118,7 +118,11 @@ class TaskErrorHandler:
         """
         try:
             # Log notification
-            log_level = logging.ERROR if severity == TaskErrorHandler.SEVERITY_CRITICAL else logging.WARNING
+            log_level = (
+                logging.ERROR
+                if severity == TaskErrorHandler.SEVERITY_CRITICAL
+                else logging.WARNING
+            )
             logger.log(
                 log_level,
                 f"Task failure notification - Task: {task_name} (ID: {task_id}), "
@@ -191,9 +195,7 @@ class TaskErrorHandler:
 
             # Check if error already exists for this task
             existing_error = (
-                db.query(TaskError)
-                .filter(TaskError.task_id == task_id)
-                .first()
+                db.query(TaskError).filter(TaskError.task_id == task_id).first()
             )
 
             if existing_error:
@@ -241,11 +243,7 @@ class TaskErrorHandler:
         try:
             db = SessionLocal()
 
-            error = (
-                db.query(TaskError)
-                .filter(TaskError.task_id == task_id)
-                .first()
-            )
+            error = db.query(TaskError).filter(TaskError.task_id == task_id).first()
 
             if error:
                 error.resolved_at = datetime.utcnow()
@@ -290,7 +288,12 @@ class TaskErrorHandler:
                 query = query.filter(TaskError.severity == severity)
 
             total = query.count()
-            errors = query.order_by(TaskError.created_at.desc()).offset(offset).limit(limit).all()
+            errors = (
+                query.order_by(TaskError.created_at.desc())
+                .offset(offset)
+                .limit(limit)
+                .all()
+            )
 
             return errors, total
 
@@ -319,7 +322,9 @@ class TaskErrorHandler:
             return error
 
         except Exception as e:
-            logger.error(f"Error retrieving task error {error_id}: {str(e)}", exc_info=True)
+            logger.error(
+                f"Error retrieving task error {error_id}: {str(e)}", exc_info=True
+            )
             return None
         finally:
             if db:
