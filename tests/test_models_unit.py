@@ -6,8 +6,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
 from app.models import (
-    Movie, MovieFile, TVShow, Season, Episode, EpisodeFile,
-    APICache, FileQueue, TaskError, BatchOperation
+    Movie,
+    MovieFile,
+    TVShow,
+    Season,
+    Episode,
+    EpisodeFile,
+    APICache,
+    FileQueue,
+    TaskError,
+    BatchOperation,
 )
 from app.database import Base
 
@@ -27,6 +35,7 @@ def db_session():
 # Movie Model Tests
 # ============================================================================
 
+
 class TestMovieModel:
     """Tests for Movie model"""
 
@@ -39,7 +48,7 @@ class TestMovieModel:
             plot="A computer hacker learns about reality",
             rating=8.7,
             runtime=136,
-            genres='["Sci-Fi", "Action"]'
+            genres='["Sci-Fi", "Action"]',
         )
         db_session.add(movie)
         db_session.commit()
@@ -100,6 +109,7 @@ class TestMovieModel:
 # MovieFile Model Tests
 # ============================================================================
 
+
 class TestMovieFileModel:
     """Tests for MovieFile model"""
 
@@ -117,14 +127,16 @@ class TestMovieFileModel:
             bitrate=5000,
             codec_video="h264",
             codec_audio="aac",
-            duration=7200
+            duration=7200,
         )
         db_session.add(movie_file)
         db_session.commit()
 
-        retrieved = db_session.query(MovieFile).filter_by(
-            file_path="/path/to/movie.mp4"
-        ).first()
+        retrieved = (
+            db_session.query(MovieFile)
+            .filter_by(file_path="/path/to/movie.mp4")
+            .first()
+        )
         assert retrieved is not None
         assert retrieved.movie_id == movie.id
         assert retrieved.resolution == "1920x1080"
@@ -135,10 +147,7 @@ class TestMovieFileModel:
         db_session.add(movie)
         db_session.commit()
 
-        movie_file = MovieFile(
-            movie_id=movie.id,
-            file_path="/path/to/movie.mp4"
-        )
+        movie_file = MovieFile(movie_id=movie.id, file_path="/path/to/movie.mp4")
         db_session.add(movie_file)
         db_session.commit()
 
@@ -152,19 +161,18 @@ class TestMovieFileModel:
         db_session.add(movie)
         db_session.commit()
 
-        movie_file = MovieFile(
-            movie_id=movie.id,
-            file_path="/path/to/movie.mp4"
-        )
+        movie_file = MovieFile(movie_id=movie.id, file_path="/path/to/movie.mp4")
         db_session.add(movie_file)
         db_session.commit()
 
         db_session.delete(movie)
         db_session.commit()
 
-        orphaned_file = db_session.query(MovieFile).filter_by(
-            file_path="/path/to/movie.mp4"
-        ).first()
+        orphaned_file = (
+            db_session.query(MovieFile)
+            .filter_by(file_path="/path/to/movie.mp4")
+            .first()
+        )
         assert orphaned_file is None
 
     def test_movie_file_unique_path(self, db_session):
@@ -189,6 +197,7 @@ class TestMovieFileModel:
 # TVShow Model Tests
 # ============================================================================
 
+
 class TestTVShowModel:
     """Tests for TVShow model"""
 
@@ -200,7 +209,7 @@ class TestTVShowModel:
             plot="A chemistry teacher turns to cooking meth",
             rating=9.5,
             genres='["Drama", "Crime"]',
-            status="Ended"
+            status="Ended",
         )
         db_session.add(show)
         db_session.commit()
@@ -227,6 +236,7 @@ class TestTVShowModel:
 # Season Model Tests
 # ============================================================================
 
+
 class TestSeasonModel:
     """Tests for Season model"""
 
@@ -236,11 +246,7 @@ class TestSeasonModel:
         db_session.add(show)
         db_session.commit()
 
-        season = Season(
-            show_id=show.id,
-            season_number=1,
-            tvdb_id="123456"
-        )
+        season = Season(show_id=show.id, season_number=1, tvdb_id="123456")
         db_session.add(season)
         db_session.commit()
 
@@ -283,6 +289,7 @@ class TestSeasonModel:
 # Episode Model Tests
 # ============================================================================
 
+
 class TestEpisodeModel:
     """Tests for Episode model"""
 
@@ -303,7 +310,7 @@ class TestEpisodeModel:
             title="Pilot",
             plot="The beginning",
             air_date="2008-01-20",
-            rating=8.5
+            rating=8.5,
         )
         db_session.add(episode)
         db_session.commit()
@@ -352,6 +359,7 @@ class TestEpisodeModel:
 # EpisodeFile Model Tests
 # ============================================================================
 
+
 class TestEpisodeFileModel:
     """Tests for EpisodeFile model"""
 
@@ -374,14 +382,16 @@ class TestEpisodeFileModel:
             file_path="/path/to/episode.mp4",
             file_size=512000000,
             resolution="1920x1080",
-            bitrate=4000
+            bitrate=4000,
         )
         db_session.add(episode_file)
         db_session.commit()
 
-        retrieved = db_session.query(EpisodeFile).filter_by(
-            file_path="/path/to/episode.mp4"
-        ).first()
+        retrieved = (
+            db_session.query(EpisodeFile)
+            .filter_by(file_path="/path/to/episode.mp4")
+            .first()
+        )
         assert retrieved is not None
         assert retrieved.episode_id == episode.id
 
@@ -394,8 +404,7 @@ class TestEpisodeFileModel:
         db_session.commit()
 
         episode_file = EpisodeFile(
-            episode_id=episode.id,
-            file_path="/path/to/episode.mp4"
+            episode_id=episode.id, file_path="/path/to/episode.mp4"
         )
         db_session.add(episode_file)
         db_session.commit()
@@ -403,15 +412,18 @@ class TestEpisodeFileModel:
         db_session.delete(episode)
         db_session.commit()
 
-        orphaned_file = db_session.query(EpisodeFile).filter_by(
-            file_path="/path/to/episode.mp4"
-        ).first()
+        orphaned_file = (
+            db_session.query(EpisodeFile)
+            .filter_by(file_path="/path/to/episode.mp4")
+            .first()
+        )
         assert orphaned_file is None
 
 
 # ============================================================================
 # APICache Model Tests
 # ============================================================================
+
 
 class TestAPICacheModel:
     """Tests for APICache model"""
@@ -422,14 +434,12 @@ class TestAPICacheModel:
             api_type="omdb",
             query_key="tt0133093",
             response_data='{"title": "The Matrix"}',
-            expires_at=datetime.utcnow() + timedelta(days=30)
+            expires_at=datetime.utcnow() + timedelta(days=30),
         )
         db_session.add(cache)
         db_session.commit()
 
-        retrieved = db_session.query(APICache).filter_by(
-            query_key="tt0133093"
-        ).first()
+        retrieved = db_session.query(APICache).filter_by(query_key="tt0133093").first()
         assert retrieved is not None
         assert retrieved.api_type == "omdb"
 
@@ -439,24 +449,20 @@ class TestAPICacheModel:
         future = datetime.utcnow() + timedelta(days=30)
 
         expired = APICache(
-            api_type="omdb",
-            query_key="expired",
-            response_data="{}",
-            expires_at=past
+            api_type="omdb", query_key="expired", response_data="{}", expires_at=past
         )
         active = APICache(
-            api_type="omdb",
-            query_key="active",
-            response_data="{}",
-            expires_at=future
+            api_type="omdb", query_key="active", response_data="{}", expires_at=future
         )
 
         db_session.add_all([expired, active])
         db_session.commit()
 
-        active_entries = db_session.query(APICache).filter(
-            APICache.expires_at > datetime.utcnow()
-        ).all()
+        active_entries = (
+            db_session.query(APICache)
+            .filter(APICache.expires_at > datetime.utcnow())
+            .all()
+        )
         assert len(active_entries) == 1
 
 
@@ -464,31 +470,28 @@ class TestAPICacheModel:
 # FileQueue Model Tests
 # ============================================================================
 
+
 class TestFileQueueModel:
     """Tests for FileQueue model"""
 
     def test_create_file_queue_entry(self, db_session):
         """Test creating file queue entry"""
         queue_entry = FileQueue(
-            file_path="/path/to/file.mp4",
-            status="pending",
-            media_type="movie"
+            file_path="/path/to/file.mp4", status="pending", media_type="movie"
         )
         db_session.add(queue_entry)
         db_session.commit()
 
-        retrieved = db_session.query(FileQueue).filter_by(
-            file_path="/path/to/file.mp4"
-        ).first()
+        retrieved = (
+            db_session.query(FileQueue).filter_by(file_path="/path/to/file.mp4").first()
+        )
         assert retrieved is not None
         assert retrieved.status == "pending"
 
     def test_file_queue_status_transitions(self, db_session):
         """Test file queue status transitions"""
         queue_entry = FileQueue(
-            file_path="/path/to/file.mp4",
-            status="pending",
-            media_type="movie"
+            file_path="/path/to/file.mp4", status="pending", media_type="movie"
         )
         db_session.add(queue_entry)
         db_session.commit()
@@ -506,8 +509,12 @@ class TestFileQueueModel:
 
     def test_file_queue_unique_path(self, db_session):
         """Test unique constraint on file_path"""
-        entry1 = FileQueue(file_path="/path/to/file.mp4", status="pending", media_type="movie")
-        entry2 = FileQueue(file_path="/path/to/file.mp4", status="pending", media_type="movie")
+        entry1 = FileQueue(
+            file_path="/path/to/file.mp4", status="pending", media_type="movie"
+        )
+        entry2 = FileQueue(
+            file_path="/path/to/file.mp4", status="pending", media_type="movie"
+        )
 
         db_session.add(entry1)
         db_session.commit()
@@ -521,6 +528,7 @@ class TestFileQueueModel:
 # TaskError Model Tests
 # ============================================================================
 
+
 class TestTaskErrorModel:
     """Tests for TaskError model"""
 
@@ -532,14 +540,12 @@ class TestTaskErrorModel:
             error_message="File not found",
             error_traceback="Traceback...",
             severity="critical",
-            retry_count=2
+            retry_count=2,
         )
         db_session.add(error)
         db_session.commit()
 
-        retrieved = db_session.query(TaskError).filter_by(
-            task_id="task123"
-        ).first()
+        retrieved = db_session.query(TaskError).filter_by(task_id="task123").first()
         assert retrieved is not None
         assert retrieved.severity == "critical"
         assert retrieved.retry_count == 2
@@ -550,7 +556,7 @@ class TestTaskErrorModel:
             task_id="task123",
             task_name="app.tasks.analyze_file",
             error_message="Error",
-            severity="critical"
+            severity="critical",
         )
         db_session.add(error)
         db_session.commit()
@@ -570,21 +576,22 @@ class TestTaskErrorModel:
                 task_id=f"task{i}",
                 task_name="app.tasks.test",
                 error_message="Test",
-                severity=severity
+                severity=severity,
             )
             db_session.add(error)
 
         db_session.commit()
 
-        critical_errors = db_session.query(TaskError).filter_by(
-            severity="critical"
-        ).all()
+        critical_errors = (
+            db_session.query(TaskError).filter_by(severity="critical").all()
+        )
         assert len(critical_errors) == 1
 
 
 # ============================================================================
 # BatchOperation Model Tests
 # ============================================================================
+
 
 class TestBatchOperationModel:
     """Tests for BatchOperation model"""
@@ -597,14 +604,16 @@ class TestBatchOperationModel:
             total_items=100,
             completed_items=0,
             failed_items=0,
-            progress_percentage=0.0
+            progress_percentage=0.0,
         )
         db_session.add(batch)
         db_session.commit()
 
-        retrieved = db_session.query(BatchOperation).filter_by(
-            operation_type="metadata_sync"
-        ).first()
+        retrieved = (
+            db_session.query(BatchOperation)
+            .filter_by(operation_type="metadata_sync")
+            .first()
+        )
         assert retrieved is not None
         assert retrieved.total_items == 100
 
@@ -614,7 +623,7 @@ class TestBatchOperationModel:
             operation_type="file_import",
             status="running",
             total_items=100,
-            completed_items=0
+            completed_items=0,
         )
         db_session.add(batch)
         db_session.commit()
@@ -634,7 +643,7 @@ class TestBatchOperationModel:
             total_items=100,
             completed_items=100,
             failed_items=0,
-            progress_percentage=100.0
+            progress_percentage=100.0,
         )
         db_session.add(batch)
         db_session.commit()
@@ -655,7 +664,7 @@ class TestBatchOperationModel:
             total_items=100,
             completed_items=50,
             failed_items=50,
-            error_message="Import failed"
+            error_message="Import failed",
         )
         db_session.add(batch)
         db_session.commit()
@@ -668,6 +677,7 @@ class TestBatchOperationModel:
 # ============================================================================
 # Model Relationship Tests
 # ============================================================================
+
 
 class TestModelRelationships:
     """Tests for model relationships and cascading"""
@@ -687,8 +697,7 @@ class TestModelRelationships:
         db_session.commit()
 
         episode_file = EpisodeFile(
-            episode_id=episode.id,
-            file_path="/path/to/episode.mp4"
+            episode_id=episode.id, file_path="/path/to/episode.mp4"
         )
         db_session.add(episode_file)
         db_session.commit()
@@ -725,4 +734,7 @@ class TestModelRelationships:
         assert db_session.query(TVShow).filter_by(id=show.id).first() is None
         assert db_session.query(Season).filter_by(show_id=show.id).first() is None
         assert db_session.query(Episode).filter_by(season_id=season.id).first() is None
-        assert db_session.query(EpisodeFile).filter_by(episode_id=episode.id).first() is None
+        assert (
+            db_session.query(EpisodeFile).filter_by(episode_id=episode.id).first()
+            is None
+        )

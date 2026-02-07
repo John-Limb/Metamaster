@@ -5,7 +5,11 @@ import json
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.models import Movie, TVShow
-from app.services.search_service import SearchFilters, MovieSearchService, TVShowSearchService
+from app.services.search_service import (
+    SearchFilters,
+    MovieSearchService,
+    TVShowSearchService,
+)
 from app.database import Base, engine
 
 
@@ -14,6 +18,7 @@ def db():
     """Create a test database session"""
     Base.metadata.create_all(bind=engine)
     from app.database import SessionLocal
+
     db = SessionLocal()
     yield db
     db.close()
@@ -105,11 +110,11 @@ def sample_movies(db: Session):
             omdb_id="tt0499549",
         ),
     ]
-    
+
     for movie in movies:
         db.add(movie)
     db.commit()
-    
+
     return movies
 
 
@@ -182,11 +187,11 @@ def sample_tv_shows(db: Session):
             status="Ended",
         ),
     ]
-    
+
     for show in shows:
         db.add(show)
     db.commit()
-    
+
     return shows
 
 
@@ -194,9 +199,10 @@ def sample_tv_shows(db: Session):
 # SearchFilters Validation Tests
 # ============================================================================
 
+
 class TestSearchFiltersValidation:
     """Test SearchFilters validation"""
-    
+
     def test_valid_filters(self):
         """Test valid filter parameters"""
         filters = SearchFilters(
@@ -211,54 +217,54 @@ class TestSearchFiltersValidation:
         is_valid, error_msg = filters.validate()
         assert is_valid
         assert error_msg is None
-    
+
     def test_invalid_min_rating(self):
         """Test invalid minimum rating"""
         filters = SearchFilters(min_rating=-1)
         is_valid, error_msg = filters.validate()
         assert not is_valid
         assert "min_rating" in error_msg
-    
+
     def test_invalid_max_rating(self):
         """Test invalid maximum rating"""
         filters = SearchFilters(max_rating=11)
         is_valid, error_msg = filters.validate()
         assert not is_valid
         assert "max_rating" in error_msg
-    
+
     def test_min_greater_than_max_rating(self):
         """Test min_rating greater than max_rating"""
         filters = SearchFilters(min_rating=8.0, max_rating=6.0)
         is_valid, error_msg = filters.validate()
         assert not is_valid
         assert "min_rating" in error_msg and "max_rating" in error_msg
-    
+
     def test_invalid_year(self):
         """Test invalid year"""
         filters = SearchFilters(year=1700)
         is_valid, error_msg = filters.validate()
         assert not is_valid
         assert "year" in error_msg
-    
+
     def test_invalid_skip(self):
         """Test invalid skip value"""
         filters = SearchFilters(skip=-1)
         is_valid, error_msg = filters.validate()
         assert not is_valid
         assert "skip" in error_msg
-    
+
     def test_invalid_limit(self):
         """Test invalid limit value"""
         filters = SearchFilters(limit=0)
         is_valid, error_msg = filters.validate()
         assert not is_valid
         assert "limit" in error_msg
-        
+
         filters = SearchFilters(limit=101)
         is_valid, error_msg = filters.validate()
         assert not is_valid
         assert "limit" in error_msg
-    
+
     def test_invalid_sort_by(self):
         """Test invalid sort_by field"""
         filters = SearchFilters(sort_by="invalid_field")
@@ -271,16 +277,17 @@ class TestSearchFiltersValidation:
 # Movie Search Tests
 # ============================================================================
 
+
 class TestMovieSearch:
     """Test movie search and filtering"""
-    
+
     def test_search_all_movies(self, db: Session, sample_movies):
         """Test retrieving all movies without filters"""
         filters = SearchFilters(skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)
         assert len(movies) == 10
         assert total == 10
-    
+
     def test_search_by_genre(self, db: Session, sample_movies):
         """Test filtering movies by genre"""
         filters = SearchFilters(genre="Drama", skip=0, limit=100)
@@ -290,18 +297,18 @@ class TestMovieSearch:
         for movie in movies:
             genres = json.loads(movie.genres)
             assert "Drama" in genres
-    
+
     def test_search_by_genre_case_insensitive(self, db: Session, sample_movies):
         """Test genre filtering is case-insensitive"""
         filters_lower = SearchFilters(genre="drama", skip=0, limit=100)
         movies_lower, total_lower = MovieSearchService.search(db, filters_lower)
-        
+
         filters_upper = SearchFilters(genre="DRAMA", skip=0, limit=100)
         movies_upper, total_upper = MovieSearchService.search(db, filters_upper)
-        
+
         assert total_lower == total_upper
         assert len(movies_lower) == len(movies_upper)
-    
+
     def test_search_by_min_rating(self, db: Session, sample_movies):
         """Test filtering movies by minimum rating"""
         filters = SearchFilters(min_rating=9.0, skip=0, limit=100)
@@ -310,7 +317,7 @@ class TestMovieSearch:
         # All returned movies should have rating >= 9.0
         for movie in movies:
             assert movie.rating >= 9.0
-    
+
     def test_search_by_max_rating(self, db: Session, sample_movies):
         """Test filtering movies by maximum rating"""
         filters = SearchFilters(max_rating=8.0, skip=0, limit=100)
@@ -319,7 +326,7 @@ class TestMovieSearch:
         # All returned movies should have rating <= 8.0
         for movie in movies:
             assert movie.rating <= 8.0
-    
+
     def test_search_by_rating_range(self, db: Session, sample_movies):
         """Test filtering movies by rating range"""
         filters = SearchFilters(min_rating=8.5, max_rating=9.0, skip=0, limit=100)
@@ -328,7 +335,7 @@ class TestMovieSearch:
         # All returned movies should have rating between 8.5 and 9.0
         for movie in movies:
             assert 8.5 <= movie.rating <= 9.0
-    
+
     def test_search_by_year(self, db: Session, sample_movies):
         """Test filtering movies by year"""
         filters = SearchFilters(year=1994, skip=0, limit=100)
@@ -337,15 +344,11 @@ class TestMovieSearch:
         # All returned movies should be from 1994
         for movie in movies:
             assert movie.year == 1994
-    
+
     def test_search_combined_filters(self, db: Session, sample_movies):
         """Test combining multiple filters"""
         filters = SearchFilters(
-            genre="Drama",
-            min_rating=8.5,
-            year=1994,
-            skip=0,
-            limit=100
+            genre="Drama", min_rating=8.5, year=1994, skip=0, limit=100
         )
         movies, total = MovieSearchService.search(db, filters)
         assert total > 0
@@ -355,35 +358,35 @@ class TestMovieSearch:
             assert "Drama" in genres
             assert movie.rating >= 8.5
             assert movie.year == 1994
-    
+
     def test_search_sort_by_title(self, db: Session, sample_movies):
         """Test sorting by title"""
         filters = SearchFilters(sort_by="title", skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)
         titles = [m.title for m in movies]
         assert titles == sorted(titles)
-    
+
     def test_search_sort_by_rating(self, db: Session, sample_movies):
         """Test sorting by rating (descending)"""
         filters = SearchFilters(sort_by="rating", skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)
         ratings = [m.rating for m in movies if m.rating is not None]
         assert ratings == sorted(ratings, reverse=True)
-    
+
     def test_search_sort_by_year(self, db: Session, sample_movies):
         """Test sorting by year (descending)"""
         filters = SearchFilters(sort_by="year", skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)
         years = [m.year for m in movies if m.year is not None]
         assert years == sorted(years, reverse=True)
-    
+
     def test_search_sort_by_date_added(self, db: Session, sample_movies):
         """Test sorting by date added (descending)"""
         filters = SearchFilters(sort_by="date_added", skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)
         dates = [m.created_at for m in movies]
         assert dates == sorted(dates, reverse=True)
-    
+
     def test_search_pagination(self, db: Session, sample_movies):
         """Test pagination"""
         # Get first page
@@ -391,17 +394,17 @@ class TestMovieSearch:
         movies_page1, total = MovieSearchService.search(db, filters_page1)
         assert len(movies_page1) == 3
         assert total == 10
-        
+
         # Get second page
         filters_page2 = SearchFilters(skip=3, limit=3)
         movies_page2, total = MovieSearchService.search(db, filters_page2)
         assert len(movies_page2) == 3
-        
+
         # Ensure pages don't overlap
         ids_page1 = {m.id for m in movies_page1}
         ids_page2 = {m.id for m in movies_page2}
         assert len(ids_page1 & ids_page2) == 0
-    
+
     def test_search_no_results(self, db: Session, sample_movies):
         """Test search with no results"""
         filters = SearchFilters(genre="NonexistentGenre", skip=0, limit=100)
@@ -414,16 +417,17 @@ class TestMovieSearch:
 # TV Show Search Tests
 # ============================================================================
 
+
 class TestTVShowSearch:
     """Test TV show search and filtering"""
-    
+
     def test_search_all_shows(self, db: Session, sample_tv_shows):
         """Test retrieving all TV shows without filters"""
         filters = SearchFilters(skip=0, limit=100)
         shows, total = TVShowSearchService.search(db, filters)
         assert len(shows) == 8
         assert total == 8
-    
+
     def test_search_by_genre(self, db: Session, sample_tv_shows):
         """Test filtering TV shows by genre"""
         filters = SearchFilters(genre="Drama", skip=0, limit=100)
@@ -433,7 +437,7 @@ class TestTVShowSearch:
         for show in shows:
             genres = json.loads(show.genres)
             assert "Drama" in genres
-    
+
     def test_search_by_min_rating(self, db: Session, sample_tv_shows):
         """Test filtering TV shows by minimum rating"""
         filters = SearchFilters(min_rating=9.0, skip=0, limit=100)
@@ -442,7 +446,7 @@ class TestTVShowSearch:
         # All returned shows should have rating >= 9.0
         for show in shows:
             assert show.rating >= 9.0
-    
+
     def test_search_by_max_rating(self, db: Session, sample_tv_shows):
         """Test filtering TV shows by maximum rating"""
         filters = SearchFilters(max_rating=8.7, skip=0, limit=100)
@@ -451,7 +455,7 @@ class TestTVShowSearch:
         # All returned shows should have rating <= 8.7
         for show in shows:
             assert show.rating <= 8.7
-    
+
     def test_search_by_rating_range(self, db: Session, sample_tv_shows):
         """Test filtering TV shows by rating range"""
         filters = SearchFilters(min_rating=8.5, max_rating=9.0, skip=0, limit=100)
@@ -460,15 +464,10 @@ class TestTVShowSearch:
         # All returned shows should have rating between 8.5 and 9.0
         for show in shows:
             assert 8.5 <= show.rating <= 9.0
-    
+
     def test_search_combined_filters(self, db: Session, sample_tv_shows):
         """Test combining multiple filters"""
-        filters = SearchFilters(
-            genre="Drama",
-            min_rating=8.5,
-            skip=0,
-            limit=100
-        )
+        filters = SearchFilters(genre="Drama", min_rating=8.5, skip=0, limit=100)
         shows, total = TVShowSearchService.search(db, filters)
         assert total > 0
         # All returned shows should match all criteria
@@ -476,28 +475,28 @@ class TestTVShowSearch:
             genres = json.loads(show.genres)
             assert "Drama" in genres
             assert show.rating >= 8.5
-    
+
     def test_search_sort_by_title(self, db: Session, sample_tv_shows):
         """Test sorting by title"""
         filters = SearchFilters(sort_by="title", skip=0, limit=100)
         shows, total = TVShowSearchService.search(db, filters)
         titles = [s.title for s in shows]
         assert titles == sorted(titles)
-    
+
     def test_search_sort_by_rating(self, db: Session, sample_tv_shows):
         """Test sorting by rating (descending)"""
         filters = SearchFilters(sort_by="rating", skip=0, limit=100)
         shows, total = TVShowSearchService.search(db, filters)
         ratings = [s.rating for s in shows if s.rating is not None]
         assert ratings == sorted(ratings, reverse=True)
-    
+
     def test_search_sort_by_date_added(self, db: Session, sample_tv_shows):
         """Test sorting by date added (descending)"""
         filters = SearchFilters(sort_by="date_added", skip=0, limit=100)
         shows, total = TVShowSearchService.search(db, filters)
         dates = [s.created_at for s in shows]
         assert dates == sorted(dates, reverse=True)
-    
+
     def test_search_pagination(self, db: Session, sample_tv_shows):
         """Test pagination"""
         # Get first page
@@ -505,24 +504,24 @@ class TestTVShowSearch:
         shows_page1, total = TVShowSearchService.search(db, filters_page1)
         assert len(shows_page1) == 3
         assert total == 8
-        
+
         # Get second page
         filters_page2 = SearchFilters(skip=3, limit=3)
         shows_page2, total = TVShowSearchService.search(db, filters_page2)
         assert len(shows_page2) == 3
-        
+
         # Ensure pages don't overlap
         ids_page1 = {s.id for s in shows_page1}
         ids_page2 = {s.id for s in shows_page2}
         assert len(ids_page1 & ids_page2) == 0
-    
+
     def test_search_no_results(self, db: Session, sample_tv_shows):
         """Test search with no results"""
         filters = SearchFilters(genre="NonexistentGenre", skip=0, limit=100)
         shows, total = TVShowSearchService.search(db, filters)
         assert len(shows) == 0
         assert total == 0
-    
+
     def test_search_year_filter_ignored(self, db: Session, sample_tv_shows):
         """Test that year filter is ignored for TV shows"""
         # TV shows don't have year field, so this should return all shows
@@ -536,16 +535,17 @@ class TestTVShowSearch:
 # Edge Cases and Error Handling
 # ============================================================================
 
+
 class TestEdgeCases:
     """Test edge cases and error handling"""
-    
+
     def test_empty_database(self, db: Session):
         """Test search on empty database"""
         filters = SearchFilters(skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)
         assert len(movies) == 0
         assert total == 0
-    
+
     def test_null_ratings(self, db: Session):
         """Test filtering with null ratings"""
         # Add movie with null rating
@@ -557,12 +557,12 @@ class TestEdgeCases:
         )
         db.add(movie)
         db.commit()
-        
+
         # Search with min_rating should exclude null ratings
         filters = SearchFilters(min_rating=5.0, skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)
         assert all(m.rating is not None for m in movies)
-    
+
     def test_null_genres(self, db: Session):
         """Test filtering with null genres"""
         # Add movie with null genres
@@ -574,12 +574,12 @@ class TestEdgeCases:
         )
         db.add(movie)
         db.commit()
-        
+
         # Search by genre should not return movie with null genres
         filters = SearchFilters(genre="Drama", skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)
         assert all(m.genres is not None for m in movies)
-    
+
     def test_invalid_json_genres(self, db: Session):
         """Test handling of invalid JSON in genres field"""
         # Add movie with invalid JSON genres
@@ -591,7 +591,7 @@ class TestEdgeCases:
         )
         db.add(movie)
         db.commit()
-        
+
         # Search should handle gracefully
         filters = SearchFilters(genre="Drama", skip=0, limit=100)
         movies, total = MovieSearchService.search(db, filters)

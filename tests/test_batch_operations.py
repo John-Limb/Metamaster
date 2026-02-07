@@ -16,10 +16,10 @@ def db():
     """Create a test database session"""
     # Create tables
     Base.metadata.create_all(bind=engine)
-    
+
     db = SessionLocal()
     yield db
-    
+
     # Cleanup
     db.close()
     Base.metadata.drop_all(bind=engine)
@@ -34,9 +34,7 @@ def batch_service(db):
 @pytest.fixture
 def sample_movies(db):
     """Create sample movie records for testing"""
-    movies = [
-        Movie(title=f"Movie {i}", omdb_id=f"tt{i:07d}") for i in range(1, 6)
-    ]
+    movies = [Movie(title=f"Movie {i}", omdb_id=f"tt{i:07d}") for i in range(1, 6)]
     db.add_all(movies)
     db.commit()
     return movies
@@ -45,9 +43,7 @@ def sample_movies(db):
 @pytest.fixture
 def sample_tv_shows(db):
     """Create sample TV show records for testing"""
-    shows = [
-        TVShow(title=f"Show {i}", tvdb_id=f"tvdb{i}") for i in range(1, 6)
-    ]
+    shows = [TVShow(title=f"Show {i}", tvdb_id=f"tvdb{i}") for i in range(1, 6)]
     db.add_all(shows)
     db.commit()
     return shows
@@ -61,7 +57,7 @@ class TestBatchOperationCreation:
         batch_op = batch_service.create_batch_operation(
             operation_type="metadata_sync",
             total_items=100,
-            metadata={"media_type": "movie"}
+            metadata={"media_type": "movie"},
         )
 
         assert batch_op.id is not None
@@ -76,9 +72,7 @@ class TestBatchOperationCreation:
         """Test creating batch operation with metadata"""
         metadata = {"media_type": "tv_show", "source": "tvdb"}
         batch_op = batch_service.create_batch_operation(
-            operation_type="file_import",
-            total_items=50,
-            metadata=metadata
+            operation_type="file_import", total_items=50, metadata=metadata
         )
 
         stored_metadata = json.loads(batch_op.metadata)
@@ -87,8 +81,7 @@ class TestBatchOperationCreation:
     def test_create_batch_operation_without_metadata(self, batch_service):
         """Test creating batch operation without metadata"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=10
+            operation_type="metadata_sync", total_items=10
         )
 
         assert batch_op.metadata is None
@@ -100,8 +93,7 @@ class TestBatchOperationRetrieval:
     def test_get_batch_operation(self, batch_service):
         """Test retrieving a batch operation by ID"""
         created = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=50
+            operation_type="metadata_sync", total_items=50
         )
 
         retrieved = batch_service.get_batch_operation(created.id)
@@ -120,7 +112,7 @@ class TestBatchOperationRetrieval:
         for i in range(5):
             batch_service.create_batch_operation(
                 operation_type="metadata_sync" if i % 2 == 0 else "file_import",
-                total_items=10 * (i + 1)
+                total_items=10 * (i + 1),
             )
 
         operations, total = batch_service.list_batch_operations()
@@ -131,8 +123,7 @@ class TestBatchOperationRetrieval:
         """Test listing batch operations with pagination"""
         for i in range(10):
             batch_service.create_batch_operation(
-                operation_type="metadata_sync",
-                total_items=10
+                operation_type="metadata_sync", total_items=10
             )
 
         operations, total = batch_service.list_batch_operations(limit=5, offset=0)
@@ -147,14 +138,12 @@ class TestBatchOperationRetrieval:
         """Test filtering batch operations by type"""
         for i in range(3):
             batch_service.create_batch_operation(
-                operation_type="metadata_sync",
-                total_items=10
+                operation_type="metadata_sync", total_items=10
             )
 
         for i in range(2):
             batch_service.create_batch_operation(
-                operation_type="file_import",
-                total_items=10
+                operation_type="file_import", total_items=10
             )
 
         sync_ops, sync_total = batch_service.list_batch_operations(
@@ -170,12 +159,10 @@ class TestBatchOperationRetrieval:
     def test_list_batch_operations_filter_by_status(self, batch_service):
         """Test filtering batch operations by status"""
         batch1 = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=10
+            operation_type="metadata_sync", total_items=10
         )
         batch2 = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=10
+            operation_type="metadata_sync", total_items=10
         )
 
         batch_service.start_batch_operation(batch1.id)
@@ -197,14 +184,11 @@ class TestBatchOperationProgress:
     def test_update_batch_progress(self, batch_service):
         """Test updating batch operation progress"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         updated = batch_service.update_batch_progress(
-            batch_op.id,
-            completed_items=50,
-            failed_items=5
+            batch_op.id, completed_items=50, failed_items=5
         )
 
         assert updated.completed_items == 50
@@ -214,8 +198,7 @@ class TestBatchOperationProgress:
     def test_progress_percentage_calculation(self, batch_service):
         """Test progress percentage calculation"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         # Test various progress levels
@@ -228,17 +211,14 @@ class TestBatchOperationProgress:
 
         for completed, failed, expected_percentage in test_cases:
             updated = batch_service.update_batch_progress(
-                batch_op.id,
-                completed_items=completed,
-                failed_items=failed
+                batch_op.id, completed_items=completed, failed_items=failed
             )
             assert updated.progress_percentage == expected_percentage
 
     def test_eta_calculation(self, batch_service):
         """Test ETA calculation"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         # Start the batch operation
@@ -246,9 +226,7 @@ class TestBatchOperationProgress:
 
         # Simulate some progress
         updated = batch_service.update_batch_progress(
-            batch_op.id,
-            completed_items=50,
-            failed_items=0
+            batch_op.id, completed_items=50, failed_items=0
         )
 
         # ETA should be calculated
@@ -258,16 +236,12 @@ class TestBatchOperationProgress:
     def test_update_progress_with_error_message(self, batch_service):
         """Test updating progress with error message"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         error_msg = "Some items failed to process"
         updated = batch_service.update_batch_progress(
-            batch_op.id,
-            completed_items=50,
-            failed_items=10,
-            error_message=error_msg
+            batch_op.id, completed_items=50, failed_items=10, error_message=error_msg
         )
 
         assert updated.error_message == error_msg
@@ -279,8 +253,7 @@ class TestBatchOperationStatusTransitions:
     def test_start_batch_operation(self, batch_service):
         """Test starting a batch operation"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         assert batch_op.status == "pending"
@@ -293,8 +266,7 @@ class TestBatchOperationStatusTransitions:
     def test_complete_batch_operation(self, batch_service):
         """Test completing a batch operation"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         batch_service.start_batch_operation(batch_op.id)
@@ -307,8 +279,7 @@ class TestBatchOperationStatusTransitions:
     def test_fail_batch_operation(self, batch_service):
         """Test failing a batch operation"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         error_msg = "Critical error occurred"
@@ -321,8 +292,7 @@ class TestBatchOperationStatusTransitions:
     def test_cancel_batch_operation(self, batch_service):
         """Test cancelling a batch operation"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         batch_service.start_batch_operation(batch_op.id)
@@ -341,23 +311,23 @@ class TestBulkMetadataSync:
         batch_op = batch_service.create_batch_operation(
             operation_type="metadata_sync",
             total_items=len(sample_movies),
-            metadata={"media_type": "movie"}
+            metadata={"media_type": "movie"},
         )
 
         media_ids = [m.id for m in sample_movies]
 
-        with patch('app.services.batch_operations.OMDBService.get_movie_details') as mock_omdb:
+        with patch(
+            "app.services.batch_operations.OMDBService.get_movie_details"
+        ) as mock_omdb:
             mock_omdb.return_value = {
                 "Title": "Test Movie",
                 "imdbRating": "8.5",
                 "Plot": "Test plot",
-                "Runtime": "120 min"
+                "Runtime": "120 min",
             }
 
             result = await batch_service.bulk_metadata_sync(
-                batch_op.id,
-                media_ids,
-                "movie"
+                batch_op.id, media_ids, "movie"
             )
 
             assert result["status"] == "success"
@@ -369,22 +339,22 @@ class TestBulkMetadataSync:
         batch_op = batch_service.create_batch_operation(
             operation_type="metadata_sync",
             total_items=len(sample_tv_shows),
-            metadata={"media_type": "tv_show"}
+            metadata={"media_type": "tv_show"},
         )
 
         media_ids = [s.id for s in sample_tv_shows]
 
-        with patch('app.services.batch_operations.TVDBService.get_series_details') as mock_tvdb:
+        with patch(
+            "app.services.batch_operations.TVDBService.get_series_details"
+        ) as mock_tvdb:
             mock_tvdb.return_value = {
                 "seriesName": "Test Show",
                 "siteRating": "8.0",
-                "overview": "Test overview"
+                "overview": "Test overview",
             }
 
             result = await batch_service.bulk_metadata_sync(
-                batch_op.id,
-                media_ids,
-                "tv_show"
+                batch_op.id, media_ids, "tv_show"
             )
 
             assert result["status"] == "success"
@@ -395,12 +365,14 @@ class TestBulkMetadataSync:
         batch_op = batch_service.create_batch_operation(
             operation_type="metadata_sync",
             total_items=len(sample_movies),
-            metadata={"media_type": "movie"}
+            metadata={"media_type": "movie"},
         )
 
         media_ids = [m.id for m in sample_movies]
 
-        with patch('app.services.batch_operations.OMDBService.get_movie_details') as mock_omdb:
+        with patch(
+            "app.services.batch_operations.OMDBService.get_movie_details"
+        ) as mock_omdb:
             # Simulate some failures
             mock_omdb.side_effect = [
                 {"Title": "Movie 1", "imdbRating": "8.0"},
@@ -411,9 +383,7 @@ class TestBulkMetadataSync:
             ]
 
             result = await batch_service.bulk_metadata_sync(
-                batch_op.id,
-                media_ids,
-                "movie"
+                batch_op.id, media_ids, "movie"
             )
 
             assert result["status"] == "success"
@@ -436,21 +406,21 @@ class TestBulkFileImport:
         batch_op = batch_service.create_batch_operation(
             operation_type="file_import",
             total_items=len(test_files),
-            metadata={"media_type": "movie"}
+            metadata={"media_type": "movie"},
         )
 
-        with patch('app.services.batch_operations.FFProbeWrapper.get_metadata') as mock_ffprobe:
+        with patch(
+            "app.services.batch_operations.FFProbeWrapper.get_metadata"
+        ) as mock_ffprobe:
             mock_ffprobe.return_value = {
                 "resolution": {"width": 1920, "height": 1080},
                 "codecs": {"video": "h264", "audio": "aac"},
                 "duration": 7200,
-                "bitrate": {"total": "5000k"}
+                "bitrate": {"total": "5000k"},
             }
 
             result = await batch_service.bulk_file_import(
-                batch_op.id,
-                test_files,
-                "movie"
+                batch_op.id, test_files, "movie"
             )
 
             assert result["status"] == "success"
@@ -465,14 +435,10 @@ class TestBulkFileImport:
         batch_op = batch_service.create_batch_operation(
             operation_type="file_import",
             total_items=len(test_files),
-            metadata={"media_type": "movie"}
+            metadata={"media_type": "movie"},
         )
 
-        result = await batch_service.bulk_file_import(
-            batch_op.id,
-            test_files,
-            "movie"
-        )
+        result = await batch_service.bulk_file_import(batch_op.id, test_files, "movie")
 
         assert result["status"] == "success"
         assert result["failed"] == len(test_files)
@@ -485,9 +451,7 @@ class TestBatchMetadata:
         """Test retrieving batch metadata"""
         metadata = {"media_type": "movie", "source": "omdb"}
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100,
-            metadata=metadata
+            operation_type="metadata_sync", total_items=100, metadata=metadata
         )
 
         retrieved_metadata = batch_service.get_batch_metadata(batch_op.id)
@@ -496,8 +460,7 @@ class TestBatchMetadata:
     def test_set_batch_metadata(self, batch_service):
         """Test setting batch metadata"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         new_metadata = {"status": "in_progress", "processed": 50}
@@ -545,8 +508,7 @@ class TestBatchOperationEdgeCases:
     def test_zero_total_items(self, batch_service):
         """Test creating batch with zero total items"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=0
+            operation_type="metadata_sync", total_items=0
         )
 
         assert batch_op.total_items == 0
@@ -555,15 +517,12 @@ class TestBatchOperationEdgeCases:
     def test_progress_exceeds_total(self, batch_service):
         """Test progress calculation when completed + failed exceeds total"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         # This shouldn't happen in normal operation, but test the behavior
         updated = batch_service.update_batch_progress(
-            batch_op.id,
-            completed_items=60,
-            failed_items=50
+            batch_op.id, completed_items=60, failed_items=50
         )
 
         # Progress should be capped at 100%
@@ -580,7 +539,7 @@ class TestBatchOperationConcurrency:
         for i in range(5):
             batch_op = batch_service.create_batch_operation(
                 operation_type="metadata_sync" if i % 2 == 0 else "file_import",
-                total_items=100 + i * 10
+                total_items=100 + i * 10,
             )
             batch_ids.append(batch_op.id)
 
@@ -592,9 +551,7 @@ class TestBatchOperationConcurrency:
         # Update progress on different batches
         for i, batch_id in enumerate(batch_ids):
             batch_service.update_batch_progress(
-                batch_id,
-                completed_items=10 * (i + 1),
-                failed_items=i
+                batch_id, completed_items=10 * (i + 1), failed_items=i
             )
 
         # Verify progress was updated correctly
@@ -610,9 +567,7 @@ class TestBatchOperationPersistence:
     def test_batch_operation_persists_across_sessions(self, batch_service):
         """Test that batch operations persist across database sessions"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100,
-            metadata={"test": "data"}
+            operation_type="metadata_sync", total_items=100, metadata={"test": "data"}
         )
 
         batch_id = batch_op.id
@@ -631,8 +586,7 @@ class TestBatchOperationPersistence:
     def test_batch_operation_updates_persist(self, batch_service):
         """Test that batch operation updates persist"""
         batch_op = batch_service.create_batch_operation(
-            operation_type="metadata_sync",
-            total_items=100
+            operation_type="metadata_sync", total_items=100
         )
 
         batch_service.start_batch_operation(batch_op.id)

@@ -13,7 +13,7 @@ class TestRedisCacheService:
     @pytest.fixture
     def mock_redis(self):
         """Create a mock Redis client"""
-        with patch('app.services.redis_cache.redis.from_url') as mock:
+        with patch("app.services.redis_cache.redis.from_url") as mock:
             mock_client = MagicMock()
             mock_client.ping.return_value = True
             mock.return_value = mock_client
@@ -52,9 +52,9 @@ class TestRedisCacheService:
         """Test getting a value from cache (cache hit)"""
         test_data = {"id": 1, "title": "Test Movie"}
         cache_service.redis_client.get.return_value = json.dumps(test_data)
-        
+
         result = cache_service.get("movie:1")
-        
+
         assert result == test_data
         cache_service.redis_client.get.assert_called_with("movie:1")
         cache_service.redis_client.incr.assert_called()
@@ -62,34 +62,34 @@ class TestRedisCacheService:
     def test_get_cache_miss(self, cache_service):
         """Test getting a value from cache (cache miss)"""
         cache_service.redis_client.get.return_value = None
-        
+
         result = cache_service.get("movie:999")
-        
+
         assert result is None
         cache_service.redis_client.get.assert_called_with("movie:999")
 
     def test_get_non_json_value(self, cache_service):
         """Test getting a non-JSON value from cache"""
         cache_service.redis_client.get.return_value = "simple_string"
-        
+
         result = cache_service.get("key:1")
-        
+
         assert result == "simple_string"
 
     def test_get_redis_disconnected(self, cache_service):
         """Test get returns None when Redis is disconnected"""
         cache_service.redis_client = None
-        
+
         result = cache_service.get("movie:1")
-        
+
         assert result is None
 
     def test_set_cache(self, cache_service):
         """Test setting a value in cache"""
         test_data = {"id": 1, "title": "Test Movie"}
-        
+
         result = cache_service.set("movie:1", test_data, ttl=3600)
-        
+
         assert result is True
         cache_service.redis_client.setex.assert_called_with(
             "movie:1", 3600, json.dumps(test_data)
@@ -98,9 +98,9 @@ class TestRedisCacheService:
     def test_set_cache_default_ttl(self, cache_service):
         """Test setting a value with default TTL"""
         test_data = {"id": 1, "title": "Test Movie"}
-        
+
         result = cache_service.set("movie:1", test_data)
-        
+
         assert result is True
         cache_service.redis_client.setex.assert_called_with(
             "movie:1", cache_service.DEFAULT_TTL, json.dumps(test_data)
@@ -109,69 +109,71 @@ class TestRedisCacheService:
     def test_set_cache_redis_disconnected(self, cache_service):
         """Test set returns False when Redis is disconnected"""
         cache_service.redis_client = None
-        
+
         result = cache_service.set("movie:1", {"id": 1})
-        
+
         assert result is False
 
     def test_set_cache_error(self, cache_service):
         """Test set returns False on Redis error"""
         cache_service.redis_client.setex.side_effect = Exception("Redis error")
-        
+
         result = cache_service.set("movie:1", {"id": 1})
-        
+
         assert result is False
 
     def test_delete_cache(self, cache_service):
         """Test deleting a key from cache"""
         cache_service.redis_client.delete.return_value = 1
-        
+
         result = cache_service.delete("movie:1")
-        
+
         assert result is True
         cache_service.redis_client.delete.assert_called_with("movie:1")
 
     def test_delete_cache_not_found(self, cache_service):
         """Test deleting a non-existent key"""
         cache_service.redis_client.delete.return_value = 0
-        
+
         result = cache_service.delete("movie:999")
-        
+
         assert result is False
 
     def test_delete_pattern(self, cache_service):
         """Test deleting keys matching a pattern"""
         cache_service.redis_client.keys.return_value = ["movie:1", "movie:2", "movie:3"]
         cache_service.redis_client.delete.return_value = 3
-        
+
         result = cache_service.delete_pattern("movie:*")
-        
+
         assert result == 3
         cache_service.redis_client.keys.assert_called_with("movie:*")
-        cache_service.redis_client.delete.assert_called_with("movie:1", "movie:2", "movie:3")
+        cache_service.redis_client.delete.assert_called_with(
+            "movie:1", "movie:2", "movie:3"
+        )
 
     def test_delete_pattern_no_keys(self, cache_service):
         """Test deleting pattern with no matching keys"""
         cache_service.redis_client.keys.return_value = []
-        
+
         result = cache_service.delete_pattern("movie:*")
-        
+
         assert result == 0
         cache_service.redis_client.delete.assert_not_called()
 
     def test_clear_all(self, cache_service):
         """Test clearing all cache"""
         result = cache_service.clear_all()
-        
+
         assert result is True
         cache_service.redis_client.flushdb.assert_called()
 
     def test_clear_all_error(self, cache_service):
         """Test clear_all returns False on error"""
         cache_service.redis_client.flushdb.side_effect = Exception("Redis error")
-        
+
         result = cache_service.clear_all()
-        
+
         assert result is False
 
     def test_get_stats(self, cache_service):
@@ -181,9 +183,9 @@ class TestRedisCacheService:
         }
         cache_service.redis_client.keys.return_value = ["key1", "key2", "key3"]
         cache_service.redis_client.get.return_value = "10"
-        
+
         stats = cache_service.get_stats()
-        
+
         assert stats["connected"] is True
         assert stats["total_keys"] == 3
         assert stats["memory_usage_bytes"] == 1024000
@@ -193,9 +195,9 @@ class TestRedisCacheService:
     def test_get_stats_disconnected(self, cache_service):
         """Test get_stats returns default values when disconnected"""
         cache_service.redis_client = None
-        
+
         stats = cache_service.get_stats()
-        
+
         assert stats["connected"] is False
         assert stats["total_keys"] == 0
         assert stats["memory_usage_bytes"] == 0
@@ -204,9 +206,9 @@ class TestRedisCacheService:
         """Test invalidating cache for a specific movie"""
         cache_service.redis_client.delete.return_value = 1
         cache_service.redis_client.keys.return_value = ["movies:list:10:0"]
-        
+
         cache_service.invalidate_movie(1)
-        
+
         # Should delete the movie key and movie list patterns
         assert cache_service.redis_client.delete.called
         assert cache_service.redis_client.keys.called
@@ -215,9 +217,9 @@ class TestRedisCacheService:
         """Test invalidating cache for a specific TV show"""
         cache_service.redis_client.delete.return_value = 1
         cache_service.redis_client.keys.return_value = ["tvshows:list:10:0"]
-        
+
         cache_service.invalidate_tv_show(1)
-        
+
         # Should delete the TV show key and TV show list patterns
         assert cache_service.redis_client.delete.called
         assert cache_service.redis_client.keys.called
@@ -226,9 +228,9 @@ class TestRedisCacheService:
         """Test invalidating all movie cache"""
         cache_service.redis_client.keys.return_value = ["movie:1", "movie:2"]
         cache_service.redis_client.delete.return_value = 2
-        
+
         cache_service.invalidate_all_movies()
-        
+
         assert cache_service.redis_client.keys.called
         assert cache_service.redis_client.delete.called
 
@@ -236,9 +238,9 @@ class TestRedisCacheService:
         """Test invalidating all TV show cache"""
         cache_service.redis_client.keys.return_value = ["tvshow:1", "tvshow:2"]
         cache_service.redis_client.delete.return_value = 2
-        
+
         cache_service.invalidate_all_tv_shows()
-        
+
         assert cache_service.redis_client.keys.called
         assert cache_service.redis_client.delete.called
 
@@ -254,7 +256,7 @@ class TestRedisCacheService:
         mock_movie.runtime = 120
         mock_movie.genres = '["Action", "Drama"]'
         mock_movie.omdb_id = "tt1234567"
-        
+
         mock_show = Mock(spec=TVShow)
         mock_show.id = 1
         mock_show.title = "Test Show"
@@ -263,11 +265,11 @@ class TestRedisCacheService:
         mock_show.status = "Ongoing"
         mock_show.genres = '["Drama"]'
         mock_show.tvdb_id = "123456"
-        
+
         cache_service.redis_client.setex.return_value = True
-        
+
         result = cache_service.warmup_cache([mock_movie], [mock_show])
-        
+
         assert result["movies"] == 1
         assert result["tv_shows"] == 1
         assert cache_service.redis_client.setex.call_count == 2
@@ -275,48 +277,48 @@ class TestRedisCacheService:
     def test_warmup_cache_empty(self, cache_service):
         """Test cache warmup with empty lists"""
         result = cache_service.warmup_cache([], [])
-        
+
         assert result["movies"] == 0
         assert result["tv_shows"] == 0
 
     def test_warmup_cache_error(self, cache_service):
         """Test cache warmup handles errors gracefully"""
         cache_service.redis_client.setex.side_effect = Exception("Redis error")
-        
+
         mock_movie = Mock(spec=Movie)
         mock_movie.id = 1
-        
+
         result = cache_service.warmup_cache([mock_movie], [])
-        
+
         assert result["movies"] == 0
         assert result["tv_shows"] == 0
 
     def test_track_hit(self, cache_service):
         """Test tracking cache hits"""
         cache_service._track_hit("movie:1")
-        
+
         cache_service.redis_client.incr.assert_called()
 
     def test_track_miss(self, cache_service):
         """Test tracking cache misses"""
         cache_service._track_miss("movie:1")
-        
+
         cache_service.redis_client.incr.assert_called()
 
     def test_get_stat(self, cache_service):
         """Test getting a statistic value"""
         cache_service.redis_client.get.return_value = "42"
-        
+
         result = cache_service._get_stat("total_hits")
-        
+
         assert result == 42
 
     def test_get_stat_default(self, cache_service):
         """Test getting a statistic with default value"""
         cache_service.redis_client.get.return_value = None
-        
+
         result = cache_service._get_stat("total_hits", default=0)
-        
+
         assert result == 0
 
     def test_cache_key_prefixes(self):
@@ -339,17 +341,17 @@ class TestCacheServiceGlobal:
 
     def test_get_cache_service_singleton(self):
         """Test get_cache_service returns singleton instance"""
-        with patch('app.services.redis_cache.redis.from_url'):
+        with patch("app.services.redis_cache.redis.from_url"):
             service1 = get_cache_service()
             service2 = get_cache_service()
-            
+
             assert service1 is service2
 
     def test_get_cache_service_creates_instance(self):
         """Test get_cache_service creates instance on first call"""
-        with patch('app.services.redis_cache.redis.from_url'):
+        with patch("app.services.redis_cache.redis.from_url"):
             service = get_cache_service()
-            
+
             assert service is not None
             assert isinstance(service, RedisCacheService)
 
@@ -360,7 +362,7 @@ class TestCacheIntegration:
     @pytest.fixture
     def mock_redis(self):
         """Create a mock Redis client"""
-        with patch('app.services.redis_cache.redis.from_url') as mock:
+        with patch("app.services.redis_cache.redis.from_url") as mock:
             mock_client = MagicMock()
             mock_client.ping.return_value = True
             mock.return_value = mock_client
@@ -376,17 +378,17 @@ class TestCacheIntegration:
     def test_cache_workflow_movie(self, cache_service):
         """Test complete cache workflow for a movie"""
         movie_data = {"id": 1, "title": "Test Movie", "year": 2023}
-        
+
         # Set cache
         cache_service.redis_client.setex.return_value = True
         set_result = cache_service.set("movie:1", movie_data, ttl=86400)
         assert set_result is True
-        
+
         # Get cache
         cache_service.redis_client.get.return_value = json.dumps(movie_data)
         get_result = cache_service.get("movie:1")
         assert get_result == movie_data
-        
+
         # Delete cache
         cache_service.redis_client.delete.return_value = 1
         delete_result = cache_service.delete("movie:1")
@@ -398,14 +400,14 @@ class TestCacheIntegration:
             "items": [{"id": 1, "title": "Movie 1"}],
             "total": 1,
             "limit": 10,
-            "offset": 0
+            "offset": 0,
         }
-        
+
         # Set cache
         cache_service.redis_client.setex.return_value = True
         set_result = cache_service.set("movies:list:10:0", list_data, ttl=1800)
         assert set_result is True
-        
+
         # Get cache
         cache_service.redis_client.get.return_value = json.dumps(list_data)
         get_result = cache_service.get("movies:list:10:0")
@@ -416,12 +418,12 @@ class TestCacheIntegration:
         cache_service.redis_client.keys.return_value = [
             "movie:1",
             "movies:list:10:0",
-            "movies:list:10:10"
+            "movies:list:10:10",
         ]
         cache_service.redis_client.delete.return_value = 3
-        
+
         # Invalidate movie
         cache_service.invalidate_movie(1)
-        
+
         # Verify delete was called
         assert cache_service.redis_client.delete.called

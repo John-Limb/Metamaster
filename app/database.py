@@ -20,13 +20,14 @@ if settings.database_url.startswith("sqlite"):
         poolclass=StaticPool,
         echo=settings.database_echo,
     )
-    
+
     # Enable foreign keys for SQLite
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_conn, connection_record):
         cursor = dbapi_conn.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
+
 else:
     # PostgreSQL or other databases with connection pooling
     engine = create_engine(

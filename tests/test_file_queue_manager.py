@@ -119,7 +119,10 @@ class TestAddFilesBatch:
         files = [
             {"file_path": "/path/to/movie1.mp4", "file_type": "movie"},
             {"file_path": "", "file_type": "movie"},  # Invalid: empty path
-            {"file_path": "/path/to/episode1.avi", "file_type": "invalid"},  # Invalid: type
+            {
+                "file_path": "/path/to/episode1.avi",
+                "file_type": "invalid",
+            },  # Invalid: type
             {"file_path": "/path/to/movie2.mkv", "file_type": "movie"},
         ]
         queue_ids = manager.add_files_batch(files)
@@ -129,7 +132,10 @@ class TestAddFilesBatch:
         """Test that batch operation handles duplicates within batch."""
         files = [
             {"file_path": "/path/to/movie1.mp4", "file_type": "movie"},
-            {"file_path": "/path/to/movie1.mp4", "file_type": "movie"},  # Duplicate within batch
+            {
+                "file_path": "/path/to/movie1.mp4",
+                "file_type": "movie",
+            },  # Duplicate within batch
         ]
         queue_ids = manager.add_files_batch(files)
         # Only one entry should be added (duplicate within batch is skipped)
@@ -434,7 +440,9 @@ class TestClearCompletedFiles:
         manager.mark_completed(queue_id)
 
         # Manually set processed_at to 8 days ago using manager's session
-        entry = manager.session.query(FileQueue).filter(FileQueue.id == queue_id).first()
+        entry = (
+            manager.session.query(FileQueue).filter(FileQueue.id == queue_id).first()
+        )
         entry.processed_at = datetime.utcnow() - timedelta(days=8)
         manager.session.commit()
 

@@ -22,7 +22,7 @@ from app.api import tasks
 # Configure logging with structured format
 logging.basicConfig(
     level=settings.log_level,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     init_db()
     logger.info("Database initialized")
-    
+
     # Initialize Celery app
     logger.info("Initializing Celery app")
     celery_app.conf.update(
@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
     )
     logger.info(f"Celery broker: {settings.celery_broker_url}")
     logger.info(f"Celery result backend: {settings.celery_result_backend}")
-    
+
     yield
     # Shutdown
     logger.info("Shutting down application")
@@ -89,7 +89,7 @@ async def log_requests(request: Request, call_next):
         logger.error(
             f"[{request_id}] {request.method} {request.url.path} - "
             f"Error: {str(e)} - Duration: {process_time:.3f}s",
-            exc_info=True
+            exc_info=True,
         )
         raise
 
@@ -101,7 +101,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     request_id = getattr(request.state, "request_id", "unknown")
     logger.warning(
         f"[{request_id}] Validation error: {exc.error_count()} error(s)",
-        extra={"errors": exc.errors()}
+        extra={"errors": exc.errors()},
     )
     return JSONResponse(
         status_code=422,
@@ -149,6 +149,7 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",

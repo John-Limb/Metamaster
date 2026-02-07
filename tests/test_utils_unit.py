@@ -11,69 +11,77 @@ import re
 # String Formatting Utilities Tests
 # ============================================================================
 
+
 class TestStringFormattingUtilities:
     """Tests for string formatting utility functions"""
 
     def test_clean_filename_with_dots(self):
         """Test cleaning filename with dots"""
         from app.services.pattern_recognition import PatternRecognitionService
+
         service = PatternRecognitionService()
-        
+
         cleaned = service._clean_filename("The.Dark.Knight.2008")
         assert cleaned == "The Dark Knight 2008"
 
     def test_clean_filename_with_underscores(self):
         """Test cleaning filename with underscores"""
         from app.services.pattern_recognition import PatternRecognitionService
+
         service = PatternRecognitionService()
-        
+
         cleaned = service._clean_filename("The_Dark_Knight_2008")
         assert cleaned == "The Dark Knight 2008"
 
     def test_clean_filename_with_hyphens(self):
         """Test cleaning filename with hyphens"""
         from app.services.pattern_recognition import PatternRecognitionService
+
         service = PatternRecognitionService()
-        
+
         cleaned = service._clean_filename("The-Dark-Knight-2008")
         assert cleaned == "The Dark Knight 2008"
 
     def test_clean_filename_mixed_separators(self):
         """Test cleaning filename with mixed separators"""
         from app.services.pattern_recognition import PatternRecognitionService
+
         service = PatternRecognitionService()
-        
+
         cleaned = service._clean_filename("The.Dark_Knight-2008")
         assert cleaned == "The Dark Knight 2008"
 
     def test_clean_filename_extra_spaces(self):
         """Test cleaning filename with extra spaces"""
         from app.services.pattern_recognition import PatternRecognitionService
+
         service = PatternRecognitionService()
-        
+
         cleaned = service._clean_filename("The   Dark   Knight")
         assert cleaned == "The Dark Knight"
 
     def test_clean_title_basic(self):
         """Test cleaning title"""
         from app.services.pattern_recognition import PatternRecognitionService
+
         service = PatternRecognitionService()
-        
+
         cleaned = service._clean_title("The.Matrix")
         assert cleaned == "The Matrix"
 
     def test_clean_title_with_spaces(self):
         """Test cleaning title with spaces"""
         from app.services.pattern_recognition import PatternRecognitionService
+
         service = PatternRecognitionService()
-        
+
         cleaned = service._clean_title("The  Matrix  Reloaded")
         assert cleaned == "The Matrix Reloaded"
 
     def test_format_bitrate_mbps(self):
         """Test bitrate formatting in Mbps"""
         from app.services.ffprobe_wrapper import FFProbeWrapper
-        
+
         formatted = FFProbeWrapper._format_bitrate(5500000)
         assert "Mbps" in formatted
         assert "5.5" in formatted
@@ -81,7 +89,7 @@ class TestStringFormattingUtilities:
     def test_format_bitrate_kbps(self):
         """Test bitrate formatting in kbps"""
         from app.services.ffprobe_wrapper import FFProbeWrapper
-        
+
         formatted = FFProbeWrapper._format_bitrate(256000)
         assert "kbps" in formatted
         assert "256" in formatted
@@ -89,14 +97,14 @@ class TestStringFormattingUtilities:
     def test_format_bitrate_bps(self):
         """Test bitrate formatting in bps"""
         from app.services.ffprobe_wrapper import FFProbeWrapper
-        
+
         formatted = FFProbeWrapper._format_bitrate(500)
         assert "bps" in formatted
 
     def test_format_bitrate_large_value(self):
         """Test bitrate formatting with large value"""
         from app.services.ffprobe_wrapper import FFProbeWrapper
-        
+
         formatted = FFProbeWrapper._format_bitrate(50000000)
         assert "Mbps" in formatted
         assert "50" in formatted
@@ -105,6 +113,7 @@ class TestStringFormattingUtilities:
 # ============================================================================
 # Date/Time Utilities Tests
 # ============================================================================
+
 
 class TestDateTimeUtilities:
     """Tests for date/time utility functions"""
@@ -128,7 +137,7 @@ class TestDateTimeUtilities:
         """Test timedelta with days"""
         now = datetime.utcnow()
         future = now + timedelta(days=30)
-        
+
         diff = future - now
         assert diff.days == 30
 
@@ -136,7 +145,7 @@ class TestDateTimeUtilities:
         """Test timedelta with hours"""
         now = datetime.utcnow()
         future = now + timedelta(hours=24)
-        
+
         diff = future - now
         assert diff.total_seconds() == 86400
 
@@ -144,7 +153,7 @@ class TestDateTimeUtilities:
         """Test timedelta with seconds"""
         now = datetime.utcnow()
         future = now + timedelta(seconds=3600)
-        
+
         diff = future - now
         assert diff.total_seconds() == 3600
 
@@ -152,7 +161,7 @@ class TestDateTimeUtilities:
         """Test datetime ISO format"""
         now = datetime.utcnow()
         iso_str = now.isoformat()
-        
+
         assert isinstance(iso_str, str)
         assert "T" in iso_str
 
@@ -160,7 +169,7 @@ class TestDateTimeUtilities:
         """Test datetime string formatting"""
         now = datetime.utcnow()
         formatted = now.strftime("%Y-%m-%d")
-        
+
         assert len(formatted) == 10
         assert formatted.count("-") == 2
 
@@ -169,6 +178,7 @@ class TestDateTimeUtilities:
 # File Path Utilities Tests
 # ============================================================================
 
+
 class TestFilePathUtilities:
     """Tests for file path utility functions"""
 
@@ -176,28 +186,28 @@ class TestFilePathUtilities:
         """Test extracting filename stem"""
         path = Path("/path/to/The.Matrix.1999.mp4")
         stem = path.stem
-        
+
         assert stem == "The.Matrix.1999"
 
     def test_path_suffix_extraction(self):
         """Test extracting file extension"""
         path = Path("/path/to/movie.mp4")
         suffix = path.suffix
-        
+
         assert suffix == ".mp4"
 
     def test_path_suffix_lowercase(self):
         """Test file extension in lowercase"""
         path = Path("/path/to/movie.MP4")
         suffix = path.suffix.lower()
-        
+
         assert suffix == ".mp4"
 
     def test_path_parent_directory(self):
         """Test getting parent directory"""
         path = Path("/path/to/movie.mp4")
         parent = path.parent
-        
+
         assert str(parent) == "/path/to"
 
     def test_path_exists_check(self):
@@ -221,14 +231,14 @@ class TestFilePathUtilities:
         """Test extracting filename"""
         path = Path("/path/to/movie.mp4")
         name = path.name
-        
+
         assert name == "movie.mp4"
 
     def test_path_parts_extraction(self):
         """Test extracting path parts"""
         path = Path("/path/to/movie.mp4")
         parts = path.parts
-        
+
         assert "path" in parts
         assert "to" in parts
         assert "movie.mp4" in parts
@@ -237,6 +247,7 @@ class TestFilePathUtilities:
 # ============================================================================
 # Error Message Formatting Tests
 # ============================================================================
+
 
 class TestErrorMessageFormatting:
     """Tests for error message formatting utilities"""
@@ -260,7 +271,7 @@ class TestErrorMessageFormatting:
     def test_traceback_formatting(self):
         """Test traceback formatting"""
         import traceback
-        
+
         try:
             raise ValueError("Test error")
         except ValueError:
@@ -279,13 +290,14 @@ class TestErrorMessageFormatting:
         task_name = "analyze_file"
         error = "File not found"
         message = f"Task {task_name} failed: {error}"
-        
+
         assert message == "Task analyze_file failed: File not found"
 
 
 # ============================================================================
 # JSON Utilities Tests
 # ============================================================================
+
 
 class TestJSONUtilities:
     """Tests for JSON utility functions"""
@@ -294,7 +306,7 @@ class TestJSONUtilities:
         """Test JSON serialization of dict"""
         data = {"title": "The Matrix", "year": 1999}
         json_str = json.dumps(data)
-        
+
         assert isinstance(json_str, str)
         assert "The Matrix" in json_str
 
@@ -302,7 +314,7 @@ class TestJSONUtilities:
         """Test JSON deserialization"""
         json_str = '{"title": "The Matrix", "year": 1999}'
         data = json.loads(json_str)
-        
+
         assert data["title"] == "The Matrix"
         assert data["year"] == 1999
 
@@ -310,21 +322,16 @@ class TestJSONUtilities:
         """Test JSON serialization of list"""
         data = ["Drama", "Sci-Fi", "Action"]
         json_str = json.dumps(data)
-        
+
         assert isinstance(json_str, str)
         assert "Drama" in json_str
 
     def test_json_dumps_nested(self):
         """Test JSON serialization of nested structure"""
-        data = {
-            "movie": {
-                "title": "The Matrix",
-                "genres": ["Sci-Fi", "Action"]
-            }
-        }
+        data = {"movie": {"title": "The Matrix", "genres": ["Sci-Fi", "Action"]}}
         json_str = json.dumps(data)
         parsed = json.loads(json_str)
-        
+
         assert parsed["movie"]["title"] == "The Matrix"
         assert "Sci-Fi" in parsed["movie"]["genres"]
 
@@ -332,7 +339,7 @@ class TestJSONUtilities:
         """Test JSON serialization with indentation"""
         data = {"title": "Test"}
         json_str = json.dumps(data, indent=2)
-        
+
         assert "\n" in json_str  # Should have newlines with indent
 
 
@@ -340,14 +347,15 @@ class TestJSONUtilities:
 # Regex Utilities Tests
 # ============================================================================
 
+
 class TestRegexUtilities:
     """Tests for regex utility functions"""
 
     def test_regex_pattern_matching(self):
         """Test regex pattern matching"""
-        pattern = r'[Ss](\d{1,2})[Ee](\d{1,2})'
+        pattern = r"[Ss](\d{1,2})[Ee](\d{1,2})"
         text = "Breaking Bad S01E01"
-        
+
         match = re.search(pattern, text)
         assert match is not None
         assert match.group(1) == "01"
@@ -355,18 +363,18 @@ class TestRegexUtilities:
 
     def test_regex_year_extraction(self):
         """Test regex year extraction"""
-        pattern = r'(\d{4})'
+        pattern = r"(\d{4})"
         text = "The Matrix (1999)"
-        
+
         match = re.search(pattern, text)
         assert match is not None
         assert match.group(1) == "1999"
 
     def test_regex_multiple_matches(self):
         """Test regex multiple matches"""
-        pattern = r'\d+'
+        pattern = r"\d+"
         text = "Season 1 Episode 5"
-        
+
         matches = re.findall(pattern, text)
         assert len(matches) == 2
         assert "1" in matches
@@ -374,24 +382,24 @@ class TestRegexUtilities:
 
     def test_regex_case_insensitive(self):
         """Test regex case insensitive matching"""
-        pattern = r'[Ss]eason'
-        
+        pattern = r"[Ss]eason"
+
         assert re.search(pattern, "Season 1") is not None
         assert re.search(pattern, "season 1") is not None
 
     def test_regex_substitution(self):
         """Test regex substitution"""
-        pattern = r'[._-]+'
+        pattern = r"[._-]+"
         text = "The.Dark.Knight"
-        
+
         result = re.sub(pattern, " ", text)
         assert result == "The Dark Knight"
 
     def test_regex_split(self):
         """Test regex split"""
-        pattern = r'[._-]'
+        pattern = r"[._-]"
         text = "The.Dark-Knight_2008"
-        
+
         parts = re.split(pattern, text)
         assert len(parts) == 4
         assert "The" in parts
@@ -401,6 +409,7 @@ class TestRegexUtilities:
 # ============================================================================
 # Validation Utilities Tests
 # ============================================================================
+
 
 class TestValidationUtilities:
     """Tests for validation utility functions"""
@@ -429,20 +438,21 @@ class TestValidationUtilities:
         """Test file extension validation"""
         extensions = [".mp4", ".mkv", ".avi"]
         file_ext = ".mp4"
-        
+
         assert file_ext in extensions
 
     def test_validate_media_type(self):
         """Test media type validation"""
         valid_types = ["movie", "tv_show"]
         media_type = "movie"
-        
+
         assert media_type in valid_types
 
 
 # ============================================================================
 # Collection Utilities Tests
 # ============================================================================
+
 
 class TestCollectionUtilities:
     """Tests for collection utility functions"""
@@ -451,7 +461,7 @@ class TestCollectionUtilities:
         """Test list deduplication"""
         items = [1, 2, 2, 3, 3, 3, 4]
         unique = list(set(items))
-        
+
         assert len(unique) == 4
         assert 1 in unique
         assert 4 in unique
@@ -460,7 +470,7 @@ class TestCollectionUtilities:
         """Test dictionary merging"""
         dict1 = {"a": 1, "b": 2}
         dict2 = {"c": 3, "d": 4}
-        
+
         merged = {**dict1, **dict2}
         assert len(merged) == 4
         assert merged["a"] == 1
@@ -469,10 +479,10 @@ class TestCollectionUtilities:
     def test_dict_get_with_default(self):
         """Test dictionary get with default"""
         data = {"title": "Test"}
-        
+
         title = data.get("title", "Unknown")
         rating = data.get("rating", 0)
-        
+
         assert title == "Test"
         assert rating == 0
 
@@ -480,7 +490,7 @@ class TestCollectionUtilities:
         """Test list filtering"""
         items = [1, 2, 3, 4, 5]
         filtered = [x for x in items if x > 2]
-        
+
         assert len(filtered) == 3
         assert 1 not in filtered
         assert 5 in filtered
@@ -489,14 +499,14 @@ class TestCollectionUtilities:
         """Test list mapping"""
         items = [1, 2, 3]
         mapped = [x * 2 for x in items]
-        
+
         assert mapped == [2, 4, 6]
 
     def test_dict_filtering(self):
         """Test dictionary filtering"""
         data = {"a": 1, "b": 2, "c": 3}
         filtered = {k: v for k, v in data.items() if v > 1}
-        
+
         assert len(filtered) == 2
         assert "a" not in filtered
         assert filtered["c"] == 3
@@ -505,6 +515,7 @@ class TestCollectionUtilities:
 # ============================================================================
 # Type Conversion Utilities Tests
 # ============================================================================
+
 
 class TestTypeConversionUtilities:
     """Tests for type conversion utility functions"""
@@ -542,7 +553,7 @@ class TestTypeConversionUtilities:
         """Test list to string conversion"""
         items = ["Drama", "Sci-Fi"]
         value = json.dumps(items)
-        
+
         assert isinstance(value, str)
         assert "Drama" in value
 
@@ -550,6 +561,7 @@ class TestTypeConversionUtilities:
 # ============================================================================
 # Comparison Utilities Tests
 # ============================================================================
+
 
 class TestComparisonUtilities:
     """Tests for comparison utility functions"""
@@ -574,12 +586,12 @@ class TestComparisonUtilities:
         """Test list equality"""
         list1 = [1, 2, 3]
         list2 = [1, 2, 3]
-        
+
         assert list1 == list2
 
     def test_dict_equality(self):
         """Test dictionary equality"""
         dict1 = {"title": "Test", "year": 2020}
         dict2 = {"title": "Test", "year": 2020}
-        
+
         assert dict1 == dict2

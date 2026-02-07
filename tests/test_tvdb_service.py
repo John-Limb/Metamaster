@@ -32,9 +32,9 @@ def sample_search_response():
                 "status": "Ended",
                 "first_air_date": "2008-01-20",
                 "image_url": "https://artworks.thetvdb.com/banners/v4/series/81189/posters/5e96d1f89c0a0.jpg",
-                "type": "series"
+                "type": "series",
             }
-        ]
+        ],
     }
 
 
@@ -54,8 +54,8 @@ def sample_series_response():
             "image_url": "https://artworks.thetvdb.com/banners/v4/series/81189/posters/5e96d1f89c0a0.jpg",
             "network": "AMC",
             "country": "United States",
-            "genres": ["Drama", "Crime"]
-        }
+            "genres": ["Drama", "Crime"],
+        },
     }
 
 
@@ -65,17 +65,9 @@ def sample_seasons_response():
     return {
         "status": "success",
         "data": [
-            {
-                "id": 3962,
-                "number": 1,
-                "episodes": 7
-            },
-            {
-                "id": 3963,
-                "number": 2,
-                "episodes": 13
-            }
-        ]
+            {"id": 3962, "number": 1, "episodes": 7},
+            {"id": 3963, "number": 2, "episodes": 13},
+        ],
     }
 
 
@@ -92,7 +84,7 @@ def sample_episodes_response():
                 "overview": "A high school chemistry teacher...",
                 "aired": "2008-01-20",
                 "score": 8.5,
-                "runtime": 58
+                "runtime": 58,
             },
             {
                 "id": 349233,
@@ -101,21 +93,16 @@ def sample_episodes_response():
                 "overview": "Walter and Jesse...",
                 "aired": "2008-01-27",
                 "score": 8.3,
-                "runtime": 58
-            }
-        ]
+                "runtime": 58,
+            },
+        ],
     }
 
 
 @pytest.fixture
 def sample_auth_response():
     """Sample TVDB authentication response"""
-    return {
-        "status": "success",
-        "data": {
-            "token": "test_token_12345"
-        }
-    }
+    return {"status": "success", "data": {"token": "test_token_12345"}}
 
 
 @pytest.mark.asyncio
@@ -144,11 +131,11 @@ async def test_search_show_no_auth_token(mock_db):
     # Reset auth token to force auth attempt
     TVDBService._auth_token = None
     TVDBService._token_expiry = None
-    
+
     # Mock db to return None for cache query
     mock_db.query.return_value.filter.return_value.first.return_value = None
-    
-    with patch.object(settings, 'tvdb_api_key', None):
+
+    with patch.object(settings, "tvdb_api_key", None):
         result = await TVDBService.search_show(mock_db, "Breaking Bad")
         assert result is None
 
@@ -179,11 +166,11 @@ async def test_get_series_details_no_auth_token(mock_db):
     # Reset auth token to force auth attempt
     TVDBService._auth_token = None
     TVDBService._token_expiry = None
-    
+
     # Mock db to return None for cache query
     mock_db.query.return_value.filter.return_value.first.return_value = None
-    
-    with patch.object(settings, 'tvdb_api_key', None):
+
+    with patch.object(settings, "tvdb_api_key", None):
         result = await TVDBService.get_series_details(mock_db, "81189")
         assert result is None
 
@@ -361,7 +348,7 @@ async def test_make_request_with_retry_success(sample_series_response):
     mock_response.json = AsyncMock(return_value=sample_series_response)
     mock_response.raise_for_status = AsyncMock()
 
-    with patch('httpx.AsyncClient') as mock_client_class:
+    with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.__aenter__.return_value = mock_client
         mock_client.__aexit__.return_value = None
@@ -369,8 +356,7 @@ async def test_make_request_with_retry_success(sample_series_response):
         mock_client_class.return_value = mock_client
 
         result = await TVDBService._make_request_with_retry(
-            "http://test.com",
-            {"Authorization": "Bearer test_token"}
+            "http://test.com", {"Authorization": "Bearer test_token"}
         )
 
         assert result is not None
@@ -381,10 +367,12 @@ async def test_make_request_with_retry_success(sample_series_response):
 async def test_make_request_with_retry_api_error():
     """Test request with API error response"""
     mock_response = AsyncMock()
-    mock_response.json = AsyncMock(return_value={"status": "failed", "message": "Not found"})
+    mock_response.json = AsyncMock(
+        return_value={"status": "failed", "message": "Not found"}
+    )
     mock_response.raise_for_status = AsyncMock()
 
-    with patch('httpx.AsyncClient') as mock_client_class:
+    with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.__aenter__.return_value = mock_client
         mock_client.__aexit__.return_value = None
@@ -392,8 +380,7 @@ async def test_make_request_with_retry_api_error():
         mock_client_class.return_value = mock_client
 
         result = await TVDBService._make_request_with_retry(
-            "http://test.com",
-            {"Authorization": "Bearer test_token"}
+            "http://test.com", {"Authorization": "Bearer test_token"}
         )
 
         assert result is None
@@ -402,7 +389,7 @@ async def test_make_request_with_retry_api_error():
 @pytest.mark.asyncio
 async def test_make_request_with_retry_http_error():
     """Test request with HTTP error and retry"""
-    with patch('httpx.AsyncClient') as mock_client_class:
+    with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.__aenter__.return_value = mock_client
         mock_client.__aexit__.return_value = None
@@ -410,9 +397,7 @@ async def test_make_request_with_retry_http_error():
         mock_client_class.return_value = mock_client
 
         result = await TVDBService._make_request_with_retry(
-            "http://test.com",
-            {"Authorization": "Bearer test_token"},
-            max_retries=1
+            "http://test.com", {"Authorization": "Bearer test_token"}, max_retries=1
         )
 
         # Should return None after retries exhausted
@@ -426,7 +411,7 @@ async def test_get_auth_token_success(sample_auth_response):
     mock_response.json = AsyncMock(return_value=sample_auth_response)
     mock_response.raise_for_status = AsyncMock()
 
-    with patch('httpx.AsyncClient') as mock_client_class:
+    with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.__aenter__.return_value = mock_client
         mock_client.__aexit__.return_value = None
@@ -437,8 +422,8 @@ async def test_get_auth_token_success(sample_auth_response):
         TVDBService._auth_token = None
         TVDBService._token_expiry = None
 
-        with patch.object(settings, 'tvdb_api_key', 'test_key'):
-            with patch.object(settings, 'tvdb_pin', 'test_pin'):
+        with patch.object(settings, "tvdb_api_key", "test_key"):
+            with patch.object(settings, "tvdb_pin", "test_pin"):
                 token = await TVDBService._get_auth_token()
 
                 assert token == "test_token_12345"
@@ -465,7 +450,7 @@ async def test_get_auth_token_no_credentials():
     TVDBService._auth_token = None
     TVDBService._token_expiry = None
 
-    with patch.object(settings, 'tvdb_api_key', None):
-        with patch.object(settings, 'tvdb_pin', None):
+    with patch.object(settings, "tvdb_api_key", None):
+        with patch.object(settings, "tvdb_pin", None):
             token = await TVDBService._get_auth_token()
             assert token is None

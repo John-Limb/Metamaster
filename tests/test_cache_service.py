@@ -40,9 +40,7 @@ class TestCacheServiceKeyGeneration:
     def test_generate_cache_key_multiple_params(self):
         """Test cache key generation with multiple parameters"""
         key = CacheService.generate_cache_key(
-            "omdb",
-            "search",
-            {"title": "Inception", "year": 2010}
+            "omdb", "search", {"title": "Inception", "year": 2010}
         )
         # Parameters should be sorted
         assert "title=Inception" in key
@@ -65,11 +63,7 @@ class TestCacheServiceSetGet:
 
         # Set cache
         result = CacheService.set_cache(
-            db,
-            cache_key,
-            test_data,
-            api_type="omdb",
-            ttl_seconds=3600
+            db, cache_key, test_data, api_type="omdb", ttl_seconds=3600
         )
         assert result is True
 
@@ -92,7 +86,7 @@ class TestCacheServiceSetGet:
             api_type="omdb",
             query_key=cache_key,
             response_data=json.dumps(test_data),
-            expires_at=datetime.utcnow() - timedelta(seconds=1)
+            expires_at=datetime.utcnow() - timedelta(seconds=1),
         )
         db.add(cache_entry)
         db.commit()
@@ -182,14 +176,16 @@ class TestCacheServiceExpiration:
             api_type="omdb",
             query_key=expired_key,
             response_data=json.dumps(expired_data),
-            expires_at=datetime.utcnow() - timedelta(seconds=1)
+            expires_at=datetime.utcnow() - timedelta(seconds=1),
         )
         db.add(expired_entry)
 
         # Create active entry
         active_key = "test:active:1"
         active_data = {"title": "Active"}
-        CacheService.set_cache(db, active_key, active_data, api_type="omdb", ttl_seconds=3600)
+        CacheService.set_cache(
+            db, active_key, active_data, api_type="omdb", ttl_seconds=3600
+        )
 
         db.commit()
 
@@ -230,9 +226,13 @@ class TestCacheServiceInvalidation:
     def test_invalidate_by_pattern(self, db):
         """Test invalidating cache by key pattern"""
         # Create cache entries with different patterns
-        CacheService.set_cache(db, "omdb:search:inception", {"data": "1"}, api_type="omdb")
+        CacheService.set_cache(
+            db, "omdb:search:inception", {"data": "1"}, api_type="omdb"
+        )
         CacheService.set_cache(db, "omdb:search:matrix", {"data": "2"}, api_type="omdb")
-        CacheService.set_cache(db, "omdb:details:tt0111161", {"data": "3"}, api_type="omdb")
+        CacheService.set_cache(
+            db, "omdb:details:tt0111161", {"data": "3"}, api_type="omdb"
+        )
 
         # Invalidate search pattern
         deleted_count = CacheService.invalidate_by_pattern(db, "omdb:search:*")
@@ -285,7 +285,7 @@ class TestCacheServiceStatistics:
             api_type="omdb",
             query_key="omdb:key:2",
             response_data=json.dumps({"data": "expired"}),
-            expires_at=datetime.utcnow() - timedelta(seconds=1)
+            expires_at=datetime.utcnow() - timedelta(seconds=1),
         )
         db.add(expired_entry)
         db.commit()
@@ -305,10 +305,7 @@ class TestCacheServiceBulkOperations:
         # Create multiple entries
         for i in range(5):
             CacheService.set_cache(
-                db,
-                f"test:key:{i}",
-                {"data": f"test{i}"},
-                api_type="omdb"
+                db, f"test:key:{i}", {"data": f"test{i}"}, api_type="omdb"
             )
 
         # Verify entries exist
@@ -328,19 +325,13 @@ class TestCacheServiceBulkOperations:
         # Create OMDB entries
         for i in range(3):
             CacheService.set_cache(
-                db,
-                f"omdb:key:{i}",
-                {"data": f"omdb{i}"},
-                api_type="omdb"
+                db, f"omdb:key:{i}", {"data": f"omdb{i}"}, api_type="omdb"
             )
 
         # Create TVDB entries
         for i in range(2):
             CacheService.set_cache(
-                db,
-                f"tvdb:key:{i}",
-                {"data": f"tvdb{i}"},
-                api_type="tvdb"
+                db, f"tvdb:key:{i}", {"data": f"tvdb{i}"}, api_type="tvdb"
             )
 
         # Get OMDB entries
@@ -358,10 +349,7 @@ class TestCacheServiceBulkOperations:
         # Create 10 entries
         for i in range(10):
             CacheService.set_cache(
-                db,
-                f"omdb:key:{i}",
-                {"data": f"omdb{i}"},
-                api_type="omdb"
+                db, f"omdb:key:{i}", {"data": f"omdb{i}"}, api_type="omdb"
             )
 
         # Get first page

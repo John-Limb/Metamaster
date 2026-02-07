@@ -8,6 +8,7 @@ from app.database import Base
 
 class Movie(Base):
     """Movie entity"""
+
     __tablename__ = "movies"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -22,7 +23,9 @@ class Movie(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    files = relationship("MovieFile", back_populates="movie", cascade="all, delete-orphan")
+    files = relationship(
+        "MovieFile", back_populates="movie", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         Index("idx_movies_title", "title"),
@@ -33,10 +36,13 @@ class Movie(Base):
 
 class MovieFile(Base):
     """Movie file metadata"""
+
     __tablename__ = "movie_files"
 
     id = Column(Integer, primary_key=True, index=True)
-    movie_id = Column(Integer, ForeignKey("movies.id", ondelete="CASCADE"), nullable=False, index=True)
+    movie_id = Column(
+        Integer, ForeignKey("movies.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     file_path = Column(String(500), unique=True, nullable=False, index=True)
     file_size = Column(Integer)  # in bytes
     resolution = Column(String(20))  # e.g., "1920x1080"
@@ -58,6 +64,7 @@ class MovieFile(Base):
 
 class TVShow(Base):
     """TV Show entity"""
+
     __tablename__ = "tv_shows"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -71,7 +78,9 @@ class TVShow(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    seasons = relationship("Season", back_populates="show", cascade="all, delete-orphan")
+    seasons = relationship(
+        "Season", back_populates="show", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         Index("idx_tv_shows_title", "title"),
@@ -81,17 +90,25 @@ class TVShow(Base):
 
 class Season(Base):
     """TV Show season"""
+
     __tablename__ = "seasons"
 
     id = Column(Integer, primary_key=True, index=True)
-    show_id = Column(Integer, ForeignKey("tv_shows.id", ondelete="CASCADE"), nullable=False, index=True)
+    show_id = Column(
+        Integer,
+        ForeignKey("tv_shows.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     season_number = Column(Integer, nullable=False)
     tvdb_id = Column(String(50))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     show = relationship("TVShow", back_populates="seasons")
-    episodes = relationship("Episode", back_populates="season", cascade="all, delete-orphan")
+    episodes = relationship(
+        "Episode", back_populates="season", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         Index("idx_seasons_show_id", "show_id"),
@@ -101,10 +118,16 @@ class Season(Base):
 
 class Episode(Base):
     """TV Show episode"""
+
     __tablename__ = "episodes"
 
     id = Column(Integer, primary_key=True, index=True)
-    season_id = Column(Integer, ForeignKey("seasons.id", ondelete="CASCADE"), nullable=False, index=True)
+    season_id = Column(
+        Integer,
+        ForeignKey("seasons.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     episode_number = Column(Integer, nullable=False)
     tvdb_id = Column(String(50), unique=True, index=True)
     title = Column(String(255))
@@ -116,7 +139,9 @@ class Episode(Base):
 
     # Relationships
     season = relationship("Season", back_populates="episodes")
-    files = relationship("EpisodeFile", back_populates="episode", cascade="all, delete-orphan")
+    files = relationship(
+        "EpisodeFile", back_populates="episode", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         Index("idx_episodes_season_id", "season_id"),
@@ -126,10 +151,16 @@ class Episode(Base):
 
 class EpisodeFile(Base):
     """Episode file metadata"""
+
     __tablename__ = "episode_files"
 
     id = Column(Integer, primary_key=True, index=True)
-    episode_id = Column(Integer, ForeignKey("episodes.id", ondelete="CASCADE"), nullable=False, index=True)
+    episode_id = Column(
+        Integer,
+        ForeignKey("episodes.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     file_path = Column(String(500), unique=True, nullable=False, index=True)
     file_size = Column(Integer)  # in bytes
     resolution = Column(String(20))  # e.g., "1920x1080"
@@ -151,6 +182,7 @@ class EpisodeFile(Base):
 
 class APICache(Base):
     """API response cache"""
+
     __tablename__ = "api_cache"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -167,65 +199,76 @@ class APICache(Base):
 
 
 class FileQueue(Base):
-     """File processing queue"""
-     __tablename__ = "file_queue"
+    """File processing queue"""
 
-     id = Column(Integer, primary_key=True, index=True)
-     file_path = Column(String(500), unique=True, nullable=False)
-     status = Column(String(20), default="pending", index=True)  # pending, processing, completed, failed
-     media_type = Column(String(20))  # "movie" or "tv_show"
-     error_message = Column(Text)
-     created_at = Column(DateTime, default=datetime.utcnow, index=True)
-     processed_at = Column(DateTime)
+    __tablename__ = "file_queue"
 
-     __table_args__ = (
-         Index("idx_file_queue_status", "status"),
-         Index("idx_file_queue_created", "created_at"),
-     )
+    id = Column(Integer, primary_key=True, index=True)
+    file_path = Column(String(500), unique=True, nullable=False)
+    status = Column(
+        String(20), default="pending", index=True
+    )  # pending, processing, completed, failed
+    media_type = Column(String(20))  # "movie" or "tv_show"
+    error_message = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    processed_at = Column(DateTime)
+
+    __table_args__ = (
+        Index("idx_file_queue_status", "status"),
+        Index("idx_file_queue_created", "created_at"),
+    )
 
 
 class TaskError(Base):
-      """Task error tracking and audit trail"""
-      __tablename__ = "task_errors"
+    """Task error tracking and audit trail"""
 
-      id = Column(Integer, primary_key=True, index=True)
-      task_id = Column(String(255), nullable=False, index=True)
-      task_name = Column(String(255), nullable=False)
-      error_message = Column(Text, nullable=False)
-      error_traceback = Column(Text)
-      severity = Column(String(20), nullable=False, index=True)  # critical, warning, info
-      retry_count = Column(Integer, default=0)
-      created_at = Column(DateTime, default=datetime.utcnow, index=True)
-      resolved_at = Column(DateTime, nullable=True)
+    __tablename__ = "task_errors"
 
-      __table_args__ = (
-          Index("idx_task_errors_task_id", "task_id"),
-          Index("idx_task_errors_created", "created_at"),
-          Index("idx_task_errors_severity", "severity"),
-      )
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(String(255), nullable=False, index=True)
+    task_name = Column(String(255), nullable=False)
+    error_message = Column(Text, nullable=False)
+    error_traceback = Column(Text)
+    severity = Column(String(20), nullable=False, index=True)  # critical, warning, info
+    retry_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    resolved_at = Column(DateTime, nullable=True)
+
+    __table_args__ = (
+        Index("idx_task_errors_task_id", "task_id"),
+        Index("idx_task_errors_created", "created_at"),
+        Index("idx_task_errors_severity", "severity"),
+    )
 
 
 class BatchOperation(Base):
-      """Batch operation tracking and progress monitoring"""
-      __tablename__ = "batch_operations"
+    """Batch operation tracking and progress monitoring"""
 
-      id = Column(Integer, primary_key=True, index=True)
-      operation_type = Column(String(50), nullable=False, index=True)  # "metadata_sync", "file_import"
-      status = Column(String(20), nullable=False, index=True, default="pending")  # pending, running, completed, failed, cancelled
-      total_items = Column(Integer, nullable=False)
-      completed_items = Column(Integer, default=0)
-      failed_items = Column(Integer, default=0)
-      progress_percentage = Column(Float, default=0.0)
-      eta = Column(DateTime, nullable=True)  # Estimated time of completion
-      error_message = Column(Text, nullable=True)
-      operation_metadata = Column(Text, nullable=True)  # JSON for operation-specific data
-      created_at = Column(DateTime, default=datetime.utcnow, index=True)
-      updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
-      started_at = Column(DateTime, nullable=True)
-      completed_at = Column(DateTime, nullable=True)
+    __tablename__ = "batch_operations"
 
-      __table_args__ = (
-          Index("idx_batch_operations_status", "status"),
-          Index("idx_batch_operations_type", "operation_type"),
-          Index("idx_batch_operations_created", "created_at"),
-      )
+    id = Column(Integer, primary_key=True, index=True)
+    operation_type = Column(
+        String(50), nullable=False, index=True
+    )  # "metadata_sync", "file_import"
+    status = Column(
+        String(20), nullable=False, index=True, default="pending"
+    )  # pending, running, completed, failed, cancelled
+    total_items = Column(Integer, nullable=False)
+    completed_items = Column(Integer, default=0)
+    failed_items = Column(Integer, default=0)
+    progress_percentage = Column(Float, default=0.0)
+    eta = Column(DateTime, nullable=True)  # Estimated time of completion
+    error_message = Column(Text, nullable=True)
+    operation_metadata = Column(Text, nullable=True)  # JSON for operation-specific data
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True
+    )
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+
+    __table_args__ = (
+        Index("idx_batch_operations_status", "status"),
+        Index("idx_batch_operations_type", "operation_type"),
+        Index("idx_batch_operations_created", "created_at"),
+    )

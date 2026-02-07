@@ -12,6 +12,7 @@ from app.config import Settings, settings
 # Configuration Loading Tests
 # ============================================================================
 
+
 class TestSettingsLoading:
     """Tests for configuration loading"""
 
@@ -46,6 +47,7 @@ class TestSettingsLoading:
 # ============================================================================
 # Environment Variable Tests
 # ============================================================================
+
 
 class TestEnvironmentVariables:
     """Tests for environment variable handling"""
@@ -96,6 +98,7 @@ class TestEnvironmentVariables:
 # ============================================================================
 # Database Configuration Tests
 # ============================================================================
+
 
 class TestDatabaseConfiguration:
     """Tests for database configuration"""
@@ -153,6 +156,7 @@ class TestDatabaseConfiguration:
 # Redis Configuration Tests
 # ============================================================================
 
+
 class TestRedisConfiguration:
     """Tests for Redis configuration"""
 
@@ -191,6 +195,7 @@ class TestRedisConfiguration:
 # ============================================================================
 # API Configuration Tests
 # ============================================================================
+
 
 class TestAPIConfiguration:
     """Tests for external API configuration"""
@@ -232,6 +237,7 @@ class TestAPIConfiguration:
 # File Monitoring Configuration Tests
 # ============================================================================
 
+
 class TestFileMonitoringConfiguration:
     """Tests for file monitoring configuration"""
 
@@ -257,6 +263,7 @@ class TestFileMonitoringConfiguration:
 # ============================================================================
 # Celery Configuration Tests
 # ============================================================================
+
 
 class TestCeleryConfiguration:
     """Tests for Celery configuration"""
@@ -313,6 +320,7 @@ class TestCeleryConfiguration:
 # Logging Configuration Tests
 # ============================================================================
 
+
 class TestLoggingConfiguration:
     """Tests for logging configuration"""
 
@@ -337,6 +345,7 @@ class TestLoggingConfiguration:
 # ============================================================================
 # Query Performance Configuration Tests
 # ============================================================================
+
 
 class TestQueryPerformanceConfiguration:
     """Tests for query performance configuration"""
@@ -368,6 +377,7 @@ class TestQueryPerformanceConfiguration:
 # Configuration Validation Tests
 # ============================================================================
 
+
 class TestConfigurationValidation:
     """Tests for configuration validation"""
 
@@ -379,14 +389,14 @@ class TestConfigurationValidation:
     def test_settings_has_required_attributes(self):
         """Test Settings has all required attributes"""
         test_settings = Settings()
-        assert hasattr(test_settings, 'app_name')
-        assert hasattr(test_settings, 'database_url')
-        assert hasattr(test_settings, 'redis_url')
-        assert hasattr(test_settings, 'celery_broker_url')
+        assert hasattr(test_settings, "app_name")
+        assert hasattr(test_settings, "database_url")
+        assert hasattr(test_settings, "redis_url")
+        assert hasattr(test_settings, "celery_broker_url")
 
     def test_settings_config_class(self):
         """Test Settings Config class"""
-        assert hasattr(Settings, 'Config')
+        assert hasattr(Settings, "Config")
         assert Settings.Config.env_file == ".env"
         assert Settings.Config.case_sensitive is False
 
@@ -400,15 +410,19 @@ class TestConfigurationValidation:
 # Multiple Environment Variable Tests
 # ============================================================================
 
+
 class TestMultipleEnvironmentVariables:
     """Tests for multiple environment variables"""
 
-    @patch.dict(os.environ, {
-        "APP_NAME": "Test App",
-        "DEBUG": "true",
-        "DATABASE_URL": "sqlite:///test.db",
-        "LOG_LEVEL": "DEBUG"
-    })
+    @patch.dict(
+        os.environ,
+        {
+            "APP_NAME": "Test App",
+            "DEBUG": "true",
+            "DATABASE_URL": "sqlite:///test.db",
+            "LOG_LEVEL": "DEBUG",
+        },
+    )
     def test_multiple_env_vars(self):
         """Test multiple environment variables"""
         test_settings = Settings()
@@ -417,11 +431,14 @@ class TestMultipleEnvironmentVariables:
         assert test_settings.database_url == "sqlite:///test.db"
         assert test_settings.log_level == "DEBUG"
 
-    @patch.dict(os.environ, {
-        "OMDB_API_KEY": "omdb_key",
-        "TVDB_API_KEY": "tvdb_key",
-        "TVDB_PIN": "tvdb_pin"
-    })
+    @patch.dict(
+        os.environ,
+        {
+            "OMDB_API_KEY": "omdb_key",
+            "TVDB_API_KEY": "tvdb_key",
+            "TVDB_PIN": "tvdb_pin",
+        },
+    )
     def test_api_keys_from_env(self):
         """Test API keys from environment"""
         test_settings = Settings()
@@ -434,6 +451,7 @@ class TestMultipleEnvironmentVariables:
 # Configuration Consistency Tests
 # ============================================================================
 
+
 class TestConfigurationConsistency:
     """Tests for configuration consistency"""
 
@@ -441,7 +459,9 @@ class TestConfigurationConsistency:
         """Test Redis URLs are consistent"""
         test_settings = Settings()
         # Celery broker and Redis URL should be on same server
-        assert "localhost" in test_settings.redis_url or "redis" in test_settings.redis_url
+        assert (
+            "localhost" in test_settings.redis_url or "redis" in test_settings.redis_url
+        )
 
     def test_cache_ttl_values_reasonable(self):
         """Test cache TTL values are reasonable"""
@@ -468,4 +488,7 @@ class TestConfigurationConsistency:
         """Test Celery timeouts are reasonable"""
         test_settings = Settings()
         assert test_settings.celery_task_soft_time_limit > 0
-        assert test_settings.celery_task_time_limit > test_settings.celery_task_soft_time_limit
+        assert (
+            test_settings.celery_task_time_limit
+            > test_settings.celery_task_soft_time_limit
+        )

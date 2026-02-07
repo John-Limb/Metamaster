@@ -9,19 +9,18 @@ from datetime import datetime
 # Movie Schemas
 # ============================================================================
 
+
 class MovieCreate(BaseModel):
     """Schema for creating a new movie"""
-    title: str = Field(..., min_length=1, max_length=255,
-                       description="Movie title")
+
+    title: str = Field(..., min_length=1, max_length=255, description="Movie title")
     plot: Optional[str] = Field(None, description="Movie plot/description")
-    year: Optional[int] = Field(
-        None, ge=1800, le=2100, description="Release year")
+    year: Optional[int] = Field(None, ge=1800, le=2100, description="Release year")
     rating: Optional[float] = Field(
-        None, ge=0, le=10, description="Movie rating (0-10)")
-    runtime: Optional[int] = Field(
-        None, ge=0, description="Runtime in minutes")
-    genres: Optional[str] = Field(
-        None, description="Genres as JSON array string")
+        None, ge=0, le=10, description="Movie rating (0-10)"
+    )
+    runtime: Optional[int] = Field(None, ge=0, description="Runtime in minutes")
+    genres: Optional[str] = Field(None, description="Genres as JSON array string")
     omdb_id: Optional[str] = Field(None, description="OMDB ID")
 
     model_config = ConfigDict(
@@ -33,7 +32,7 @@ class MovieCreate(BaseModel):
                 "rating": 9.3,
                 "runtime": 142,
                 "genres": '["Drama"]',
-                "omdb_id": "tt0111161"
+                "omdb_id": "tt0111161",
             }
         }
     )
@@ -41,6 +40,7 @@ class MovieCreate(BaseModel):
 
 class MovieUpdate(BaseModel):
     """Schema for updating a movie"""
+
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     plot: Optional[str] = None
     year: Optional[int] = Field(None, ge=1800, le=2100)
@@ -50,17 +50,13 @@ class MovieUpdate(BaseModel):
     omdb_id: Optional[str] = None
 
     model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "rating": 9.5,
-                "runtime": 145
-            }
-        }
+        json_schema_extra={"example": {"rating": 9.5, "runtime": 145}}
     )
 
 
 class MovieResponse(BaseModel):
     """Schema for movie response"""
+
     id: int = Field(..., description="Movie ID")
     title: str = Field(..., description="Movie title")
     plot: Optional[str] = None
@@ -79,17 +75,17 @@ class MovieResponse(BaseModel):
 # TV Show Schemas
 # ============================================================================
 
+
 class TVShowCreate(BaseModel):
     """Schema for creating a new TV show"""
-    title: str = Field(..., min_length=1, max_length=255,
-                       description="TV show title")
+
+    title: str = Field(..., min_length=1, max_length=255, description="TV show title")
     plot: Optional[str] = Field(None, description="TV show plot/description")
     rating: Optional[float] = Field(
-        None, ge=0, le=10, description="TV show rating (0-10)")
-    genres: Optional[str] = Field(
-        None, description="Genres as JSON array string")
-    status: Optional[str] = Field(
-        None, description="Status: 'Continuing' or 'Ended'")
+        None, ge=0, le=10, description="TV show rating (0-10)"
+    )
+    genres: Optional[str] = Field(None, description="Genres as JSON array string")
+    status: Optional[str] = Field(None, description="Status: 'Continuing' or 'Ended'")
     tvdb_id: Optional[str] = Field(None, description="TVDB ID")
 
     model_config = ConfigDict(
@@ -100,7 +96,7 @@ class TVShowCreate(BaseModel):
                 "rating": 9.5,
                 "genres": '["Drama", "Crime"]',
                 "status": "Ended",
-                "tvdb_id": "81189"
+                "tvdb_id": "81189",
             }
         }
     )
@@ -108,6 +104,7 @@ class TVShowCreate(BaseModel):
 
 class TVShowUpdate(BaseModel):
     """Schema for updating a TV show"""
+
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     plot: Optional[str] = None
     rating: Optional[float] = Field(None, ge=0, le=10)
@@ -116,17 +113,13 @@ class TVShowUpdate(BaseModel):
     tvdb_id: Optional[str] = None
 
     model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "rating": 9.6,
-                "status": "Ended"
-            }
-        }
+        json_schema_extra={"example": {"rating": 9.6, "status": "Ended"}}
     )
 
 
 class TVShowResponse(BaseModel):
     """Schema for TV show response"""
+
     id: int = Field(..., description="TV show ID")
     title: str = Field(..., description="TV show title")
     plot: Optional[str] = None
@@ -144,13 +137,16 @@ class TVShowResponse(BaseModel):
 # Season and Episode Schemas
 # ============================================================================
 
+
 class SeasonResponse(BaseModel):
     """Schema for season response"""
+
     id: int = Field(..., description="Season ID")
     season_number: int = Field(..., description="Season number")
     tvdb_id: Optional[str] = None
     episode_count: Optional[int] = Field(
-        None, description="Number of episodes in season")
+        None, description="Number of episodes in season"
+    )
     created_at: datetime = Field(..., description="Creation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
@@ -158,12 +154,12 @@ class SeasonResponse(BaseModel):
 
 class EpisodeResponse(BaseModel):
     """Schema for episode response"""
+
     id: int = Field(..., description="Episode ID")
     episode_number: int = Field(..., description="Episode number")
     title: Optional[str] = None
     plot: Optional[str] = None
-    air_date: Optional[str] = Field(
-        None, description="Air date in YYYY-MM-DD format")
+    air_date: Optional[str] = Field(None, description="Air date in YYYY-MM-DD format")
     rating: Optional[float] = None
     tvdb_id: Optional[str] = None
     created_at: datetime = Field(..., description="Creation timestamp")
@@ -176,8 +172,10 @@ class EpisodeResponse(BaseModel):
 # Pagination Schemas
 # ============================================================================
 
+
 class PaginatedResponse(BaseModel):
     """Generic pagination wrapper"""
+
     items: List[dict] = Field(..., description="List of items")
     total: int = Field(..., description="Total number of items")
     limit: int = Field(..., description="Items per page")
@@ -185,18 +183,14 @@ class PaginatedResponse(BaseModel):
 
     model_config = ConfigDict(
         json_schema_extra={
-            "example": {
-                "items": [],
-                "total": 100,
-                "limit": 10,
-                "offset": 0
-            }
+            "example": {"items": [], "total": 100, "limit": 10, "offset": 0}
         }
     )
 
 
 class PaginatedMovieResponse(BaseModel):
     """Paginated response for movies"""
+
     items: List[MovieResponse] = Field(..., description="List of movies")
     total: int = Field(..., description="Total number of movies")
     limit: int = Field(..., description="Items per page")
@@ -205,6 +199,7 @@ class PaginatedMovieResponse(BaseModel):
 
 class PaginatedTVShowResponse(BaseModel):
     """Paginated response for TV shows"""
+
     items: List[TVShowResponse] = Field(..., description="List of TV shows")
     total: int = Field(..., description="Total number of TV shows")
     limit: int = Field(..., description="Items per page")
@@ -213,6 +208,7 @@ class PaginatedTVShowResponse(BaseModel):
 
 class PaginatedSeasonResponse(BaseModel):
     """Paginated response for seasons"""
+
     items: List[SeasonResponse] = Field(..., description="List of seasons")
     total: int = Field(..., description="Total number of seasons")
     limit: int = Field(..., description="Items per page")
@@ -221,6 +217,7 @@ class PaginatedSeasonResponse(BaseModel):
 
 class PaginatedEpisodeResponse(BaseModel):
     """Paginated response for episodes"""
+
     items: List[EpisodeResponse] = Field(..., description="List of episodes")
     total: int = Field(..., description="Total number of episodes")
     limit: int = Field(..., description="Items per page")
@@ -231,10 +228,14 @@ class PaginatedEpisodeResponse(BaseModel):
 # Cache Schemas
 # ============================================================================
 
+
 class CacheStatsResponse(BaseModel):
     """Schema for cache statistics response"""
+
     total_entries: int = Field(..., description="Total number of cache entries")
-    active_entries: int = Field(..., description="Number of active (non-expired) entries")
+    active_entries: int = Field(
+        ..., description="Number of active (non-expired) entries"
+    )
     expired_entries: int = Field(..., description="Number of expired entries")
     total_size_bytes: int = Field(..., description="Total cache size in bytes")
     total_size_mb: float = Field(..., description="Total cache size in megabytes")
@@ -250,7 +251,7 @@ class CacheStatsResponse(BaseModel):
                 "total_size_bytes": 5242880,
                 "total_size_mb": 5.0,
                 "by_api_type": {"omdb": 80, "tvdb": 70},
-                "timestamp": "2026-02-06T12:34:23.380Z"
+                "timestamp": "2026-02-06T12:34:23.380Z",
             }
         }
     )
@@ -258,6 +259,7 @@ class CacheStatsResponse(BaseModel):
 
 class CacheEntryResponse(BaseModel):
     """Schema for individual cache entry"""
+
     id: int = Field(..., description="Cache entry ID")
     api_type: str = Field(..., description="API type (omdb, tvdb, etc.)")
     query_key: str = Field(..., description="Cache query key")
@@ -269,6 +271,7 @@ class CacheEntryResponse(BaseModel):
 
 class PaginatedCacheResponse(BaseModel):
     """Paginated response for cache entries"""
+
     items: List[CacheEntryResponse] = Field(..., description="List of cache entries")
     total: int = Field(..., description="Total number of cache entries")
     limit: int = Field(..., description="Items per page")
@@ -277,6 +280,7 @@ class PaginatedCacheResponse(BaseModel):
 
 class CacheOperationResponse(BaseModel):
     """Schema for cache operation responses"""
+
     success: bool = Field(..., description="Whether operation was successful")
     message: str = Field(..., description="Operation message")
     affected_entries: int = Field(..., description="Number of entries affected")
@@ -286,7 +290,7 @@ class CacheOperationResponse(BaseModel):
             "example": {
                 "success": True,
                 "message": "Expired cache entries cleared",
-                "affected_entries": 25
+                "affected_entries": 25,
             }
         }
     )
@@ -294,11 +298,14 @@ class CacheOperationResponse(BaseModel):
 
 class MetadataSyncResponse(BaseModel):
     """Schema for metadata sync operation response"""
+
     success: bool = Field(..., description="Whether sync was successful")
     message: str = Field(..., description="Operation message")
     movie_id: Optional[int] = Field(None, description="Movie ID (for movie sync)")
     show_id: Optional[int] = Field(None, description="TV show ID (for show sync)")
-    updated_fields: List[str] = Field(..., description="List of fields that were updated")
+    updated_fields: List[str] = Field(
+        ..., description="List of fields that were updated"
+    )
     metadata: dict = Field(..., description="Updated metadata")
 
     model_config = ConfigDict(
@@ -313,8 +320,8 @@ class MetadataSyncResponse(BaseModel):
                     "title": "The Shawshank Redemption",
                     "rating": 9.3,
                     "plot": "Two imprisoned men bond...",
-                    "runtime": 142
-                }
+                    "runtime": 142,
+                },
             }
         }
     )
@@ -324,14 +331,20 @@ class MetadataSyncResponse(BaseModel):
 # Task Monitoring Schemas
 # ============================================================================
 
+
 class TaskStatusResponse(BaseModel):
     """Schema for task status response"""
+
     task_id: str = Field(..., description="Celery task ID")
-    status: str = Field(..., description="Task status (pending/started/success/failure/retry)")
+    status: str = Field(
+        ..., description="Task status (pending/started/success/failure/retry)"
+    )
     result: Optional[dict] = Field(None, description="Task result if completed")
     error: Optional[str] = Field(None, description="Error message if task failed")
     created_at: Optional[datetime] = Field(None, description="Task creation timestamp")
-    updated_at: Optional[datetime] = Field(None, description="Task last update timestamp")
+    updated_at: Optional[datetime] = Field(
+        None, description="Task last update timestamp"
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -341,7 +354,7 @@ class TaskStatusResponse(BaseModel):
                 "result": {"processed_items": 42},
                 "error": None,
                 "created_at": "2026-02-07T10:00:00Z",
-                "updated_at": "2026-02-07T10:05:00Z"
+                "updated_at": "2026-02-07T10:05:00Z",
             }
         }
     )
@@ -349,6 +362,7 @@ class TaskStatusResponse(BaseModel):
 
 class TaskRetryResponse(BaseModel):
     """Schema for task retry response"""
+
     success: bool = Field(..., description="Whether retry was successful")
     message: str = Field(..., description="Operation message")
     original_task_id: str = Field(..., description="Original task ID")
@@ -360,7 +374,7 @@ class TaskRetryResponse(BaseModel):
                 "success": True,
                 "message": "Task retry initiated successfully",
                 "original_task_id": "abc123def456",
-                "new_task_id": "xyz789uvw012"
+                "new_task_id": "xyz789uvw012",
             }
         }
     )
@@ -368,16 +382,20 @@ class TaskRetryResponse(BaseModel):
 
 class TaskListItemResponse(BaseModel):
     """Schema for individual task in list"""
+
     task_id: str = Field(..., description="Celery task ID")
     status: str = Field(..., description="Task status")
     created_at: Optional[datetime] = Field(None, description="Task creation timestamp")
-    updated_at: Optional[datetime] = Field(None, description="Task last update timestamp")
+    updated_at: Optional[datetime] = Field(
+        None, description="Task last update timestamp"
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class TaskListResponse(BaseModel):
     """Schema for paginated task list response"""
+
     items: List[TaskListItemResponse] = Field(..., description="List of tasks")
     total: int = Field(..., description="Total number of tasks")
     limit: int = Field(..., description="Items per page")
@@ -391,110 +409,126 @@ class TaskListResponse(BaseModel):
                         "task_id": "abc123def456",
                         "status": "success",
                         "created_at": "2026-02-07T10:00:00Z",
-                        "updated_at": "2026-02-07T10:05:00Z"
+                        "updated_at": "2026-02-07T10:05:00Z",
                     }
                 ],
                 "total": 100,
                 "limit": 50,
-                "offset": 0
+                "offset": 0,
             }
         }
     )
 
 
 class TaskCancelResponse(BaseModel):
-     """Schema for task cancellation response"""
-     success: bool = Field(..., description="Whether cancellation was successful")
-     message: str = Field(..., description="Operation message")
-     task_id: str = Field(..., description="Task ID that was cancelled")
+    """Schema for task cancellation response"""
 
-     model_config = ConfigDict(
-         json_schema_extra={
-             "example": {
-                 "success": True,
-                 "message": "Task cancelled successfully",
-                 "task_id": "abc123def456"
-             }
-         }
-     )
+    success: bool = Field(..., description="Whether cancellation was successful")
+    message: str = Field(..., description="Operation message")
+    task_id: str = Field(..., description="Task ID that was cancelled")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "success": True,
+                "message": "Task cancelled successfully",
+                "task_id": "abc123def456",
+            }
+        }
+    )
 
 
 # ============================================================================
 # Task Error Schemas
 # ============================================================================
 
-class TaskErrorResponse(BaseModel):
-     """Schema for individual task error"""
-     id: int = Field(..., description="Task error ID")
-     task_id: str = Field(..., description="Celery task ID")
-     task_name: str = Field(..., description="Name of the task")
-     error_message: str = Field(..., description="Error message")
-     error_traceback: Optional[str] = Field(None, description="Full error traceback")
-     severity: str = Field(..., description="Error severity (critical/warning/info)")
-     retry_count: int = Field(..., description="Number of retries attempted")
-     created_at: datetime = Field(..., description="Error creation timestamp")
-     resolved_at: Optional[datetime] = Field(None, description="Error resolution timestamp")
 
-     model_config = ConfigDict(
-         from_attributes=True,
-         json_schema_extra={
-             "example": {
-                 "id": 1,
-                 "task_id": "abc123def456",
-                 "task_name": "app.tasks.analyze_file",
-                 "error_message": "File not found: /path/to/file.mp4",
-                 "error_traceback": "Traceback (most recent call last):\n  ...",
-                 "severity": "critical",
-                 "retry_count": 3,
-                 "created_at": "2026-02-07T10:00:00Z",
-                 "resolved_at": None
-             }
-         }
-     )
+class TaskErrorResponse(BaseModel):
+    """Schema for individual task error"""
+
+    id: int = Field(..., description="Task error ID")
+    task_id: str = Field(..., description="Celery task ID")
+    task_name: str = Field(..., description="Name of the task")
+    error_message: str = Field(..., description="Error message")
+    error_traceback: Optional[str] = Field(None, description="Full error traceback")
+    severity: str = Field(..., description="Error severity (critical/warning/info)")
+    retry_count: int = Field(..., description="Number of retries attempted")
+    created_at: datetime = Field(..., description="Error creation timestamp")
+    resolved_at: Optional[datetime] = Field(
+        None, description="Error resolution timestamp"
+    )
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "task_id": "abc123def456",
+                "task_name": "app.tasks.analyze_file",
+                "error_message": "File not found: /path/to/file.mp4",
+                "error_traceback": "Traceback (most recent call last):\n  ...",
+                "severity": "critical",
+                "retry_count": 3,
+                "created_at": "2026-02-07T10:00:00Z",
+                "resolved_at": None,
+            }
+        },
+    )
 
 
 class PaginatedTaskErrorResponse(BaseModel):
-      """Paginated response for task errors"""
-      items: List[TaskErrorResponse] = Field(..., description="List of task errors")
-      total: int = Field(..., description="Total number of task errors")
-      limit: int = Field(..., description="Items per page")
-      offset: int = Field(..., description="Offset from start")
+    """Paginated response for task errors"""
 
-      model_config = ConfigDict(
-          json_schema_extra={
-              "example": {
-                  "items": [
-                      {
-                          "id": 1,
-                          "task_id": "abc123def456",
-                          "task_name": "app.tasks.analyze_file",
-                          "error_message": "File not found: /path/to/file.mp4",
-                          "error_traceback": "Traceback (most recent call last):\n  ...",
-                          "severity": "critical",
-                          "retry_count": 3,
-                          "created_at": "2026-02-07T10:00:00Z",
-                          "resolved_at": None
-                      }
-                  ],
-                  "total": 10,
-                  "limit": 50,
-                  "offset": 0
-              }
-          }
-      )
+    items: List[TaskErrorResponse] = Field(..., description="List of task errors")
+    total: int = Field(..., description="Total number of task errors")
+    limit: int = Field(..., description="Items per page")
+    offset: int = Field(..., description="Offset from start")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "items": [
+                    {
+                        "id": 1,
+                        "task_id": "abc123def456",
+                        "task_name": "app.tasks.analyze_file",
+                        "error_message": "File not found: /path/to/file.mp4",
+                        "error_traceback": "Traceback (most recent call last):\n  ...",
+                        "severity": "critical",
+                        "retry_count": 3,
+                        "created_at": "2026-02-07T10:00:00Z",
+                        "resolved_at": None,
+                    }
+                ],
+                "total": 10,
+                "limit": 50,
+                "offset": 0,
+            }
+        }
+    )
 
 
 # ============================================================================
 # Search and Filter Schemas
 # ============================================================================
 
+
 class SearchFiltersRequest(BaseModel):
     """Schema for search filter query parameters"""
-    genre: Optional[str] = Field(None, description="Genre to filter by (case-insensitive)")
-    min_rating: Optional[float] = Field(None, ge=0, le=10, description="Minimum rating (0-10)")
-    max_rating: Optional[float] = Field(None, ge=0, le=10, description="Maximum rating (0-10)")
+
+    genre: Optional[str] = Field(
+        None, description="Genre to filter by (case-insensitive)"
+    )
+    min_rating: Optional[float] = Field(
+        None, ge=0, le=10, description="Minimum rating (0-10)"
+    )
+    max_rating: Optional[float] = Field(
+        None, ge=0, le=10, description="Maximum rating (0-10)"
+    )
     year: Optional[int] = Field(None, ge=1800, le=2100, description="Release/air year")
-    sort_by: str = Field("title", description="Sort field: title, rating, year, date_added")
+    sort_by: str = Field(
+        "title", description="Sort field: title, rating, year, date_added"
+    )
     skip: int = Field(0, ge=0, description="Number of items to skip")
     limit: int = Field(10, ge=1, le=100, description="Number of items to return")
 
@@ -507,7 +541,7 @@ class SearchFiltersRequest(BaseModel):
                 "year": 2020,
                 "sort_by": "rating",
                 "skip": 0,
-                "limit": 10
+                "limit": 10,
             }
         }
     )
@@ -515,7 +549,10 @@ class SearchFiltersRequest(BaseModel):
 
 class FilterMetadata(BaseModel):
     """Schema for filter metadata in responses"""
-    applied_filters: Dict[str, Any] = Field(..., description="Filters that were applied")
+
+    applied_filters: Dict[str, Any] = Field(
+        ..., description="Filters that were applied"
+    )
     sort_by: str = Field(..., description="Field used for sorting")
     total_results: int = Field(..., description="Total results matching filters")
 
@@ -525,10 +562,10 @@ class FilterMetadata(BaseModel):
                 "applied_filters": {
                     "genre": "Drama",
                     "min_rating": 7.0,
-                    "max_rating": 10.0
+                    "max_rating": 10.0,
                 },
                 "sort_by": "rating",
-                "total_results": 42
+                "total_results": 42,
             }
         }
     )
@@ -536,6 +573,7 @@ class FilterMetadata(BaseModel):
 
 class PaginatedMovieResponseWithFilters(BaseModel):
     """Paginated response for movies with filter metadata"""
+
     items: List[MovieResponse] = Field(..., description="List of movies")
     total: int = Field(..., description="Total number of movies matching filters")
     limit: int = Field(..., description="Items per page")
@@ -550,164 +588,173 @@ class PaginatedMovieResponseWithFilters(BaseModel):
                 "limit": 10,
                 "offset": 0,
                 "filters": {
-                    "applied_filters": {
-                        "genre": "Drama",
-                        "min_rating": 7.0
-                    },
+                    "applied_filters": {"genre": "Drama", "min_rating": 7.0},
                     "sort_by": "rating",
-                    "total_results": 42
-                }
+                    "total_results": 42,
+                },
             }
         }
     )
 
 
 class PaginatedTVShowResponseWithFilters(BaseModel):
-     """Paginated response for TV shows with filter metadata"""
-     items: List[TVShowResponse] = Field(..., description="List of TV shows")
-     total: int = Field(..., description="Total number of TV shows matching filters")
-     limit: int = Field(..., description="Items per page")
-     offset: int = Field(..., description="Offset from start")
-     filters: FilterMetadata = Field(..., description="Applied filters and metadata")
+    """Paginated response for TV shows with filter metadata"""
 
-     model_config = ConfigDict(
-         json_schema_extra={
-             "example": {
-                 "items": [],
-                 "total": 25,
-                 "limit": 10,
-                 "offset": 0,
-                 "filters": {
-                     "applied_filters": {
-                         "genre": "Crime",
-                         "min_rating": 8.0
-                     },
-                     "sort_by": "rating",
-                     "total_results": 25
-                 }
-             }
-         }
-     )
+    items: List[TVShowResponse] = Field(..., description="List of TV shows")
+    total: int = Field(..., description="Total number of TV shows matching filters")
+    limit: int = Field(..., description="Items per page")
+    offset: int = Field(..., description="Offset from start")
+    filters: FilterMetadata = Field(..., description="Applied filters and metadata")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "items": [],
+                "total": 25,
+                "limit": 10,
+                "offset": 0,
+                "filters": {
+                    "applied_filters": {"genre": "Crime", "min_rating": 8.0},
+                    "sort_by": "rating",
+                    "total_results": 25,
+                },
+            }
+        }
+    )
 
 
 # ============================================================================
 # Batch Operations Schemas
 # ============================================================================
 
-class BatchOperationCreate(BaseModel):
-     """Schema for creating a batch operation"""
-     operation_type: str = Field(..., description="Type of operation (metadata_sync, file_import)")
-     media_ids: Optional[List[int]] = Field(None, description="List of media IDs for metadata sync")
-     file_paths: Optional[List[str]] = Field(None, description="List of file paths for file import")
-     media_type: Optional[str] = Field(None, description="Type of media (movie, tv_show)")
 
-     model_config = ConfigDict(
-         json_schema_extra={
-             "example": {
-                 "operation_type": "metadata_sync",
-                 "media_ids": [1, 2, 3],
-                 "media_type": "movie"
-             }
-         }
-     )
+class BatchOperationCreate(BaseModel):
+    """Schema for creating a batch operation"""
+
+    operation_type: str = Field(
+        ..., description="Type of operation (metadata_sync, file_import)"
+    )
+    media_ids: Optional[List[int]] = Field(
+        None, description="List of media IDs for metadata sync"
+    )
+    file_paths: Optional[List[str]] = Field(
+        None, description="List of file paths for file import"
+    )
+    media_type: Optional[str] = Field(
+        None, description="Type of media (movie, tv_show)"
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "operation_type": "metadata_sync",
+                "media_ids": [1, 2, 3],
+                "media_type": "movie",
+            }
+        }
+    )
 
 
 class BatchProgressUpdate(BaseModel):
-     """Schema for batch progress updates"""
-     completed_items: int = Field(..., ge=0, description="Number of completed items")
-     failed_items: int = Field(..., ge=0, description="Number of failed items")
-     error_message: Optional[str] = Field(None, description="Optional error message")
+    """Schema for batch progress updates"""
 
-     model_config = ConfigDict(
-         json_schema_extra={
-             "example": {
-                 "completed_items": 50,
-                 "failed_items": 5,
-                 "error_message": None
-             }
-         }
-     )
+    completed_items: int = Field(..., ge=0, description="Number of completed items")
+    failed_items: int = Field(..., ge=0, description="Number of failed items")
+    error_message: Optional[str] = Field(None, description="Optional error message")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {"completed_items": 50, "failed_items": 5, "error_message": None}
+        }
+    )
 
 
 class BatchOperationResponse(BaseModel):
-     """Schema for batch operation response"""
-     id: int = Field(..., description="Batch operation ID")
-     operation_type: str = Field(..., description="Type of operation")
-     status: str = Field(..., description="Operation status (pending/running/completed/failed/cancelled)")
-     total_items: int = Field(..., description="Total number of items")
-     completed_items: int = Field(..., description="Number of completed items")
-     failed_items: int = Field(..., description="Number of failed items")
-     progress_percentage: float = Field(..., description="Progress percentage (0-100)")
-     eta: Optional[datetime] = Field(None, description="Estimated time of completion")
-     error_message: Optional[str] = Field(None, description="Error message if failed")
-     created_at: datetime = Field(..., description="Creation timestamp")
-     updated_at: datetime = Field(..., description="Last update timestamp")
-     started_at: Optional[datetime] = Field(None, description="Start timestamp")
-     completed_at: Optional[datetime] = Field(None, description="Completion timestamp")
+    """Schema for batch operation response"""
 
-     model_config = ConfigDict(
-         from_attributes=True,
-         json_schema_extra={
-             "example": {
-                 "id": 1,
-                 "operation_type": "metadata_sync",
-                 "status": "running",
-                 "total_items": 100,
-                 "completed_items": 50,
-                 "failed_items": 2,
-                 "progress_percentage": 52.0,
-                 "eta": "2026-02-07T13:15:00Z",
-                 "error_message": None,
-                 "created_at": "2026-02-07T13:00:00Z",
-                 "updated_at": "2026-02-07T13:05:00Z",
-                 "started_at": "2026-02-07T13:00:30Z",
-                 "completed_at": None
-             }
-         }
-     )
+    id: int = Field(..., description="Batch operation ID")
+    operation_type: str = Field(..., description="Type of operation")
+    status: str = Field(
+        ..., description="Operation status (pending/running/completed/failed/cancelled)"
+    )
+    total_items: int = Field(..., description="Total number of items")
+    completed_items: int = Field(..., description="Number of completed items")
+    failed_items: int = Field(..., description="Number of failed items")
+    progress_percentage: float = Field(..., description="Progress percentage (0-100)")
+    eta: Optional[datetime] = Field(None, description="Estimated time of completion")
+    error_message: Optional[str] = Field(None, description="Error message if failed")
+    created_at: datetime = Field(..., description="Creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
+    started_at: Optional[datetime] = Field(None, description="Start timestamp")
+    completed_at: Optional[datetime] = Field(None, description="Completion timestamp")
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "operation_type": "metadata_sync",
+                "status": "running",
+                "total_items": 100,
+                "completed_items": 50,
+                "failed_items": 2,
+                "progress_percentage": 52.0,
+                "eta": "2026-02-07T13:15:00Z",
+                "error_message": None,
+                "created_at": "2026-02-07T13:00:00Z",
+                "updated_at": "2026-02-07T13:05:00Z",
+                "started_at": "2026-02-07T13:00:30Z",
+                "completed_at": None,
+            }
+        },
+    )
 
 
 class PaginatedBatchOperationResponse(BaseModel):
-     """Paginated response for batch operations"""
-     items: List[BatchOperationResponse] = Field(..., description="List of batch operations")
-     total: int = Field(..., description="Total number of batch operations")
-     limit: int = Field(..., description="Items per page")
-     offset: int = Field(..., description="Offset from start")
+    """Paginated response for batch operations"""
 
-     model_config = ConfigDict(
-         json_schema_extra={
-             "example": {
-                 "items": [
-                     {
-                         "id": 1,
-                         "operation_type": "metadata_sync",
-                         "status": "completed",
-                         "total_items": 100,
-                         "completed_items": 100,
-                         "failed_items": 0,
-                         "progress_percentage": 100.0,
-                         "eta": None,
-                         "error_message": None,
-                         "created_at": "2026-02-07T13:00:00Z",
-                         "updated_at": "2026-02-07T13:10:00Z",
-                         "started_at": "2026-02-07T13:00:30Z",
-                         "completed_at": "2026-02-07T13:10:00Z"
-                     }
-                 ],
-                 "total": 10,
-                 "limit": 50,
-                 "offset": 0
-             }
-         }
-     )
+    items: List[BatchOperationResponse] = Field(
+        ..., description="List of batch operations"
+    )
+    total: int = Field(..., description="Total number of batch operations")
+    limit: int = Field(..., description="Items per page")
+    offset: int = Field(..., description="Offset from start")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "items": [
+                    {
+                        "id": 1,
+                        "operation_type": "metadata_sync",
+                        "status": "completed",
+                        "total_items": 100,
+                        "completed_items": 100,
+                        "failed_items": 0,
+                        "progress_percentage": 100.0,
+                        "eta": None,
+                        "error_message": None,
+                        "created_at": "2026-02-07T13:00:00Z",
+                        "updated_at": "2026-02-07T13:10:00Z",
+                        "started_at": "2026-02-07T13:00:30Z",
+                        "completed_at": "2026-02-07T13:10:00Z",
+                    }
+                ],
+                "total": 10,
+                "limit": 50,
+                "offset": 0,
+            }
+        }
+    )
 
 
 class BatchOperationListItem(BaseModel):
-     """Schema for batch operation list item"""
-     id: int = Field(..., description="Batch operation ID")
-     operation_type: str = Field(..., description="Type of operation")
-     status: str = Field(..., description="Operation status")
-     progress_percentage: float = Field(..., description="Progress percentage")
-     created_at: datetime = Field(..., description="Creation timestamp")
+    """Schema for batch operation list item"""
 
-     model_config = ConfigDict(from_attributes=True)
+    id: int = Field(..., description="Batch operation ID")
+    operation_type: str = Field(..., description="Type of operation")
+    status: str = Field(..., description="Operation status")
+    progress_percentage: float = Field(..., description="Progress percentage")
+    created_at: datetime = Field(..., description="Creation timestamp")
+
+    model_config = ConfigDict(from_attributes=True)

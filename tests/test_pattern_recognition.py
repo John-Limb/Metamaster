@@ -385,7 +385,7 @@ class TestEdgeCases:
         result1 = service.classify_file("Breaking Bad S01E01.mp4")
         result2 = service.classify_file("Breaking Bad s01e01.mp4")
         result3 = service.classify_file("Breaking Bad S01e01.mp4")
-        
+
         assert result1["type"] == result2["type"] == result3["type"] == "tv_show"
         assert result1["season"] == result2["season"] == result3["season"] == 1
         assert result1["episode"] == result2["episode"] == result3["episode"] == 1

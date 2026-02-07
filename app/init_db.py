@@ -4,8 +4,14 @@ import logging
 from sqlalchemy import inspect
 from app.database import engine, Base, SessionLocal
 from app.models import (
-    Movie, MovieFile, TVShow, Season, Episode, EpisodeFile,
-    APICache, FileQueue
+    Movie,
+    MovieFile,
+    TVShow,
+    Season,
+    Episode,
+    EpisodeFile,
+    APICache,
+    FileQueue,
 )
 
 logger = logging.getLogger(__name__)
@@ -17,12 +23,12 @@ def init_database():
         logger.info("Creating database tables...")
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
-        
+
         # Verify tables were created
         inspector_obj = inspect(engine)
         inspector_tables = inspector_obj.get_table_names()
         logger.info(f"Created tables: {inspector_tables}")
-        
+
         return True
     except Exception as e:
         logger.error(f"Error initializing database: {e}")
@@ -56,12 +62,12 @@ def reset_database():
 
 if __name__ == "__main__":
     import sys
-    
+
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    
+
     if len(sys.argv) > 1:
         command = sys.argv[1]
         if command == "reset":

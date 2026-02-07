@@ -29,11 +29,11 @@ def sample_search_response():
                 "Year": "1994",
                 "imdbID": "tt0111161",
                 "Type": "movie",
-                "Poster": "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZDJkMzQ0MzA1XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"
+                "Poster": "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZDJkMzQ0MzA1XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
             }
         ],
         "totalResults": "1",
-        "Response": "True"
+        "Response": "True",
     }
 
 
@@ -54,12 +54,7 @@ def sample_details_response():
         "Country": "United States",
         "Awards": "Nominated for 7 Oscars. Another 45 wins & 86 nominations.",
         "Poster": "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZDJkMzQ0MzA1XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
-        "Ratings": [
-            {
-                "Source": "Internet Movie Database",
-                "Value": "9.3/10"
-            }
-        ],
+        "Ratings": [{"Source": "Internet Movie Database", "Value": "9.3/10"}],
         "Metascore": "82",
         "imdbRating": "9.3",
         "imdbVotes": "2,500,000",
@@ -69,7 +64,7 @@ def sample_details_response():
         "BoxOffice": "$28,341,469",
         "Production": "Columbia Pictures",
         "Website": "N/A",
-        "Response": "True"
+        "Response": "True",
     }
 
 
@@ -92,7 +87,7 @@ async def test_search_movie_with_cache_hit(mock_db, sample_search_response):
 @pytest.mark.asyncio
 async def test_search_movie_no_api_key(mock_db):
     """Test search_movie fails gracefully without API key"""
-    with patch.object(settings, 'omdb_api_key', None):
+    with patch.object(settings, "omdb_api_key", None):
         result = await OMDBService.search_movie(mock_db, "Test Movie")
         assert result is None
 
@@ -116,7 +111,7 @@ async def test_get_movie_details_with_cache_hit(mock_db, sample_details_response
 @pytest.mark.asyncio
 async def test_get_movie_details_no_api_key(mock_db):
     """Test get_movie_details fails gracefully without API key"""
-    with patch.object(settings, 'omdb_api_key', None):
+    with patch.object(settings, "omdb_api_key", None):
         result = await OMDBService.get_movie_details(mock_db, "tt0111161")
         assert result is None
 
@@ -231,7 +226,7 @@ async def test_make_request_with_retry_success():
     mock_response = AsyncMock()
     mock_response.json.return_value = {"Response": "True", "Title": "Test"}
 
-    with patch('httpx.AsyncClient') as mock_client_class:
+    with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.__aenter__.return_value = mock_client
         mock_client.__aexit__.return_value = None
@@ -250,7 +245,7 @@ async def test_make_request_with_retry_api_error():
     mock_response = AsyncMock()
     mock_response.json.return_value = {"Response": "False", "Error": "Movie not found!"}
 
-    with patch('httpx.AsyncClient') as mock_client_class:
+    with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.__aenter__.return_value = mock_client
         mock_client.__aexit__.return_value = None
@@ -268,14 +263,16 @@ async def test_make_request_with_retry_http_error():
     mock_response = AsyncMock()
     mock_response.status_code = 500
 
-    with patch('httpx.AsyncClient') as mock_client_class:
+    with patch("httpx.AsyncClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client.__aenter__.return_value = mock_client
         mock_client.__aexit__.return_value = None
         mock_client.get.side_effect = Exception("Connection error")
         mock_client_class.return_value = mock_client
 
-        result = await OMDBService._make_request_with_retry("http://test.com", max_retries=1)
+        result = await OMDBService._make_request_with_retry(
+            "http://test.com", max_retries=1
+        )
 
         # Should return None after retries exhausted
         assert result is None

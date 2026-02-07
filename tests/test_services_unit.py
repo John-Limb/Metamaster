@@ -8,7 +8,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from sqlalchemy.orm import Session
 
-from app.services.pattern_recognition import PatternRecognitionService, ClassificationResult
+from app.services.pattern_recognition import (
+    PatternRecognitionService,
+    ClassificationResult,
+)
 from app.services.ffprobe_wrapper import FFProbeWrapper
 from app.services.file_queue_manager import FileQueueManager
 from app.services.task_error_handler import TaskErrorHandler
@@ -20,6 +23,7 @@ from app.database import SessionLocal
 # ============================================================================
 # Pattern Recognition Service Tests
 # ============================================================================
+
 
 class TestPatternRecognitionService:
     """Tests for PatternRecognitionService"""
@@ -149,7 +153,7 @@ class TestPatternRecognitionService:
             title="Test Movie",
             year=2020,
             confidence="high",
-            pattern_matched="test_pattern"
+            pattern_matched="test_pattern",
         )
         result_dict = result.to_dict()
         assert result_dict["type"] == "movie"
@@ -162,13 +166,14 @@ class TestPatternRecognitionService:
 # FFProbe Wrapper Service Tests
 # ============================================================================
 
+
 class TestFFProbeWrapper:
     """Tests for FFProbeWrapper service"""
 
     @pytest.fixture
     def wrapper(self):
         """Create FFProbeWrapper instance with mocked ffprobe"""
-        with patch.object(FFProbeWrapper, '_verify_ffprobe_available'):
+        with patch.object(FFProbeWrapper, "_verify_ffprobe_available"):
             return FFProbeWrapper()
 
     def test_get_resolution_label_exact_match(self, wrapper):
@@ -207,8 +212,8 @@ class TestFFProbeWrapper:
         formatted = wrapper._format_bitrate(500)
         assert "bps" in formatted
 
-    @patch('subprocess.run')
-    @patch('pathlib.Path.exists')
+    @patch("subprocess.run")
+    @patch("pathlib.Path.exists")
     def test_run_ffprobe_success(self, mock_exists, mock_run, wrapper):
         """Test successful ffprobe execution"""
         mock_exists.return_value = True
@@ -219,24 +224,25 @@ class TestFFProbeWrapper:
         assert isinstance(result, dict)
         assert "streams" in result
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_run_ffprobe_file_not_found(self, mock_run, wrapper):
         """Test ffprobe with non-existent file"""
         with pytest.raises(FileNotFoundError):
             wrapper._run_ffprobe("/nonexistent/file.mp4")
 
-    @patch('subprocess.run')
-    @patch('pathlib.Path.exists')
+    @patch("subprocess.run")
+    @patch("pathlib.Path.exists")
     def test_run_ffprobe_timeout(self, mock_exists, mock_run, wrapper):
         """Test ffprobe timeout handling"""
         import subprocess as sp
+
         mock_exists.return_value = True
         mock_run.side_effect = sp.TimeoutExpired("ffprobe", 30)
         with pytest.raises(RuntimeError):
             wrapper._run_ffprobe("/path/to/file.mp4")
 
-    @patch.object(FFProbeWrapper, '_run_ffprobe')
-    @patch('pathlib.Path.exists')
+    @patch.object(FFProbeWrapper, "_run_ffprobe")
+    @patch("pathlib.Path.exists")
     def test_is_valid_media_file_true(self, mock_exists, mock_run, wrapper):
         """Test valid media file check"""
         mock_exists.return_value = True
@@ -244,70 +250,69 @@ class TestFFProbeWrapper:
         result = wrapper.is_valid_media_file("/path/to/file.mp4")
         assert result is True
 
-    @patch.object(FFProbeWrapper, '_run_ffprobe')
+    @patch.object(FFProbeWrapper, "_run_ffprobe")
     def test_is_valid_media_file_false(self, mock_run, wrapper):
         """Test invalid media file check"""
         mock_run.side_effect = RuntimeError("Invalid file")
         result = wrapper.is_valid_media_file("/path/to/file.mp4")
         assert result is False
 
-    @patch.object(FFProbeWrapper, '_run_ffprobe')
+    @patch.object(FFProbeWrapper, "_run_ffprobe")
     def test_get_resolution(self, mock_run, wrapper):
         """Test resolution extraction"""
         mock_run.return_value = {
-            "streams": [
-                {"codec_type": "video", "width": 1920, "height": 1080}
-            ]
+            "streams": [{"codec_type": "video", "width": 1920, "height": 1080}]
         }
         result = wrapper.get_resolution("/path/to/file.mp4")
         assert result["width"] == 1920
         assert result["height"] == 1080
         assert result["label"] == "1080p"
 
-    @patch.object(FFProbeWrapper, '_run_ffprobe')
+    @patch.object(FFProbeWrapper, "_run_ffprobe")
     def test_get_bitrate(self, mock_run, wrapper):
         """Test bitrate extraction"""
         mock_run.return_value = {
             "streams": [
                 {"codec_type": "video", "bit_rate": "5000000"},
-                {"codec_type": "audio", "bit_rate": "128000"}
+                {"codec_type": "audio", "bit_rate": "128000"},
             ],
-            "format": {"bit_rate": "5128000"}
+            "format": {"bit_rate": "5128000"},
         }
         result = wrapper.get_bitrate("/path/to/file.mp4")
         assert "total" in result
         assert "video" in result
         assert "audio" in result
 
-    @patch.object(FFProbeWrapper, '_run_ffprobe')
+    @patch.object(FFProbeWrapper, "_run_ffprobe")
     def test_get_codecs(self, mock_run, wrapper):
         """Test codec extraction"""
         mock_run.return_value = {
             "streams": [
-                {"codec_type": "video", "codec_name": "h264", "profile": "High", "level": "42"},
-                {"codec_type": "audio", "codec_name": "aac"}
+                {
+                    "codec_type": "video",
+                    "codec_name": "h264",
+                    "profile": "High",
+                    "level": "42",
+                },
+                {"codec_type": "audio", "codec_name": "aac"},
             ]
         }
         result = wrapper.get_codecs("/path/to/file.mp4")
         assert result["video"] == "h264"
         assert result["audio"] == "aac"
 
-    @patch.object(FFProbeWrapper, '_run_ffprobe')
+    @patch.object(FFProbeWrapper, "_run_ffprobe")
     def test_get_duration(self, mock_run, wrapper):
         """Test duration extraction"""
-        mock_run.return_value = {
-            "format": {"duration": "7200.5"}
-        }
+        mock_run.return_value = {"format": {"duration": "7200.5"}}
         result = wrapper.get_duration("/path/to/file.mp4")
         assert result == 7200.5
 
-    @patch.object(FFProbeWrapper, '_run_ffprobe')
+    @patch.object(FFProbeWrapper, "_run_ffprobe")
     def test_get_frame_rate(self, mock_run, wrapper):
         """Test frame rate extraction"""
         mock_run.return_value = {
-            "streams": [
-                {"codec_type": "video", "r_frame_rate": "30/1"}
-            ]
+            "streams": [{"codec_type": "video", "r_frame_rate": "30/1"}]
         }
         result = wrapper.get_frame_rate("/path/to/file.mp4")
         assert result == 30.0
@@ -316,6 +321,7 @@ class TestFFProbeWrapper:
 # ============================================================================
 # File Queue Manager Tests
 # ============================================================================
+
 
 class TestFileQueueManager:
     """Tests for FileQueueManager service"""
@@ -342,6 +348,7 @@ class TestFileQueueManager:
         # Manually set the id after add
         def add_side_effect(entry):
             entry.id = 1
+
         manager.session.add.side_effect = add_side_effect
 
         queue_id = manager.add_file("/path/to/file.mp4", "movie")
@@ -351,7 +358,9 @@ class TestFileQueueManager:
         """Test adding duplicate file"""
         existing = MagicMock()
         existing.id = 5
-        mock_session.query.return_value.filter.return_value.first.return_value = existing
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            existing
+        )
 
         queue_id = manager.add_file("/path/to/file.mp4", "movie")
         assert queue_id == 5
@@ -375,12 +384,12 @@ class TestFileQueueManager:
 
         files = [
             {"file_path": "/path/to/file1.mp4", "file_type": "movie"},
-            {"file_path": "/path/to/file2.mkv", "file_type": "tv_show"}
+            {"file_path": "/path/to/file2.mkv", "file_type": "tv_show"},
         ]
 
         # Mock the entries to have IDs after flush
         def add_side_effect(entry):
-            if not hasattr(entry, 'id'):
+            if not hasattr(entry, "id"):
                 entry.id = len([e for e in manager.session.add.call_args_list]) + 1
 
         manager.session.add.side_effect = add_side_effect
@@ -402,7 +411,9 @@ class TestFileQueueManager:
         mock_file.status = "pending"
         mock_file.created_at = datetime.utcnow()
 
-        mock_session.query.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = [mock_file]
+        mock_session.query.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = [
+            mock_file
+        ]
 
         files = manager.get_pending_files(limit=10)
         assert len(files) == 1
@@ -411,7 +422,9 @@ class TestFileQueueManager:
     def test_mark_processing(self, manager, mock_session):
         """Test marking file as processing"""
         mock_file = MagicMock()
-        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            mock_file
+        )
 
         result = manager.mark_processing(1)
         assert result is True
@@ -420,7 +433,9 @@ class TestFileQueueManager:
     def test_mark_completed(self, manager, mock_session):
         """Test marking file as completed"""
         mock_file = MagicMock()
-        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            mock_file
+        )
 
         result = manager.mark_completed(1)
         assert result is True
@@ -429,7 +444,9 @@ class TestFileQueueManager:
     def test_mark_failed(self, manager, mock_session):
         """Test marking file as failed"""
         mock_file = MagicMock()
-        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            mock_file
+        )
 
         result = manager.mark_failed(1, "Test error")
         assert result is True
@@ -452,7 +469,9 @@ class TestFileQueueManager:
         mock_file.created_at = datetime.utcnow()
         mock_file.processed_at = None
 
-        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            mock_file
+        )
 
         status = manager.get_file_status(1)
         assert status["id"] == 1
@@ -461,7 +480,12 @@ class TestFileQueueManager:
     def test_get_queue_stats(self, manager, mock_session):
         """Test getting queue statistics"""
         mock_session.query.return_value.count.side_effect = [10, 5, 2, 2, 1]
-        mock_session.query.return_value.filter.return_value.count.side_effect = [5, 2, 2, 1]
+        mock_session.query.return_value.filter.return_value.count.side_effect = [
+            5,
+            2,
+            2,
+            1,
+        ]
 
         stats = manager.get_queue_stats()
         assert stats["total"] == 10
@@ -469,7 +493,9 @@ class TestFileQueueManager:
 
     def test_is_duplicate_true(self, manager, mock_session):
         """Test duplicate detection - file exists"""
-        mock_session.query.return_value.filter.return_value.first.return_value = MagicMock()
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            MagicMock()
+        )
 
         result = manager.is_duplicate("/path/to/file.mp4")
         assert result is True
@@ -485,7 +511,9 @@ class TestFileQueueManager:
         """Test retrying failed file"""
         mock_file = MagicMock()
         mock_file.status = "failed"
-        mock_session.query.return_value.filter.return_value.first.return_value = mock_file
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            mock_file
+        )
 
         result = manager.retry_failed_file(1)
         assert result is True
@@ -503,6 +531,7 @@ class TestFileQueueManager:
 # ============================================================================
 # Task Error Handler Tests
 # ============================================================================
+
 
 class TestTaskErrorHandler:
     """Tests for TaskErrorHandler service"""
@@ -522,9 +551,9 @@ class TestTaskErrorHandler:
         severity = TaskErrorHandler._determine_severity("app.tasks.unknown_task")
         assert severity == "info"
 
-    @patch.object(TaskErrorHandler, 'log_task_error')
-    @patch.object(TaskErrorHandler, '_store_error_in_db')
-    @patch.object(TaskErrorHandler, 'notify_failure')
+    @patch.object(TaskErrorHandler, "log_task_error")
+    @patch.object(TaskErrorHandler, "_store_error_in_db")
+    @patch.object(TaskErrorHandler, "notify_failure")
     def test_handle_task_failure(self, mock_notify, mock_store, mock_log):
         """Test task failure handling"""
         exception = Exception("Test error")
@@ -532,26 +561,26 @@ class TestTaskErrorHandler:
             task_id="task123",
             task_name="app.tasks.analyze_file",
             exception=exception,
-            retry_count=1
+            retry_count=1,
         )
 
         mock_log.assert_called_once()
         mock_store.assert_called_once()
         mock_notify.assert_called_once()
 
-    @patch('app.services.task_error_handler.logger')
+    @patch("app.services.task_error_handler.logger")
     def test_notify_failure_critical(self, mock_logger):
         """Test notification for critical error"""
         TaskErrorHandler.notify_failure(
             task_id="task123",
             task_name="app.tasks.analyze_file",
             error_message="Critical error",
-            severity="critical"
+            severity="critical",
         )
 
         mock_logger.log.assert_called_once()
 
-    @patch('app.services.task_error_handler.logger')
+    @patch("app.services.task_error_handler.logger")
     def test_log_task_error(self, mock_logger):
         """Test error logging"""
         TaskErrorHandler.log_task_error(
@@ -560,13 +589,13 @@ class TestTaskErrorHandler:
             error_details={
                 "error_message": "Test error",
                 "severity": "critical",
-                "retry_count": 1
-            }
+                "retry_count": 1,
+            },
         )
 
         mock_logger.error.assert_called_once()
 
-    @patch('app.services.task_error_handler.SessionLocal')
+    @patch("app.services.task_error_handler.SessionLocal")
     def test_store_error_in_db_new(self, mock_session_local):
         """Test storing new error in database"""
         mock_session = MagicMock()
@@ -579,38 +608,40 @@ class TestTaskErrorHandler:
             error_message="Test error",
             error_traceback="Traceback...",
             severity="critical",
-            retry_count=0
+            retry_count=0,
         )
 
         mock_session.add.assert_called_once()
         mock_session.commit.assert_called_once()
 
-    @patch('app.services.task_error_handler.SessionLocal')
+    @patch("app.services.task_error_handler.SessionLocal")
     def test_mark_error_resolved(self, mock_session_local):
         """Test marking error as resolved"""
         mock_session = MagicMock()
         mock_session_local.return_value = mock_session
         mock_error = MagicMock()
-        mock_session.query.return_value.filter.return_value.first.return_value = mock_error
+        mock_session.query.return_value.filter.return_value.first.return_value = (
+            mock_error
+        )
 
         TaskErrorHandler.mark_error_resolved("task123")
 
         assert mock_error.resolved_at is not None
         mock_session.commit.assert_called_once()
 
-    @patch('app.services.task_error_handler.SessionLocal')
+    @patch("app.services.task_error_handler.SessionLocal")
     def test_get_recent_errors(self, mock_session_local):
         """Test retrieving recent errors"""
         mock_session = MagicMock()
         mock_session_local.return_value = mock_session
         mock_error = MagicMock()
-        
+
         # Setup the query chain properly
         mock_query = MagicMock()
         mock_filtered = MagicMock()
         mock_ordered = MagicMock()
         mock_offset = MagicMock()
-        
+
         mock_session.query.return_value = mock_query
         mock_query.filter.return_value = mock_filtered
         mock_filtered.count.return_value = 1
@@ -618,7 +649,9 @@ class TestTaskErrorHandler:
         mock_ordered.offset.return_value = mock_offset
         mock_offset.limit.return_value.all.return_value = [mock_error]
 
-        errors, total = TaskErrorHandler.get_recent_errors(severity="critical", limit=10)
+        errors, total = TaskErrorHandler.get_recent_errors(
+            severity="critical", limit=10
+        )
 
         assert len(errors) == 1
         assert total == 1
@@ -628,13 +661,14 @@ class TestTaskErrorHandler:
 # File Monitor Service Tests
 # ============================================================================
 
+
 class TestFileMonitorService:
     """Tests for FileMonitorService"""
 
     @pytest.fixture
     def monitor(self):
         """Create FileMonitorService instance"""
-        with patch('app.services.file_monitor.settings'):
+        with patch("app.services.file_monitor.settings"):
             return FileMonitorService(watch_path="/tmp/test_media")
 
     def test_media_file_event_handler_is_media_file(self):

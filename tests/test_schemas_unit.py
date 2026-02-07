@@ -5,22 +5,38 @@ from datetime import datetime
 from pydantic import ValidationError
 
 from app.schemas import (
-    MovieCreate, MovieUpdate, MovieResponse,
-    TVShowCreate, TVShowUpdate, TVShowResponse,
-    SeasonResponse, EpisodeResponse,
-    PaginatedMovieResponse, PaginatedTVShowResponse,
-    PaginatedSeasonResponse, PaginatedEpisodeResponse,
-    CacheStatsResponse, CacheEntryResponse, PaginatedCacheResponse,
-    CacheOperationResponse, MetadataSyncResponse,
-    TaskStatusResponse, TaskRetryResponse, TaskListItemResponse, TaskListResponse,
-    TaskCancelResponse, TaskErrorResponse, PaginatedTaskErrorResponse,
-    SearchFiltersRequest
+    MovieCreate,
+    MovieUpdate,
+    MovieResponse,
+    TVShowCreate,
+    TVShowUpdate,
+    TVShowResponse,
+    SeasonResponse,
+    EpisodeResponse,
+    PaginatedMovieResponse,
+    PaginatedTVShowResponse,
+    PaginatedSeasonResponse,
+    PaginatedEpisodeResponse,
+    CacheStatsResponse,
+    CacheEntryResponse,
+    PaginatedCacheResponse,
+    CacheOperationResponse,
+    MetadataSyncResponse,
+    TaskStatusResponse,
+    TaskRetryResponse,
+    TaskListItemResponse,
+    TaskListResponse,
+    TaskCancelResponse,
+    TaskErrorResponse,
+    PaginatedTaskErrorResponse,
+    SearchFiltersRequest,
 )
 
 
 # ============================================================================
 # Movie Schema Tests
 # ============================================================================
+
 
 class TestMovieCreateSchema:
     """Tests for MovieCreate schema"""
@@ -34,7 +50,7 @@ class TestMovieCreateSchema:
             rating=8.7,
             runtime=136,
             genres='["Sci-Fi", "Action"]',
-            omdb_id="tt0133093"
+            omdb_id="tt0133093",
         )
         assert movie.title == "The Matrix"
         assert movie.year == 1999
@@ -78,11 +94,7 @@ class TestMovieUpdateSchema:
 
     def test_valid_movie_update(self):
         """Test valid movie update"""
-        update = MovieUpdate(
-            title="Updated Title",
-            rating=9.0,
-            runtime=140
-        )
+        update = MovieUpdate(title="Updated Title", rating=9.0, runtime=140)
         assert update.title == "Updated Title"
         assert update.rating == 9.0
 
@@ -111,13 +123,14 @@ class TestMovieResponseSchema:
             year=1999,
             rating=8.7,
             created_at=now,
-            updated_at=now
+            updated_at=now,
         )
         assert response.id == 1
         assert response.title == "The Matrix"
 
     def test_movie_response_from_attributes(self):
         """Test movie response from ORM attributes"""
+
         class MockMovie:
             id = 1
             title = "Test"
@@ -139,6 +152,7 @@ class TestMovieResponseSchema:
 # TV Show Schema Tests
 # ============================================================================
 
+
 class TestTVShowCreateSchema:
     """Tests for TVShowCreate schema"""
 
@@ -150,7 +164,7 @@ class TestTVShowCreateSchema:
             rating=9.5,
             genres='["Drama", "Crime"]',
             status="Ended",
-            tvdb_id="81189"
+            tvdb_id="81189",
         )
         assert show.title == "Breaking Bad"
         assert show.rating == 9.5
@@ -177,10 +191,7 @@ class TestTVShowUpdateSchema:
 
     def test_valid_tv_show_update(self):
         """Test valid TV show update"""
-        update = TVShowUpdate(
-            title="Updated Show",
-            status="Continuing"
-        )
+        update = TVShowUpdate(title="Updated Show", status="Continuing")
         assert update.title == "Updated Show"
         assert update.status == "Continuing"
 
@@ -203,7 +214,7 @@ class TestTVShowResponseSchema:
             rating=9.5,
             status="Ended",
             created_at=now,
-            updated_at=now
+            updated_at=now,
         )
         assert response.id == 1
         assert response.title == "Breaking Bad"
@@ -213,6 +224,7 @@ class TestTVShowResponseSchema:
 # Season and Episode Schema Tests
 # ============================================================================
 
+
 class TestSeasonResponseSchema:
     """Tests for SeasonResponse schema"""
 
@@ -220,11 +232,7 @@ class TestSeasonResponseSchema:
         """Test valid season response"""
         now = datetime.utcnow()
         response = SeasonResponse(
-            id=1,
-            season_number=1,
-            tvdb_id="123456",
-            episode_count=10,
-            created_at=now
+            id=1, season_number=1, tvdb_id="123456", episode_count=10, created_at=now
         )
         assert response.id == 1
         assert response.season_number == 1
@@ -245,7 +253,7 @@ class TestEpisodeResponseSchema:
             rating=8.5,
             tvdb_id="123456",
             created_at=now,
-            updated_at=now
+            updated_at=now,
         )
         assert response.id == 1
         assert response.episode_number == 1
@@ -256,6 +264,7 @@ class TestEpisodeResponseSchema:
 # Pagination Schema Tests
 # ============================================================================
 
+
 class TestPaginatedMovieResponseSchema:
     """Tests for PaginatedMovieResponse schema"""
 
@@ -264,16 +273,11 @@ class TestPaginatedMovieResponseSchema:
         now = datetime.utcnow()
         response = PaginatedMovieResponse(
             items=[
-                MovieResponse(
-                    id=1,
-                    title="Movie 1",
-                    created_at=now,
-                    updated_at=now
-                )
+                MovieResponse(id=1, title="Movie 1", created_at=now, updated_at=now)
             ],
             total=100,
             limit=10,
-            offset=0
+            offset=0,
         )
         assert len(response.items) == 1
         assert response.total == 100
@@ -281,12 +285,7 @@ class TestPaginatedMovieResponseSchema:
 
     def test_paginated_response_empty_items(self):
         """Test paginated response with empty items"""
-        response = PaginatedMovieResponse(
-            items=[],
-            total=0,
-            limit=10,
-            offset=0
-        )
+        response = PaginatedMovieResponse(items=[], total=0, limit=10, offset=0)
         assert len(response.items) == 0
         assert response.total == 0
 
@@ -299,16 +298,11 @@ class TestPaginatedTVShowResponseSchema:
         now = datetime.utcnow()
         response = PaginatedTVShowResponse(
             items=[
-                TVShowResponse(
-                    id=1,
-                    title="Show 1",
-                    created_at=now,
-                    updated_at=now
-                )
+                TVShowResponse(id=1, title="Show 1", created_at=now, updated_at=now)
             ],
             total=50,
             limit=10,
-            offset=0
+            offset=0,
         )
         assert len(response.items) == 1
         assert response.total == 50
@@ -317,6 +311,7 @@ class TestPaginatedTVShowResponseSchema:
 # ============================================================================
 # Cache Schema Tests
 # ============================================================================
+
 
 class TestCacheStatsResponseSchema:
     """Tests for CacheStatsResponse schema"""
@@ -330,7 +325,7 @@ class TestCacheStatsResponseSchema:
             total_size_bytes=5242880,
             total_size_mb=5.0,
             by_api_type={"omdb": 80, "tvdb": 70},
-            timestamp="2026-02-07T12:00:00Z"
+            timestamp="2026-02-07T12:00:00Z",
         )
         assert response.total_entries == 150
         assert response.active_entries == 120
@@ -343,9 +338,7 @@ class TestCacheOperationResponseSchema:
     def test_valid_cache_operation_response(self):
         """Test valid cache operation response"""
         response = CacheOperationResponse(
-            success=True,
-            message="Cache cleared successfully",
-            affected_entries=25
+            success=True, message="Cache cleared successfully", affected_entries=25
         )
         assert response.success is True
         assert response.affected_entries == 25
@@ -361,7 +354,7 @@ class TestMetadataSyncResponseSchema:
             message="Metadata synced",
             movie_id=1,
             updated_fields=["rating", "plot"],
-            metadata={"rating": 8.5, "plot": "Test"}
+            metadata={"rating": 8.5, "plot": "Test"},
         )
         assert response.success is True
         assert response.movie_id == 1
@@ -371,6 +364,7 @@ class TestMetadataSyncResponseSchema:
 # ============================================================================
 # Task Monitoring Schema Tests
 # ============================================================================
+
 
 class TestTaskStatusResponseSchema:
     """Tests for TaskStatusResponse schema"""
@@ -383,7 +377,7 @@ class TestTaskStatusResponseSchema:
             status="success",
             result={"processed": 42},
             created_at=now,
-            updated_at=now
+            updated_at=now,
         )
         assert response.task_id == "abc123"
         assert response.status == "success"
@@ -396,7 +390,7 @@ class TestTaskStatusResponseSchema:
             status="failure",
             error="Task failed",
             created_at=now,
-            updated_at=now
+            updated_at=now,
         )
         assert response.status == "failure"
         assert response.error == "Task failed"
@@ -411,7 +405,7 @@ class TestTaskRetryResponseSchema:
             success=True,
             message="Task retry initiated",
             original_task_id="abc123",
-            new_task_id="xyz789"
+            new_task_id="xyz789",
         )
         assert response.success is True
         assert response.original_task_id == "abc123"
@@ -426,15 +420,12 @@ class TestTaskListResponseSchema:
         response = TaskListResponse(
             items=[
                 TaskListItemResponse(
-                    task_id="abc123",
-                    status="success",
-                    created_at=now,
-                    updated_at=now
+                    task_id="abc123", status="success", created_at=now, updated_at=now
                 )
             ],
             total=100,
             limit=50,
-            offset=0
+            offset=0,
         )
         assert len(response.items) == 1
         assert response.total == 100
@@ -446,9 +437,7 @@ class TestTaskCancelResponseSchema:
     def test_valid_task_cancel_response(self):
         """Test valid task cancel response"""
         response = TaskCancelResponse(
-            success=True,
-            message="Task cancelled",
-            task_id="abc123"
+            success=True, message="Task cancelled", task_id="abc123"
         )
         assert response.success is True
         assert response.task_id == "abc123"
@@ -457,6 +446,7 @@ class TestTaskCancelResponseSchema:
 # ============================================================================
 # Task Error Schema Tests
 # ============================================================================
+
 
 class TestTaskErrorResponseSchema:
     """Tests for TaskErrorResponse schema"""
@@ -473,7 +463,7 @@ class TestTaskErrorResponseSchema:
             severity="critical",
             retry_count=3,
             created_at=now,
-            resolved_at=None
+            resolved_at=None,
         )
         assert response.id == 1
         assert response.severity == "critical"
@@ -490,7 +480,7 @@ class TestTaskErrorResponseSchema:
             severity="critical",
             retry_count=0,
             created_at=now,
-            resolved_at=now
+            resolved_at=now,
         )
         assert response.resolved_at is not None
 
@@ -510,12 +500,12 @@ class TestPaginatedTaskErrorResponseSchema:
                     error_message="Error",
                     severity="critical",
                     retry_count=0,
-                    created_at=now
+                    created_at=now,
                 )
             ],
             total=10,
             limit=50,
-            offset=0
+            offset=0,
         )
         assert len(response.items) == 1
         assert response.total == 10
@@ -524,6 +514,7 @@ class TestPaginatedTaskErrorResponseSchema:
 # ============================================================================
 # Search Filter Schema Tests
 # ============================================================================
+
 
 class TestSearchFiltersRequestSchema:
     """Tests for SearchFiltersRequest schema"""
@@ -537,7 +528,7 @@ class TestSearchFiltersRequestSchema:
             year=2020,
             sort_by="rating",
             skip=0,
-            limit=20
+            limit=20,
         )
         assert filters.genre == "Drama"
         assert filters.min_rating == 7.0
@@ -574,6 +565,7 @@ class TestSearchFiltersRequestSchema:
 # ============================================================================
 # Edge Cases and Boundary Tests
 # ============================================================================
+
 
 class TestSchemaEdgeCases:
     """Tests for schema edge cases and boundary conditions"""
@@ -615,10 +607,5 @@ class TestSchemaEdgeCases:
 
     def test_paginated_response_large_offset(self):
         """Test paginated response with large offset"""
-        response = PaginatedMovieResponse(
-            items=[],
-            total=1000,
-            limit=10,
-            offset=990
-        )
+        response = PaginatedMovieResponse(items=[], total=1000, limit=10, offset=990)
         assert response.offset == 990

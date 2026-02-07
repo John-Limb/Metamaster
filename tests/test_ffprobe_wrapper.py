@@ -47,13 +47,13 @@ class TestRunFFProbe:
         """Test successful ffprobe execution"""
         test_file = Path("test.mp4")
         test_file.touch()
-        
+
         try:
             mock_output = {
                 "streams": [{"codec_type": "video", "width": 1920, "height": 1080}],
-                "format": {"duration": "120.5"}
+                "format": {"duration": "120.5"},
             }
-            
+
             with patch("subprocess.run") as mock_run:
                 mock_run.return_value = Mock(stdout=json.dumps(mock_output))
                 result = wrapper._run_ffprobe(str(test_file))
@@ -70,11 +70,15 @@ class TestRunFFProbe:
         """Test ffprobe command failure"""
         test_file = Path("test.mp4")
         test_file.touch()
-        
+
         try:
             with patch("subprocess.run") as mock_run:
-                mock_run.side_effect = subprocess.CalledProcessError(1, "ffprobe", stderr="Corrupted file")
-                with pytest.raises(RuntimeError, match="FFProbe failed to process file"):
+                mock_run.side_effect = subprocess.CalledProcessError(
+                    1, "ffprobe", stderr="Corrupted file"
+                )
+                with pytest.raises(
+                    RuntimeError, match="FFProbe failed to process file"
+                ):
                     wrapper._run_ffprobe(str(test_file))
         finally:
             test_file.unlink()
@@ -83,11 +87,13 @@ class TestRunFFProbe:
         """Test ffprobe with invalid JSON output"""
         test_file = Path("test.mp4")
         test_file.touch()
-        
+
         try:
             with patch("subprocess.run") as mock_run:
                 mock_run.return_value = Mock(stdout="invalid json")
-                with pytest.raises(RuntimeError, match="Failed to parse FFProbe output"):
+                with pytest.raises(
+                    RuntimeError, match="Failed to parse FFProbe output"
+                ):
                     wrapper._run_ffprobe(str(test_file))
         finally:
             test_file.unlink()
@@ -96,7 +102,7 @@ class TestRunFFProbe:
         """Test ffprobe command timeout"""
         test_file = Path("test.mp4")
         test_file.touch()
-        
+
         try:
             with patch("subprocess.run") as mock_run:
                 mock_run.side_effect = subprocess.TimeoutExpired("ffprobe", 30)
@@ -119,7 +125,7 @@ class TestIsValidMediaFile:
         """Test validation of valid media file"""
         test_file = Path("test.mp4")
         test_file.touch()
-        
+
         try:
             with patch.object(wrapper, "_run_ffprobe") as mock_run:
                 mock_run.return_value = {"streams": []}
@@ -135,7 +141,7 @@ class TestIsValidMediaFile:
         """Test validation of corrupted file"""
         test_file = Path("test.mp4")
         test_file.touch()
-        
+
         try:
             with patch.object(wrapper, "_run_ffprobe") as mock_run:
                 mock_run.side_effect = RuntimeError("Corrupted file")
@@ -157,9 +163,9 @@ class TestResolutionExtraction:
         """Test resolution extraction for 1080p video"""
         mock_output = {
             "streams": [{"codec_type": "video", "width": 1920, "height": 1080}],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_resolution("test.mp4")
@@ -171,9 +177,9 @@ class TestResolutionExtraction:
         """Test resolution extraction for 720p video"""
         mock_output = {
             "streams": [{"codec_type": "video", "width": 1280, "height": 720}],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_resolution("test.mp4")
@@ -183,9 +189,9 @@ class TestResolutionExtraction:
         """Test resolution extraction for 4K video"""
         mock_output = {
             "streams": [{"codec_type": "video", "width": 3840, "height": 2160}],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_resolution("test.mp4")
@@ -195,9 +201,9 @@ class TestResolutionExtraction:
         """Test resolution extraction for 480p video"""
         mock_output = {
             "streams": [{"codec_type": "video", "width": 854, "height": 480}],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_resolution("test.mp4")
@@ -205,11 +211,8 @@ class TestResolutionExtraction:
 
     def test_get_resolution_no_video_stream(self, wrapper):
         """Test resolution extraction when no video stream exists"""
-        mock_output = {
-            "streams": [{"codec_type": "audio"}],
-            "format": {}
-        }
-        
+        mock_output = {"streams": [{"codec_type": "audio"}], "format": {}}
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_resolution("test.mp4")
@@ -217,11 +220,8 @@ class TestResolutionExtraction:
 
     def test_get_resolution_missing_dimensions(self, wrapper):
         """Test resolution extraction when dimensions are missing"""
-        mock_output = {
-            "streams": [{"codec_type": "video"}],
-            "format": {}
-        }
-        
+        mock_output = {"streams": [{"codec_type": "video"}], "format": {}}
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_resolution("test.mp4")
@@ -231,9 +231,9 @@ class TestResolutionExtraction:
         """Test resolution extraction for non-standard resolution"""
         mock_output = {
             "streams": [{"codec_type": "video", "width": 1600, "height": 900}],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_resolution("test.mp4")
@@ -263,11 +263,11 @@ class TestBitrateExtraction:
         mock_output = {
             "streams": [
                 {"codec_type": "video", "bit_rate": "5000000"},
-                {"codec_type": "audio", "bit_rate": "128000"}
+                {"codec_type": "audio", "bit_rate": "128000"},
             ],
-            "format": {"bit_rate": "5128000"}
+            "format": {"bit_rate": "5128000"},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_bitrate("test.mp4")
@@ -278,12 +278,10 @@ class TestBitrateExtraction:
     def test_get_bitrate_partial_available(self, wrapper):
         """Test bitrate extraction when only some bitrates are available"""
         mock_output = {
-            "streams": [
-                {"codec_type": "video", "bit_rate": "5000000"}
-            ],
-            "format": {}
+            "streams": [{"codec_type": "video", "bit_rate": "5000000"}],
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_bitrate("test.mp4")
@@ -293,11 +291,8 @@ class TestBitrateExtraction:
 
     def test_get_bitrate_none_available(self, wrapper):
         """Test bitrate extraction when no bitrates are available"""
-        mock_output = {
-            "streams": [{"codec_type": "video"}],
-            "format": {}
-        }
-        
+        mock_output = {"streams": [{"codec_type": "video"}], "format": {}}
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_bitrate("test.mp4")
@@ -341,12 +336,17 @@ class TestCodecDetection:
         """Test codec detection for H.264 video and AAC audio"""
         mock_output = {
             "streams": [
-                {"codec_type": "video", "codec_name": "h264", "profile": "High", "level": 40},
-                {"codec_type": "audio", "codec_name": "aac"}
+                {
+                    "codec_type": "video",
+                    "codec_name": "h264",
+                    "profile": "High",
+                    "level": 40,
+                },
+                {"codec_type": "audio", "codec_name": "aac"},
             ],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_codecs("test.mp4")
@@ -359,12 +359,17 @@ class TestCodecDetection:
         """Test codec detection for H.265 video and Opus audio"""
         mock_output = {
             "streams": [
-                {"codec_type": "video", "codec_name": "hevc", "profile": "Main", "level": 120},
-                {"codec_type": "audio", "codec_name": "opus"}
+                {
+                    "codec_type": "video",
+                    "codec_name": "hevc",
+                    "profile": "Main",
+                    "level": 120,
+                },
+                {"codec_type": "audio", "codec_name": "opus"},
             ],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_codecs("test.mp4")
@@ -376,11 +381,11 @@ class TestCodecDetection:
         mock_output = {
             "streams": [
                 {"codec_type": "video", "codec_name": "vp9"},
-                {"codec_type": "audio", "codec_name": "flac"}
+                {"codec_type": "audio", "codec_name": "flac"},
             ],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_codecs("test.mp4")
@@ -391,9 +396,9 @@ class TestCodecDetection:
         """Test codec detection when no video stream exists"""
         mock_output = {
             "streams": [{"codec_type": "audio", "codec_name": "aac"}],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_codecs("test.mp4")
@@ -404,9 +409,9 @@ class TestCodecDetection:
         """Test codec detection when no audio stream exists"""
         mock_output = {
             "streams": [{"codec_type": "video", "codec_name": "h264"}],
-            "format": {}
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_codecs("test.mp4")
@@ -432,11 +437,8 @@ class TestDurationExtraction:
 
     def test_get_duration_success(self, wrapper):
         """Test successful duration extraction"""
-        mock_output = {
-            "streams": [],
-            "format": {"duration": "120.5"}
-        }
-        
+        mock_output = {"streams": [], "format": {"duration": "120.5"}}
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_duration("test.mp4")
@@ -444,11 +446,8 @@ class TestDurationExtraction:
 
     def test_get_duration_integer(self, wrapper):
         """Test duration extraction with integer value"""
-        mock_output = {
-            "streams": [],
-            "format": {"duration": "3600"}
-        }
-        
+        mock_output = {"streams": [], "format": {"duration": "3600"}}
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_duration("test.mp4")
@@ -456,11 +455,8 @@ class TestDurationExtraction:
 
     def test_get_duration_missing(self, wrapper):
         """Test duration extraction when duration is missing"""
-        mock_output = {
-            "streams": [],
-            "format": {}
-        }
-        
+        mock_output = {"streams": [], "format": {}}
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_duration("test.mp4")
@@ -486,12 +482,10 @@ class TestFrameRateExtraction:
     def test_get_frame_rate_from_r_frame_rate(self, wrapper):
         """Test frame rate extraction from r_frame_rate"""
         mock_output = {
-            "streams": [
-                {"codec_type": "video", "r_frame_rate": "30/1"}
-            ],
-            "format": {}
+            "streams": [{"codec_type": "video", "r_frame_rate": "30/1"}],
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_frame_rate("test.mp4")
@@ -500,12 +494,10 @@ class TestFrameRateExtraction:
     def test_get_frame_rate_from_avg_frame_rate(self, wrapper):
         """Test frame rate extraction from avg_frame_rate"""
         mock_output = {
-            "streams": [
-                {"codec_type": "video", "avg_frame_rate": "24000/1001"}
-            ],
-            "format": {}
+            "streams": [{"codec_type": "video", "avg_frame_rate": "24000/1001"}],
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_frame_rate("test.mp4")
@@ -514,12 +506,10 @@ class TestFrameRateExtraction:
     def test_get_frame_rate_60fps(self, wrapper):
         """Test frame rate extraction for 60fps"""
         mock_output = {
-            "streams": [
-                {"codec_type": "video", "r_frame_rate": "60/1"}
-            ],
-            "format": {}
+            "streams": [{"codec_type": "video", "r_frame_rate": "60/1"}],
+            "format": {},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_frame_rate("test.mp4")
@@ -527,11 +517,8 @@ class TestFrameRateExtraction:
 
     def test_get_frame_rate_no_video_stream(self, wrapper):
         """Test frame rate extraction when no video stream exists"""
-        mock_output = {
-            "streams": [{"codec_type": "audio"}],
-            "format": {}
-        }
-        
+        mock_output = {"streams": [{"codec_type": "audio"}], "format": {}}
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_frame_rate("test.mp4")
@@ -539,11 +526,8 @@ class TestFrameRateExtraction:
 
     def test_get_frame_rate_missing(self, wrapper):
         """Test frame rate extraction when frame rate is missing"""
-        mock_output = {
-            "streams": [{"codec_type": "video"}],
-            "format": {}
-        }
-        
+        mock_output = {"streams": [{"codec_type": "video"}], "format": {}}
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_frame_rate("test.mp4")
@@ -579,7 +563,7 @@ class TestComprehensiveMetadata:
                     "r_frame_rate": "30/1",
                     "bit_rate": "5000000",
                     "profile": "High",
-                    "level": 40
+                    "level": 40,
                 },
                 {
                     "index": 1,
@@ -587,19 +571,16 @@ class TestComprehensiveMetadata:
                     "codec_name": "aac",
                     "sample_rate": "48000",
                     "channels": 2,
-                    "bit_rate": "128000"
-                }
+                    "bit_rate": "128000",
+                },
             ],
-            "format": {
-                "duration": "120.5",
-                "bit_rate": "5128000"
-            }
+            "format": {"duration": "120.5", "bit_rate": "5128000"},
         }
-        
+
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.return_value = mock_output
             result = wrapper.get_metadata("test.mp4")
-            
+
             assert "resolution" in result
             assert "bitrate" in result
             assert "codecs" in result
@@ -614,7 +595,7 @@ class TestComprehensiveMetadata:
         with patch.object(wrapper, "_run_ffprobe") as mock_run:
             mock_run.side_effect = RuntimeError("File error")
             result = wrapper.get_metadata("test.mp4")
-            
+
             assert "error" in result
             assert result["duration"] == -1.0
             assert result["frame_rate"] == -1.0

@@ -1,7 +1,13 @@
 """Celery application configuration and initialization"""
 
 from celery import Celery
-from celery.signals import task_prerun, task_postrun, task_failure, task_retry, task_revoked
+from celery.signals import (
+    task_prerun,
+    task_postrun,
+    task_failure,
+    task_retry,
+    task_revoked,
+)
 from kombu import Exchange, Queue
 import logging
 import traceback
@@ -23,24 +29,20 @@ celery_app.conf.update(
     # Broker and result backend
     broker_url=settings.celery_broker_url,
     result_backend=settings.celery_result_backend,
-    
     # Task serialization
     task_serializer=settings.celery_task_serializer,
     result_serializer=settings.celery_result_serializer,
     accept_content=settings.celery_accept_content,
-    
     # Task execution settings
     task_track_started=settings.celery_task_track_started,
     task_time_limit=settings.celery_task_time_limit,
     task_soft_time_limit=settings.celery_task_soft_time_limit,
-    
     # Task routing
     task_routes={
         "app.tasks.process_media_file": {"queue": "media_processing"},
         "app.tasks.extract_metadata": {"queue": "metadata_extraction"},
         "app.tasks.fetch_external_data": {"queue": "external_api"},
     },
-    
     # Queue configuration
     task_queues=(
         Queue(
@@ -64,20 +66,16 @@ celery_app.conf.update(
             routing_key="external_api",
         ),
     ),
-    
     # Retry configuration with exponential backoff
     task_autoretry_for=(Exception,),
     task_max_retries=3,
     task_default_retry_delay=60,  # 1 minute
-    
     # Result backend settings
     result_expires=3600,  # 1 hour
     result_persistent=True,
-    
     # Worker settings
     worker_prefetch_multiplier=4,
     worker_max_tasks_per_child=1000,
-    
     # Beat schedule for periodic tasks
     beat_schedule=beat_schedule,
 )
@@ -97,13 +95,24 @@ def task_postrun_handler(sender=None, task_id=None, task=None, state=None, **kwa
 
 
 @task_failure.connect
-def task_failure_handler(sender=None, task_id=None, exception=None, args=None, kwargs=None, traceback=None, einfo=None, **kw):
+def task_failure_handler(
+    sender=None,
+    task_id=None,
+    exception=None,
+    args=None,
+    kwargs=None,
+    traceback=None,
+    einfo=None,
+    **kw,
+):
     """Handle task failure - called when a task fails after all retries"""
     try:
         from app.services.task_error_handler import TaskErrorHandler
 
         task_name = sender.name if sender else "unknown"
-        tb_str = traceback if isinstance(traceback, str) else str(einfo) if einfo else None
+        tb_str = (
+            traceback if isinstance(traceback, str) else str(einfo) if einfo else None
+        )
 
         logger.error(
             f"Task failure handler triggered - Task: {task_name} (ID: {task_id}), "
@@ -135,14 +144,18 @@ def task_retry_handler(sender=None, task_id=None, reason=None, einfo=None, **kw)
         )
 
         # Log retry event for debugging
-        logger.debug(f"Task {task_name} (ID: {task_id}) is being retried. Exception info: {str(einfo)}")
+        logger.debug(
+            f"Task {task_name} (ID: {task_id}) is being retried. Exception info: {str(einfo)}"
+        )
 
     except Exception as e:
         logger.error(f"Error in task_retry_handler: {str(e)}", exc_info=True)
 
 
 @task_revoked.connect
-def task_revoked_handler(sender=None, task_id=None, terminated=None, signum=None, expired=None, **kw):
+def task_revoked_handler(
+    sender=None, task_id=None, terminated=None, signum=None, expired=None, **kw
+):
     """Handle task revocation - called when a task is cancelled/revoked"""
     try:
         task_name = sender.name if sender else "unknown"
