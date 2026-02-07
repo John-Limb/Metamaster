@@ -8,13 +8,16 @@ from app.schemas import (
     TVShowUpdate,
     TVShowResponse,
     PaginatedTVShowResponse,
+    PaginatedTVShowResponseWithFilters,
     PaginatedSeasonResponse,
     PaginatedEpisodeResponse,
     SeasonResponse,
     EpisodeResponse,
     MetadataSyncResponse,
 )
-from app.services import TVShowService, TVDBService
+from app.services_impl import TVShowService, TVDBService
+from app.services.redis_cache import get_cache_service
+from app.services.search_service import SearchFilters, TVShowSearchService
 import logging
 import json
 
@@ -23,26 +26,85 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/tv-shows", tags=["TV Shows"])
 
 
-@router.get("", response_model=PaginatedTVShowResponse)
+@router.get("", response_model=PaginatedTVShowResponseWithFilters)
 async def list_tv_shows(
+    genre: str = Query(None, description="Filter by genre (case-insensitive)"),
+    min_rating: float = Query(None, ge=0, le=10, description="Minimum rating (0-10)"),
+    max_rating: float = Query(None, ge=0, le=10, description="Maximum rating (0-10)"),
+    sort_by: str = Query("title", description="Sort by: title, rating, date_added"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
-    offset: int = Query(0, ge=0, description="Offset from start"),
+    skip: int = Query(0, ge=0, description="Offset from start"),
     db: Session = Depends(get_db),
 ):
     """
-    List all TV shows with pagination.
+    List TV shows with advanced filtering and sorting.
 
+    - **genre**: Filter by genre (case-insensitive, optional)
+    - **min_rating**: Minimum rating 0-10 (optional)
+    - **max_rating**: Maximum rating 0-10 (optional)
+    - **sort_by**: Sort field - title, rating, date_added (default: title)
     - **limit**: Number of items per page (1-100, default: 10)
-    - **offset**: Offset from start (default: 0)
+    - **skip**: Offset from start (default: 0)
     """
-    shows, total = TVShowService.get_all_tv_shows(
-        db, limit=limit, offset=offset)
-    return {
+    cache_service = get_cache_service()
+    
+    # Build cache key including all filter parameters
+    cache_key = (
+        f"{cache_service.TV_SHOW_LIST_PREFIX}"
+        f"genre={genre}:min_rating={min_rating}:max_rating={max_rating}:"
+        f"sort_by={sort_by}:limit={limit}:skip={skip}"
+    )
+    
+    # Try to get from cache
+    cached_result = cache_service.get(cache_key)
+    if cached_result:
+        logger.debug(f"Returning cached TV show list with filters")
+        return cached_result
+    
+    # Create search filters
+    filters = SearchFilters(
+        genre=genre,
+        min_rating=min_rating,
+        max_rating=max_rating,
+        year=None,  # TV shows don't have year field
+        sort_by=sort_by,
+        skip=skip,
+        limit=limit,
+    )
+    
+    # Validate filters
+    is_valid, error_msg = filters.validate()
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
+    # Perform search
+    shows, total = TVShowSearchService.search(db, filters)
+    
+    # Build applied filters dict
+    applied_filters = {}
+    if genre:
+        applied_filters["genre"] = genre
+    if min_rating is not None:
+        applied_filters["min_rating"] = min_rating
+    if max_rating is not None:
+        applied_filters["max_rating"] = max_rating
+    
+    result = {
         "items": shows,
         "total": total,
         "limit": limit,
-        "offset": offset,
+        "offset": skip,
+        "filters": {
+            "applied_filters": applied_filters,
+            "sort_by": sort_by,
+            "total_results": total,
+        }
     }
+    
+    # Cache the result
+    cache_service.set(cache_key, result, ttl=cache_service.LIST_TTL)
+    
+    return result
 
 
 @router.get("/{show_id}", response_model=TVShowResponse)
@@ -51,9 +113,22 @@ async def get_tv_show(
     db: Session = Depends(get_db),
 ):
     """Get a specific TV show by ID"""
+    cache_service = get_cache_service()
+    cache_key = f"{cache_service.TV_SHOW_PREFIX}{show_id}"
+    
+    # Try to get from cache
+    cached_show = cache_service.get(cache_key)
+    if cached_show:
+        logger.debug(f"Returning cached TV show: {show_id}")
+        return cached_show
+    
     show = TVShowService.get_tv_show_by_id(db, show_id)
     if not show:
         raise HTTPException(status_code=404, detail="TV show not found")
+    
+    # Cache the result
+    cache_service.set(cache_key, show, ttl=cache_service.TV_SHOW_TTL)
+    
     return show
 
 
@@ -135,6 +210,12 @@ async def create_tv_show(
 ):
     """Create a new TV show"""
     show = TVShowService.create_tv_show(db, show_data)
+    
+    # Invalidate TV show list cache
+    cache_service = get_cache_service()
+    cache_service.delete_pattern(f"{cache_service.TV_SHOW_LIST_PREFIX}*")
+    logger.debug("Invalidated TV show list cache after create")
+    
     return show
 
 
@@ -148,6 +229,12 @@ async def update_tv_show(
     show = TVShowService.update_tv_show(db, show_id, show_data)
     if not show:
         raise HTTPException(status_code=404, detail="TV show not found")
+    
+    # Invalidate cache for this TV show and TV show lists
+    cache_service = get_cache_service()
+    cache_service.invalidate_tv_show(show_id)
+    logger.debug(f"Invalidated cache for TV show {show_id} after update")
+    
     return show
 
 
@@ -160,6 +247,12 @@ async def delete_tv_show(
     success = TVShowService.delete_tv_show(db, show_id)
     if not success:
         raise HTTPException(status_code=404, detail="TV show not found")
+    
+    # Invalidate cache for this TV show and TV show lists
+    cache_service = get_cache_service()
+    cache_service.invalidate_tv_show(show_id)
+    logger.debug(f"Invalidated cache for TV show {show_id} after delete")
+    
     return None
 
 

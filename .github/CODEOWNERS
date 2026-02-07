@@ -1,0 +1,37 @@
+# Code ownership rules for the Media Management Tool project
+
+# Default owners for all files
+* @john
+
+# API layer
+/app/api/ @john
+
+# Database and models
+/app/models.py @john
+/app/database.py @john
+/alembic/ @john
+
+# Services
+/app/services/ @john
+
+# Configuration
+/app/config.py @john
+*.yml @john
+*.yaml @john
+
+# Tests
+/tests/ @john
+
+# Documentation
+/docs/ @john
+*.md @john
+
+# CI/CD
+/.github/ @john
+
+# Docker
+/Dockerfile @john
+/docker-compose*.yml @john
+
+# Dependencies
+requirements.txt @john

@@ -1,7 +1,7 @@
 """Pydantic schemas for request/response validation"""
 
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 
@@ -454,9 +454,223 @@ class TaskErrorResponse(BaseModel):
 
 
 class PaginatedTaskErrorResponse(BaseModel):
-     """Paginated response for task errors"""
-     items: List[TaskErrorResponse] = Field(..., description="List of task errors")
-     total: int = Field(..., description="Total number of task errors")
+      """Paginated response for task errors"""
+      items: List[TaskErrorResponse] = Field(..., description="List of task errors")
+      total: int = Field(..., description="Total number of task errors")
+      limit: int = Field(..., description="Items per page")
+      offset: int = Field(..., description="Offset from start")
+
+      model_config = ConfigDict(
+          json_schema_extra={
+              "example": {
+                  "items": [
+                      {
+                          "id": 1,
+                          "task_id": "abc123def456",
+                          "task_name": "app.tasks.analyze_file",
+                          "error_message": "File not found: /path/to/file.mp4",
+                          "error_traceback": "Traceback (most recent call last):\n  ...",
+                          "severity": "critical",
+                          "retry_count": 3,
+                          "created_at": "2026-02-07T10:00:00Z",
+                          "resolved_at": None
+                      }
+                  ],
+                  "total": 10,
+                  "limit": 50,
+                  "offset": 0
+              }
+          }
+      )
+
+
+# ============================================================================
+# Search and Filter Schemas
+# ============================================================================
+
+class SearchFiltersRequest(BaseModel):
+    """Schema for search filter query parameters"""
+    genre: Optional[str] = Field(None, description="Genre to filter by (case-insensitive)")
+    min_rating: Optional[float] = Field(None, ge=0, le=10, description="Minimum rating (0-10)")
+    max_rating: Optional[float] = Field(None, ge=0, le=10, description="Maximum rating (0-10)")
+    year: Optional[int] = Field(None, ge=1800, le=2100, description="Release/air year")
+    sort_by: str = Field("title", description="Sort field: title, rating, year, date_added")
+    skip: int = Field(0, ge=0, description="Number of items to skip")
+    limit: int = Field(10, ge=1, le=100, description="Number of items to return")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "genre": "Drama",
+                "min_rating": 7.0,
+                "max_rating": 10.0,
+                "year": 2020,
+                "sort_by": "rating",
+                "skip": 0,
+                "limit": 10
+            }
+        }
+    )
+
+
+class FilterMetadata(BaseModel):
+    """Schema for filter metadata in responses"""
+    applied_filters: Dict[str, Any] = Field(..., description="Filters that were applied")
+    sort_by: str = Field(..., description="Field used for sorting")
+    total_results: int = Field(..., description="Total results matching filters")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "applied_filters": {
+                    "genre": "Drama",
+                    "min_rating": 7.0,
+                    "max_rating": 10.0
+                },
+                "sort_by": "rating",
+                "total_results": 42
+            }
+        }
+    )
+
+
+class PaginatedMovieResponseWithFilters(BaseModel):
+    """Paginated response for movies with filter metadata"""
+    items: List[MovieResponse] = Field(..., description="List of movies")
+    total: int = Field(..., description="Total number of movies matching filters")
+    limit: int = Field(..., description="Items per page")
+    offset: int = Field(..., description="Offset from start")
+    filters: FilterMetadata = Field(..., description="Applied filters and metadata")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "items": [],
+                "total": 42,
+                "limit": 10,
+                "offset": 0,
+                "filters": {
+                    "applied_filters": {
+                        "genre": "Drama",
+                        "min_rating": 7.0
+                    },
+                    "sort_by": "rating",
+                    "total_results": 42
+                }
+            }
+        }
+    )
+
+
+class PaginatedTVShowResponseWithFilters(BaseModel):
+     """Paginated response for TV shows with filter metadata"""
+     items: List[TVShowResponse] = Field(..., description="List of TV shows")
+     total: int = Field(..., description="Total number of TV shows matching filters")
+     limit: int = Field(..., description="Items per page")
+     offset: int = Field(..., description="Offset from start")
+     filters: FilterMetadata = Field(..., description="Applied filters and metadata")
+
+     model_config = ConfigDict(
+         json_schema_extra={
+             "example": {
+                 "items": [],
+                 "total": 25,
+                 "limit": 10,
+                 "offset": 0,
+                 "filters": {
+                     "applied_filters": {
+                         "genre": "Crime",
+                         "min_rating": 8.0
+                     },
+                     "sort_by": "rating",
+                     "total_results": 25
+                 }
+             }
+         }
+     )
+
+
+# ============================================================================
+# Batch Operations Schemas
+# ============================================================================
+
+class BatchOperationCreate(BaseModel):
+     """Schema for creating a batch operation"""
+     operation_type: str = Field(..., description="Type of operation (metadata_sync, file_import)")
+     media_ids: Optional[List[int]] = Field(None, description="List of media IDs for metadata sync")
+     file_paths: Optional[List[str]] = Field(None, description="List of file paths for file import")
+     media_type: Optional[str] = Field(None, description="Type of media (movie, tv_show)")
+
+     model_config = ConfigDict(
+         json_schema_extra={
+             "example": {
+                 "operation_type": "metadata_sync",
+                 "media_ids": [1, 2, 3],
+                 "media_type": "movie"
+             }
+         }
+     )
+
+
+class BatchProgressUpdate(BaseModel):
+     """Schema for batch progress updates"""
+     completed_items: int = Field(..., ge=0, description="Number of completed items")
+     failed_items: int = Field(..., ge=0, description="Number of failed items")
+     error_message: Optional[str] = Field(None, description="Optional error message")
+
+     model_config = ConfigDict(
+         json_schema_extra={
+             "example": {
+                 "completed_items": 50,
+                 "failed_items": 5,
+                 "error_message": None
+             }
+         }
+     )
+
+
+class BatchOperationResponse(BaseModel):
+     """Schema for batch operation response"""
+     id: int = Field(..., description="Batch operation ID")
+     operation_type: str = Field(..., description="Type of operation")
+     status: str = Field(..., description="Operation status (pending/running/completed/failed/cancelled)")
+     total_items: int = Field(..., description="Total number of items")
+     completed_items: int = Field(..., description="Number of completed items")
+     failed_items: int = Field(..., description="Number of failed items")
+     progress_percentage: float = Field(..., description="Progress percentage (0-100)")
+     eta: Optional[datetime] = Field(None, description="Estimated time of completion")
+     error_message: Optional[str] = Field(None, description="Error message if failed")
+     created_at: datetime = Field(..., description="Creation timestamp")
+     updated_at: datetime = Field(..., description="Last update timestamp")
+     started_at: Optional[datetime] = Field(None, description="Start timestamp")
+     completed_at: Optional[datetime] = Field(None, description="Completion timestamp")
+
+     model_config = ConfigDict(
+         from_attributes=True,
+         json_schema_extra={
+             "example": {
+                 "id": 1,
+                 "operation_type": "metadata_sync",
+                 "status": "running",
+                 "total_items": 100,
+                 "completed_items": 50,
+                 "failed_items": 2,
+                 "progress_percentage": 52.0,
+                 "eta": "2026-02-07T13:15:00Z",
+                 "error_message": None,
+                 "created_at": "2026-02-07T13:00:00Z",
+                 "updated_at": "2026-02-07T13:05:00Z",
+                 "started_at": "2026-02-07T13:00:30Z",
+                 "completed_at": None
+             }
+         }
+     )
+
+
+class PaginatedBatchOperationResponse(BaseModel):
+     """Paginated response for batch operations"""
+     items: List[BatchOperationResponse] = Field(..., description="List of batch operations")
+     total: int = Field(..., description="Total number of batch operations")
      limit: int = Field(..., description="Items per page")
      offset: int = Field(..., description="Offset from start")
 
@@ -466,14 +680,18 @@ class PaginatedTaskErrorResponse(BaseModel):
                  "items": [
                      {
                          "id": 1,
-                         "task_id": "abc123def456",
-                         "task_name": "app.tasks.analyze_file",
-                         "error_message": "File not found: /path/to/file.mp4",
-                         "error_traceback": "Traceback (most recent call last):\n  ...",
-                         "severity": "critical",
-                         "retry_count": 3,
-                         "created_at": "2026-02-07T10:00:00Z",
-                         "resolved_at": None
+                         "operation_type": "metadata_sync",
+                         "status": "completed",
+                         "total_items": 100,
+                         "completed_items": 100,
+                         "failed_items": 0,
+                         "progress_percentage": 100.0,
+                         "eta": None,
+                         "error_message": None,
+                         "created_at": "2026-02-07T13:00:00Z",
+                         "updated_at": "2026-02-07T13:10:00Z",
+                         "started_at": "2026-02-07T13:00:30Z",
+                         "completed_at": "2026-02-07T13:10:00Z"
                      }
                  ],
                  "total": 10,
@@ -482,3 +700,14 @@ class PaginatedTaskErrorResponse(BaseModel):
              }
          }
      )
+
+
+class BatchOperationListItem(BaseModel):
+     """Schema for batch operation list item"""
+     id: int = Field(..., description="Batch operation ID")
+     operation_type: str = Field(..., description="Type of operation")
+     status: str = Field(..., description="Operation status")
+     progress_percentage: float = Field(..., description="Progress percentage")
+     created_at: datetime = Field(..., description="Creation timestamp")
+
+     model_config = ConfigDict(from_attributes=True)

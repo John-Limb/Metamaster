@@ -4,7 +4,9 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import StaticPool, QueuePool
 from app.config import settings
+from app.services.db_optimization import DatabaseOptimizationService
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +32,18 @@ else:
     engine = create_engine(
         settings.database_url,
         echo=settings.database_echo,
-        pool_pre_ping=True,
+        pool_pre_ping=settings.db_pool_pre_ping,
         poolclass=QueuePool,
-        pool_size=10,  # Number of connections to keep in the pool
-        max_overflow=20,  # Maximum overflow connections
-        pool_recycle=3600,  # Recycle connections after 1 hour
-        pool_timeout=30,  # Timeout for getting a connection from the pool
+        pool_size=settings.db_pool_size,
+        max_overflow=settings.db_max_overflow,
+        pool_recycle=settings.db_pool_recycle,
+        pool_timeout=settings.db_pool_timeout,
     )
+
+# Setup query logging and pool monitoring if enabled
+if settings.db_query_logging_enabled:
+    DatabaseOptimizationService.setup_query_logging(engine)
+    DatabaseOptimizationService.setup_pool_monitoring(engine)
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

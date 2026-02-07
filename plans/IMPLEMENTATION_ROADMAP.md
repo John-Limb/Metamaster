@@ -563,6 +563,7 @@ All components are fully tested, documented, and ready for deployment.
 - Prepare deployment procedures
 - Create user guides
 - Set up monitoring and logging
+- Folder structure 
 
 ### Tasks
 1. **API Documentation**

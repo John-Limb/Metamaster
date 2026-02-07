@@ -1,7 +1,6 @@
 """Celery Beat scheduler configuration for periodic tasks"""
 
 from celery.schedules import crontab
-from app.celery_app import celery_app
 
 # Define the beat schedule for periodic tasks
 beat_schedule = {

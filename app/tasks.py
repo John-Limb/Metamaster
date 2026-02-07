@@ -3,16 +3,17 @@
 import logging
 import traceback
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from celery import Celery
 from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import SessionLocal
-from app.models import Movie, TVShow, APICache, FileQueue, MovieFile, EpisodeFile
+from app.models import Movie, TVShow, APICache, FileQueue, MovieFile, EpisodeFile, BatchOperation
+from app.services_impl import OMDBService, TVDBService
 from app.services.ffprobe_wrapper import FFProbeWrapper
 from app.services.file_queue_manager import FileQueueManager
-from app.services import OMDBService, TVDBService
 from app.services.task_error_handler import TaskErrorHandler
+from app.services.batch_operations import BatchOperationService
 import asyncio
 
 logger = logging.getLogger(__name__)
@@ -475,3 +476,205 @@ def sync_metadata(self):
     finally:
         if db:
             db.close()
+
+
+@celery_app.task(bind=True)
+def bulk_metadata_sync_task(self, batch_id: int, media_ids: List[int], media_type: str):
+    """Async task for bulk metadata refresh
+    
+    Args:
+        batch_id: Batch operation ID
+        media_ids: List of media IDs to sync
+        media_type: Type of media ("movie" or "tv_show")
+        
+    Returns:
+        Dictionary with sync results
+    """
+    db: Optional[Session] = None
+    try:
+        logger.info(f"Starting bulk metadata sync task for batch {batch_id}")
+        
+        db = SessionLocal()
+        service = BatchOperationService(db)
+        
+        # Run async operation
+        result = asyncio.run(service.bulk_metadata_sync(batch_id, media_ids, media_type))
+        
+        logger.info(f"Bulk metadata sync completed for batch {batch_id}: {result}")
+        return result
+        
+    except Exception as exc:
+        logger.error(f"Error in bulk metadata sync task for batch {batch_id}: {str(exc)}")
+        if db:
+            service = BatchOperationService(db)
+            service.fail_batch_operation(batch_id, str(exc))
+        
+        TaskErrorHandler.handle_task_failure(
+            task_id=self.request.id,
+            task_name=self.name,
+            exception=exc,
+            tb=traceback.format_exc(),
+            retry_count=0,
+        )
+        return {
+            "status": "error",
+            "batch_id": batch_id,
+            "message": f"Bulk metadata sync failed: {str(exc)}"
+        }
+    finally:
+        if db:
+            db.close()
+
+
+@celery_app.task(bind=True)
+def bulk_file_import_task(self, batch_id: int, file_paths: List[str], media_type: str):
+     """Async task for bulk file import
+     
+     Args:
+         batch_id: Batch operation ID
+         file_paths: List of file paths to import
+         media_type: Type of media ("movie" or "tv_show")
+         
+     Returns:
+         Dictionary with import results
+     """
+     db: Optional[Session] = None
+     try:
+         logger.info(f"Starting bulk file import task for batch {batch_id}")
+         
+         db = SessionLocal()
+         service = BatchOperationService(db)
+         
+         # Run async operation
+         result = asyncio.run(service.bulk_file_import(batch_id, file_paths, media_type))
+         
+         logger.info(f"Bulk file import completed for batch {batch_id}: {result}")
+         return result
+         
+     except Exception as exc:
+         logger.error(f"Error in bulk file import task for batch {batch_id}: {str(exc)}")
+         if db:
+             service = BatchOperationService(db)
+             service.fail_batch_operation(batch_id, str(exc))
+         
+         TaskErrorHandler.handle_task_failure(
+             task_id=self.request.id,
+             task_name=self.name,
+             exception=exc,
+             tb=traceback.format_exc(),
+             retry_count=0,
+         )
+         return {
+             "status": "error",
+             "batch_id": batch_id,
+             "message": f"Bulk file import failed: {str(exc)}"
+         }
+     finally:
+         if db:
+             db.close()
+
+
+@celery_app.task(bind=True)
+def process_batch_item(self, batch_id: int, item_id: int, item_type: str, operation_type: str):
+     """Worker task for processing individual batch items
+     
+     Args:
+         batch_id: Batch operation ID
+         item_id: ID of the item to process
+         item_type: Type of item ("movie", "tv_show", "file")
+         operation_type: Type of operation ("metadata_sync", "file_import")
+         
+     Returns:
+         Dictionary with processing result
+     """
+     db: Optional[Session] = None
+     try:
+         logger.info(f"Processing batch item {item_id} for batch {batch_id}")
+         
+         db = SessionLocal()
+         
+         if operation_type == "metadata_sync":
+             if item_type == "movie":
+                 movie = db.query(Movie).filter(Movie.id == item_id).first()
+                 if not movie:
+                     return {"success": False, "error": "Movie not found"}
+                 
+                 if movie.omdb_id:
+                     omdb_data = asyncio.run(OMDBService.get_movie_details(db, movie.omdb_id))
+                     if omdb_data:
+                         parsed = OMDBService.parse_omdb_response(omdb_data)
+                         if parsed:
+                             movie.plot = parsed.get("plot", movie.plot)
+                             movie.rating = parsed.get("rating", movie.rating)
+                             movie.runtime = parsed.get("runtime", movie.runtime)
+                             movie.genres = parsed.get("genres", movie.genres)
+                             movie.updated_at = datetime.utcnow()
+                             db.commit()
+                             return {"success": True}
+             
+             elif item_type == "tv_show":
+                 show = db.query(TVShow).filter(TVShow.id == item_id).first()
+                 if not show:
+                     return {"success": False, "error": "TV show not found"}
+                 
+                 if show.tvdb_id:
+                     tvdb_data = asyncio.run(TVDBService.get_series_details(db, show.tvdb_id))
+                     if tvdb_data:
+                         parsed = TVDBService.parse_tvdb_series_response(tvdb_data)
+                         if parsed:
+                             show.plot = parsed.get("plot", show.plot)
+                             show.rating = parsed.get("rating", show.rating)
+                             show.genres = parsed.get("genres", show.genres)
+                             show.status = parsed.get("status", show.status)
+                             show.updated_at = datetime.utcnow()
+                             db.commit()
+                             return {"success": True}
+         
+         return {"success": True}
+         
+     except Exception as exc:
+         logger.error(f"Error processing batch item {item_id}: {str(exc)}")
+         return {"success": False, "error": str(exc)}
+     finally:
+         if db:
+             db.close()
+
+
+@celery_app.task(bind=True)
+def update_batch_progress(self, batch_id: int, completed_items: int, failed_items: int, error_message: Optional[str] = None):
+     """Task for updating batch progress
+     
+     Args:
+         batch_id: Batch operation ID
+         completed_items: Number of completed items
+         failed_items: Number of failed items
+         error_message: Optional error message
+         
+     Returns:
+         Dictionary with update result
+     """
+     db: Optional[Session] = None
+     try:
+         logger.info(f"Updating progress for batch {batch_id}: completed={completed_items}, failed={failed_items}")
+         
+         db = SessionLocal()
+         service = BatchOperationService(db)
+         
+         batch_op = service.update_batch_progress(batch_id, completed_items, failed_items, error_message)
+         
+         if not batch_op:
+             return {"success": False, "error": "Batch operation not found"}
+         
+         return {
+             "success": True,
+             "batch_id": batch_id,
+             "progress_percentage": batch_op.progress_percentage,
+             "eta": batch_op.eta.isoformat() if batch_op.eta else None
+         }
+         
+     except Exception as exc:
+         logger.error(f"Error updating batch progress for {batch_id}: {str(exc)}")
+         return {"success": False, "error": str(exc)}
+     finally:
+         if db:
+             db.close()

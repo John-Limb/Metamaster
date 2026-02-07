@@ -15,9 +15,25 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "sqlite:///./media.db"
     database_echo: bool = False
+    
+    # Database Connection Pool
+    db_pool_size: int = 10  # Number of connections to keep in the pool
+    db_max_overflow: int = 20  # Maximum overflow connections
+    db_pool_recycle: int = 3600  # Recycle connections after 1 hour (seconds)
+    db_pool_timeout: int = 30  # Timeout for getting a connection from the pool (seconds)
+    db_pool_pre_ping: bool = True  # Test connections before using them
+    
+    # Query Performance
+    db_slow_query_threshold: float = 1.0  # Time in seconds to consider a query as slow
+    db_query_logging_enabled: bool = True  # Enable query execution logging
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
+    redis_cache_db: int = 2
+    redis_cache_default_ttl: int = 3600  # 1 hour
+    redis_cache_movie_ttl: int = 86400  # 24 hours
+    redis_cache_tv_show_ttl: int = 86400  # 24 hours
+    redis_cache_list_ttl: int = 1800  # 30 minutes
 
     # OMDB API
     omdb_api_key: Optional[str] = None

@@ -8,9 +8,12 @@ from app.schemas import (
     MovieUpdate,
     MovieResponse,
     PaginatedMovieResponse,
+    PaginatedMovieResponseWithFilters,
     MetadataSyncResponse,
 )
-from app.services import MovieService, OMDBService
+from app.services_impl import MovieService, OMDBService
+from app.services.redis_cache import get_cache_service
+from app.services.search_service import SearchFilters, MovieSearchService
 import logging
 import json
 
@@ -19,25 +22,89 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/movies", tags=["Movies"])
 
 
-@router.get("", response_model=PaginatedMovieResponse)
+@router.get("", response_model=PaginatedMovieResponseWithFilters)
 async def list_movies(
+    genre: str = Query(None, description="Filter by genre (case-insensitive)"),
+    min_rating: float = Query(None, ge=0, le=10, description="Minimum rating (0-10)"),
+    max_rating: float = Query(None, ge=0, le=10, description="Maximum rating (0-10)"),
+    year: int = Query(None, ge=1800, le=2100, description="Release year"),
+    sort_by: str = Query("title", description="Sort by: title, rating, year, date_added"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
-    offset: int = Query(0, ge=0, description="Offset from start"),
+    skip: int = Query(0, ge=0, description="Offset from start"),
     db: Session = Depends(get_db),
 ):
     """
-    List all movies with pagination.
+    List movies with advanced filtering and sorting.
 
+    - **genre**: Filter by genre (case-insensitive, optional)
+    - **min_rating**: Minimum rating 0-10 (optional)
+    - **max_rating**: Maximum rating 0-10 (optional)
+    - **year**: Release year (optional)
+    - **sort_by**: Sort field - title, rating, year, date_added (default: title)
     - **limit**: Number of items per page (1-100, default: 10)
-    - **offset**: Offset from start (default: 0)
+    - **skip**: Offset from start (default: 0)
     """
-    movies, total = MovieService.get_all_movies(db, limit=limit, offset=offset)
-    return {
+    cache_service = get_cache_service()
+    
+    # Build cache key including all filter parameters
+    cache_key = (
+        f"{cache_service.MOVIE_LIST_PREFIX}"
+        f"genre={genre}:min_rating={min_rating}:max_rating={max_rating}:"
+        f"year={year}:sort_by={sort_by}:limit={limit}:skip={skip}"
+    )
+    
+    # Try to get from cache
+    cached_result = cache_service.get(cache_key)
+    if cached_result:
+        logger.debug(f"Returning cached movie list with filters")
+        return cached_result
+    
+    # Create search filters
+    filters = SearchFilters(
+        genre=genre,
+        min_rating=min_rating,
+        max_rating=max_rating,
+        year=year,
+        sort_by=sort_by,
+        skip=skip,
+        limit=limit,
+    )
+    
+    # Validate filters
+    is_valid, error_msg = filters.validate()
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
+    # Perform search
+    movies, total = MovieSearchService.search(db, filters)
+    
+    # Build applied filters dict
+    applied_filters = {}
+    if genre:
+        applied_filters["genre"] = genre
+    if min_rating is not None:
+        applied_filters["min_rating"] = min_rating
+    if max_rating is not None:
+        applied_filters["max_rating"] = max_rating
+    if year is not None:
+        applied_filters["year"] = year
+    
+    result = {
         "items": movies,
         "total": total,
         "limit": limit,
-        "offset": offset,
+        "offset": skip,
+        "filters": {
+            "applied_filters": applied_filters,
+            "sort_by": sort_by,
+            "total_results": total,
+        }
     }
+    
+    # Cache the result
+    cache_service.set(cache_key, result, ttl=cache_service.LIST_TTL)
+    
+    return result
 
 
 @router.get("/search", response_model=PaginatedMovieResponse)
@@ -70,9 +137,22 @@ async def get_movie(
     db: Session = Depends(get_db),
 ):
     """Get a specific movie by ID"""
+    cache_service = get_cache_service()
+    cache_key = f"{cache_service.MOVIE_PREFIX}{movie_id}"
+    
+    # Try to get from cache
+    cached_movie = cache_service.get(cache_key)
+    if cached_movie:
+        logger.debug(f"Returning cached movie: {movie_id}")
+        return cached_movie
+    
     movie = MovieService.get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
+    
+    # Cache the result
+    cache_service.set(cache_key, movie, ttl=cache_service.MOVIE_TTL)
+    
     return movie
 
 
@@ -83,6 +163,12 @@ async def create_movie(
 ):
     """Create a new movie"""
     movie = MovieService.create_movie(db, movie_data)
+    
+    # Invalidate movie list cache
+    cache_service = get_cache_service()
+    cache_service.delete_pattern(f"{cache_service.MOVIE_LIST_PREFIX}*")
+    logger.debug("Invalidated movie list cache after create")
+    
     return movie
 
 
@@ -96,6 +182,12 @@ async def update_movie(
     movie = MovieService.update_movie(db, movie_id, movie_data)
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
+    
+    # Invalidate cache for this movie and movie lists
+    cache_service = get_cache_service()
+    cache_service.invalidate_movie(movie_id)
+    logger.debug(f"Invalidated cache for movie {movie_id} after update")
+    
     return movie
 
 
@@ -108,6 +200,12 @@ async def delete_movie(
     success = MovieService.delete_movie(db, movie_id)
     if not success:
         raise HTTPException(status_code=404, detail="Movie not found")
+    
+    # Invalidate cache for this movie and movie lists
+    cache_service = get_cache_service()
+    cache_service.invalidate_movie(movie_id)
+    logger.debug(f"Invalidated cache for movie {movie_id} after delete")
+    
     return None
 
 

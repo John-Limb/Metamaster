@@ -7,6 +7,7 @@ from typing import Optional, List
 import logging
 
 from app.celery_app import celery_app
+from app.database import SessionLocal
 from app.schemas import (
     TaskStatusResponse,
     TaskRetryResponse,
@@ -15,8 +16,14 @@ from app.schemas import (
     TaskCancelResponse,
     TaskErrorResponse,
     PaginatedTaskErrorResponse,
+    BatchOperationCreate,
+    BatchOperationResponse,
+    PaginatedBatchOperationResponse,
+    BatchProgressUpdate,
 )
 from app.services.task_error_handler import TaskErrorHandler
+from app.services.batch_operations import BatchOperationService
+from app.tasks import bulk_metadata_sync_task, bulk_file_import_task
 
 logger = logging.getLogger(__name__)
 
@@ -386,32 +393,327 @@ async def list_task_errors(
 
 @router.get("/errors/{error_id}", response_model=TaskErrorResponse)
 async def get_task_error(error_id: int):
-    """
-    Get details of a specific task error.
-    
-    - **error_id**: Task error ID (integer)
-    
-    Returns detailed information about the task error including full traceback.
-    """
-    logger.info(f"Fetching task error details: {error_id}")
-    
-    try:
-        error = TaskErrorHandler.get_error_by_id(error_id)
-        
-        if not error:
-            logger.warning(f"Task error not found: {error_id}")
-            raise HTTPException(
-                status_code=404,
-                detail=f"Task error not found: {error_id}"
-            )
-        
-        return TaskErrorResponse.model_validate(error)
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error fetching task error {error_id}: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error fetching task error: {str(e)}"
-        )
+     """
+     Get details of a specific task error.
+     
+     - **error_id**: Task error ID (integer)
+     
+     Returns detailed information about the task error including full traceback.
+     """
+     logger.info(f"Fetching task error details: {error_id}")
+     
+     try:
+         error = TaskErrorHandler.get_error_by_id(error_id)
+         
+         if not error:
+             logger.warning(f"Task error not found: {error_id}")
+             raise HTTPException(
+                 status_code=404,
+                 detail=f"Task error not found: {error_id}"
+             )
+         
+         return TaskErrorResponse.model_validate(error)
+         
+     except HTTPException:
+         raise
+     except Exception as e:
+         logger.error(f"Error fetching task error {error_id}: {str(e)}", exc_info=True)
+         raise HTTPException(
+             status_code=500,
+             detail=f"Error fetching task error: {str(e)}"
+         )
+
+
+# ============================================================================
+# Batch Operations Endpoints
+# ============================================================================
+
+@router.post("/batch/metadata-sync", response_model=BatchOperationResponse)
+async def start_metadata_sync_batch(request: BatchOperationCreate):
+     """
+     Start bulk metadata sync operation.
+     
+     - **operation_type**: Must be "metadata_sync"
+     - **media_ids**: List of movie or TV show IDs to sync
+     - **media_type**: Type of media ("movie" or "tv_show")
+     
+     Returns batch operation details with ID for tracking progress.
+     """
+     logger.info(f"Starting metadata sync batch with {len(request.media_ids or [])} items")
+     
+     try:
+         if request.operation_type != "metadata_sync":
+             raise HTTPException(
+                 status_code=400,
+                 detail="Invalid operation_type for metadata sync endpoint"
+             )
+         
+         if not request.media_ids or len(request.media_ids) == 0:
+             raise HTTPException(
+                 status_code=400,
+                 detail="media_ids list cannot be empty"
+             )
+         
+         if not request.media_type or request.media_type not in ["movie", "tv_show"]:
+             raise HTTPException(
+                 status_code=400,
+                 detail="media_type must be 'movie' or 'tv_show'"
+             )
+         
+         db = SessionLocal()
+         try:
+             service = BatchOperationService(db)
+             
+             # Create batch operation
+             batch_op = service.create_batch_operation(
+                 operation_type="metadata_sync",
+                 total_items=len(request.media_ids),
+                 metadata={"media_type": request.media_type}
+             )
+             
+             # Start async task
+             task = bulk_metadata_sync_task.delay(batch_op.id, request.media_ids, request.media_type)
+             
+             logger.info(f"Started metadata sync batch {batch_op.id} with task {task.id}")
+             
+             return BatchOperationResponse.model_validate(batch_op)
+         finally:
+             db.close()
+         
+     except HTTPException:
+         raise
+     except Exception as e:
+         logger.error(f"Error starting metadata sync batch: {str(e)}", exc_info=True)
+         raise HTTPException(
+             status_code=500,
+             detail=f"Error starting metadata sync batch: {str(e)}"
+         )
+
+
+@router.post("/batch/file-import", response_model=BatchOperationResponse)
+async def start_file_import_batch(request: BatchOperationCreate):
+     """
+     Start bulk file import operation.
+     
+     - **operation_type**: Must be "file_import"
+     - **file_paths**: List of file paths to import
+     - **media_type**: Type of media ("movie" or "tv_show")
+     
+     Returns batch operation details with ID for tracking progress.
+     """
+     logger.info(f"Starting file import batch with {len(request.file_paths or [])} files")
+     
+     try:
+         if request.operation_type != "file_import":
+             raise HTTPException(
+                 status_code=400,
+                 detail="Invalid operation_type for file import endpoint"
+             )
+         
+         if not request.file_paths or len(request.file_paths) == 0:
+             raise HTTPException(
+                 status_code=400,
+                 detail="file_paths list cannot be empty"
+             )
+         
+         if not request.media_type or request.media_type not in ["movie", "tv_show"]:
+             raise HTTPException(
+                 status_code=400,
+                 detail="media_type must be 'movie' or 'tv_show'"
+             )
+         
+         db = SessionLocal()
+         try:
+             service = BatchOperationService(db)
+             
+             # Create batch operation
+             batch_op = service.create_batch_operation(
+                 operation_type="file_import",
+                 total_items=len(request.file_paths),
+                 metadata={"media_type": request.media_type}
+             )
+             
+             # Start async task
+             task = bulk_file_import_task.delay(batch_op.id, request.file_paths, request.media_type)
+             
+             logger.info(f"Started file import batch {batch_op.id} with task {task.id}")
+             
+             return BatchOperationResponse.model_validate(batch_op)
+         finally:
+             db.close()
+         
+     except HTTPException:
+         raise
+     except Exception as e:
+         logger.error(f"Error starting file import batch: {str(e)}", exc_info=True)
+         raise HTTPException(
+             status_code=500,
+             detail=f"Error starting file import batch: {str(e)}"
+         )
+
+
+@router.get("/batch/{batch_id}", response_model=BatchOperationResponse)
+async def get_batch_operation(batch_id: int):
+     """
+     Get batch operation status and progress.
+     
+     - **batch_id**: Batch operation ID
+     
+     Returns current status, progress percentage, ETA, and error details if applicable.
+     """
+     logger.info(f"Fetching batch operation: {batch_id}")
+     
+     try:
+         db = SessionLocal()
+         try:
+             service = BatchOperationService(db)
+             batch_op = service.get_batch_operation(batch_id)
+             
+             if not batch_op:
+                 logger.warning(f"Batch operation not found: {batch_id}")
+                 raise HTTPException(
+                     status_code=404,
+                     detail=f"Batch operation not found: {batch_id}"
+                 )
+             
+             return BatchOperationResponse.model_validate(batch_op)
+         finally:
+             db.close()
+         
+     except HTTPException:
+         raise
+     except Exception as e:
+         logger.error(f"Error fetching batch operation {batch_id}: {str(e)}", exc_info=True)
+         raise HTTPException(
+             status_code=500,
+             detail=f"Error fetching batch operation: {str(e)}"
+         )
+
+
+@router.get("/batch", response_model=PaginatedBatchOperationResponse)
+async def list_batch_operations(
+     operation_type: Optional[str] = Query(None, description="Filter by operation type"),
+     status: Optional[str] = Query(None, description="Filter by status"),
+     limit: int = Query(50, ge=1, le=100, description="Items per page"),
+     offset: int = Query(0, ge=0, description="Offset from start"),
+):
+     """
+     List all batch operations with optional filtering.
+     
+     - **operation_type**: Optional filter by operation type (metadata_sync, file_import)
+     - **status**: Optional filter by status (pending, running, completed, failed, cancelled)
+     - **limit**: Number of items per page (1-100, default: 50)
+     - **offset**: Offset from start (default: 0)
+     
+     Returns paginated list of batch operations.
+     """
+     logger.info(f"Listing batch operations: operation_type={operation_type}, status={status}, limit={limit}, offset={offset}")
+     
+     try:
+         db = SessionLocal()
+         try:
+             service = BatchOperationService(db)
+             operations, total = service.list_batch_operations(
+                 operation_type=operation_type,
+                 status=status,
+                 limit=limit,
+                 offset=offset
+             )
+             
+             items = [BatchOperationResponse.model_validate(op) for op in operations]
+             
+             return PaginatedBatchOperationResponse(
+                 items=items,
+                 total=total,
+                 limit=limit,
+                 offset=offset
+             )
+         finally:
+             db.close()
+         
+     except Exception as e:
+         logger.error(f"Error listing batch operations: {str(e)}", exc_info=True)
+         raise HTTPException(
+             status_code=500,
+             detail=f"Error listing batch operations: {str(e)}"
+         )
+
+
+@router.delete("/batch/{batch_id}", response_model=TaskCancelResponse)
+async def cancel_batch_operation(batch_id: int):
+     """
+     Cancel batch operation.
+     
+     - **batch_id**: Batch operation ID
+     
+     Cancels the batch operation and stops processing. Returns success/failure status.
+     """
+     logger.info(f"Cancelling batch operation: {batch_id}")
+     
+     try:
+         db = SessionLocal()
+         try:
+             service = BatchOperationService(db)
+             batch_op = service.cancel_batch_operation(batch_id)
+             
+             if not batch_op:
+                 logger.warning(f"Batch operation not found: {batch_id}")
+                 raise HTTPException(
+                     status_code=404,
+                     detail=f"Batch operation not found: {batch_id}"
+                 )
+             
+             return TaskCancelResponse(
+                 success=True,
+                 message="Batch operation cancelled successfully",
+                 task_id=str(batch_id)
+             )
+         finally:
+             db.close()
+         
+     except HTTPException:
+         raise
+     except Exception as e:
+         logger.error(f"Error cancelling batch operation {batch_id}: {str(e)}", exc_info=True)
+         raise HTTPException(
+             status_code=500,
+             detail=f"Error cancelling batch operation: {str(e)}"
+         )
+
+
+@router.get("/batch/{batch_id}/progress", response_model=BatchOperationResponse)
+async def get_batch_progress(batch_id: int):
+     """
+     Get real-time progress updates for batch operation.
+     
+     - **batch_id**: Batch operation ID
+     
+     Returns current progress percentage, ETA, completed/failed item counts.
+     """
+     logger.info(f"Fetching batch progress: {batch_id}")
+     
+     try:
+         db = SessionLocal()
+         try:
+             service = BatchOperationService(db)
+             batch_op = service.get_batch_operation(batch_id)
+             
+             if not batch_op:
+                 logger.warning(f"Batch operation not found: {batch_id}")
+                 raise HTTPException(
+                     status_code=404,
+                     detail=f"Batch operation not found: {batch_id}"
+                 )
+             
+             return BatchOperationResponse.model_validate(batch_op)
+         finally:
+             db.close()
+         
+     except HTTPException:
+         raise
+     except Exception as e:
+         logger.error(f"Error fetching batch progress {batch_id}: {str(e)}", exc_info=True)
+         raise HTTPException(
+             status_code=500,
+             detail=f"Error fetching batch progress: {str(e)}"
+         )

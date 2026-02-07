@@ -1,5 +1,10 @@
 # Media Management Web Tool
 
+[![CI Pipeline](https://github.com/YOUR_USERNAME/media-management-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/media-management-tool/actions/workflows/ci.yml)
+[![Docker Build](https://github.com/YOUR_USERNAME/media-management-tool/actions/workflows/docker.yml/badge.svg)](https://github.com/YOUR_USERNAME/media-management-tool/actions/workflows/docker.yml)
+[![Code Quality](https://github.com/YOUR_USERNAME/media-management-tool/actions/workflows/code-quality.yml/badge.svg)](https://github.com/YOUR_USERNAME/media-management-tool/actions/workflows/code-quality.yml)
+[![codecov](https://codecov.io/gh/YOUR_USERNAME/media-management-tool/branch/main/graph/badge.svg)](https://codecov.io/gh/YOUR_USERNAME/media-management-tool)
+
 A comprehensive web-based media management system for organizing and managing your movie and TV show library with automatic metadata enrichment from OMDB and TVDB APIs.
 
 ## Features
@@ -204,6 +209,19 @@ This project follows a phased implementation approach:
 8. **Phase 8**: Documentation & Deployment
 
 See `plans/IMPLEMENTATION_ROADMAP.md` for detailed roadmap.
+
+## CI/CD Pipeline
+
+This project includes a comprehensive CI/CD pipeline with:
+
+- **Automated Testing**: Unit, integration, and end-to-end tests on every commit
+- **Code Quality**: Linting, type checking, and code analysis
+- **Security Scanning**: Vulnerability detection and dependency audits
+- **Docker Builds**: Multi-architecture image builds and security scanning
+- **Automated Deployment**: Staging and production deployment pipelines
+- **Scheduled Tasks**: Nightly tests, weekly benchmarks, monthly security audits
+
+See `docs/CI_CD_PIPELINE.md` for detailed CI/CD documentation.
 
 ## Architecture
 
