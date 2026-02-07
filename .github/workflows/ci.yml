@@ -98,7 +98,7 @@ jobs:
           pytest tests/ --cov=app --cov-report=html --cov-report=term-missing --tb=short
 
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: htmlcov/
