@@ -167,18 +167,39 @@ class APICache(Base):
 
 
 class FileQueue(Base):
-    """File processing queue"""
-    __tablename__ = "file_queue"
+     """File processing queue"""
+     __tablename__ = "file_queue"
 
-    id = Column(Integer, primary_key=True, index=True)
-    file_path = Column(String(500), unique=True, nullable=False)
-    status = Column(String(20), default="pending", index=True)  # pending, processing, completed, failed
-    media_type = Column(String(20))  # "movie" or "tv_show"
-    error_message = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    processed_at = Column(DateTime)
+     id = Column(Integer, primary_key=True, index=True)
+     file_path = Column(String(500), unique=True, nullable=False)
+     status = Column(String(20), default="pending", index=True)  # pending, processing, completed, failed
+     media_type = Column(String(20))  # "movie" or "tv_show"
+     error_message = Column(Text)
+     created_at = Column(DateTime, default=datetime.utcnow, index=True)
+     processed_at = Column(DateTime)
 
-    __table_args__ = (
-        Index("idx_file_queue_status", "status"),
-        Index("idx_file_queue_created", "created_at"),
-    )
+     __table_args__ = (
+         Index("idx_file_queue_status", "status"),
+         Index("idx_file_queue_created", "created_at"),
+     )
+
+
+class TaskError(Base):
+     """Task error tracking and audit trail"""
+     __tablename__ = "task_errors"
+
+     id = Column(Integer, primary_key=True, index=True)
+     task_id = Column(String(255), nullable=False, index=True)
+     task_name = Column(String(255), nullable=False)
+     error_message = Column(Text, nullable=False)
+     error_traceback = Column(Text)
+     severity = Column(String(20), nullable=False, index=True)  # critical, warning, info
+     retry_count = Column(Integer, default=0)
+     created_at = Column(DateTime, default=datetime.utcnow, index=True)
+     resolved_at = Column(DateTime, nullable=True)
+
+     __table_args__ = (
+         Index("idx_task_errors_task_id", "task_id"),
+         Index("idx_task_errors_created", "created_at"),
+         Index("idx_task_errors_severity", "severity"),
+     )

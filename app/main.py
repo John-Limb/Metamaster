@@ -12,10 +12,12 @@ import uuid
 
 from app.config import settings
 from app.database import init_db
+from app.celery_app import celery_app
 from app.api import health
 from app.api import movies
 from app.api import tv_shows
 from app.api import cache
+from app.api import tasks
 
 # Configure logging with structured format
 logging.basicConfig(
@@ -32,6 +34,16 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     init_db()
     logger.info("Database initialized")
+    
+    # Initialize Celery app
+    logger.info("Initializing Celery app")
+    celery_app.conf.update(
+        broker_url=settings.celery_broker_url,
+        result_backend=settings.celery_result_backend,
+    )
+    logger.info(f"Celery broker: {settings.celery_broker_url}")
+    logger.info(f"Celery result backend: {settings.celery_result_backend}")
+    
     yield
     # Shutdown
     logger.info("Shutting down application")
@@ -122,6 +134,7 @@ app.include_router(health.router, tags=["Health"])
 app.include_router(movies.router)
 app.include_router(tv_shows.router)
 app.include_router(cache.router)
+app.include_router(tasks.router, prefix="/api", tags=["tasks"])
 
 
 @app.get("/", tags=["Root"])

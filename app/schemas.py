@@ -318,3 +318,167 @@ class MetadataSyncResponse(BaseModel):
             }
         }
     )
+
+
+# ============================================================================
+# Task Monitoring Schemas
+# ============================================================================
+
+class TaskStatusResponse(BaseModel):
+    """Schema for task status response"""
+    task_id: str = Field(..., description="Celery task ID")
+    status: str = Field(..., description="Task status (pending/started/success/failure/retry)")
+    result: Optional[dict] = Field(None, description="Task result if completed")
+    error: Optional[str] = Field(None, description="Error message if task failed")
+    created_at: Optional[datetime] = Field(None, description="Task creation timestamp")
+    updated_at: Optional[datetime] = Field(None, description="Task last update timestamp")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "task_id": "abc123def456",
+                "status": "success",
+                "result": {"processed_items": 42},
+                "error": None,
+                "created_at": "2026-02-07T10:00:00Z",
+                "updated_at": "2026-02-07T10:05:00Z"
+            }
+        }
+    )
+
+
+class TaskRetryResponse(BaseModel):
+    """Schema for task retry response"""
+    success: bool = Field(..., description="Whether retry was successful")
+    message: str = Field(..., description="Operation message")
+    original_task_id: str = Field(..., description="Original task ID")
+    new_task_id: str = Field(..., description="New task ID for retry attempt")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "success": True,
+                "message": "Task retry initiated successfully",
+                "original_task_id": "abc123def456",
+                "new_task_id": "xyz789uvw012"
+            }
+        }
+    )
+
+
+class TaskListItemResponse(BaseModel):
+    """Schema for individual task in list"""
+    task_id: str = Field(..., description="Celery task ID")
+    status: str = Field(..., description="Task status")
+    created_at: Optional[datetime] = Field(None, description="Task creation timestamp")
+    updated_at: Optional[datetime] = Field(None, description="Task last update timestamp")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TaskListResponse(BaseModel):
+    """Schema for paginated task list response"""
+    items: List[TaskListItemResponse] = Field(..., description="List of tasks")
+    total: int = Field(..., description="Total number of tasks")
+    limit: int = Field(..., description="Items per page")
+    offset: int = Field(..., description="Offset from start")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "items": [
+                    {
+                        "task_id": "abc123def456",
+                        "status": "success",
+                        "created_at": "2026-02-07T10:00:00Z",
+                        "updated_at": "2026-02-07T10:05:00Z"
+                    }
+                ],
+                "total": 100,
+                "limit": 50,
+                "offset": 0
+            }
+        }
+    )
+
+
+class TaskCancelResponse(BaseModel):
+     """Schema for task cancellation response"""
+     success: bool = Field(..., description="Whether cancellation was successful")
+     message: str = Field(..., description="Operation message")
+     task_id: str = Field(..., description="Task ID that was cancelled")
+
+     model_config = ConfigDict(
+         json_schema_extra={
+             "example": {
+                 "success": True,
+                 "message": "Task cancelled successfully",
+                 "task_id": "abc123def456"
+             }
+         }
+     )
+
+
+# ============================================================================
+# Task Error Schemas
+# ============================================================================
+
+class TaskErrorResponse(BaseModel):
+     """Schema for individual task error"""
+     id: int = Field(..., description="Task error ID")
+     task_id: str = Field(..., description="Celery task ID")
+     task_name: str = Field(..., description="Name of the task")
+     error_message: str = Field(..., description="Error message")
+     error_traceback: Optional[str] = Field(None, description="Full error traceback")
+     severity: str = Field(..., description="Error severity (critical/warning/info)")
+     retry_count: int = Field(..., description="Number of retries attempted")
+     created_at: datetime = Field(..., description="Error creation timestamp")
+     resolved_at: Optional[datetime] = Field(None, description="Error resolution timestamp")
+
+     model_config = ConfigDict(
+         from_attributes=True,
+         json_schema_extra={
+             "example": {
+                 "id": 1,
+                 "task_id": "abc123def456",
+                 "task_name": "app.tasks.analyze_file",
+                 "error_message": "File not found: /path/to/file.mp4",
+                 "error_traceback": "Traceback (most recent call last):\n  ...",
+                 "severity": "critical",
+                 "retry_count": 3,
+                 "created_at": "2026-02-07T10:00:00Z",
+                 "resolved_at": None
+             }
+         }
+     )
+
+
+class PaginatedTaskErrorResponse(BaseModel):
+     """Paginated response for task errors"""
+     items: List[TaskErrorResponse] = Field(..., description="List of task errors")
+     total: int = Field(..., description="Total number of task errors")
+     limit: int = Field(..., description="Items per page")
+     offset: int = Field(..., description="Offset from start")
+
+     model_config = ConfigDict(
+         json_schema_extra={
+             "example": {
+                 "items": [
+                     {
+                         "id": 1,
+                         "task_id": "abc123def456",
+                         "task_name": "app.tasks.analyze_file",
+                         "error_message": "File not found: /path/to/file.mp4",
+                         "error_traceback": "Traceback (most recent call last):\n  ...",
+                         "severity": "critical",
+                         "retry_count": 3,
+                         "created_at": "2026-02-07T10:00:00Z",
+                         "resolved_at": None
+                     }
+                 ],
+                 "total": 10,
+                 "limit": 50,
+                 "offset": 0
+             }
+         }
+     )

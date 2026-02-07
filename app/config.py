@@ -39,7 +39,13 @@ class Settings(BaseSettings):
 
     # Celery
     celery_broker_url: str = "redis://localhost:6379/0"
-    celery_result_backend: str = "redis://localhost:6379/0"
+    celery_result_backend: str = "redis://localhost:6379/1"
+    celery_task_serializer: str = "json"
+    celery_result_serializer: str = "json"
+    celery_accept_content: list = ["json"]
+    celery_task_track_started: bool = True
+    celery_task_time_limit: int = 600  # seconds
+    celery_task_soft_time_limit: int = 300  # seconds
 
     # Logging
     log_level: str = "INFO"
