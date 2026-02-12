@@ -4,10 +4,10 @@ import logging
 import traceback
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
-from celery import Celery
 from sqlalchemy.orm import Session
-from app.config import settings
-from app.database import SessionLocal
+from app.core.config import settings
+from app.core.database import SessionLocal
+from app.core.logging_config import get_logger
 from app.models import (
     Movie,
     TVShow,
@@ -18,32 +18,15 @@ from app.models import (
     BatchOperation,
 )
 from app.services_impl import OMDBService, TVDBService
-from app.services.ffprobe_wrapper import FFProbeWrapper
-from app.services.file_queue_manager import FileQueueManager
-from app.services.task_error_handler import TaskErrorHandler
-from app.services.batch_operations import BatchOperationService
-import asyncio
+from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
+from app.infrastructure.file_system.queue_manager import FileQueueManager
+from app.infrastructure.monitoring.error_handler import TaskErrorHandler
+from app.application.batch_operations.service import BatchOperationService
+from app.tasks.celery_app import celery_app
+from app.tasks.async_helpers import run_async
+from app.tasks.metrics import TaskMetricsRecorder
 
-logger = logging.getLogger(__name__)
-
-# Create Celery app
-celery_app = Celery(
-    "media_tool",
-    broker=settings.celery_broker_url,
-    backend=settings.celery_result_backend,
-)
-
-# Configure Celery
-celery_app.conf.update(
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    timezone="UTC",
-    enable_utc=True,
-    task_track_started=True,
-    task_time_limit=30 * 60,  # 30 minutes
-    task_soft_time_limit=25 * 60,  # 25 minutes
-)
+logger = get_logger(__name__)
 
 
 @celery_app.task(bind=True, max_retries=3)
@@ -57,42 +40,41 @@ def analyze_file(self, file_path: str):
         Dictionary with analysis results including codec, resolution, bitrate, duration
     """
     try:
-        logger.info(f"Starting file analysis for: {file_path}")
+        with TaskMetricsRecorder("analyze_file"):
+            logger.info(f"Starting file analysis for: {file_path}")
 
-        # Initialize FFProbe wrapper
-        ffprobe = FFProbeWrapper()
+            # Initialize FFProbe wrapper
+            ffprobe = FFProbeWrapper()
 
-        # Extract metadata
-        metadata = ffprobe.get_metadata(file_path)
+            # Extract metadata
+            metadata = ffprobe.get_metadata(file_path)
 
-        if "error" in metadata:
-            logger.error(
-                f"FFProbe analysis failed for {file_path}: {metadata['error']}"
-            )
-            raise RuntimeError(f"FFProbe analysis failed: {metadata['error']}")
+            if "error" in metadata:
+                logger.error(f"FFProbe analysis failed for {file_path}: {metadata['error']}")
+                raise RuntimeError(f"FFProbe analysis failed: {metadata['error']}")
 
-        # Extract key information
-        resolution = metadata.get("resolution", {})
-        bitrate = metadata.get("bitrate", {})
-        codecs = metadata.get("codecs", {})
-        duration = metadata.get("duration", -1)
+            # Extract key information
+            resolution = metadata.get("resolution", {})
+            bitrate = metadata.get("bitrate", {})
+            codecs = metadata.get("codecs", {})
+            duration = metadata.get("duration", -1)
 
-        result = {
-            "status": "success",
-            "file_path": file_path,
-            "codec_video": codecs.get("video", "Unknown"),
-            "codec_audio": codecs.get("audio", "Unknown"),
-            "resolution": f"{resolution.get('width', 0)}x{resolution.get('height', 0)}",
-            "resolution_label": resolution.get("label", "Unknown"),
-            "bitrate_total": bitrate.get("total", "Unknown"),
-            "bitrate_video": bitrate.get("video", "Unknown"),
-            "bitrate_audio": bitrate.get("audio", "Unknown"),
-            "duration": duration,
-            "frame_rate": metadata.get("frame_rate", -1),
-        }
+            result = {
+                "status": "success",
+                "file_path": file_path,
+                "codec_video": codecs.get("video", "Unknown"),
+                "codec_audio": codecs.get("audio", "Unknown"),
+                "resolution": f"{resolution.get('width', 0)}x{resolution.get('height', 0)}",
+                "resolution_label": resolution.get("label", "Unknown"),
+                "bitrate_total": bitrate.get("total", "Unknown"),
+                "bitrate_video": bitrate.get("video", "Unknown"),
+                "bitrate_audio": bitrate.get("audio", "Unknown"),
+                "duration": duration,
+                "frame_rate": metadata.get("frame_rate", -1),
+            }
 
-        logger.info(f"File analysis completed for: {file_path}")
-        return result
+            logger.info(f"File analysis completed for: {file_path}")
+            return result
 
     except FileNotFoundError as exc:
         logger.error(f"File not found during analysis: {file_path}")
@@ -138,86 +120,81 @@ def enrich_metadata(self, media_id: int, media_type: str):
     """
     db: Optional[Session] = None
     try:
-        logger.info(f"Starting metadata enrichment for {media_type} ID: {media_id}")
+        with TaskMetricsRecorder("enrich_metadata"):
+            logger.info(f"Starting metadata enrichment for {media_type} ID: {media_id}")
 
-        db = SessionLocal()
+            db = SessionLocal()
 
-        if media_type == "movie":
-            media = db.query(Movie).filter(Movie.id == media_id).first()
-            if not media:
-                logger.error(f"Movie not found: {media_id}")
-                raise RuntimeError(f"Movie not found: {media_id}")
+            if media_type == "movie":
+                media = db.query(Movie).filter(Movie.id == media_id).first()
+                if not media:
+                    logger.error(f"Movie not found: {media_id}")
+                    raise RuntimeError(f"Movie not found: {media_id}")
 
-            # Fetch from OMDB if we have an omdb_id
-            if media.omdb_id:
-                omdb_data = asyncio.run(
-                    OMDBService.get_movie_details(db, media.omdb_id)
-                )
-                if omdb_data:
-                    parsed = OMDBService.parse_omdb_response(omdb_data)
-                    if parsed:
-                        # Update movie with enriched data
-                        media.plot = parsed.get("plot", media.plot)
-                        media.rating = parsed.get("rating", media.rating)
-                        media.runtime = parsed.get("runtime", media.runtime)
-                        media.genres = parsed.get("genres", media.genres)
-                        db.commit()
-                        logger.info(f"Movie metadata enriched: {media_id}")
-                        return {
-                            "status": "success",
-                            "media_id": media_id,
-                            "media_type": media_type,
-                            "enriched_fields": ["plot", "rating", "runtime", "genres"],
-                        }
+                # Fetch from OMDB if we have an omdb_id
+                if media.omdb_id:
+                    omdb_data = run_async(OMDBService.get_movie_details(db, media.omdb_id))
+                    if omdb_data:
+                        parsed = OMDBService.parse_omdb_response(omdb_data)
+                        if parsed:
+                            # Update movie with enriched data
+                            media.plot = parsed.get("plot", media.plot)
+                            media.rating = parsed.get("rating", media.rating)
+                            media.runtime = parsed.get("runtime", media.runtime)
+                            media.genres = parsed.get("genres", media.genres)
+                            db.commit()
+                            logger.info(f"Movie metadata enriched: {media_id}")
+                            return {
+                                "status": "success",
+                                "media_id": media_id,
+                                "media_type": media_type,
+                                "enriched_fields": ["plot", "rating", "runtime", "genres"],
+                            }
 
-            return {
-                "status": "success",
-                "media_id": media_id,
-                "media_type": media_type,
-                "enriched_fields": [],
-            }
+                return {
+                    "status": "success",
+                    "media_id": media_id,
+                    "media_type": media_type,
+                    "enriched_fields": [],
+                }
 
-        elif media_type == "tv_show":
-            media = db.query(TVShow).filter(TVShow.id == media_id).first()
-            if not media:
-                logger.error(f"TV Show not found: {media_id}")
-                raise RuntimeError(f"TV Show not found: {media_id}")
+            elif media_type == "tv_show":
+                media = db.query(TVShow).filter(TVShow.id == media_id).first()
+                if not media:
+                    logger.error(f"TV Show not found: {media_id}")
+                    raise RuntimeError(f"TV Show not found: {media_id}")
 
-            # Fetch from TVDB if we have a tvdb_id
-            if media.tvdb_id:
-                tvdb_data = asyncio.run(
-                    TVDBService.get_series_details(db, media.tvdb_id)
-                )
-                if tvdb_data:
-                    parsed = TVDBService.parse_tvdb_series_response(tvdb_data)
-                    if parsed:
-                        # Update TV show with enriched data
-                        media.plot = parsed.get("plot", media.plot)
-                        media.rating = parsed.get("rating", media.rating)
-                        media.genres = parsed.get("genres", media.genres)
-                        media.status = parsed.get("status", media.status)
-                        db.commit()
-                        logger.info(f"TV Show metadata enriched: {media_id}")
-                        return {
-                            "status": "success",
-                            "media_id": media_id,
-                            "media_type": media_type,
-                            "enriched_fields": ["plot", "rating", "genres", "status"],
-                        }
+                # Fetch from TVDB if we have a tvdb_id
+                if media.tvdb_id:
+                    tvdb_data = run_async(TVDBService.get_series_details(db, media.tvdb_id))
+                    if tvdb_data:
+                        parsed = TVDBService.parse_tvdb_series_response(tvdb_data)
+                        if parsed:
+                            # Update TV show with enriched data
+                            media.plot = parsed.get("plot", media.plot)
+                            media.rating = parsed.get("rating", media.rating)
+                            media.genres = parsed.get("genres", media.genres)
+                            media.status = parsed.get("status", media.status)
+                            db.commit()
+                            logger.info(f"TV Show metadata enriched: {media_id}")
+                            return {
+                                "status": "success",
+                                "media_id": media_id,
+                                "media_type": media_type,
+                                "enriched_fields": ["plot", "rating", "genres", "status"],
+                            }
 
-            return {
-                "status": "success",
-                "media_id": media_id,
-                "media_type": media_type,
-                "enriched_fields": [],
-            }
-        else:
-            raise ValueError(f"Invalid media_type: {media_type}")
+                return {
+                    "status": "success",
+                    "media_id": media_id,
+                    "media_type": media_type,
+                    "enriched_fields": [],
+                }
+            else:
+                raise ValueError(f"Invalid media_type: {media_type}")
 
     except Exception as exc:
-        logger.error(
-            f"Error enriching metadata for {media_type} ID {media_id}: {str(exc)}"
-        )
+        logger.error(f"Error enriching metadata for {media_type} ID {media_id}: {str(exc)}")
         if self.request.retries < self.max_retries:
             raise self.retry(exc=exc, countdown=2**self.request.retries)
         else:
@@ -247,42 +224,43 @@ def cleanup_cache(self):
     """
     db: Optional[Session] = None
     try:
-        logger.info("Starting cache cleanup task")
+        with TaskMetricsRecorder("cleanup_cache"):
+            logger.info("Starting cache cleanup task")
 
-        db = SessionLocal()
+            db = SessionLocal()
 
-        # Calculate cutoff time (24 hours ago)
-        cutoff_time = datetime.utcnow() - timedelta(hours=24)
+            # Calculate cutoff time (24 hours ago)
+            cutoff_time = datetime.utcnow() - timedelta(hours=24)
 
-        # Find expired cache entries
-        expired_entries = (
-            db.query(APICache).filter(APICache.expires_at < datetime.utcnow()).all()
-        )
+            # Find expired cache entries
+            expired_entries = (
+                db.query(APICache).filter(APICache.expires_at < datetime.utcnow()).all()
+            )
 
-        entries_removed = len(expired_entries)
+            entries_removed = len(expired_entries)
 
-        # Remove expired entries
-        for entry in expired_entries:
-            db.delete(entry)
+            # Remove expired entries
+            for entry in expired_entries:
+                db.delete(entry)
 
-        db.commit()
+            db.commit()
 
-        # Calculate space freed (approximate)
-        space_freed_bytes = sum(len(entry.response_data) for entry in expired_entries)
-        space_freed_mb = space_freed_bytes / (1024 * 1024)
+            # Calculate space freed (approximate)
+            space_freed_bytes = sum(len(entry.response_data) for entry in expired_entries)
+            space_freed_mb = space_freed_bytes / (1024 * 1024)
 
-        logger.info(
-            f"Cache cleanup completed: {entries_removed} entries removed, "
-            f"~{space_freed_mb:.2f} MB freed"
-        )
+            logger.info(
+                f"Cache cleanup completed: {entries_removed} entries removed, "
+                f"~{space_freed_mb:.2f} MB freed"
+            )
 
-        return {
-            "status": "success",
-            "message": "Cache cleanup completed",
-            "entries_removed": entries_removed,
-            "space_freed_mb": round(space_freed_mb, 2),
-            "cutoff_time": cutoff_time.isoformat(),
-        }
+            return {
+                "status": "success",
+                "message": "Cache cleanup completed",
+                "entries_removed": entries_removed,
+                "space_freed_mb": round(space_freed_mb, 2),
+                "cutoff_time": cutoff_time.isoformat(),
+            }
 
     except Exception as exc:
         logger.error(f"Error during cache cleanup: {str(exc)}")
@@ -313,52 +291,53 @@ def cleanup_queue(self):
     """
     db: Optional[Session] = None
     try:
-        logger.info("Starting queue cleanup task")
+        with TaskMetricsRecorder("cleanup_queue"):
+            logger.info("Starting queue cleanup task")
 
-        db = SessionLocal()
-        queue_manager = FileQueueManager(db)
+            db = SessionLocal()
+            queue_manager = FileQueueManager(db)
 
-        # Calculate cutoff time (7 days ago)
-        cutoff_time = datetime.utcnow() - timedelta(days=7)
+            # Calculate cutoff time (7 days ago)
+            cutoff_time = datetime.utcnow() - timedelta(days=7)
 
-        # Find stale entries (older than 7 days, not completed)
-        stale_entries = (
-            db.query(FileQueue)
-            .filter(
-                FileQueue.created_at < cutoff_time,
-                FileQueue.status.in_(["pending", "processing"]),
+            # Find stale entries (older than 7 days, not completed)
+            stale_entries = (
+                db.query(FileQueue)
+                .filter(
+                    FileQueue.created_at < cutoff_time,
+                    FileQueue.status.in_(["pending", "processing"]),
+                )
+                .all()
             )
-            .all()
-        )
 
-        entries_updated = 0
+            entries_updated = 0
 
-        # Update stale entries to failed status
-        for entry in stale_entries:
-            entry.status = FileQueueManager.STATUS_FAILED
-            entry.error_message = "Abandoned: Processing timeout after 7 days"
-            entry.processed_at = datetime.utcnow()
-            entries_updated += 1
+            # Update stale entries to failed status
+            for entry in stale_entries:
+                entry.status = FileQueueManager.STATUS_FAILED
+                entry.error_message = "Abandoned: Processing timeout after 7 days"
+                entry.processed_at = datetime.utcnow()
+                entries_updated += 1
 
-        db.commit()
+            db.commit()
 
-        # Get queue statistics
-        stats = queue_manager.get_queue_stats()
+            # Get queue statistics
+            stats = queue_manager.get_queue_stats()
 
-        logger.info(
-            f"Queue cleanup completed: {entries_updated} stale entries updated, "
-            f"Queue stats - Total: {stats['total']}, Pending: {stats['pending']}, "
-            f"Processing: {stats['processing']}, Completed: {stats['completed']}, "
-            f"Failed: {stats['failed']}"
-        )
+            logger.info(
+                f"Queue cleanup completed: {entries_updated} stale entries updated, "
+                f"Queue stats - Total: {stats['total']}, Pending: {stats['pending']}, "
+                f"Processing: {stats['processing']}, Completed: {stats['completed']}, "
+                f"Failed: {stats['failed']}"
+            )
 
-        return {
-            "status": "success",
-            "message": "Queue cleanup completed",
-            "entries_updated": entries_updated,
-            "cutoff_time": cutoff_time.isoformat(),
-            "queue_stats": stats,
-        }
+            return {
+                "status": "success",
+                "message": "Queue cleanup completed",
+                "entries_updated": entries_updated,
+                "cutoff_time": cutoff_time.isoformat(),
+                "queue_stats": stats,
+            }
 
     except Exception as exc:
         logger.error(f"Error during queue cleanup: {str(exc)}")
@@ -410,9 +389,7 @@ def sync_metadata(self):
 
             try:
                 if movie.omdb_id:
-                    omdb_data = asyncio.run(
-                        OMDBService.get_movie_details(db, movie.omdb_id)
-                    )
+                    omdb_data = run_async(OMDBService.get_movie_details(db, movie.omdb_id))
                     if omdb_data:
                         parsed = OMDBService.parse_omdb_response(omdb_data)
                         if parsed:
@@ -423,7 +400,7 @@ def sync_metadata(self):
                             movie.updated_at = datetime.utcnow()
                             movies_synced += 1
             except Exception as e:
-                logger.warning(f"Failed to sync movie {movie.id}: {str(e)}")
+                logger.warning(f"Failed to sync movie {movie.id}: {str(e)}", exc_info=True)
                 movies_failed += 1
 
         # Sync TV shows
@@ -440,9 +417,7 @@ def sync_metadata(self):
 
             try:
                 if show.tvdb_id:
-                    tvdb_data = asyncio.run(
-                        TVDBService.get_series_details(db, show.tvdb_id)
-                    )
+                    tvdb_data = run_async(TVDBService.get_series_details(db, show.tvdb_id))
                     if tvdb_data:
                         parsed = TVDBService.parse_tvdb_series_response(tvdb_data)
                         if parsed:
@@ -453,7 +428,7 @@ def sync_metadata(self):
                             show.updated_at = datetime.utcnow()
                             shows_synced += 1
             except Exception as e:
-                logger.warning(f"Failed to sync TV show {show.id}: {str(e)}")
+                logger.warning(f"Failed to sync TV show {show.id}: {str(e)}", exc_info=True)
                 shows_failed += 1
 
         db.commit()
@@ -509,23 +484,20 @@ def bulk_metadata_sync_task(self, batch_id: int, media_ids: List[int], media_typ
     """
     db: Optional[Session] = None
     try:
-        logger.info(f"Starting bulk metadata sync task for batch {batch_id}")
+        with TaskMetricsRecorder("bulk_metadata_sync_task"):
+            logger.info(f"Starting bulk metadata sync task for batch {batch_id}")
 
-        db = SessionLocal()
-        service = BatchOperationService(db)
+            db = SessionLocal()
+            service = BatchOperationService(db)
 
-        # Run async operation
-        result = asyncio.run(
-            service.bulk_metadata_sync(batch_id, media_ids, media_type)
-        )
+            # Run async operation
+            result = run_async(service.bulk_metadata_sync(batch_id, media_ids, media_type))
 
-        logger.info(f"Bulk metadata sync completed for batch {batch_id}: {result}")
-        return result
+            logger.info(f"Bulk metadata sync completed for batch {batch_id}: {result}")
+            return result
 
     except Exception as exc:
-        logger.error(
-            f"Error in bulk metadata sync task for batch {batch_id}: {str(exc)}"
-        )
+        logger.error(f"Error in bulk metadata sync task for batch {batch_id}: {str(exc)}")
         if db:
             service = BatchOperationService(db)
             service.fail_batch_operation(batch_id, str(exc))
@@ -561,16 +533,17 @@ def bulk_file_import_task(self, batch_id: int, file_paths: List[str], media_type
     """
     db: Optional[Session] = None
     try:
-        logger.info(f"Starting bulk file import task for batch {batch_id}")
+        with TaskMetricsRecorder("bulk_file_import_task"):
+            logger.info(f"Starting bulk file import task for batch {batch_id}")
 
-        db = SessionLocal()
-        service = BatchOperationService(db)
+            db = SessionLocal()
+            service = BatchOperationService(db)
 
-        # Run async operation
-        result = asyncio.run(service.bulk_file_import(batch_id, file_paths, media_type))
+            # Run async operation
+            result = run_async(service.bulk_file_import(batch_id, file_paths, media_type))
 
-        logger.info(f"Bulk file import completed for batch {batch_id}: {result}")
-        return result
+            logger.info(f"Bulk file import completed for batch {batch_id}: {result}")
+            return result
 
     except Exception as exc:
         logger.error(f"Error in bulk file import task for batch {batch_id}: {str(exc)}")
@@ -596,9 +569,7 @@ def bulk_file_import_task(self, batch_id: int, file_paths: List[str], media_type
 
 
 @celery_app.task(bind=True)
-def process_batch_item(
-    self, batch_id: int, item_id: int, item_type: str, operation_type: str
-):
+def process_batch_item(self, batch_id: int, item_id: int, item_type: str, operation_type: str):
     """Worker task for processing individual batch items
 
     Args:
@@ -612,9 +583,10 @@ def process_batch_item(
     """
     db: Optional[Session] = None
     try:
-        logger.info(f"Processing batch item {item_id} for batch {batch_id}")
+        with TaskMetricsRecorder("process_batch_item"):
+            logger.info(f"Processing batch item {item_id} for batch {batch_id}")
 
-        db = SessionLocal()
+            db = SessionLocal()
 
         if operation_type == "metadata_sync":
             if item_type == "movie":
@@ -623,9 +595,7 @@ def process_batch_item(
                     return {"success": False, "error": "Movie not found"}
 
                 if movie.omdb_id:
-                    omdb_data = asyncio.run(
-                        OMDBService.get_movie_details(db, movie.omdb_id)
-                    )
+                    omdb_data = run_async(OMDBService.get_movie_details(db, movie.omdb_id))
                     if omdb_data:
                         parsed = OMDBService.parse_omdb_response(omdb_data)
                         if parsed:
@@ -643,9 +613,7 @@ def process_batch_item(
                     return {"success": False, "error": "TV show not found"}
 
                 if show.tvdb_id:
-                    tvdb_data = asyncio.run(
-                        TVDBService.get_series_details(db, show.tvdb_id)
-                    )
+                    tvdb_data = run_async(TVDBService.get_series_details(db, show.tvdb_id))
                     if tvdb_data:
                         parsed = TVDBService.parse_tvdb_series_response(tvdb_data)
                         if parsed:
@@ -688,26 +656,27 @@ def update_batch_progress(
     """
     db: Optional[Session] = None
     try:
-        logger.info(
-            f"Updating progress for batch {batch_id}: completed={completed_items}, failed={failed_items}"
-        )
+        with TaskMetricsRecorder("update_batch_progress"):
+            logger.info(
+                f"Updating progress for batch {batch_id}: completed={completed_items}, failed={failed_items}"
+            )
 
-        db = SessionLocal()
-        service = BatchOperationService(db)
+            db = SessionLocal()
+            service = BatchOperationService(db)
 
-        batch_op = service.update_batch_progress(
-            batch_id, completed_items, failed_items, error_message
-        )
+            batch_op = service.update_batch_progress(
+                batch_id, completed_items, failed_items, error_message
+            )
 
-        if not batch_op:
-            return {"success": False, "error": "Batch operation not found"}
+            if not batch_op:
+                return {"success": False, "error": "Batch operation not found"}
 
-        return {
-            "success": True,
-            "batch_id": batch_id,
-            "progress_percentage": batch_op.progress_percentage,
-            "eta": batch_op.eta.isoformat() if batch_op.eta else None,
-        }
+            return {
+                "success": True,
+                "batch_id": batch_id,
+                "progress_percentage": batch_op.progress_percentage,
+                "eta": batch_op.eta.isoformat() if batch_op.eta else None,
+            }
 
     except Exception as exc:
         logger.error(f"Error updating batch progress for {batch_id}: {str(exc)}")

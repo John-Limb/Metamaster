@@ -1,6 +1,6 @@
 """Add batch operations table
 
-Revision ID: 003
+Revision ID: 003_add_batch_operations
 Revises: 002_add_database_indexes
 Create Date: 2026-02-07 13:00:00.000000
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "003"
+revision = "003_add_batch_operations"
 down_revision = "002_add_database_indexes"
 branch_labels = None
 depends_on = None
@@ -33,9 +33,7 @@ def upgrade() -> None:
         sa.Column("total_items", sa.Integer(), nullable=False),
         sa.Column("completed_items", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("failed_items", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column(
-            "progress_percentage", sa.Float(), nullable=False, server_default="0.0"
-        ),
+        sa.Column("progress_percentage", sa.Float(), nullable=False, server_default="0.0"),
         sa.Column("eta", sa.DateTime(), nullable=True),
         sa.Column("error_message", sa.Text(), nullable=True),
         sa.Column("metadata", sa.Text(), nullable=True),

@@ -1,0 +1,134 @@
+/* MoviesPage - Styles converted from Tailwind @apply */
+
+.movies-page {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.movies-page__header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+  .movies-page__header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+}
+
+.movies-page__title {
+  font-size: 30px;
+  font-weight: 700;
+  color: #18181b;
+}
+
+.dark .movies-page__title {
+  color: #f3f4f6;
+}
+
+.movies-page__subtitle {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.dark .movies-page__subtitle {
+  color: #9ca3af;
+}
+
+.movies-page__search {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .movies-page__search {
+    width: 320px;
+  }
+}
+
+.movies-page__toolbar {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.dark .movies-page__toolbar {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+@media (min-width: 768px) {
+  .movies-page__toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.movies-page__toolbar-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.movies-page__toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.movies-page__view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.movies-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.movies-page__grid {
+  display: grid;
+  gap: 24px;
+}
+
+.movies-page__grid--grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 768px) {
+  .movies-page__grid--grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .movies-page__grid--grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .movies-page__grid--grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.movies-page__grid--list {
+  grid-template-columns: 1fr;
+}
+
+.movies-page__pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}

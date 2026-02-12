@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.models import Movie, TVShow, Season, Episode, APICache
 from app.schemas import MovieCreate, MovieUpdate, TVShowCreate, TVShowUpdate
-from app.config import settings
+from app.core.config import settings
 import logging
 import httpx
 import asyncio
@@ -23,6 +23,24 @@ class MovieService:
     def get_all_movies(db: Session, limit: int = 10, offset: int = 0):
         """Get all movies with pagination"""
         query = db.query(Movie)
+        total = query.count()
+        movies = query.offset(offset).limit(limit).all()
+        return movies, total
+
+    @staticmethod
+    def get_popular_movies(db: Session, limit: int = 10, offset: int = 0):
+        """Return movies ordered by descending rating then recency."""
+        query = db.query(Movie).order_by(Movie.rating.desc().nullslast(), Movie.created_at.desc())
+        total = query.count()
+        movies = query.offset(offset).limit(limit).all()
+        return movies, total
+
+    @staticmethod
+    def get_top_rated_movies(db: Session, limit: int = 10, offset: int = 0):
+        """Return top-rated movies prioritizing highest rating and longest runtime."""
+        query = db.query(Movie).order_by(
+            Movie.rating.desc().nullslast(), Movie.runtime.desc().nullslast()
+        )
         total = query.count()
         movies = query.offset(offset).limit(limit).all()
         return movies, total
@@ -210,9 +228,7 @@ class OMDBService:
                     logger.error(f"Failed to parse OMDB response: {e}")
                     return None
 
-            logger.error(
-                f"Failed to get response from OMDB after {max_retries} attempts"
-            )
+            logger.error(f"Failed to get response from OMDB after {max_retries} attempts")
             return None
 
     @classmethod
@@ -266,9 +282,7 @@ class OMDBService:
         return None
 
     @classmethod
-    async def get_movie_details(
-        cls, db: Session, omdb_id: str
-    ) -> Optional[Dict[str, Any]]:
+    async def get_movie_details(cls, db: Session, omdb_id: str) -> Optional[Dict[str, Any]]:
         """
         Get detailed information about a movie by OMDB ID.
 
@@ -334,9 +348,7 @@ class OMDBService:
                         {
                             "title": item.get("Title"),
                             "year": (
-                                int(item.get("Year", 0))
-                                if item.get("Year", "").isdigit()
-                                else None
+                                int(item.get("Year", 0)) if item.get("Year", "").isdigit() else None
                             ),
                             "omdb_id": item.get("imdbID"),
                             "type": item.get("Type"),
@@ -356,11 +368,7 @@ class OMDBService:
                 rating_str = omdb_data.get("imdbRating", "N/A")
                 rating = float(rating_str) if rating_str != "N/A" else None
 
-                genres = (
-                    omdb_data.get("Genre", "").split(", ")
-                    if omdb_data.get("Genre")
-                    else []
-                )
+                genres = omdb_data.get("Genre", "").split(", ") if omdb_data.get("Genre") else []
 
                 return {
                     "title": omdb_data.get("Title"),
@@ -408,9 +416,7 @@ class TVDBService:
         """Enforce rate limiting (3 requests per second)"""
         async with cls._rate_limit_lock:
             elapsed = time.time() - cls._last_request_time
-            min_interval = (
-                1.0 / settings.tvdb_rate_limit
-            )  # ~0.333 seconds for 3 req/sec
+            min_interval = 1.0 / settings.tvdb_rate_limit  # ~0.333 seconds for 3 req/sec
             if elapsed < min_interval:
                 await asyncio.sleep(min_interval - elapsed)
             cls._last_request_time = time.time()
@@ -418,11 +424,7 @@ class TVDBService:
     @classmethod
     async def _get_auth_token(cls) -> Optional[str]:
         """Get or refresh TVDB authentication token"""
-        if (
-            cls._auth_token
-            and cls._token_expiry
-            and datetime.utcnow() < cls._token_expiry
-        ):
+        if cls._auth_token and cls._token_expiry and datetime.utcnow() < cls._token_expiry:
             return cls._auth_token
 
         if not settings.tvdb_api_key or not settings.tvdb_pin:
@@ -558,9 +560,7 @@ class TVDBService:
                     logger.error(f"Failed to parse TVDB response: {e}")
                     return None
 
-            logger.error(
-                f"Failed to get response from TVDB after {max_retries} attempts"
-            )
+            logger.error(f"Failed to get response from TVDB after {max_retries} attempts")
             return None
 
     @classmethod
@@ -608,9 +608,7 @@ class TVDBService:
         return None
 
     @classmethod
-    async def get_series_details(
-        cls, db: Session, tvdb_id: str
-    ) -> Optional[Dict[str, Any]]:
+    async def get_series_details(cls, db: Session, tvdb_id: str) -> Optional[Dict[str, Any]]:
         """
         Get detailed information about a TV series by TVDB ID.
 
@@ -718,9 +716,7 @@ class TVDBService:
             return None
 
         # Generate cache key
-        cache_key = cls._get_cache_key(
-            "episodes", {"tvdb_id": tvdb_id, "season": season_number}
-        )
+        cache_key = cls._get_cache_key("episodes", {"tvdb_id": tvdb_id, "season": season_number})
 
         # Check cache first
         cached_result = cls._get_cache(db, cache_key)
@@ -735,9 +731,7 @@ class TVDBService:
         url += f"?season={season_number}"
         headers = {"Authorization": f"Bearer {token}"}
 
-        logger.info(
-            f"Fetching TVDB episodes for series {tvdb_id}, season {season_number}"
-        )
+        logger.info(f"Fetching TVDB episodes for series {tvdb_id}, season {season_number}")
 
         # Make request with retry logic
         result = await cls._make_request_with_retry(url, headers)
@@ -804,11 +798,7 @@ class TVDBService:
         try:
             series = tvdb_data.get("data", {})
             rating = float(series.get("score", 0)) if series.get("score") else None
-            genres = (
-                series.get("genres", [])
-                if isinstance(series.get("genres"), list)
-                else []
-            )
+            genres = series.get("genres", []) if isinstance(series.get("genres"), list) else []
 
             return {
                 "tvdb_id": str(series.get("id")),
@@ -931,9 +921,7 @@ class CacheService:
         """
         cache_entry = (
             db.query(APICache)
-            .filter(
-                APICache.query_key == cache_key, APICache.expires_at > datetime.utcnow()
-            )
+            .filter(APICache.query_key == cache_key, APICache.expires_at > datetime.utcnow())
             .first()
         )
 
@@ -969,9 +957,7 @@ class CacheService:
             expires_at = datetime.utcnow() + timedelta(seconds=ttl_seconds)
 
             # Check if cache entry already exists
-            existing = (
-                db.query(APICache).filter(APICache.query_key == cache_key).first()
-            )
+            existing = db.query(APICache).filter(APICache.query_key == cache_key).first()
 
             if existing:
                 existing.response_data = json.dumps(response_data)
@@ -1008,9 +994,7 @@ class CacheService:
             True if deleted, False if not found
         """
         try:
-            cache_entry = (
-                db.query(APICache).filter(APICache.query_key == cache_key).first()
-            )
+            cache_entry = db.query(APICache).filter(APICache.query_key == cache_key).first()
 
             if not cache_entry:
                 logger.warning(f"Cache entry not found for key: {cache_key}")
@@ -1039,9 +1023,7 @@ class CacheService:
         """
         try:
             expired_entries = (
-                db.query(APICache)
-                .filter(APICache.expires_at <= datetime.utcnow())
-                .all()
+                db.query(APICache).filter(APICache.expires_at <= datetime.utcnow()).all()
             )
 
             count = len(expired_entries)
@@ -1101,18 +1083,14 @@ class CacheService:
             # Convert wildcard pattern to SQL LIKE pattern
             sql_pattern = pattern.replace("*", "%")
 
-            entries = (
-                db.query(APICache).filter(APICache.query_key.like(sql_pattern)).all()
-            )
+            entries = db.query(APICache).filter(APICache.query_key.like(sql_pattern)).all()
 
             count = len(entries)
             for entry in entries:
                 db.delete(entry)
 
             db.commit()
-            logger.info(
-                f"Invalidated {count} cache entries matching pattern: {pattern}"
-            )
+            logger.info(f"Invalidated {count} cache entries matching pattern: {pattern}")
             return count
 
         except Exception as e:
@@ -1151,9 +1129,7 @@ class CacheService:
             type_stats = {api_type: count for api_type, count in type_breakdown}
 
             # Calculate total cache size in bytes
-            total_size = (
-                db.query(func.sum(func.length(APICache.response_data))).scalar() or 0
-            )
+            total_size = db.query(func.sum(func.length(APICache.response_data))).scalar() or 0
 
             stats = {
                 "total_entries": total_entries,
@@ -1195,9 +1171,7 @@ class CacheService:
             Number of entries deleted
         """
         try:
-            entries = (
-                db.query(APICache).filter(APICache.query_key.in_(cache_keys)).all()
-            )
+            entries = db.query(APICache).filter(APICache.query_key.in_(cache_keys)).all()
 
             count = len(entries)
             for entry in entries:
@@ -1240,9 +1214,7 @@ class CacheService:
             return 0
 
     @staticmethod
-    def get_cache_by_type(
-        db: Session, api_type: str, limit: int = 100, offset: int = 0
-    ):
+    def get_cache_by_type(db: Session, api_type: str, limit: int = 100, offset: int = 0):
         """
         Retrieve cache entries for a specific API type with pagination.
 
@@ -1285,9 +1257,7 @@ class TVShowService:
         return show
 
     @staticmethod
-    def get_tv_show_seasons(
-        db: Session, show_id: int, limit: int = 10, offset: int = 0
-    ):
+    def get_tv_show_seasons(db: Session, show_id: int, limit: int = 10, offset: int = 0):
         """Get all seasons for a TV show"""
         # Verify show exists
         show = db.query(TVShow).filter(TVShow.id == show_id).first()
@@ -1309,11 +1279,7 @@ class TVShowService:
         if not show:
             return None, 0
 
-        season = (
-            db.query(Season)
-            .filter(Season.id == season_id, Season.show_id == show_id)
-            .first()
-        )
+        season = db.query(Season).filter(Season.id == season_id, Season.show_id == show_id).first()
         if not season:
             return None, 0
 

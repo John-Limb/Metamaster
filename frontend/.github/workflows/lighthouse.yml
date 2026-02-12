@@ -1,0 +1,133 @@
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lighthouse:
+    name: Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Build the application
+        run: npm run build
+        working-directory: ./frontend
+
+      - name: Preview the build
+        run: npm run preview &
+        working-directory: ./frontend
+        id: preview
+
+      - name: Wait for preview server
+        run: sleep 5
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            http://localhost:4173
+          configPath: ./frontend/lighthouserc.json
+          budgetPath: ./frontend/lighthouse-budget.json
+          uploadArtifacts: true
+
+      - name: Upload Lighthouse report
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: ./frontend/lighthouse-results
+        if: always()
+
+  lighthouse-mobile:
+    name: Lighthouse Mobile Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Build the application
+        run: npm run build
+        working-directory: ./frontend
+
+      - name: Preview the build
+        run: npm run preview &
+        working-directory: ./frontend
+
+      - name: Wait for preview server
+        run: sleep 5
+
+      - name: Run Lighthouse CI (Mobile)
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            http://localhost:4173
+          configPath: ./frontend/lighthouserc.mobile.json
+          budgetPath: ./frontend/lighthouse-budget.json
+          uploadArtifacts: true
+
+  performance-budget-check:
+    name: Performance Budget Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Build the application
+        run: npm run build
+        working-directory: ./frontend
+
+      - name: Check bundle size
+        run: |
+          BUNDLE_SIZE=$(du -b ./frontend/dist/assets/*.js | awk '{sum += $1} END {print sum}')
+          BUDGET=$((500 * 1024)) # 500KB budget
+          
+          if [ $BUNDLE_SIZE -gt $BUDGET ]; then
+            echo "Bundle size ($BUNDLE_SIZE bytes) exceeds budget ($BUDGET bytes)"
+            exit 1
+          else
+            echo "Bundle size ($BUNDLE_SIZE bytes) is within budget ($BUDGET bytes)"
+          fi
+
+      - name: Check chunk sizes
+        run: |
+          MAIN_CHUNK=$(du -b ./frontend/dist/assets/*.js 2>/dev/null | head -1 | awk '{print $1}')
+          echo "Main chunk size: $MAIN_CHUNK bytes"
+          
+          if [ -n "$MAIN_CHUNK" ] && [ "$MAIN_CHUNK" -gt $((200 * 1024)) ]; then
+            echo "Main chunk size exceeds 200KB budget"
+            exit 1
+          fi

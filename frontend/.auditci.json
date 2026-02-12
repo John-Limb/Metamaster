@@ -1,0 +1,13 @@
+{
+  "high": true,
+  "moderate": true,
+  "allowList": [],
+  "reportType": "json",
+  "output": "audit-ci-results.json",
+  "packageManager": "npm",
+  "registry": "https://registry.npmjs.org",
+  "scope": "all",
+  "production": false,
+  "includeDevDeps": false,
+  "ignore": []
+}

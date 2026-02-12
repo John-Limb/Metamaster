@@ -1,0 +1,132 @@
+/* SortDropdown - Styles converted from Tailwind @apply */
+
+.sort-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.sort-dropdown__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  transition: background-color 200ms;
+}
+
+.dark .sort-dropdown__trigger {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #d1d5db;
+}
+
+.sort-dropdown__trigger:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .sort-dropdown__trigger:hover {
+  background-color: #374151;
+}
+
+.sort-dropdown__icon {
+  color: #6b7280;
+}
+
+.sort-dropdown__label {
+  color: #6b7280;
+}
+
+.dark .sort-dropdown__label {
+  color: #9ca3af;
+}
+
+.sort-dropdown__value {
+  font-weight: 500;
+  color: #18181b;
+}
+
+.dark .sort-dropdown__value {
+  color: #f3f4f6;
+}
+
+.sort-dropdown__arrow {
+  margin-left: 4px;
+  transition: transform 200ms;
+}
+
+.sort-dropdown__arrow--open {
+  transform: rotate(180deg);
+}
+
+.sort-dropdown__menu {
+  position: absolute;
+  right: 0;
+  margin-top: 8px;
+  width: 224px;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 4px 0;
+  z-index: 50;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dark .sort-dropdown__menu {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.sort-dropdown__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+.dark .sort-dropdown__option {
+  color: #d1d5db;
+}
+
+.sort-dropdown__option:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .sort-dropdown__option:hover {
+  background-color: #374151;
+}
+
+.sort-dropdown__option--selected {
+  background-color: #eef2ff;
+}
+
+.dark .sort-dropdown__option--selected {
+  background-color: rgba(55, 48, 163, 0.3);
+  color: #a5b4fc;
+}
+
+.dark .sort-dropdown__option--selected {
+  color: #c7d2fe;
+}
+
+.sort-dropdown__option-label {
+  flex: 1;
+}
+
+.sort-dropdown__direction-icon {
+  color: #4f46e5;
+}
+
+.dark .sort-dropdown__direction-icon {
+  color: #818cf8;
+}

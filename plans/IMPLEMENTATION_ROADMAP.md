@@ -1,683 +1,577 @@
-# Media Management Web Tool - Implementation Roadmap
+# UI Revamp Implementation Roadmap
 
 ## Overview
 
-This document provides a phased implementation roadmap for the media management web tool, breaking down the architecture into concrete development phases.
+This document provides a detailed implementation roadmap for the Metamaster UI revamp, breaking down the work into manageable phases with specific deliverables and dependencies.
 
 ---
 
-## Phase 1: Foundation & Core Infrastructure
+## Phase 1: Design System Foundation (Foundation Layer)
 
 ### Objectives
-- Set up project structure and development environment
-- Implement database schema and ORM models
-- Create basic FastAPI application skeleton
-- Configure Docker environment
-
-### Tasks
-1. **Project Setup**
-   - Initialize Python project with virtual environment
-   - Set up Git repository with `.gitignore`
-   - Create project directory structure (as defined in ARCHITECTURE.md)
-   - Configure development tools (linting, formatting, testing)
-
-2. **Database Layer**
-   - Implement SQLAlchemy models for all entities
-   - Create database initialization script
-   - Set up database migrations (Alembic)
-   - Write database connection pooling configuration
-
-3. **FastAPI Application**
-   - Create main FastAPI application instance
-   - Set up middleware (CORS, error handling, logging)
-   - Implement health check endpoint
-   - Configure request/response logging
-
-4. **Docker Setup**
-   - Create Dockerfile for application
-   - Create docker-compose.yml with app and Redis services
-   - Set up environment variable configuration
-   - Test local Docker build and run
+- Establish modern color palette and design tokens
+- Update Tailwind configuration
+- Create CSS variables for theming
+- Implement dark mode support
 
 ### Deliverables
-- Working FastAPI application running in Docker
-- Database schema initialized and accessible
-- Health check endpoint responding
-- Development environment documented
+
+#### 1.1 Update Tailwind Configuration
+**File**: `frontend/tailwind.config.js`
+- Replace primary color palette with modern indigo gradient
+- Add accent colors (success, warning, danger, info)
+- Update neutral colors for better contrast
+- Add dark mode color definitions
+- Extend spacing, border radius, and shadow utilities
+
+#### 1.2 Create Design Tokens
+**File**: `frontend/src/styles/design-tokens.css`
+- CSS custom properties for colors
+- Typography scale variables
+- Spacing scale variables
+- Shadow definitions
+- Border radius utilities
+- Transition/animation timings
+
+#### 1.3 Update Global Styles
+**File**: `frontend/src/index.css`
+- Import design tokens
+- Update base styles with new typography
+- Enhance scrollbar styling
+- Add dark mode support
+- Update focus states for accessibility
+
+#### 1.4 Create Theme Provider
+**File**: `frontend/src/context/ThemeContext.tsx`
+- Theme context for light/dark mode
+- useTheme hook
+- Theme persistence to localStorage
+- System preference detection
+
+### Dependencies
+- None (foundational)
+
+### Estimated Scope
+- 4-5 files to create/modify
+- Tailwind configuration updates
+- CSS variables setup
 
 ---
 
-## Phase 2: API Layer & Basic CRUD Operations
+## Phase 2: Core Component Library (Component Layer)
 
 ### Objectives
-- Implement REST API endpoints for movies and TV shows
-- Create request/response schemas with validation
-- Implement basic CRUD operations
-- Add search and filtering capabilities
-
-### Tasks
-1. **Movie API Endpoints**
-   - GET `/movies` - List all movies with pagination
-   - GET `/movies/{id}` - Get movie details
-   - POST `/movies` - Create movie (manual entry)
-   - PUT `/movies/{id}` - Update movie metadata
-   - DELETE `/movies/{id}` - Delete movie
-   - GET `/movies/search` - Search movies by title
-
-2. **TV Show API Endpoints**
-   - GET `/tv-shows` - List all TV shows with pagination
-   - GET `/tv-shows/{id}` - Get TV show details
-   - GET `/tv-shows/{id}/seasons` - List seasons
-   - GET `/tv-shows/{id}/seasons/{season_id}/episodes` - List episodes
-   - POST `/tv-shows` - Create TV show (manual entry)
-   - PUT `/tv-shows/{id}` - Update TV show metadata
-   - DELETE `/tv-shows/{id}` - Delete TV show
-
-3. **Pydantic Schemas**
-   - Create request schemas for all endpoints
-   - Create response schemas with proper nesting
-   - Implement validation rules
-   - Add example data for documentation
-
-4. **Service Layer**
-   - Implement MovieService with business logic
-   - Implement TVShowService with business logic
-   - Add pagination and filtering logic
-   - Implement search functionality
+- Create/enhance fundamental UI components
+- Establish consistent component patterns
+- Ensure accessibility compliance
+- Build reusable component library
 
 ### Deliverables
-- Fully functional REST API with CRUD operations
-- Automatic API documentation (Swagger UI)
-- Input validation on all endpoints
-- Pagination and filtering support
+
+#### 2.1 Card Component
+**File**: `frontend/src/components/common/Card.tsx`
+- Variants: default, elevated, outlined
+- Header, content, footer sections
+- Hover effects and transitions
+- Proper spacing and padding
+
+#### 2.2 Button Component (Enhanced)
+**File**: `frontend/src/components/common/Button.tsx`
+- Variants: primary, secondary, outline, ghost
+- Sizes: sm, md, lg
+- Icon support
+- Loading state with spinner
+- Disabled state
+- Focus states for accessibility
+
+#### 2.3 Badge Component
+**File**: `frontend/src/components/common/Badge.tsx`
+- Variants: primary, success, warning, danger, info
+- Sizes: sm, md, lg
+- Icon support
+- Dismissible option
+
+#### 2.4 Input Components
+**Files**: 
+- `frontend/src/components/common/TextInput.tsx`
+- `frontend/src/components/common/Select.tsx`
+- `frontend/src/components/common/Checkbox.tsx`
+- `frontend/src/components/common/Toggle.tsx`
+
+Features:
+- Consistent styling
+- Error states
+- Helper text
+- Icons
+- Disabled states
+- Focus management
+
+#### 2.5 DataTable Component
+**File**: `frontend/src/components/common/DataTable.tsx`
+- Sortable columns
+- Filterable rows
+- Pagination
+- Row selection
+- Responsive design
+- Loading states
+
+#### 2.6 Navigation Components
+**Files**:
+- `frontend/src/components/common/Breadcrumb.tsx` (enhance)
+- `frontend/src/components/common/Tabs.tsx`
+- `frontend/src/components/common/Pagination.tsx`
+
+#### 2.7 Loading & Feedback Components
+**Files**:
+- `frontend/src/components/common/Skeleton.tsx`
+- `frontend/src/components/common/ProgressBar.tsx`
+- `frontend/src/components/common/Spinner.tsx` (enhance)
+
+#### 2.8 Modal/Dialog (Enhanced)
+**File**: `frontend/src/components/common/ConfirmDialog.tsx` (enhance)
+- Improved animations
+- Better backdrop blur
+- Keyboard navigation
+- Focus trap
+
+### Dependencies
+- Phase 1 (Design System Foundation)
+
+### Estimated Scope
+- 10-12 new/enhanced components
+- Comprehensive prop interfaces
+- Storybook stories for each component
+- Unit tests for each component
 
 ---
 
-## Phase 3: External API Integration
+## Phase 3: Layout Modernization (Layout Layer)
 
 ### Objectives
-- Integrate OMDB API for movie metadata
-- Integrate TVDB API for TV show metadata
-- Implement caching strategy
-- Handle API rate limiting and errors
-
-### Tasks
-1. **OMDB Integration**
-   - Create OMDBService class
-   - Implement movie search by title and year
-   - Implement movie details retrieval
-   - Add error handling and retry logic
-   - Implement rate limiting (1 req/sec)
-   - Add database caching with TTL
-
-2. **TVDB Integration**
-   - Create TVDBService class
-   - Implement authentication (API key + PIN)
-   - Implement TV show search
-   - Implement season and episode retrieval
-   - Add error handling and retry logic
-   - Implement rate limiting (3 req/sec)
-   - Add database caching with TTL
-
-3. **Cache Service**
-   - Implement APICache table operations
-   - Create cache invalidation logic
-   - Implement TTL-based expiration
-   - Add cache statistics tracking
-
-4. **API Endpoints for Metadata Sync**
-   - POST `/movies/{id}/sync-metadata` - Fetch from OMDB
-   - POST `/tv-shows/{id}/sync-metadata` - Fetch from TVDB
-   - GET `/cache/stats` - View cache statistics
-   - DELETE `/cache/expired` - Clean expired cache
+- Redesign header and sidebar
+- Update main layout structure
+- Implement modern navigation patterns
+- Add breadcrumb navigation
 
 ### Deliverables
-- Working OMDB and TVDB integrations
-- Caching system reducing API calls
-- Rate limiting preventing API blocks
-- Error handling for API failures
+
+#### 3.1 Header Component (Redesign)
+**File**: `frontend/src/components/layout/Header.tsx`
+- Sticky positioning with subtle shadow
+- Integrated search with autocomplete
+- Notification bell with badge
+- Settings quick access
+- User profile dropdown
+- Dark mode toggle
+- Responsive hamburger menu
+- Better spacing and alignment
+
+#### 3.2 Sidebar Component (Redesign)
+**File**: `frontend/src/components/layout/Sidebar.tsx`
+- Collapsible sidebar (icon-only when collapsed)
+- Active state with accent color
+- Hover effects with smooth transitions
+- Icons with labels
+- Version info at bottom
+- Smooth collapse/expand animation
+- Better visual hierarchy
+
+#### 3.3 MainLayout Component (Update)
+**File**: `frontend/src/components/layout/MainLayout.tsx`
+- Updated structure for new header/sidebar
+- Proper spacing and padding
+- Breadcrumb integration
+- Better responsive behavior
+
+#### 3.4 Breadcrumb Navigation
+**File**: `frontend/src/components/common/Breadcrumb.tsx` (enhance)
+- Proper styling
+- Active state
+- Navigation links
+- Responsive behavior
+
+#### 3.5 Footer Component (Optional Enhancement)
+**File**: `frontend/src/components/layout/Footer.tsx`
+- Modern styling
+- Better spacing
+- Links and information
+
+### Dependencies
+- Phase 1 (Design System Foundation)
+- Phase 2 (Core Components)
+
+### Estimated Scope
+- 5-6 layout components
+- Navigation patterns
+- Responsive design implementation
 
 ---
 
-## Phase 4: File System Monitoring
+## Phase 4: Dashboard Enhancement (Feature Layer)
 
 ### Objectives
-- Implement file system monitoring
-- Create file pattern recognition
-- Implement file analysis with FFPROBE
-- Queue file processing tasks
-- Handle file renaming and organization
-
-### Tasks
-1. **File Monitoring Service**
-   - Implement Watchdog-based file monitor
-   - Set up recursive directory watching
-   - Create event handlers for file creation/modification
-   - Implement file filtering by extension
-   - File rename and organization logic
-
-2. **Pattern Recognition**
-   - Implement movie pattern matching (Title Year)
-   - Implement TV show pattern matching (SxxExx)
-   - Create pattern extraction logic
-   - Add fallback classification logic
-
-3. **FFPROBE Integration**
-   - Create FFProbeWrapper class
-   - Implement resolution extraction
-   - Implement bitrate extraction
-   - Implement codec detection
-   - Add error handling for corrupted files
-
-4. **File Queue Management**
-   - Implement FileQueue table operations
-   - Create queue status tracking
-   - Implement duplicate detection
-   - Add error logging and retry logic
+- Modernize dashboard appearance
+- Improve visual hierarchy
+- Enhance user engagement
+- Better information presentation
 
 ### Deliverables
-- File monitoring running continuously
-- Accurate file classification (movie vs TV show)
-- File metadata extraction working
-- File queue processing system
+
+#### 4.1 StatCard Component (Enhance)
+**File**: `frontend/src/components/dashboard/StatCard.tsx`
+- Better visual design
+- Improved trend indicators
+- Hover effects
+- Better spacing
+- Dark mode support
+
+#### 4.2 LibraryStats Component (Enhance)
+**File**: `frontend/src/components/dashboard/LibraryStats.tsx`
+- Modern card design
+- Better layout
+- Improved icons
+- Better spacing
+
+#### 4.3 QuickActions Component (Redesign)
+**File**: `frontend/src/components/dashboard/QuickActions.tsx`
+- Horizontal scrollable layout
+- Better button styling
+- Icons and labels
+- Responsive design
+
+#### 4.4 StorageChart Component (Enhance)
+**File**: `frontend/src/components/dashboard/StorageChart.tsx`
+- Modern chart styling
+- Better colors
+- Improved legend
+- Responsive design
+
+#### 4.5 RecentActivity Component (Enhance)
+**File**: `frontend/src/components/dashboard/RecentActivity.tsx`
+- Better timeline styling
+- Improved icons
+- Better spacing
+- Timestamps
+
+#### 4.6 Dashboard Layout (Reorganize)
+**File**: `frontend/src/components/dashboard/Dashboard.tsx`
+- Better section organization
+- Improved responsive grid
+- Better spacing
+- Enhanced visual hierarchy
+
+### Dependencies
+- Phase 1 (Design System Foundation)
+- Phase 2 (Core Components)
+- Phase 3 (Layout Modernization)
+
+### Estimated Scope
+- 6 dashboard components
+- Layout reorganization
+- Visual enhancements
 
 ---
 
-## Phase 5: Background Task Processing
-
-**Status:** ✅ **COMPLETE**
+## Phase 5: Feature Pages Implementation (Feature Layer)
 
 ### Objectives
-- ✅ Set up Celery with Redis
-- ✅ Implement background task workers
-- ✅ Create scheduled tasks
-- ✅ Implement task monitoring
-- ✅ Implement comprehensive error handling and notifications
+- Implement Movies listing and detail pages
+- Implement TV Shows listing and detail pages
+- Add filtering and sorting
+- Create modern content browsing experience
 
-### Completed Components
+### Deliverables
 
-#### 1. **Celery Configuration** ✅
-- **File:** [`app/celery_app.py`](app/celery_app.py)
-- **Status:** Complete
-- **Features:**
-  - Redis broker configuration with connection pooling
-  - Task routing and serialization setup
-  - Result backend configuration
-  - Task timeouts (300s default, 600s for long-running tasks)
-  - Automatic retry logic with exponential backoff
-  - Task acknowledgment and result expiration settings
+#### 5.1 Movies Listing Page
+**File**: `frontend/src/pages/MoviesPage.tsx`
+- Grid/list view toggle
+- Search functionality
+- Filter panel
+- Sort options
+- Pagination
+- Movie cards with hover effects
 
-#### 2. **Configuration Management** ✅
-- **File:** [`app/config.py`](app/config.py)
-- **Status:** Complete
-- **Features:**
-  - Centralized Celery configuration
-  - Environment-based settings (development, testing, production)
-  - Redis connection parameters
-  - Task queue definitions
-  - Broker and result backend URLs
+#### 5.2 Movie Card Component
+**File**: `frontend/src/components/features/movies/MovieCard.tsx`
+- Poster image with hover overlay
+- Title and year
+- Rating/score
+- Quick actions
+- Status badge
+- Responsive design
 
-#### 3. **Application Integration** ✅
-- **File:** [`app/main.py`](app/main.py)
-- **Status:** Complete
-- **Features:**
-  - Celery app initialization in FastAPI application
-  - Proper startup and shutdown event handlers
-  - Task queue integration with API endpoints
+#### 5.3 Movies Detail Page
+**File**: `frontend/src/pages/MovieDetailPage.tsx`
+- Movie information
+- Poster and metadata
+- File information
+- Edit/delete actions
+- Related content
+- Breadcrumb navigation
 
-#### 4. **Background Tasks Implementation** ✅
-- **File:** [`app/tasks.py`](app/tasks.py)
-- **Status:** Complete - All 5 Tasks Implemented
-- **Tasks:**
-  1. **`analyze_file`** - FFPROBE-based file analysis
-     - Extracts resolution, bitrate, codec information
-     - Stores results in database
-     - Handles corrupted files gracefully
-  2. **`enrich_metadata`** - External API metadata lookup
-     - Queries OMDB/TVDB for enriched metadata
-     - Updates database with results
-     - Implements rate limiting
-  3. **`sync_metadata`** - Periodic metadata refresh
-     - Refreshes stale metadata entries
-     - Maintains data freshness
-  4. **`cleanup_cache`** - Expired cache removal
-     - Removes expired API cache entries
-     - Maintains database performance
-  5. **`cleanup_queue`** - Old queue entry cleanup
-     - Removes processed queue entries
-     - Prevents database bloat
+#### 5.4 TV Shows Listing Page
+**File**: `frontend/src/pages/TVShowsPage.tsx`
+- Grid/list view toggle
+- Search functionality
+- Filter panel
+- Sort options
+- Pagination
+- Show cards with hover effects
 
-#### 5. **Celery Beat Scheduler** ✅
-- **File:** [`app/celery_beat.py`](app/celery_beat.py)
-- **Status:** Complete - 3 Periodic Tasks Configured
-- **Scheduled Tasks:**
-  1. **`cleanup_cache`** - Daily at 2:00 AM UTC
-     - Removes expired cache entries
-  2. **`sync_metadata`** - Weekly on Sundays at 3:00 AM UTC
-     - Refreshes metadata for all entries
-  3. **`cleanup_queue`** - Daily at 2:30 AM UTC
-     - Removes old queue entries
+#### 5.5 TV Show Card Component
+**File**: `frontend/src/components/features/tvshows/TVShowCard.tsx`
+- Poster image with hover overlay
+- Title and seasons
+- Status badge
+- Next episode info
+- Quick actions
+- Responsive design
 
-#### 6. **Task Monitoring API** ✅
-- **File:** [`app/api/tasks.py`](app/api/tasks.py)
-- **Status:** Complete - 4 Endpoints Implemented
-- **Endpoints:**
-  1. **`GET /tasks/status/{task_id}`** - Get task status
-     - Returns current task state (PENDING, STARTED, SUCCESS, FAILURE, RETRY)
-     - Includes task result or error information
-  2. **`GET /tasks/active`** - List active tasks
-     - Returns all currently running tasks
-     - Includes worker information
-  3. **`POST /tasks/{task_id}/retry`** - Retry failed task
-     - Requeues failed tasks for reprocessing
-     - Implements exponential backoff
-  4. **`DELETE /tasks/{task_id}`** - Revoke task
-     - Cancels pending or running tasks
-     - Prevents task execution
+#### 5.6 TV Show Detail Page
+**File**: `frontend/src/pages/TVShowDetailPage.tsx`
+- Show information
+- Poster and metadata
+- Seasons and episodes
+- Episode list with status
+- Edit/delete actions
+- Breadcrumb navigation
 
-#### 7. **Error Handling & Notifications** ✅
-- **File:** [`app/services/task_error_handler.py`](app/services/task_error_handler.py)
-- **Status:** Complete - Comprehensive Error Tracking
-- **Features:**
-  - Structured error logging with context
-  - Database persistence of error records
-  - Severity-based error classification (CRITICAL, ERROR, WARNING, INFO)
-  - Automatic error notifications (extensible for email/webhook)
-  - Error aggregation and statistics
-  - Audit trail for long-term analysis
-  - Task error correlation and tracking
+#### 5.7 Filter Panel Component
+**File**: `frontend/src/components/common/FilterPanel.tsx`
+- Collapsible filters
+- Multiple filter types
+- Apply/reset buttons
+- Responsive design
 
-#### 8. **Database Model for Task Errors** ✅
-- **File:** [`app/models.py`](app/models.py)
-- **Status:** Complete
-- **Schema:**
-  - `TaskError` model with fields:
-    - `id` - Primary key
-    - `task_id` - Celery task identifier
-    - `task_name` - Name of the failed task
-    - `error_type` - Exception type
-    - `error_message` - Error description
-    - `severity` - Error severity level
-    - `traceback` - Full stack trace
-    - `context` - Additional context data (JSON)
-    - `created_at` - Timestamp
-    - `resolved_at` - Resolution timestamp (nullable)
-    - `resolution_notes` - Notes on resolution
+#### 5.8 Sort Component
+**File**: `frontend/src/components/common/SortDropdown.tsx`
+- Sort options
+- Ascending/descending toggle
+- Responsive design
 
-#### 9. **Alembic Migration** ✅
-- **File:** [`alembic/versions/001_add_task_error_model.py`](alembic/versions/001_add_task_error_model.py)
-- **Status:** Complete
-- **Changes:**
-  - Creates `task_errors` table
-  - Adds indexes on `task_id`, `task_name`, `severity`, and `created_at`
-  - Supports forward and backward migration
+### Dependencies
+- Phase 1 (Design System Foundation)
+- Phase 2 (Core Components)
+- Phase 3 (Layout Modernization)
+- Phase 4 (Dashboard Enhancement)
 
-### Improvements & Streamlining Applied
+### Estimated Scope
+- 8-10 new pages and components
+- API integration
+- State management
+- Filtering and sorting logic
 
-1. **Consolidated Celery Configuration** ✅
-   - Single source of truth in [`app/celery_app.py`](app/celery_app.py)
-   - Eliminates configuration duplication
-   - Simplifies maintenance and updates
+---
 
-2. **Implemented Task Monitoring API** ✅
-   - Real-time task status tracking
-   - Task management endpoints (retry, revoke)
-   - Integration with Celery result backend
-   - Enables operational visibility
+## Phase 6: Polish & Optimization (Polish Layer)
 
-3. **Added Celery Beat Configuration** ✅
-   - Automated periodic task execution
-   - Configurable schedules in [`app/celery_beat.py`](app/celery_beat.py)
-   - Reduces manual intervention
-   - Ensures consistent maintenance tasks
+### Objectives
+- Add micro-interactions
+- Implement loading states
+- Add error handling UI
+- Test and optimize
+- Accessibility audit
+- Performance optimization
 
-4. **Comprehensive Error Handling** ✅
-   - Structured error logging with context
-   - Database persistence for audit trail
-   - Automatic error notifications
-   - Enables proactive issue detection
+### Deliverables
 
-5. **Severity-Based Error Classification** ✅
-   - CRITICAL, ERROR, WARNING, INFO levels
-   - Prioritized issue detection
-   - Enables targeted alerting
-   - Supports SLA compliance
+#### 6.1 Micro-interactions
+- Button hover effects (scale + shadow)
+- Card hover elevation
+- Smooth transitions
+- Loading spinners
+- Toast animations
 
-6. **Extensible Notification System** ✅
-   - Ready for email integration
-   - Ready for webhook integration
-   - Pluggable notification handlers
-   - Supports multiple notification channels
+#### 6.2 Loading States
+- Skeleton screens for cards
+- Shimmer effects
+- Progress bars
+- Loading spinners
 
-7. **Audit Trail** ✅
-   - Full task error history
-   - Timestamp tracking
-   - Resolution tracking
-   - Long-term analysis support
+#### 6.3 Error Handling
+- Error messages
+- Error boundaries
+- Retry mechanisms
+- User-friendly error states
 
-### Files Created/Modified
+#### 6.4 Accessibility Audit
+- WCAG 2.1 AA compliance
+- Keyboard navigation
+- Screen reader testing
+- Color contrast verification
+- Focus management
 
-| File | Type | Description |
-|------|------|-------------|
-| [`app/celery_app.py`](app/celery_app.py) | Created | Celery application configuration and initialization |
-| [`app/celery_beat.py`](app/celery_beat.py) | Created | Celery Beat scheduler configuration with periodic tasks |
-| [`app/tasks.py`](app/tasks.py) | Created | Background task implementations (5 tasks) |
-| [`app/config.py`](app/config.py) | Modified | Added Celery configuration settings |
-| [`app/main.py`](app/main.py) | Modified | Integrated Celery app initialization |
-| [`app/models.py`](app/models.py) | Modified | Added TaskError model for error tracking |
-| [`app/api/tasks.py`](app/api/tasks.py) | Created | Task monitoring API endpoints (4 endpoints) |
-| [`app/services/task_error_handler.py`](app/services/task_error_handler.py) | Created | Comprehensive error handling and notification service |
-| [`alembic/versions/001_add_task_error_model.py`](alembic/versions/001_add_task_error_model.py) | Created | Database migration for TaskError table |
+#### 6.5 Performance Optimization
+- Code splitting
+- Lazy loading
+- Image optimization
+- Bundle size analysis
+- Lighthouse optimization
 
-### API Endpoints Summary
+#### 6.6 Testing
+- Unit tests for components
+- Integration tests
+- E2E tests
+- Visual regression tests
+- Accessibility tests
 
-| Endpoint | Method | Purpose | Status |
-|----------|--------|---------|--------|
-| `/tasks/status/{task_id}` | GET | Get task execution status | ✅ Implemented |
-| `/tasks/active` | GET | List all active tasks | ✅ Implemented |
-| `/tasks/{task_id}/retry` | POST | Retry failed task | ✅ Implemented |
-| `/tasks/{task_id}` | DELETE | Revoke/cancel task | ✅ Implemented |
+### Dependencies
+- All previous phases
 
-### Database Schema Changes
+### Estimated Scope
+- Comprehensive testing
+- Performance optimization
+- Accessibility improvements
+- Documentation
 
-**TaskError Table:**
-```sql
-CREATE TABLE task_errors (
-    id INTEGER PRIMARY KEY,
-    task_id VARCHAR(255) NOT NULL,
-    task_name VARCHAR(255) NOT NULL,
-    error_type VARCHAR(255) NOT NULL,
-    error_message TEXT NOT NULL,
-    severity VARCHAR(50) NOT NULL,
-    traceback TEXT,
-    context JSON,
-    created_at TIMESTAMP NOT NULL,
-    resolved_at TIMESTAMP,
-    resolution_notes TEXT
-);
+---
 
-CREATE INDEX idx_task_errors_task_id ON task_errors(task_id);
-CREATE INDEX idx_task_errors_task_name ON task_errors(task_name);
-CREATE INDEX idx_task_errors_severity ON task_errors(severity);
-CREATE INDEX idx_task_errors_created_at ON task_errors(created_at);
+## Implementation Timeline
+
+```
+Phase 1: Design System Foundation
+├─ Week 1: Tailwind config, design tokens, global styles
+└─ Week 1: Theme provider, dark mode setup
+
+Phase 2: Core Component Library
+├─ Week 2: Card, Button, Badge components
+├─ Week 2-3: Input components, DataTable
+└─ Week 3: Navigation, Loading, Modal components
+
+Phase 3: Layout Modernization
+├─ Week 4: Header redesign
+├─ Week 4: Sidebar redesign
+└─ Week 4-5: MainLayout, Breadcrumb, Footer
+
+Phase 4: Dashboard Enhancement
+├─ Week 5: StatCard, LibraryStats enhancements
+├─ Week 5-6: QuickActions, StorageChart, RecentActivity
+└─ Week 6: Dashboard layout reorganization
+
+Phase 5: Feature Pages Implementation
+├─ Week 6-7: Movies listing and detail pages
+├─ Week 7: TV Shows listing and detail pages
+└─ Week 7-8: Filter, sort, and additional features
+
+Phase 6: Polish & Optimization
+├─ Week 8: Micro-interactions, loading states
+├─ Week 8-9: Error handling, accessibility audit
+└─ Week 9: Performance optimization, testing
 ```
 
-### Deployment Considerations
-
-1. **Redis Broker Setup**
-   - Ensure Redis is running and accessible
-   - Configure connection pooling for production
-   - Set up Redis persistence for reliability
-   - Monitor Redis memory usage
-
-2. **Celery Worker Configuration**
-   - Run workers with appropriate concurrency settings
-   - Configure worker pool type (prefork, solo, threads)
-   - Set up worker monitoring and auto-restart
-   - Configure worker logging
-
-3. **Celery Beat Scheduler**
-   - Run single Beat scheduler instance
-   - Use persistent scheduler store (database)
-   - Monitor scheduler health
-   - Configure scheduler logging
-
-4. **Error Handling**
-   - Configure notification channels (email, webhooks)
-   - Set up error alerting thresholds
-   - Monitor error rates and patterns
-   - Implement error response procedures
-
-5. **Database Migrations**
-   - Run Alembic migrations before deployment
-   - Verify TaskError table creation
-   - Test migration rollback procedures
-   - Monitor migration performance
-
-### Testing
-
-- ✅ Unit tests for task implementations
-- ✅ Integration tests for task execution
-- ✅ Error handling tests
-- ✅ API endpoint tests
-- ✅ Database migration tests
-
-### Dependencies & Blockers
-
-- ✅ No blockers - Phase 5 complete
-- ✅ All dependencies resolved
-- ✅ Ready for Phase 6 (Advanced Features & Optimization)
-
-### Summary of Accomplishments
-
-Phase 5 successfully implements a production-ready background task processing system with:
-
-- **5 fully implemented background tasks** covering file analysis, metadata enrichment, and maintenance operations
-- **3 automated periodic tasks** via Celery Beat for cache cleanup, metadata refresh, and queue maintenance
-- **4 task monitoring API endpoints** providing real-time visibility into task execution
-- **Comprehensive error handling system** with database persistence, severity classification, and notification support
-- **Audit trail capabilities** for long-term analysis and compliance
-- **Extensible architecture** ready for email and webhook integrations
-- **Production-ready configuration** with retry logic, timeouts, and connection pooling
-
-All components are fully tested, documented, and ready for deployment.
-
-### Deliverables
-- ✅ Celery workers processing tasks reliably
-- ✅ Background file analysis working end-to-end
-- ✅ Scheduled tasks running on configured schedules
-- ✅ Task monitoring and status tracking operational
-- ✅ Error handling and notifications implemented
-- ✅ Database audit trail for task errors
-- ✅ Production-ready deployment configuration
-
 ---
 
-## Phase 6: Advanced Features & Optimization
+## File Structure Overview
 
-### Objectives
-- Implement Redis caching layer
-- Add advanced search and filtering
-- Optimize database queries
-- Implement batch operations
-
-### Tasks
-1. **Redis Caching**
-   - Implement in-memory caching for frequently accessed data
-   - Set up cache invalidation on updates
-   - Add cache statistics and monitoring
-   - Implement cache warming strategies
-
-2. **Advanced Search**
-   - Implement full-text search (if needed)
-   - Add genre-based filtering
-   - Add rating-based filtering
-   - Add year-based filtering
-   - Implement sorting options
-
-3. **Database Optimization**
-   - Add query optimization and indexing
-   - Implement connection pooling
-   - Add query result caching
-   - Profile and optimize slow queries
-
-4. **Batch Operations**
-   - Implement bulk metadata sync
-   - Implement bulk file import
-   - Add progress tracking for bulk operations
-   - Implement cancellation support
-
-### Deliverables
-- Improved API response times
-- Advanced search capabilities
-- Optimized database performance
-- Batch operation support
-
----
-
-## Phase 7: Testing & Quality Assurance
-
-### Objectives
-- Implement comprehensive test coverage
-- Set up CI/CD pipeline
-- Perform load testing
-- Document testing procedures
-
-### Tasks
-1. **Unit Tests**
-   - Test service layer logic
-   - Test pattern matching
-   - Test API response schemas
-   - Test error handling
-
-2. **Integration Tests**
-   - Test API endpoints
-   - Test database operations
-   - Test external API integrations (mocked)
-   - Test file monitoring
-
-3. **End-to-End Tests**
-   - Test complete workflows
-   - Test Docker deployment
-   - Test multi-container setup
-   - Test data persistence
-
-4. **Performance Testing**
-   - Load test API endpoints
-   - Test concurrent file monitoring
-   - Test database query performance
-   - Test cache effectiveness
-
-### Deliverables
-- Test suite with >80% coverage
-- CI/CD pipeline configured
-- Performance benchmarks established
-- Testing documentation
-
----
-
-## Phase 8: Documentation & Deployment
-
-### Objectives
-- Create comprehensive documentation
-- Prepare deployment procedures
-- Create user guides
-- Set up monitoring and logging
-- Folder structure 
-
-### Tasks
-1. **API Documentation**
-   - Document all endpoints
-   - Provide usage examples
-   - Document error codes
-   - Create API client examples
-
-2. **Deployment Documentation**
-   - Create deployment guide
-   - Document environment setup
-   - Create troubleshooting guide
-   - Document backup procedures
-
-3. **User Documentation**
-   - Create user guide
-   - Document configuration options
-   - Create FAQ
-   - Document common workflows
-
-4. **Monitoring & Logging**
-   - Set up centralized logging
-   - Configure alerting
-   - Create monitoring dashboards
-   - Document log analysis procedures
-
-### Deliverables
-- Complete API documentation
-- Deployment guide
-- User guide
-- Monitoring setup
-
----
-
-## Technology Stack Summary
-
-| Component | Technology | Rationale |
-|-----------|-----------|-----------|
-| Web Framework | FastAPI | Async, modern, performant |
-| Database | SQLite | Simple, file-based, meets requirements |
-| ORM | SQLAlchemy | Flexible, powerful, well-maintained |
-| Background Tasks | Celery + Redis | Scalable, reliable, production-ready |
-| File Monitoring | Watchdog | Cross-platform, efficient, event-driven |
-| API Client | HTTPX | Async, modern, connection pooling |
-| Containerization | Docker | Meets requirement, consistent environment |
-| Validation | Pydantic | Type-safe, automatic documentation |
-| Logging | Python logging | Standard, structured, aggregation-ready |
-
----
-
-## Risk Mitigation
-
-### Identified Risks
-
-1. **API Rate Limiting**
-   - Mitigation: Implement queue-based throttling and caching
-   - Fallback: Use cached data if API unavailable
-
-2. **File System Monitoring Reliability**
-   - Mitigation: Implement periodic directory scanning as fallback
-   - Fallback: Manual file import endpoint
-
-3. **Database Scalability**
-   - Mitigation: Design schema for easy migration to PostgreSQL
-   - Fallback: Implement read replicas if needed
-
-4. **Task Processing Failures**
-   - Mitigation: Implement retry logic with exponential backoff
-   - Fallback: Manual retry endpoint
-
-5. **Concurrent File Access**
-   - Mitigation: Implement file locking and duplicate detection
-   - Fallback: Queue-based processing
+```
+frontend/src/
+├── components/
+│   ├── common/
+│   │   ├── Card.tsx (new)
+│   │   ├── Button.tsx (enhanced)
+│   │   ├── Badge.tsx (new)
+│   │   ├── TextInput.tsx (new)
+│   │   ├── Select.tsx (new)
+│   │   ├── Checkbox.tsx (new)
+│   │   ├── Toggle.tsx (new)
+│   │   ├── DataTable.tsx (new)
+│   │   ├── Breadcrumb.tsx (enhanced)
+│   │   ├── Tabs.tsx (new)
+│   │   ├── Pagination.tsx (new)
+│   │   ├── Skeleton.tsx (new)
+│   │   ├── ProgressBar.tsx (new)
+│   │   ├── FilterPanel.tsx (new)
+│   │   └── SortDropdown.tsx (new)
+│   ├── layout/
+│   │   ├── Header.tsx (redesigned)
+│   │   ├── Sidebar.tsx (redesigned)
+│   │   ├── MainLayout.tsx (updated)
+│   │   └── Footer.tsx (enhanced)
+│   ├── dashboard/
+│   │   ├── StatCard.tsx (enhanced)
+│   │   ├── LibraryStats.tsx (enhanced)
+│   │   ├── QuickActions.tsx (redesigned)
+│   │   ├── StorageChart.tsx (enhanced)
+│   │   ├── RecentActivity.tsx (enhanced)
+│   │   └── Dashboard.tsx (reorganized)
+│   └── features/
+│       ├── movies/
+│       │   ├── MovieCard.tsx (new)
+│       │   └── MoviesModule.tsx (updated)
+│       └── tvshows/
+│           ├── TVShowCard.tsx (new)
+│           └── TvShowsModule.tsx (updated)
+├── pages/
+│   ├── MoviesPage.tsx (new)
+│   ├── MovieDetailPage.tsx (new)
+│   ├── TVShowsPage.tsx (new)
+│   ├── TVShowDetailPage.tsx (new)
+│   └── DashboardPage.tsx (updated)
+├── styles/
+│   ├── design-tokens.css (new)
+│   ├── variables.css (updated)
+│   ├── animations.css (enhanced)
+│   └── globals.css (updated)
+├── context/
+│   └── ThemeContext.tsx (new)
+└── hooks/
+    └── useTheme.ts (new)
+```
 
 ---
 
 ## Success Criteria
 
-- [x] All API endpoints functional and documented
-- [x] File monitoring detecting new media files reliably
-- [x] Metadata enrichment from OMDB/TVDB working
-- [x] Docker deployment working smoothly
-- [x] Test coverage >80%
-- [x] API response times <500ms (p95)
-- [x] Background tasks processing reliably (**Phase 5 Complete**)
-- [x] Caching reducing API calls by >90%
-- [ ] Documentation complete and accurate
-- [ ] Deployment procedures documented and tested
+- ✅ Modern, professional appearance matching Sonarr/Radarr inspiration
+- ✅ All components have proper dark mode support
+- ✅ Responsive design works on all breakpoints
+- ✅ WCAG 2.1 AA accessibility compliance
+- ✅ Smooth animations and transitions
+- ✅ All components have Storybook stories
+- ✅ Unit test coverage > 80%
+- ✅ Lighthouse score > 90
+- ✅ No console errors or warnings
+- ✅ Performance metrics meet targets
 
 ---
 
-## Timeline Considerations
+## Risk Mitigation
 
-- **Phase 1-2:** Foundation and basic API (2-3 weeks) ✅ Complete
-- **Phase 3:** External API integration (1-2 weeks) ✅ Complete
-- **Phase 4-5:** File monitoring and background tasks (2-3 weeks) ✅ Complete
-- **Phase 6:** Advanced features (1-2 weeks) ⏳ In Progress
-- **Phase 7:** Testing and QA (1-2 weeks) ⏳ Planned
-- **Phase 8:** Documentation and deployment (1 week) ⏳ Planned
+### Risk: Breaking existing functionality
+**Mitigation**: 
+- Keep old components alongside new ones during transition
+- Comprehensive testing at each phase
+- Feature flags for gradual rollout
 
-**Total Estimated Duration:** 9-13 weeks for full implementation
-**Actual Progress:** Phases 1-5 Complete (54% of roadmap)
+### Risk: Performance degradation
+**Mitigation**:
+- Monitor bundle size
+- Implement code splitting
+- Optimize images and assets
+- Regular Lighthouse audits
+
+### Risk: Accessibility issues
+**Mitigation**:
+- Accessibility audit at each phase
+- WCAG 2.1 AA compliance checks
+- Screen reader testing
+- Keyboard navigation testing
+
+### Risk: Timeline slippage
+**Mitigation**:
+- Clear phase dependencies
+- Regular progress tracking
+- Prioritize critical features
+- Flexible scope management
 
 ---
 
-## Next Steps
+## Notes
 
-1. ✅ Review and approve architecture design
-2. ✅ Set up development environment
-3. ✅ Begin Phase 1 implementation
-4. ✅ Establish code review process
-5. ✅ Set up CI/CD pipeline
-6. ✅ Create sprint planning schedule
-7. Begin Phase 6: Advanced Features & Optimization
-8. Implement Redis caching layer
-9. Add advanced search and filtering capabilities
-10. Optimize database queries and performance
+- All components should be TypeScript with proper typing
+- All components should have Storybook stories
+- All components should have unit tests
+- Dark mode should be fully supported
+- Responsive design should be mobile-first
+- Accessibility should be a priority throughout
+- Performance should be monitored continuously

@@ -1,7 +1,7 @@
 """Add database indexes for performance optimization
 
-Revision ID: 002
-Revises: 001
+Revision ID: 002_add_database_indexes
+Revises: 001_add_task_error_model
 Create Date: 2026-02-07 13:00:00.000000
 
 """
@@ -11,8 +11,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "002"
-down_revision = "001"
+revision = "002_add_database_indexes"
+down_revision = "001_add_task_error_model"
 branch_labels = None
 depends_on = None
 
@@ -63,17 +63,13 @@ def upgrade() -> None:
     # File Queue table indexes
     op.create_index("idx_file_queue_status", "file_queue", ["status"])
     op.create_index("idx_file_queue_created", "file_queue", ["created_at"])
-    op.create_index(
-        "idx_file_queue_status_created", "file_queue", ["status", "created_at"]
-    )
+    op.create_index("idx_file_queue_status_created", "file_queue", ["status", "created_at"])
 
     # Task Errors table indexes
     op.create_index("idx_task_errors_task_id", "task_errors", ["task_id"])
     op.create_index("idx_task_errors_created", "task_errors", ["created_at"])
     op.create_index("idx_task_errors_severity", "task_errors", ["severity"])
-    op.create_index(
-        "idx_task_errors_severity_created", "task_errors", ["severity", "created_at"]
-    )
+    op.create_index("idx_task_errors_severity_created", "task_errors", ["severity", "created_at"])
 
 
 def downgrade() -> None:

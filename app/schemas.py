@@ -5,6 +5,51 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 
+__all__ = [
+    # Movie Schemas
+    "MovieCreate",
+    "MovieUpdate",
+    "MovieResponse",
+    "PaginatedMovieResponse",
+    "PaginatedMovieResponseWithFilters",
+    # TV Show Schemas
+    "TVShowCreate",
+    "TVShowUpdate",
+    "TVShowResponse",
+    "PaginatedTVShowResponse",
+    "PaginatedTVShowResponseWithFilters",
+    "SeasonResponse",
+    "EpisodeResponse",
+    "PaginatedSeasonResponse",
+    "PaginatedEpisodeResponse",
+    # Cache Schemas
+    "CacheStatsResponse",
+    "CacheEntryResponse",
+    "PaginatedCacheResponse",
+    "CacheOperationResponse",
+    # Metadata Sync
+    "MetadataSyncResponse",
+    # Task Monitoring Schemas
+    "TaskStatusResponse",
+    "TaskRetryResponse",
+    "TaskListItemResponse",
+    "TaskListResponse",
+    "TaskCancelResponse",
+    # Task Error Schemas
+    "TaskErrorResponse",
+    "PaginatedTaskErrorResponse",
+    # Search and Filter Schemas
+    "SearchFiltersRequest",
+    "FilterMetadata",
+    # Batch Operations Schemas
+    "BatchOperationCreate",
+    "BatchProgressUpdate",
+    "BatchOperationResponse",
+    "PaginatedBatchOperationResponse",
+    "BatchOperationListItem",
+]
+
+
 # ============================================================================
 # Movie Schemas
 # ============================================================================
@@ -16,9 +61,7 @@ class MovieCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=255, description="Movie title")
     plot: Optional[str] = Field(None, description="Movie plot/description")
     year: Optional[int] = Field(None, ge=1800, le=2100, description="Release year")
-    rating: Optional[float] = Field(
-        None, ge=0, le=10, description="Movie rating (0-10)"
-    )
+    rating: Optional[float] = Field(None, ge=0, le=10, description="Movie rating (0-10)")
     runtime: Optional[int] = Field(None, ge=0, description="Runtime in minutes")
     genres: Optional[str] = Field(None, description="Genres as JSON array string")
     omdb_id: Optional[str] = Field(None, description="OMDB ID")
@@ -49,9 +92,7 @@ class MovieUpdate(BaseModel):
     genres: Optional[str] = None
     omdb_id: Optional[str] = None
 
-    model_config = ConfigDict(
-        json_schema_extra={"example": {"rating": 9.5, "runtime": 145}}
-    )
+    model_config = ConfigDict(json_schema_extra={"example": {"rating": 9.5, "runtime": 145}})
 
 
 class MovieResponse(BaseModel):
@@ -81,9 +122,7 @@ class TVShowCreate(BaseModel):
 
     title: str = Field(..., min_length=1, max_length=255, description="TV show title")
     plot: Optional[str] = Field(None, description="TV show plot/description")
-    rating: Optional[float] = Field(
-        None, ge=0, le=10, description="TV show rating (0-10)"
-    )
+    rating: Optional[float] = Field(None, ge=0, le=10, description="TV show rating (0-10)")
     genres: Optional[str] = Field(None, description="Genres as JSON array string")
     status: Optional[str] = Field(None, description="Status: 'Continuing' or 'Ended'")
     tvdb_id: Optional[str] = Field(None, description="TVDB ID")
@@ -112,9 +151,7 @@ class TVShowUpdate(BaseModel):
     status: Optional[str] = None
     tvdb_id: Optional[str] = None
 
-    model_config = ConfigDict(
-        json_schema_extra={"example": {"rating": 9.6, "status": "Ended"}}
-    )
+    model_config = ConfigDict(json_schema_extra={"example": {"rating": 9.6, "status": "Ended"}})
 
 
 class TVShowResponse(BaseModel):
@@ -144,9 +181,7 @@ class SeasonResponse(BaseModel):
     id: int = Field(..., description="Season ID")
     season_number: int = Field(..., description="Season number")
     tvdb_id: Optional[str] = None
-    episode_count: Optional[int] = Field(
-        None, description="Number of episodes in season"
-    )
+    episode_count: Optional[int] = Field(None, description="Number of episodes in season")
     created_at: datetime = Field(..., description="Creation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
@@ -182,9 +217,7 @@ class PaginatedResponse(BaseModel):
     offset: int = Field(..., description="Offset from start")
 
     model_config = ConfigDict(
-        json_schema_extra={
-            "example": {"items": [], "total": 100, "limit": 10, "offset": 0}
-        }
+        json_schema_extra={"example": {"items": [], "total": 100, "limit": 10, "offset": 0}}
     )
 
 
@@ -233,9 +266,7 @@ class CacheStatsResponse(BaseModel):
     """Schema for cache statistics response"""
 
     total_entries: int = Field(..., description="Total number of cache entries")
-    active_entries: int = Field(
-        ..., description="Number of active (non-expired) entries"
-    )
+    active_entries: int = Field(..., description="Number of active (non-expired) entries")
     expired_entries: int = Field(..., description="Number of expired entries")
     total_size_bytes: int = Field(..., description="Total cache size in bytes")
     total_size_mb: float = Field(..., description="Total cache size in megabytes")
@@ -303,9 +334,7 @@ class MetadataSyncResponse(BaseModel):
     message: str = Field(..., description="Operation message")
     movie_id: Optional[int] = Field(None, description="Movie ID (for movie sync)")
     show_id: Optional[int] = Field(None, description="TV show ID (for show sync)")
-    updated_fields: List[str] = Field(
-        ..., description="List of fields that were updated"
-    )
+    updated_fields: List[str] = Field(..., description="List of fields that were updated")
     metadata: dict = Field(..., description="Updated metadata")
 
     model_config = ConfigDict(
@@ -336,15 +365,11 @@ class TaskStatusResponse(BaseModel):
     """Schema for task status response"""
 
     task_id: str = Field(..., description="Celery task ID")
-    status: str = Field(
-        ..., description="Task status (pending/started/success/failure/retry)"
-    )
+    status: str = Field(..., description="Task status (pending/started/success/failure/retry)")
     result: Optional[dict] = Field(None, description="Task result if completed")
     error: Optional[str] = Field(None, description="Error message if task failed")
     created_at: Optional[datetime] = Field(None, description="Task creation timestamp")
-    updated_at: Optional[datetime] = Field(
-        None, description="Task last update timestamp"
-    )
+    updated_at: Optional[datetime] = Field(None, description="Task last update timestamp")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -386,9 +411,7 @@ class TaskListItemResponse(BaseModel):
     task_id: str = Field(..., description="Celery task ID")
     status: str = Field(..., description="Task status")
     created_at: Optional[datetime] = Field(None, description="Task creation timestamp")
-    updated_at: Optional[datetime] = Field(
-        None, description="Task last update timestamp"
-    )
+    updated_at: Optional[datetime] = Field(None, description="Task last update timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -454,9 +477,7 @@ class TaskErrorResponse(BaseModel):
     severity: str = Field(..., description="Error severity (critical/warning/info)")
     retry_count: int = Field(..., description="Number of retries attempted")
     created_at: datetime = Field(..., description="Error creation timestamp")
-    resolved_at: Optional[datetime] = Field(
-        None, description="Error resolution timestamp"
-    )
+    resolved_at: Optional[datetime] = Field(None, description="Error resolution timestamp")
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -516,19 +537,11 @@ class PaginatedTaskErrorResponse(BaseModel):
 class SearchFiltersRequest(BaseModel):
     """Schema for search filter query parameters"""
 
-    genre: Optional[str] = Field(
-        None, description="Genre to filter by (case-insensitive)"
-    )
-    min_rating: Optional[float] = Field(
-        None, ge=0, le=10, description="Minimum rating (0-10)"
-    )
-    max_rating: Optional[float] = Field(
-        None, ge=0, le=10, description="Maximum rating (0-10)"
-    )
+    genre: Optional[str] = Field(None, description="Genre to filter by (case-insensitive)")
+    min_rating: Optional[float] = Field(None, ge=0, le=10, description="Minimum rating (0-10)")
+    max_rating: Optional[float] = Field(None, ge=0, le=10, description="Maximum rating (0-10)")
     year: Optional[int] = Field(None, ge=1800, le=2100, description="Release/air year")
-    sort_by: str = Field(
-        "title", description="Sort field: title, rating, year, date_added"
-    )
+    sort_by: str = Field("title", description="Sort field: title, rating, year, date_added")
     skip: int = Field(0, ge=0, description="Number of items to skip")
     limit: int = Field(10, ge=1, le=100, description="Number of items to return")
 
@@ -550,9 +563,7 @@ class SearchFiltersRequest(BaseModel):
 class FilterMetadata(BaseModel):
     """Schema for filter metadata in responses"""
 
-    applied_filters: Dict[str, Any] = Field(
-        ..., description="Filters that were applied"
-    )
+    applied_filters: Dict[str, Any] = Field(..., description="Filters that were applied")
     sort_by: str = Field(..., description="Field used for sorting")
     total_results: int = Field(..., description="Total results matching filters")
 
@@ -631,18 +642,10 @@ class PaginatedTVShowResponseWithFilters(BaseModel):
 class BatchOperationCreate(BaseModel):
     """Schema for creating a batch operation"""
 
-    operation_type: str = Field(
-        ..., description="Type of operation (metadata_sync, file_import)"
-    )
-    media_ids: Optional[List[int]] = Field(
-        None, description="List of media IDs for metadata sync"
-    )
-    file_paths: Optional[List[str]] = Field(
-        None, description="List of file paths for file import"
-    )
-    media_type: Optional[str] = Field(
-        None, description="Type of media (movie, tv_show)"
-    )
+    operation_type: str = Field(..., description="Type of operation (metadata_sync, file_import)")
+    media_ids: Optional[List[int]] = Field(None, description="List of media IDs for metadata sync")
+    file_paths: Optional[List[str]] = Field(None, description="List of file paths for file import")
+    media_type: Optional[str] = Field(None, description="Type of media (movie, tv_show)")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -713,9 +716,7 @@ class BatchOperationResponse(BaseModel):
 class PaginatedBatchOperationResponse(BaseModel):
     """Paginated response for batch operations"""
 
-    items: List[BatchOperationResponse] = Field(
-        ..., description="List of batch operations"
-    )
+    items: List[BatchOperationResponse] = Field(..., description="List of batch operations")
     total: int = Field(..., description="Total number of batch operations")
     limit: int = Field(..., description="Items per page")
     offset: int = Field(..., description="Offset from start")

@@ -1,0 +1,71 @@
+{
+  "lighthouse": {
+    "performance": 0.9,
+    "accessibility": 0.9,
+    "best-practices": 0.9,
+    "seo": 0.9,
+    "pwa": 0.7
+  },
+  "budgets": [
+    {
+      "resourceSizes": [
+        {
+          "resourceType": "total",
+          "budget": 500
+        },
+        {
+          "resourceType": "script",
+          "budget": 200
+        },
+        {
+          "resourceType": "css",
+          "budget": 50
+        },
+        {
+          "resourceType": "html",
+          "budget": 20
+        },
+        {
+          "resourceType": "font",
+          "budget": 50
+        },
+        {
+          "resourceType": "image",
+          "budget": 100
+        },
+        {
+          "resourceType": "media",
+          "budget": 50
+        },
+        {
+          "resourceType": "other",
+          "budget": 30
+        },
+        {
+          "resourceType": "third-party",
+          "budget": 100
+        }
+      ],
+      "resourceCounts": [
+        {
+          "resourceType": "third-party",
+          "budget": 15
+        }
+      ]
+    }
+  ],
+  "thresholds": {
+    "firstContentfulPaint": 1500,
+    "largestContentfulPaint": 2500,
+    "firstInputDelay": 100,
+    "cumulativeLayoutShift": 0.1,
+    "timeToInteractive": 3800,
+    "totalBlockingTime": 200,
+    "speedIndex": 3000,
+    "interactive": 3800,
+    "mainthreadWorkBreakdown": 2000,
+    "bootupTime": 500,
+    "networkRtt": 100,
+    "networkPayloadSize": 500000
+  }
+}

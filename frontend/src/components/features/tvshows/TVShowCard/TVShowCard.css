@@ -1,0 +1,163 @@
+/* TVShowCard - Styles converted from Tailwind @apply */
+
+.tvshow-card {
+  overflow: hidden;
+  transition: all 300ms;
+}
+
+.tvshow-card:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.tvshow-card:hover {
+  transform: translateY(-4px);
+}
+
+.tvshow-card__poster-wrapper {
+  position: relative;
+  aspect-ratio: 2/3;
+  overflow: hidden;
+  background-color: #f1f5f9;
+}
+
+.dark .tvshow-card__poster-wrapper {
+  background-color: #374151;
+}
+
+.tvshow-card__poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms;
+}
+
+.tvshow-card:hover .tvshow-card__poster {
+  transform: scale(1.05);
+}
+
+.tvshow-card__poster-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
+.dark .tvshow-card__poster-placeholder {
+  color: #6b7280;
+}
+
+.tvshow-card__rating {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  border-radius: 9999px;
+}
+
+.tvshow-card__rating-stars {
+  color: #fbbf24;
+  font-size: 12px;
+}
+
+.tvshow-card__rating-value {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tvshow-card__badges {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tvshow-card__next-episode {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.tvshow-card__next-episode-label {
+  color: #fff;
+  font-weight: 500;
+}
+
+.tvshow-card__next-episode-date {
+  color: #d1d5db;
+  margin-left: 8px;
+}
+
+.tvshow-card__overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 200ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tvshow-card__overlay--visible {
+  opacity: 1;
+}
+
+.tvshow-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tvshow-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tvshow-card__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #18181b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .tvshow-card__title {
+  color: #f3f4f6;
+}
+
+.tvshow-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tvshow-card__episodes {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.dark .tvshow-card__episodes {
+  color: #9ca3af;
+}
+
+.tvshow-card__genres {
+  display: flex;
+  gap: 4px;
+}

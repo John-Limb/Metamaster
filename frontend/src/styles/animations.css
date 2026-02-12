@@ -1,0 +1,728 @@
+/* Animation Utilities - Metamaster UI */
+
+/* ==========================================================================
+   Fade Animations - Standard timing (300ms)
+   ========================================================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--animate-normal) var(--ease-standard);
+}
+
+.animate-fade-out {
+  animation: fadeOut var(--animate-normal) var(--ease-standard);
+}
+
+/* ==========================================================================
+   Slide Animations - Standard timing (300ms)
+   ========================================================================== */
+@keyframes slideInUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutUp {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-slide-in-up {
+  animation: slideInUp var(--animate-normal) var(--ease-standard);
+}
+
+.animate-slide-in-down {
+  animation: slideInDown var(--animate-normal) var(--ease-standard);
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft var(--animate-normal) var(--ease-standard);
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--animate-normal) var(--ease-standard);
+}
+
+.animate-slide-in {
+  animation: slideInUp var(--animate-normal) var(--ease-standard);
+}
+
+.animate-slide-out-up {
+  animation: slideOutUp var(--animate-normal) var(--ease-standard);
+}
+
+.animate-slide-out-down {
+  animation: slideOutDown var(--animate-normal) var(--ease-standard);
+}
+
+/* ==========================================================================
+   Toast Animations - Slow timing (500ms) for complex animations
+   ========================================================================== */
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastFadeOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes toastSlideInBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastFadeOutBottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.animate-toast-in {
+  animation: toastSlideIn var(--animate-slow) var(--ease-out);
+}
+
+.animate-toast-out {
+  animation: toastFadeOut var(--animate-slow) var(--ease-in);
+}
+
+.animate-toast-in-bottom {
+  animation: toastSlideInBottom var(--animate-slow) var(--ease-out);
+}
+
+.animate-toast-out-bottom {
+  animation: toastFadeOutBottom var(--animate-slow) var(--ease-in);
+}
+
+/* ==========================================================================
+   Scale Animations - Fast timing (150ms) for micro-interactions
+   ========================================================================== */
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes scaleInSmall {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleBounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--animate-normal) var(--ease-standard);
+}
+
+.animate-scale-out {
+  animation: scaleOut var(--animate-normal) var(--ease-standard);
+}
+
+.animate-scale-in-small {
+  animation: scaleInSmall var(--animate-fast) var(--ease-standard);
+}
+
+.animate-scale-bounce {
+  animation: scaleBounce var(--animate-normal) var(--ease-standard);
+}
+
+/* ==========================================================================
+   Button Hover Animation - Fast (150ms)
+   ========================================================================== */
+@keyframes buttonPress {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes buttonLift {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-1px);
+  }
+}
+
+.animate-button-press {
+  animation: buttonPress var(--animate-fast) var(--ease-standard);
+}
+
+.animate-button-lift {
+  animation: buttonLift var(--animate-fast) var(--ease-standard);
+}
+
+/* ==========================================================================
+   Card Hover Animation - Normal (300ms)
+   ========================================================================== */
+@keyframes cardLift {
+  0% {
+    transform: translateY(0);
+    box-shadow: var(--shadow-medium);
+  }
+  100% {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-large);
+  }
+}
+
+@keyframes cardGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+}
+
+.animate-card-lift {
+  animation: cardLift var(--animate-normal) var(--ease-standard);
+}
+
+.animate-card-glow {
+  animation: cardGlow var(--animate-slow) ease-in-out;
+}
+
+/* ==========================================================================
+   Bounce Animations
+   ========================================================================== */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+.animate-bounce-short {
+  animation: bounce 0.5s infinite;
+}
+
+/* ==========================================================================
+   Pulse Animations
+   ========================================================================== */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-fast {
+  animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulseRing 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ==========================================================================
+   Spin Animations
+   ========================================================================== */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spin 1s linear infinite;
+  animation-direction: reverse;
+}
+
+/* ==========================================================================
+   Shimmer Animation - For loading states
+   ========================================================================== */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes shimmerDiagonal {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 1000px;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    90deg,
+    var(--color-secondary-200) 0%,
+    var(--color-secondary-100) 25%,
+    var(--color-secondary-200) 50%,
+    var(--color-secondary-100) 75%,
+    var(--color-secondary-200) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+.animate-shimmer-dark {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    90deg,
+    var(--color-secondary-700) 0%,
+    var(--color-secondary-600) 25%,
+    var(--color-secondary-700) 50%,
+    var(--color-secondary-600) 75%,
+    var(--color-secondary-700) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+.animate-shimmer-diagonal {
+  animation: shimmerDiagonal 2s infinite linear;
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary-200) 0%,
+    var(--color-secondary-100) 25%,
+    var(--color-secondary-200) 50%,
+    var(--color-secondary-100) 75%,
+    var(--color-secondary-200) 100%
+  );
+  background-size: 1500px 1500px;
+}
+
+/* ==========================================================================
+   Skeleton Pulse (Alternative to shimmer)
+   ========================================================================== */
+@keyframes skeletonPulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-skeleton-pulse {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   Sidebar Transition - Normal (300ms)
+   ========================================================================== */
+@keyframes sidebarExpand {
+  from {
+    width: 64px;
+  }
+  to {
+    width: 256px;
+  }
+}
+
+@keyframes sidebarCollapse {
+  from {
+    width: 256px;
+  }
+  to {
+    width: 64px;
+  }
+}
+
+.animate-sidebar-expand {
+  animation: sidebarExpand var(--animate-normal) var(--ease-standard);
+}
+
+.animate-sidebar-collapse {
+  animation: sidebarCollapse var(--animate-normal) var(--ease-standard);
+}
+
+/* ==========================================================================
+   Icon Slide Animation - For collapsed sidebar
+   ========================================================================== */
+@keyframes iconSlideRight {
+  from {
+    transform: translateX(-4px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-icon-slide {
+  animation: iconSlideRight var(--animate-fast) var(--ease-standard);
+}
+
+/* ==========================================================================
+   Modal Animations
+   ========================================================================== */
+@keyframes modalOverlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalOverlayOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalContentIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalContentOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+}
+
+.animate-modal-overlay-in {
+  animation: modalOverlayIn var(--animate-normal) var(--ease-standard);
+}
+
+.animate-modal-overlay-out {
+  animation: modalOverlayOut var(--animate-normal) var(--ease-standard);
+}
+
+.animate-modal-content-in {
+  animation: modalContentIn var(--animate-normal) var(--ease-standard);
+}
+
+.animate-modal-content-out {
+  animation: modalContentOut var(--animate-normal) var(--ease-standard);
+}
+
+/* ==========================================================================
+   Dropdown Animation
+   ========================================================================== */
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dropdownOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+}
+
+.animate-dropdown-in {
+  animation: dropdownIn var(--animate-fast) var(--ease-standard);
+}
+
+.animate-dropdown-out {
+  animation: dropdownOut var(--animate-fast) var(--ease-in);
+}
+
+/* ==========================================================================
+   Transition Utilities
+   ========================================================================== */
+.transition-fast {
+  transition: all var(--animate-fast) var(--ease-standard);
+}
+
+.transition-normal {
+  transition: all var(--animate-normal) var(--ease-standard);
+}
+
+.transition-slow {
+  transition: all var(--animate-slow) var(--ease-standard);
+}
+
+/* ==========================================================================
+   Delay Utilities
+   ========================================================================== */
+.delay-0 {
+  animation-delay: 0ms;
+}
+
+.delay-75 {
+  animation-delay: 75ms;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-150 {
+  animation-delay: 150ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-400 {
+  animation-delay: 400ms;
+}
+
+.delay-500 {
+  animation-delay: 500ms;
+}
+
+.delay-700 {
+  animation-delay: 700ms;
+}
+
+.delay-1000 {
+  animation-delay: 1000ms;
+}
+
+/* ==========================================================================
+   Responsive Animations (Reduced Motion)
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-on-load {
+    animation: fadeIn var(--animate-normal) var(--ease-standard);
+  }
+}

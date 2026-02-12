@@ -16,10 +16,12 @@ A comprehensive web-based media management system for organizing and managing yo
 - **Caching System**: Multi-level caching to reduce API calls
 - **Background Processing**: Celery-based task queue for long-running operations
 - **REST API**: Comprehensive REST API with automatic documentation
+- **Web Interface**: Modern React-based frontend with file navigation and management
 - **Docker Support**: Full Docker and Docker Compose setup
 
 ## Technology Stack
 
+### Backend
 - **Framework**: FastAPI
 - **Database**: SQLite (with SQLAlchemy ORM)
 - **Background Tasks**: Celery + Redis
@@ -27,26 +29,61 @@ A comprehensive web-based media management system for organizing and managing yo
 - **Containerization**: Docker & Docker Compose
 - **API Clients**: HTTPX (async HTTP client)
 
+### Frontend
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **State Management**: Zustand + TanStack Query
+- **Styling**: Tailwind CSS
+- **Routing**: React Router 6
+- **Testing**: Vitest + React Testing Library
+- **Documentation**: Storybook
+
 ## Project Structure
 
 ```
 .
-├── app/
+├── app/                              # Backend application
 │   ├── __init__.py
-│   ├── main.py              # FastAPI application entry point
-│   ├── config.py            # Configuration settings
-│   ├── database.py          # Database setup and session management
-│   ├── models.py            # SQLAlchemy ORM models
-│   ├── tasks.py             # Celery task definitions
-│   └── api/
+│   ├── main.py                      # FastAPI application entry point
+│   ├── config.py                    # Configuration settings
+│   ├── database.py                  # Database setup and session management
+│   ├── models.py                    # SQLAlchemy ORM models
+│   ├── tasks.py                     # Celery task definitions
+│   └── api/                         # API endpoints
 │       ├── __init__.py
-│       └── health.py        # Health check endpoints
-├── requirements.txt         # Python dependencies
-├── Dockerfile              # Docker image definition
-├── docker-compose.yml      # Multi-container orchestration
-├── .env.example            # Environment variables template
-├── .gitignore              # Git ignore rules
-└── README.md               # This file
+│       ├── v1/                      # API version 1
+│       │   ├── movies/
+│       │   ├── tv_shows/
+│       │   ├── cache/
+│       │   ├── health/
+│       │   └── tasks/
+├── frontend/                        # Frontend application (React)
+│   ├── src/
+│   │   ├── components/             # React components
+│   │   │   ├── common/             # Reusable components
+│   │   │   ├── file/               # File management components
+│   │   │   ├── layout/             # Layout components
+│   │   │   ├── dashboard/          # Dashboard components
+│   │   │   ├── queue/              # Queue management
+│   │   │   ├── search/             # Search components
+│   │   │   └── settings/           # Settings components
+│   │   ├── pages/                  # Page components
+│   │   ├── hooks/                  # Custom React hooks
+│   │   ├── services/               # API service layer
+│   │   ├── stores/                 # Zustand state stores
+│   │   ├── types/                  # TypeScript types
+│   │   ├── utils/                  # Utility functions
+│   │   └── styles/                 # Global styles
+│   ├── .storybook/                 # Storybook configuration
+│   ├── .github/workflows/          # CI/CD pipelines
+│   ├── Dockerfile                  # Frontend Docker image
+│   ├── package.json                # Frontend dependencies
+│   └── vite.config.ts             # Vite configuration
+├── requirements.txt                 # Python dependencies
+├── docker-compose.yml              # Multi-container orchestration
+├── .env.example                    # Environment variables template
+├── .gitignore                      # Git ignore rules
+└── README.md                       # This file
 ```
 
 ## Installation
@@ -116,6 +153,77 @@ The application will be available at `http://localhost:8000`
    ```bash
    docker-compose down
    ```
+
+## Frontend Setup
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Git
+
+### Local Development
+
+1. **Navigate to frontend directory**
+   ```bash
+   cd frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your settings
+   ```
+
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+The frontend will be available at `http://localhost:5173`
+
+### Frontend Development Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run tests
+npm run test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run linting
+npm run lint
+
+# Format code
+npm run format
+
+# Type checking
+npm run type-check
+```
+
+### Storybook
+
+Start Storybook to view component documentation:
+
+```bash
+npm run storybook
+```
+
+Storybook will be available at `http://localhost:6006`
 
 ## API Documentation
 

@@ -10,8 +10,8 @@ import sys
 # Add the project root to the path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.config import settings
-from app.database import Base
+from app.core.config import settings
+from app.core.database import Base
 from app.models import (
     Movie,
     MovieFile,

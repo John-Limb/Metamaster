@@ -10,14 +10,16 @@ import logging
 import time
 import uuid
 
-from app.config import settings
-from app.database import init_db
-from app.celery_app import celery_app
+from app.core.config import settings
+from app.core.database import init_db
+from app.tasks.celery_app import celery_app
 from app.api import health
 from app.api import movies
 from app.api import tv_shows
 from app.api import cache
 from app.api import tasks
+from app.api import files
+from app.api.v1.config import router as config_router
 
 # Configure logging with structured format
 logging.basicConfig(
@@ -69,18 +71,32 @@ async def log_requests(request: Request, call_next):
     request.state.request_id = request_id
 
     start_time = time.time()
-    logger.info(
-        f"[{request_id}] {request.method} {request.url.path} - "
-        f"Client: {request.client.host if request.client else 'unknown'}"
-    )
+    client_host = request.client.host if request.client else "unknown"
+    origin = request.headers.get("origin")
+    host_header = request.headers.get("host")
+    acr_method = request.headers.get("access-control-request-method")
+    acr_headers = request.headers.get("access-control-request-headers")
+
+    logger.info(f"[{request_id}] {request.method} {request.url.path} - " f"Client: {client_host}")
+
+    if request.method.upper() == "OPTIONS":
+        logger.info(
+            f"[{request_id}] Preflight details - Origin: {origin or 'unset'}, "
+            f"Host: {host_header or 'unset'}, "
+            f"Access-Control-Request-Method: {acr_method or 'unset'}, "
+            f"Access-Control-Request-Headers: {acr_headers or 'unset'}"
+        )
 
     try:
         response = await call_next(request)
         process_time = time.time() - start_time
-        logger.info(
+        log_message = (
             f"[{request_id}] {request.method} {request.url.path} - "
             f"Status: {response.status_code} - Duration: {process_time:.3f}s"
         )
+        if response.status_code >= 400 and origin:
+            log_message += f" - Origin: {origin}"
+        logger.info(log_message)
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Process-Time"] = str(process_time)
         return response
@@ -113,10 +129,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-# Add CORS middleware
+# Add CORS middleware with env-driven configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -125,16 +141,18 @@ app.add_middleware(
 # Add trusted host middleware
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*"],
+    allowed_hosts=settings.trusted_hosts,
 )
 
 
 # Include routers
 app.include_router(health.router, tags=["Health"])
-app.include_router(movies.router)
-app.include_router(tv_shows.router)
-app.include_router(cache.router)
-app.include_router(tasks.router, prefix="/api", tags=["tasks"])
+app.include_router(movies.router, prefix="/api/v1")
+app.include_router(tv_shows.router, prefix="/api/v1")
+app.include_router(cache.router, prefix="/api/v1")
+app.include_router(tasks.router, prefix="/api/v1", tags=["tasks"])
+app.include_router(config_router, prefix="/api/v1")
+app.include_router(files.router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Root"])

@@ -1,0 +1,203 @@
+import React, { useState, useRef, useEffect } from 'react'
+import { FaUser, FaCog, FaSignOutAlt, FaChevronDown, FaUserCircle } from 'react-icons/fa'
+
+interface UserMenuProps {
+  user: {
+    name: string
+    email: string
+    avatar?: string
+  }
+  onProfile: () => void
+  onSettings: () => void
+  onLogout: () => void
+}
+
+export const UserMenu: React.FC<UserMenuProps> = ({
+  user,
+  onProfile,
+  onSettings,
+  onLogout,
+}) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        !buttonRef.current?.contains(event.target as Node)
+      ) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+        buttonRef.current?.focus()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen])
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      action()
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        ref={buttonRef}
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 p-1.5 pr-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        aria-label="User menu"
+        aria-haspopup="true"
+        aria-expanded={isOpen}
+      >
+        {user.avatar ? (
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="w-8 h-8 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+            <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-300">
+              {getInitials(user.name)}
+            </span>
+          </div>
+        )}
+        <div className="hidden sm:block text-left">
+          <p className="text-sm font-medium text-gray-900 dark:text-white leading-none">
+            {user.name}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-[120px]">
+            {user.email}
+          </p>
+        </div>
+        <FaChevronDown
+          className={`hidden sm:block w-3 h-3 text-gray-400 transition-transform duration-150 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <div
+          ref={dropdownRef}
+          className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          role="menu"
+          aria-orientation="vertical"
+        >
+          {/* User Info Header */}
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
+            <div className="flex items-center gap-3">
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                  <span className="text-lg font-semibold text-indigo-600 dark:text-indigo-300">
+                    {getInitials(user.name)}
+                  </span>
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Menu Items */}
+          <div className="py-1">
+            <button
+              onClick={() => {
+                onProfile()
+                setIsOpen(false)
+              }}
+              onKeyDown={(e) => handleKeyDown(e, () => {
+                onProfile()
+                setIsOpen(false)
+              })}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+              role="menuitem"
+            >
+              <FaUser className="w-4 h-4 text-gray-400" />
+              <span>Profile</span>
+            </button>
+            <button
+              onClick={() => {
+                onSettings()
+                setIsOpen(false)
+              }}
+              onKeyDown={(e) => handleKeyDown(e, () => {
+                onSettings()
+                setIsOpen(false)
+              })}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+              role="menuitem"
+            >
+              <FaCog className="w-4 h-4 text-gray-400" />
+              <span>Settings</span>
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-200 dark:border-gray-700" />
+
+          {/* Logout */}
+          <div className="py-1">
+            <button
+              onClick={() => {
+                onLogout()
+                setIsOpen(false)
+              }}
+              onKeyDown={(e) => handleKeyDown(e, () => {
+                onLogout()
+                setIsOpen(false)
+              })}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150 focus:outline-none focus:bg-red-50 dark:focus:bg-red-900/20"
+              role="menuitem"
+            >
+              <FaSignOutAlt className="w-4 h-4" />
+              <span>Sign out</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default UserMenu
