@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { FaCog, FaPalette, FaBell, FaLock } from 'react-icons/fa'
+import { API_BASE_URL } from '@/utils/constants'
 
 interface SettingsSectionProps {
   icon: React.ReactNode
@@ -133,7 +134,7 @@ export const SettingsPage: React.FC = () => {
             </label>
             <input
               type="text"
-              defaultValue="http://localhost:8000/api/v1"
+              defaultValue={API_BASE_URL}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>

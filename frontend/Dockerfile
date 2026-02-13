@@ -3,9 +3,10 @@ FROM node:25.6.0-alpine AS builder
 
 WORKDIR /app
 
-# Set environment variables
+# Set environment variables (baked into the build by Vite)
 ENV VITE_APP_NAME=MetaMaster
 ENV VITE_APP_VERSION=1.0.0
+ENV VITE_API_BASE_URL=/api/v1
 
 # Install dependencies
 COPY package*.json ./

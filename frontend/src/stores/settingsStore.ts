@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { UserSettings, ApiSettings } from '@/types'
+import { API_BASE_URL } from '@/utils/constants'
 
 interface AuthState {
   token: string | null
@@ -88,7 +89,7 @@ const defaultUserSettings: UserSettings = {
 }
 
 const defaultApiSettings: ApiSettings = {
-  baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
+  baseUrl: API_BASE_URL,
   timeout: 30000,
   retryAttempts: 3,
   retryDelay: 1000,

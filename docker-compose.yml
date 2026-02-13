@@ -22,8 +22,8 @@ services:
     container_name: MetaMaster_frontend
     ports:
       - "80:80"
-    environment:
-      - VITE_API_BASE_URL=http://app:8000/api/v1
+    # Note: VITE_API_BASE_URL is baked at build time in the Dockerfile (=/api/v1),
+    # not at runtime. Nginx proxies /api/ to the backend.
     depends_on:
       app:
         condition: service_healthy

@@ -1,6 +1,8 @@
 // API Constants
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
 export const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '30000')
+export const MAX_RETRIES = parseInt(import.meta.env.VITE_MAX_RETRIES || '3')
+export const RETRY_DELAY = parseInt(import.meta.env.VITE_RETRY_DELAY || '1000')
 
 // File Constants
 export const MAX_FILE_SIZE = parseInt(import.meta.env.VITE_MAX_FILE_SIZE || '5368709120')

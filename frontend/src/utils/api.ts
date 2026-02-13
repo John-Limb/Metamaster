@@ -2,10 +2,7 @@ import axios, { AxiosError } from 'axios'
 import type { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios'
 import type { ApiError } from '@/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
-const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '30000')
-const MAX_RETRIES = parseInt(import.meta.env.VITE_MAX_RETRIES || '3')
-const RETRY_DELAY = parseInt(import.meta.env.VITE_RETRY_DELAY || '1000')
+import { API_BASE_URL, API_TIMEOUT, MAX_RETRIES, RETRY_DELAY } from '@/utils/constants'
 
 interface RetryConfig extends AxiosRequestConfig {
   retryCount?: number

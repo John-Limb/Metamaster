@@ -11,7 +11,7 @@ import time
 import uuid
 
 from app.core.config import settings
-from app.core.database import init_db
+from app.core.init_db import init_database
 from app.tasks.celery_app import celery_app
 from app.api import health
 from app.api import movies
@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan context manager"""
     # Startup
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
-    init_db()
+    init_database()
     logger.info("Database initialized")
 
     # Initialize Celery app
