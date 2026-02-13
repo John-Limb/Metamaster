@@ -43,6 +43,8 @@ type RegisterFormData = z.infer<typeof registerSchema>
 const PasswordStrengthIndicator: React.FC<{ password: string }> = ({
   password,
 }) => {
+  if (!password) return null
+
   const requirements = [
     { met: password.length >= 8, label: 'At least 8 characters' },
     { met: /[A-Z]/.test(password), label: 'One uppercase letter' },
@@ -55,8 +57,6 @@ const PasswordStrengthIndicator: React.FC<{ password: string }> = ({
 
   const strengthColors = ['bg-secondary-200', 'bg-danger', 'bg-warning', 'bg-info', 'bg-success']
   const strengthLabels = ['', 'Weak', 'Fair', 'Good', 'Strong']
-
-  if (!password) return null
 
   return (
     <div className="mt-2 space-y-2">

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Optional, Set
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent
-from app.core.config import settings
+from app.core.config import settings, MOVIE_DIR, TV_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +168,7 @@ class FileMonitorService:
             watch_paths: List of directory paths to monitor (defaults to settings.media_directories)
             watch_extensions: Optional list of extensions to watch
         """
-        self.watch_paths = watch_paths or [settings.movie_dir, settings.tv_dir]
+        self.watch_paths = watch_paths or [MOVIE_DIR, TV_DIR]
         self.watch_extensions = watch_extensions
         self.observers: List[Observer] = []
         self.file_queue: List[str] = []

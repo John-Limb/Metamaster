@@ -11,7 +11,7 @@ from typing import List, Optional, Tuple
 from sqlalchemy import and_, or_, func
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
+from app.core.config import settings, MEDIA_DIRECTORIES
 from app.domain.files.models import FileItem
 from app.domain.files.schemas import (
     FileItemCreate,
@@ -25,7 +25,7 @@ class FileService:
 
     def __init__(self, db: Session):
         self.db = db
-        self.media_dirs = settings.media_directories
+        self.media_dirs = MEDIA_DIRECTORIES
 
     def _normalize_path(self, path: str) -> str:
         """Normalize a path to be relative to media directories"""

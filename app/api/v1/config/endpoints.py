@@ -7,7 +7,7 @@ import os
 import logging
 from datetime import datetime
 
-from app.core.config import settings
+from app.core.config import settings, MOVIE_DIR, TV_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +31,23 @@ class ConfigurationState(BaseModel):
 
 
 def check_path_exists(path: str) -> bool:
-    """Check if a path exists and is accessible"""
+    """Check if a path exists, is a directory, and is readable"""
     if not path:
-        logger.warning(f"Path is empty or None")
+        logger.warning("Path is empty or None")
         return False
-    exists = os.path.exists(path) and os.path.isdir(path)
-    logger.info(f"Checking path '{path}': exists={exists}")
-    return exists
+    exists = os.path.exists(path)
+    is_dir = os.path.isdir(path) if exists else False
+    readable = os.access(path, os.R_OK) if exists else False
+    if exists and is_dir and readable:
+        try:
+            contents = os.listdir(path)
+            logger.info(f"Path '{path}': exists=True, readable=True, items={len(contents)}")
+        except PermissionError:
+            logger.warning(f"Path '{path}': exists=True, readable=False (PermissionError on listdir)")
+            return False
+    else:
+        logger.warning(f"Path '{path}': exists={exists}, is_dir={is_dir}, readable={readable}")
+    return exists and is_dir and readable
 
 
 @router.get("/check", response_model=ConfigurationState)
@@ -90,11 +100,11 @@ async def check_configuration():
     ))
     
     # Check File System Paths
-    movie_dir_exists = check_path_exists(settings.movie_dir)
-    tv_dir_exists = check_path_exists(settings.tv_dir)
+    movie_dir_exists = check_path_exists(MOVIE_DIR)
+    tv_dir_exists = check_path_exists(TV_DIR)
     paths_configured = movie_dir_exists or tv_dir_exists
-    
-    logger.info(f"File system paths check: movie_dir={settings.movie_dir} (exists={movie_dir_exists}), tv_dir={settings.tv_dir} (exists={tv_dir_exists})")
+
+    logger.info(f"File system paths check: movie_dir={MOVIE_DIR} (exists={movie_dir_exists}), tv_dir={TV_DIR} (exists={tv_dir_exists})")
     
     items.append(ConfigurationItem(
         id="file-system-paths",

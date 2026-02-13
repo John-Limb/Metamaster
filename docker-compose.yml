@@ -90,13 +90,13 @@ services:
       - DEBUG=False
       - LOG_LEVEL=INFO
       - ALLOWED_ORIGINS=http://localhost,http://localhost:5173,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:8000,http://app,http://app:8000,http://frontend,http://MetaMaster_frontend
-      - TRUSTED_HOSTS=localhost,127.0.0.1,localhost:8000,app,app:8000,frontend,MetaMaster_frontend
+      - TRUSTED_HOSTS=localhost,127.0.0.1,localhost:5173,localhost:8000,127.0.0.1:5173,127.0.0.1:8000,app,app:8000,frontend,MetaMaster_frontend
       # Internal API key for service-to-service communication
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
     volumes:
        - ./app:/app/app
-       - ${MOVIE_DIR}:/media/movies:ro
-       - ${TV_DIR}:/media/tv:ro
+       - ${HOST_MOVIE_DIR:-./_media/movies}:/media/movies:ro
+       - ${HOST_TV_DIR:-./_media/tv}:/media/tv:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -126,8 +126,8 @@ services:
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
     volumes:
       - ./app:/app/app
-      - ${MOVIE_DIR}:/media/movies
-      - ${TV_DIR}:/media/tv
+      - ${HOST_MOVIE_DIR:-./_media/movies}:/media/movies
+      - ${HOST_TV_DIR:-./_media/tv}:/media/tv
     depends_on:
       redis:
         condition: service_healthy
@@ -162,8 +162,8 @@ services:
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
     volumes:
       - ./app:/app/app
-      - ${MOVIE_DIR}:/media/movies
-      - ${TV_DIR}:/media/tv
+      - ${HOST_MOVIE_DIR:-./_media/movies}:/media/movies
+      - ${HOST_TV_DIR:-./_media/tv}:/media/tv
     depends_on:
       redis:
         condition: service_healthy

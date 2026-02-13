@@ -17,6 +17,13 @@ def _split_comma_separated(value: Any) -> Any:
 CommaSeparatedList = Annotated[Union[List[str], str], BeforeValidator(_split_comma_separated)]
 
 
+# Fixed container paths — not user-configurable
+# Host directories are bind-mounted to these paths via docker-compose
+MOVIE_DIR = "/media/movies"
+TV_DIR = "/media/tv"
+MEDIA_DIRECTORIES = [MOVIE_DIR, TV_DIR]
+
+
 class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
 
@@ -59,14 +66,6 @@ class Settings(BaseSettings):
     tvdb_rate_limit: int = 3  # requests per second (30/10)
     tvdb_cache_ttl: int = 2592000  # 30 days in seconds
 
-    # File Monitoring
-    movie_dir: str = "/media/movies"
-    tv_dir: str = "/media/tv"
-
-    @computed_field
-    def media_directories(self) -> List[str]:
-        """Returns a list of all media directories"""
-        return [self.movie_dir, self.tv_dir]
     watch_extensions: list = [
         ".mp4",
         ".mkv",
@@ -117,12 +116,15 @@ class Settings(BaseSettings):
     ]
     trusted_hosts: CommaSeparatedList = [
         "localhost",
+        "localhost:5173",
+        "localhost:8000",
         "127.0.0.1",
+        "127.0.0.1:5173",
+        "127.0.0.1:8000",
         "app",
+        "app:8000",
         "frontend",
         "MetaMaster_frontend",
-        "app:8000",
-        "localhost:8000",
     ]
 
     class Config:
