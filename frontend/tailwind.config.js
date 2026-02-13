@@ -37,16 +37,9 @@ export default {
         danger: '#ef4444',
         info: '#3b82f6',
       },
-      spacing: {
-        xs: '4px',
-        sm: '8px',
-        md: '12px',
-        lg: '16px',
-        xl: '24px',
-        '2xl': '32px',
-        '3xl': '48px',
-        '4xl': '64px',
-      },
+      /* Named spacing (xs, sm, md, lg, xl) removed to avoid colliding with
+         Tailwind v4's unified scale (breaks max-w-md, max-w-sm, etc.).
+         Use CSS variables --space-xs, --space-sm, etc. from design-tokens.css instead. */
       borderRadius: {
         sm: '4px',
         md: '8px',

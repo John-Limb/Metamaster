@@ -245,7 +245,7 @@ export const ChangePasswordForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-[38px] text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+                className="absolute right-3 top-[38px] min-h-0 min-w-0 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
                 aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
               >
                 {showCurrentPassword ? (
@@ -296,7 +296,7 @@ export const ChangePasswordForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-[38px] text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+                  className="absolute right-3 top-[38px] min-h-0 min-w-0 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
                   aria-label={showNewPassword ? 'Hide password' : 'Show password'}
                 >
                   {showNewPassword ? (
@@ -348,7 +348,7 @@ export const ChangePasswordForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-[38px] text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+                className="absolute right-3 top-[38px] min-h-0 min-w-0 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
                 aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
               >
                 {showConfirmPassword ? (

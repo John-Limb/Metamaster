@@ -1,40 +1,10 @@
 /* Global Styles */
 
-/* Typography */
+/* Typography - heading styles defined in index.css via @layer base */
 body {
   color: var(--color-text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-}
-
-h1 {
-  font-size: 2.25rem;
-  font-weight: bold;
-}
-
-h2 {
-  font-size: 1.875rem;
-  font-weight: bold;
-}
-
-h3 {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-h4 {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-h5 {
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
-h6 {
-  font-size: 1rem;
-  font-weight: 600;
 }
 
 /* Links */

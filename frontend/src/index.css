@@ -1,68 +1,93 @@
 @import './styles/design-tokens.css';
 @import './styles/animations.css';
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+  html,
+  body {
+    height: 100%;
+    font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-html,
-body {
-  height: 100%;
-  font-family: var(--font-family);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  #root {
+    height: 100%;
+  }
 
-#root {
-  height: 100%;
-}
+  /* Typography */
+  body {
+    font-size: var(--font-size-base);
+    line-height: var(--font-size-base-line-height);
+    color: var(--color-text);
+    background-color: var(--color-background);
+  }
 
-/* Typography */
-body {
-  font-size: var(--font-size-base);
-  line-height: var(--font-size-base-line-height);
-  color: var(--color-text);
-  background-color: var(--color-background);
-}
+  h1, .h1 {
+    font-size: var(--font-size-3xl);
+    line-height: var(--font-size-3xl-line-height);
+    font-weight: 700;
+  }
 
-h1, .h1 {
-  font-size: var(--font-size-3xl);
-  line-height: var(--font-size-3xl-line-height);
-  font-weight: 700;
-}
+  h2, .h2 {
+    font-size: var(--font-size-2xl);
+    line-height: var(--font-size-2xl-line-height);
+    font-weight: 700;
+  }
 
-h2, .h2 {
-  font-size: var(--font-size-2xl);
-  line-height: var(--font-size-2xl-line-height);
-  font-weight: 700;
-}
+  h3, .h3 {
+    font-size: var(--font-size-xl);
+    line-height: var(--font-size-xl-line-height);
+    font-weight: 600;
+  }
 
-h3, .h3 {
-  font-size: var(--font-size-xl);
-  line-height: var(--font-size-xl-line-height);
-  font-weight: 600;
-}
+  h4, .h4 {
+    font-size: var(--font-size-lg);
+    line-height: var(--font-size-lg-line-height);
+    font-weight: 600;
+  }
 
-h4, .h4 {
-  font-size: var(--font-size-lg);
-  line-height: var(--font-size-lg-line-height);
-  font-weight: 600;
-}
+  a {
+    color: var(--color-primary-600);
+    text-decoration: none;
+    transition: color var(--animate-fast) var(--ease-standard);
+  }
 
-a {
-  color: var(--color-primary-600);
-  text-decoration: none;
-  transition: color var(--animate-fast) var(--ease-standard);
-}
+  a:hover {
+    color: var(--color-primary-700);
+  }
 
-a:hover {
-  color: var(--color-primary-700);
+  /* Form Element Enhancements */
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  /* Touch Target Sizes (WCAG 2.1 AA - 44x44px minimum) */
+  button,
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Allow smaller touch targets for inline links */
+  a.inline-link {
+    min-height: auto;
+    min-width: auto;
+    text-decoration: underline;
+  }
 }
 
 /* ==========================================================================
@@ -190,35 +215,6 @@ textarea:focus-visible,
 }
 
 /* ==========================================================================
-   Form Element Enhancements
-   ========================================================================== */
-input,
-textarea,
-select {
-  font-family: inherit;
-  font-size: inherit;
-}
-
-/* ==========================================================================
-   Touch Target Sizes (WCAG 2.1 AA - 44x44px minimum)
-   ========================================================================== */
-button,
-[role="button"],
-input[type="checkbox"],
-input[type="radio"],
-a {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Allow smaller touch targets for inline links */
-a.inline-link {
-  min-height: auto;
-  min-width: auto;
-  text-decoration: underline;
-}
-
-/* ==========================================================================
    Reduced Motion
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
@@ -243,7 +239,7 @@ a.inline-link {
     --color-background: #ffffff;
     --color-border: #000000;
   }
-  
+
   .dark {
     --color-primary-500: #ffff00;
     --color-primary-600: #ffdd00;
@@ -261,7 +257,7 @@ a.inline-link {
   .no-print {
     display: none !important;
   }
-  
+
   body {
     background: white;
     color: black;
