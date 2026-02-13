@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   FaBars,
   FaSearch,
@@ -8,6 +8,7 @@ import {
   FaTimes,
 } from 'react-icons/fa'
 import { useTheme } from '@/context/ThemeContext'
+import { useAuth } from '@/context/AuthContext'
 import { useUIStore } from '@/stores/uiStore'
 import { NotificationDropdown, type Notification } from '../NotificationDropdown'
 import { UserMenu } from '../UserMenu'
@@ -24,6 +25,8 @@ interface SearchResult {
 
 export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const { theme, setTheme, resolvedTheme } = useTheme()
+  const { user, isAuthenticated, isLoading, logout } = useAuth()
+  const navigate = useNavigate()
   const toggleSidebar = useUIStore((state) => state.toggleSidebar)
 
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -35,9 +38,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
   // Notifications state - would be populated from API/notification service
   const [notifications, setNotifications] = useState<Notification[]>([])
-
-  // User state - would be populated from auth service
-  const user = null
 
   // Handle scroll for shadow
   const [isScrolled, setIsScrolled] = useState(false)
@@ -107,15 +107,16 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   }
 
   const handleProfile = () => {
-    console.log('Profile clicked')
+    navigate('/profile')
   }
 
   const handleSettings = () => {
-    console.log('Settings clicked')
+    navigate('/settings')
   }
 
-  const handleLogout = () => {
-    console.log('Logout clicked')
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login')
   }
 
   // Keyboard navigation for search

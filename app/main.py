@@ -20,6 +20,7 @@ from app.api import cache
 from app.api import tasks
 from app.api import files
 from app.api.v1.config import router as config_router
+from app.api.v1.auth import router as auth_router
 
 # Configure logging with structured format
 logging.basicConfig(
@@ -153,6 +154,7 @@ app.include_router(cache.router, prefix="/api/v1")
 app.include_router(tasks.router, prefix="/api/v1", tags=["tasks"])
 app.include_router(config_router, prefix="/api/v1")
 app.include_router(files.router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Root"])

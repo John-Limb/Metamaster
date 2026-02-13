@@ -1,10 +1,16 @@
 import { Suspense, lazy, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { LoadingSpinner } from './components/common'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 // Lazy load route components for code splitting
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard').then(m => ({ default: m.Dashboard })))
 const NotFound = lazy(() => import('./components/common/NotFound'))
+
+// Auth pages
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/RegisterPage'))
+const ChangePasswordPage = lazy(() => import('./pages/ChangePasswordPage'))
 
 // Feature modules (to be implemented)
 const MoviesModule = lazy(() => import('./components/features/movies/MoviesModule'))
@@ -46,32 +52,66 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Main Layout Route */}
+        {/* Public Auth Routes */}
         <Route
-          path="/"
+          path="/login"
           element={
             <RouteErrorBoundary>
-              <Dashboard />
+              <LoginPage />
+            </RouteErrorBoundary>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <RouteErrorBoundary>
+              <RegisterPage />
             </RouteErrorBoundary>
           }
         />
 
-        {/* Feature Routes with Lazy Loading */}
+        {/* Protected Route for Password Change */}
+        <Route
+          path="/change-password"
+          element={
+            <ProtectedRoute requirePasswordChange>
+              <ChangePasswordPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Main Layout Route */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <RouteErrorBoundary>
+                <Dashboard />
+              </RouteErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Feature Routes with Lazy Loading */}
         <Route
           path="/movies/*"
           element={
-            <RouteErrorBoundary>
-              <MoviesModule />
-            </RouteErrorBoundary>
+            <ProtectedRoute>
+              <RouteErrorBoundary>
+                <MoviesModule />
+              </RouteErrorBoundary>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/tv-shows/*"
           element={
-            <RouteErrorBoundary>
-              <TvShowsModule />
-            </RouteErrorBoundary>
+            <ProtectedRoute>
+              <RouteErrorBoundary>
+                <TvShowsModule />
+              </RouteErrorBoundary>
+            </ProtectedRoute>
           }
         />
 

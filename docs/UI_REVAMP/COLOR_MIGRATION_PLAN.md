@@ -498,32 +498,32 @@ The following colors found in the codebase do not have a direct equivalent in th
 ## Implementation Checklist
 
 ### Pre-Migration
-- [ ] Create backup branch
-- [ ] Run visual regression baseline
-- [ ] Document current color usage with screenshots
+- [x] Create backup branch
+- [x] Run visual regression baseline
+- [x] Document current color usage with screenshots
 
 ### Migration
-- [ ] Consolidate CSS variable files
-- [ ] Update `index.css` root variables
-- [ ] Update `globals.css`
-- [ ] Update `App.css`
-- [ ] Update `MovieCard.css`
-- [ ] Update `TVShowCard.css`
-- [ ] Update `FilterPanel.css`
-- [ ] Update `SortDropdown.css`
-- [ ] Update `MoviesPage.css`
-- [ ] Update `TVShowsPage.css`
-- [ ] Update `MovieDetailPage.css`
-- [ ] Update `TVShowDetailPage.css`
-- [ ] Update `StorageChart.tsx` constants
-- [ ] Update Storybook stories
+- [x] Consolidate CSS variable files
+- [x] Update `index.css` root variables
+- [x] Update `globals.css`
+- [x] Update `App.css`
+- [x] Update `MovieCard.css`
+- [x] Update `TVShowCard.css`
+- [x] Update `FilterPanel.css`
+- [x] Update `SortDropdown.css`
+- [x] Update `MoviesPage.css`
+- [x] Update `TVShowsPage.css`
+- [x] Update `MovieDetailPage.css`
+- [x] Update `TVShowDetailPage.css`
+- [x] Update `StorageChart.tsx` constants
+- [x] Update Storybook stories
 
 ### Post-Migration
-- [ ] Run visual regression tests
-- [ ] Test light/dark mode toggle
-- [ ] Verify accessibility (contrast ratios)
-- [ ] Cross-browser testing
-- [ ] Update documentation
+- [x] Run visual regression tests
+- [x] Test light/dark mode toggle
+- [x] Verify accessibility (contrast ratios)
+- [x] Cross-browser testing
+- [x] Update documentation
 
 ---
 

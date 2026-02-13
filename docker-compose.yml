@@ -1,7 +1,20 @@
 version: '3.8'
 
+# =============================================================================
+# Docker Network Security Configuration
+# =============================================================================
+# This configuration implements a secure network architecture where:
+# - Frontend is the only service exposed externally (port 80)
+# - Backend API, PostgreSQL, and Redis are on an internal network
+# - No direct external access to backend services
+# 
+# For development with debug ports exposed, use:
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+# =============================================================================
+
 services:
   # Frontend React application
+  # Only service exposed externally - serves as reverse proxy for API
   frontend:
     build:
       context: ./frontend
@@ -20,20 +33,27 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    # Frontend only needs access to the app service via internal network
+    networks:
+      - public
+      - internal
 
   # Redis cache
+  # Internal only - no external access
   redis:
     image: redis:7-alpine
     container_name: MetaMaster_redis
-    ports:
-      - "6379:6379"
+    # No ports exposed - internal network only
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
 
   # PostgreSQL database
+  # Internal only - no external access
   postgres:
     image: postgres:15-alpine
     container_name: MetaMaster_postgres
@@ -43,20 +63,22 @@ services:
       POSTGRES_DB: metamaster
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # No ports exposed - internal network only
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U metamaster"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
 
   # FastAPI application
+  # Internal only - accessed via frontend nginx reverse proxy
   app:
     build: .
     container_name: MetaMaster_app
-    ports:
-      - "8000:8000"
+    # No ports exposed - internal network only
+    # Access via frontend nginx reverse proxy at /api/
     env_file:
       - .env
     environment:
@@ -65,10 +87,12 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - DEBUG=True
+      - DEBUG=False
       - LOG_LEVEL=INFO
       - ALLOWED_ORIGINS=http://localhost,http://localhost:5173,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:8000,http://app,http://app:8000,http://frontend,http://MetaMaster_frontend
       - TRUSTED_HOSTS=localhost,127.0.0.1,localhost:8000,app,app:8000,frontend,MetaMaster_frontend
+      # Internal API key for service-to-service communication
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
     volumes:
        - ./app:/app/app
        - ${MOVIE_DIR}:/media/movies:ro
@@ -76,15 +100,18 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
+    networks:
+      - internal
 
   # Celery worker for background task processing
+  # Internal only - processes async tasks
   celery_worker:
     build: .
     container_name: MetaMaster_celery_worker
@@ -93,8 +120,10 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - DEBUG=True
+      - DEBUG=False
       - LOG_LEVEL=INFO
+      # Internal API key for service-to-service communication
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
     volumes:
       - ./app:/app/app
       - ${MOVIE_DIR}:/media/movies
@@ -114,8 +143,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    networks:
+      - internal
 
   # Celery beat scheduler for periodic tasks
+  # Internal only - schedules periodic tasks
   celery_beat:
     build: .
     container_name: MetaMaster_celery_beat
@@ -124,8 +156,10 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - DEBUG=True
+      - DEBUG=False
       - LOG_LEVEL=INFO
+      # Internal API key for service-to-service communication
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
     volumes:
       - ./app:/app/app
       - ${MOVIE_DIR}:/media/movies
@@ -143,10 +177,25 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    networks:
+      - internal
 
+# =============================================================================
+# Network Configuration
+# =============================================================================
+# public: External access for frontend only (port 80)
+# internal: Private network for backend services (no external access)
+# =============================================================================
 networks:
-  default:
-    name: MetaMaster_network
+  public:
+    name: MetaMaster_public
+    driver: bridge
+    # Public network for externally accessible services
+  internal:
+    name: MetaMaster_internal
+    driver: bridge
+    # Internal network for backend services
+    # No external routing - services can only communicate with each other
 
 
 volumes:

@@ -1,0 +1,74 @@
+version: '3.8'
+
+# =============================================================================
+# Docker Development Override Configuration
+# =============================================================================
+# This file overrides the production docker-compose.yml for development.
+# It exposes debug ports for local development and debugging.
+#
+# Usage:
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# Exposed Development Ports:
+#   - Frontend: 5173 (Vite dev server with HMR)
+#   - Backend:  8000 (FastAPI with auto-reload)
+#   - Postgres: 5432 (Direct database access)
+#   - Redis:    6379 (Redis CLI access)
+#
+# Security Note: NEVER use this configuration in production!
+# =============================================================================
+
+services:
+  # Frontend development overrides
+  # Exposes Vite dev server for Hot Module Replacement (HMR)
+  frontend:
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api/v1
+      - DEBUG=True
+    # Enable volume mounting for live reload in development
+    volumes:
+      - ./frontend/src:/var/www/html/src:ro
+
+  # Backend API development overrides
+  # Exposes FastAPI port for direct API access and Swagger docs
+  app:
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - LOG_LEVEL=DEBUG
+    # Override command to enable auto-reload during development
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # Development volumes for hot reload
+    volumes:
+      - ./app:/app/app
+
+  # PostgreSQL development overrides
+  # Exposes port for direct database access with tools like pgAdmin or DBeaver
+  postgres:
+    ports:
+      - "5432:5432"
+
+  # Redis development overrides
+  # Exposes port for direct access with Redis CLI or Redis Insight
+  redis:
+    ports:
+      - "6379:6379"
+
+  # Celery worker development overrides
+  celery_worker:
+    environment:
+      - DEBUG=True
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./app:/app/app
+
+  # Celery beat development overrides
+  celery_beat:
+    environment:
+      - DEBUG=True
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./app:/app/app

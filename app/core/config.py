@@ -1,9 +1,10 @@
 """Application configuration settings"""
 
 import os
+import secrets
 from typing import Annotated, Any, List, Optional, Union
 
-from pydantic import BeforeValidator, computed_field
+from pydantic import BeforeValidator, computed_field, Field
 from pydantic_settings import BaseSettings
 
 
@@ -92,6 +93,15 @@ class Settings(BaseSettings):
 
     # Logging
     log_level: str = "INFO"
+
+    # JWT Configuration - auto-generated on startup (no env override)
+    jwt_secret_key: str = Field(default_factory=lambda: secrets.token_urlsafe(32), env=None)
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 7
+
+    # Internal API Key - auto-generated on startup (no env override)
+    internal_api_key: str = Field(default_factory=lambda: secrets.token_urlsafe(32), env=None)
 
     # Security / Networking
     allowed_origins: CommaSeparatedList = [

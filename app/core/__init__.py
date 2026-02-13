@@ -19,6 +19,13 @@ from app.core.logging_config import (
     log_task_execution,
     log_error,
 )
+from app.core.init_db import (
+    init_database,
+    drop_database,
+    reset_database,
+    create_admin_user,
+    generate_random_password,
+)
 
 __all__ = [
     # Config
@@ -40,4 +47,10 @@ __all__ = [
     "log_cache_operation",
     "log_task_execution",
     "log_error",
+    # Database initialization
+    "init_database",
+    "drop_database",
+    "reset_database",
+    "create_admin_user",
+    "generate_random_password",
 ]

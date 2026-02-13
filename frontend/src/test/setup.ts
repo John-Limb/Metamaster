@@ -10,7 +10,7 @@ afterEach(() => {
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -33,7 +33,7 @@ class MockIntersectionObserver {
   unobserve() {}
 }
 
-window.IntersectionObserver = MockIntersectionObserver as any
+window.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver
 
 // Mock localStorage
 const localStorageMock = (() => {

@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { FaUser, FaCog, FaSignOutAlt, FaChevronDown, FaUserCircle } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import { FaUser, FaCog, FaSignOutAlt, FaChevronDown, FaUserCircle, FaSignInAlt, FaUserPlus } from 'react-icons/fa'
+import { useAuth } from '@/context/AuthContext'
+import type { User } from '@/types/auth'
 
 interface UserMenuProps {
-  user: {
-    name: string
-    email: string
-    avatar?: string
-  }
+  user: User | null
   onProfile: () => void
   onSettings: () => void
   onLogout: () => void
@@ -18,6 +17,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   onSettings,
   onLogout,
 }) => {
+  const { isAuthenticated, isLoading } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -67,6 +67,38 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     }
   }
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+      </div>
+    )
+  }
+
+  // Show login/register buttons when not authenticated
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="flex items-center gap-2">
+        <Link
+          to="/login"
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <FaSignInAlt className="w-4 h-4" />
+          <span className="hidden sm:inline">Sign in</span>
+        </Link>
+        <Link
+          to="/register"
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <FaUserPlus className="w-4 h-4" />
+          <span className="hidden sm:inline">Sign up</span>
+        </Link>
+      </div>
+    )
+  }
+
+  // Show user menu when authenticated
   return (
     <div className="relative">
       <button
@@ -77,22 +109,22 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         aria-haspopup="true"
         aria-expanded={isOpen}
       >
-        {user.avatar ? (
+        {user.avatar_url ? (
           <img
-            src={user.avatar}
-            alt={user.name}
+            src={user.avatar_url}
+            alt={user.username}
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
           <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
             <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-300">
-              {getInitials(user.name)}
+              {getInitials(user.username)}
             </span>
           </div>
         )}
         <div className="hidden sm:block text-left">
           <p className="text-sm font-medium text-gray-900 dark:text-white leading-none">
-            {user.name}
+            {user.username}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-[120px]">
             {user.email}
@@ -115,22 +147,22 @@ export const UserMenu: React.FC<UserMenuProps> = ({
           {/* User Info Header */}
           <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
             <div className="flex items-center gap-3">
-              {user.avatar ? (
+              {user.avatar_url ? (
                 <img
-                  src={user.avatar}
-                  alt={user.name}
+                  src={user.avatar_url}
+                  alt={user.username}
                   className="w-10 h-10 rounded-full object-cover"
                 />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
                   <span className="text-lg font-semibold text-indigo-600 dark:text-indigo-300">
-                    {getInitials(user.name)}
+                    {getInitials(user.username)}
                   </span>
                 </div>
               )}
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                  {user.name}
+                  {user.username}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                   {user.email}
