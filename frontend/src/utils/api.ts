@@ -6,11 +6,14 @@ import { API_BASE_URL, API_TIMEOUT, MAX_RETRIES, RETRY_DELAY } from '@/utils/con
 
 interface RetryConfig extends AxiosRequestConfig {
   retryCount?: number
+  _retry?: boolean
 }
 
 class ApiClient {
   private client: AxiosInstance
   private retryCount: Map<string, number> = new Map()
+  private isRefreshing = false
+  private refreshSubscribers: Array<(token: string) => void> = []
 
   constructor() {
     this.client = axios.create({
@@ -22,6 +25,38 @@ class ApiClient {
     })
 
     this.setupInterceptors()
+  }
+
+  private onTokenRefreshed(token: string): void {
+    this.refreshSubscribers.forEach((callback) => callback(token))
+    this.refreshSubscribers = []
+  }
+
+  private addRefreshSubscriber(callback: (token: string) => void): void {
+    this.refreshSubscribers.push(callback)
+  }
+
+  private async attemptTokenRefresh(): Promise<string | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = await response.json()
+      if (data.access_token) {
+        localStorage.setItem('authToken', data.access_token)
+        return data.access_token
+      }
+      return null
+    } catch {
+      return null
+    }
   }
 
   private setupInterceptors(): void {
@@ -53,9 +88,37 @@ class ApiClient {
         const config = error.config as RetryConfig
         const requestId = config?.headers?.['X-Request-ID'] as string
 
-        // Handle 401 Unauthorized
-        if (error.response?.status === 401) {
+        // Handle 401 Unauthorized - attempt token refresh before redirecting
+        if (error.response?.status === 401 && config && !config._retry) {
+          if (this.isRefreshing) {
+            // Another request is already refreshing, queue this one
+            return new Promise((resolve) => {
+              this.addRefreshSubscriber((newToken: string) => {
+                config.headers = config.headers || {}
+                config.headers.Authorization = `Bearer ${newToken}`
+                resolve(this.client(config))
+              })
+            })
+          }
+
+          config._retry = true
+          this.isRefreshing = true
+
+          const newToken = await this.attemptTokenRefresh()
+
+          if (newToken) {
+            this.isRefreshing = false
+            this.onTokenRefreshed(newToken)
+            config.headers = config.headers || {}
+            config.headers.Authorization = `Bearer ${newToken}`
+            return this.client(config)
+          }
+
+          // Refresh failed - clear auth and redirect
+          this.isRefreshing = false
+          this.refreshSubscribers = []
           localStorage.removeItem('authToken')
+          localStorage.removeItem('tokenExpiry')
           window.location.href = '/login'
           return Promise.reject(this.handleError(error))
         }

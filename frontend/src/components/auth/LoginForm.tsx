@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { TextInput } from '@/components/common/TextInput'
 import { Button } from '@/components/common/Button'
@@ -29,7 +29,8 @@ type LoginFormData = z.infer<typeof loginSchema>
  */
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate()
-  const { login, error, isLoading, clearError, requiresPasswordChange } = useAuth()
+  const location = useLocation()
+  const { login, error, isLoading, clearError } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
 
   const {
@@ -47,12 +48,14 @@ export const LoginForm: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       clearError()
-      await login(data)
+      const result = await login(data)
       // Redirect based on password change requirement
-      if (requiresPasswordChange) {
+      if (result.requiresPasswordChange) {
         navigate('/change-password', { replace: true })
       } else {
-        navigate('/', { replace: true })
+        // Redirect to the page the user was trying to access, or home
+        const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/'
+        navigate(from, { replace: true })
       }
     } catch {
       // Error is handled by auth context

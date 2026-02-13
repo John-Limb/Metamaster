@@ -43,8 +43,8 @@ interface AuthContextType {
   error: string | null
   /** Flag indicating user must change password before proceeding */
   requiresPasswordChange: boolean
-  /** Login with username and password */
-  login: (credentials: LoginCredentials) => Promise<void>
+  /** Login with username and password, returns whether password change is required */
+  login: (credentials: LoginCredentials) => Promise<{ requiresPasswordChange: boolean }>
   /** Register a new user account */
   register: (data: RegisterData) => Promise<void>
   /** Logout the current user */
@@ -120,7 +120,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const now = Date.now()
     const timeUntilExpiry = expiry - now
 
-    return timeUntilExpiry > 0 && timeUntilExpiry < REFRESH_THRESHOLD
+    return timeUntilExpiry > 0 && timeUntilExpiry <= REFRESH_THRESHOLD
   }, [])
 
   /**
@@ -200,27 +200,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Login with credentials
    */
-  const login = useCallback(async (credentials: LoginCredentials): Promise<void> => {
+  const login = useCallback(async (credentials: LoginCredentials): Promise<{ requiresPasswordChange: boolean }> => {
     setIsLoading(true)
     setError(null)
     setRequiresPasswordChange(false)
 
     try {
       const response = await authService.login(credentials)
-      
+
       // Store token and expiry
       storeToken(response.access_token, response.expires_in)
-      
+
       // Set user data
       setUser(response.user)
-      
+
       // Check if password change is required
-      if (response.requires_password_change) {
+      const needsPasswordChange = response.requires_password_change ?? false
+      if (needsPasswordChange) {
         setRequiresPasswordChange(true)
       }
-      
+
       // Set up token refresh interval
       setupRefreshInterval()
+
+      return { requiresPasswordChange: needsPasswordChange }
     } catch (err) {
       if (err instanceof AuthApiError) {
         setError(err.message)

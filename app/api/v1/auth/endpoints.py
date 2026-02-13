@@ -228,8 +228,8 @@ async def login(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=True,
-        samesite="strict",
+        secure=not settings.debug,
+        samesite="lax",
         max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
     )
 
@@ -361,8 +361,13 @@ async def logout(
         token_hash = hash_token(refresh_token)
         auth_service.revoke_refresh_token(token_hash)
 
-    # Clear the cookie
-    response.delete_cookie(key="refresh_token")
+    # Clear the cookie (attributes must match set_cookie for browser to delete it)
+    response.delete_cookie(
+        key="refresh_token",
+        httponly=True,
+        secure=not settings.debug,
+        samesite="lax",
+    )
 
     return MessageResponse(message="Successfully logged out")
 
