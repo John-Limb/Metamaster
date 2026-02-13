@@ -31,9 +31,9 @@ Display incomplete configurations and required setup steps at the top of the UI,
 ### Configuration Items to Track
 
 #### Critical (Error)
-- [ ] API Key configured
-- [ ] Database connection established
-- [ ] File system paths configured
+- [ ] API Key configured - Explain to user how to add to docker env file
+- [ ] Database connection established - Explain to user how to add to docker env file
+- [ ] File system paths configured - Explain to user how to add to docker env file
 
 #### Important (Warning)
 - [ ] File monitoring enabled

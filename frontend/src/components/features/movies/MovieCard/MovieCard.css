@@ -6,7 +6,7 @@
 }
 
 .movie-card:hover {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-xl);
 }
 
 .movie-card:hover {
@@ -17,11 +17,11 @@
   position: relative;
   aspect-ratio: 2/3;
   overflow: hidden;
-  background-color: #f1f5f9;
+  background-color: var(--color-secondary-100);
 }
 
 .dark .movie-card__poster-wrapper {
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 .movie-card__poster {
@@ -41,11 +41,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--color-secondary-400);
 }
 
 .dark .movie-card__poster-placeholder {
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .movie-card__rating {
@@ -62,12 +62,12 @@
 }
 
 .movie-card__rating-stars {
-  color: #fbbf24;
+  color: var(--color-warning);
   font-size: 12px;
 }
 
 .movie-card__rating-value {
-  color: #fff;
+  color: var(--color-surface);
   font-size: 12px;
   font-weight: 500;
 }
@@ -107,14 +107,14 @@
 .movie-card__title {
   font-size: 18px;
   font-weight: 600;
-  color: #18181b;
+  color: var(--color-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .dark .movie-card__title {
-  color: #f3f4f6;
+  color: var(--color-text);
 }
 
 .movie-card__meta {
@@ -125,11 +125,11 @@
 
 .movie-card__year {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .dark .movie-card__year {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .movie-card__genres {

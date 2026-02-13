@@ -80,7 +80,7 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
             id="theme"
             value={userSettings.theme}
             onChange={(e) => handleThemeChange(e.target.value as 'light' | 'dark' | 'auto')}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>
@@ -100,7 +100,7 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
             id="itemsPerPage"
             value={userSettings.itemsPerPage}
             onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
             <option value={10}>10</option>
             <option value={20}>20</option>
@@ -122,8 +122,8 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
           <button
             id="autoRefresh"
             onClick={() => handleAutoRefreshChange(!userSettings.autoRefresh)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              userSettings.autoRefresh ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              userSettings.autoRefresh ? 'bg-primary-600' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={userSettings.autoRefresh}
@@ -152,7 +152,7 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
               onChange={(e) => handleAutoRefreshIntervalChange(Number(e.target.value) * 1000)}
               min={5}
               max={300}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
         )}
@@ -170,8 +170,8 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
           <button
             id="notifications"
             onClick={() => handleNotificationsChange(!userSettings.notifications)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              userSettings.notifications ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              userSettings.notifications ? 'bg-primary-600' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={userSettings.notifications}
@@ -197,8 +197,8 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
           <button
             id="soundEnabled"
             onClick={() => handleSoundEnabledChange(!userSettings.soundEnabled)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              userSettings.soundEnabled ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              userSettings.soundEnabled ? 'bg-primary-600' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={userSettings.soundEnabled}

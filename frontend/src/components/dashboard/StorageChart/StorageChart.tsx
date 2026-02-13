@@ -15,18 +15,20 @@ export interface StorageChartProps {
   showLegend?: boolean
 }
 
+// Design system aligned colors - matches CSS variables in design-tokens.css
+// Note: CSS variables cannot be used directly in SVG stroke/fill without getComputedStyle()
 const STORAGE_COLORS = {
-  movies: '#6366f1', // indigo-500
-  tv: '#8b5cf6', // violet-500
-  other: '#64748b', // slate-500
+  movies: '#6366f1', // var(--color-primary-500) - indigo
+  tv: '#8b5cf6', // violet-500 (accent color, not in design system)
+  other: '#64748b', // var(--color-secondary-500) - slate
 }
 
 const DEFAULT_COLORS = [
-  '#6366f1', // indigo
-  '#8b5cf6', // violet
-  '#06b6d4', // cyan
-  '#10b981', // emerald
-  '#f59e0b', // amber
+  '#6366f1', // var(--color-primary-500) - indigo
+  '#8b5cf6', // violet-500 (accent color)
+  '#06b6d4', // cyan-500 (accent color, similar to info)
+  '#10b981', // var(--color-success) - emerald
+  '#f59e0b', // var(--color-warning) - amber
 ]
 
 export function StorageChart({

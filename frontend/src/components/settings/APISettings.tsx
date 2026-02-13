@@ -106,13 +106,13 @@ export function APISettings({ className = '' }: APISettingsProps) {
               id="baseUrl"
               value={apiSettings.baseUrl}
               onChange={(e) => handleBaseUrlChange(e.target.value)}
-              className="block flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
               placeholder="https://api.example.com"
             />
             <button
               onClick={handleTestConnection}
               disabled={testStatus === 'testing'}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 flex items-center gap-2"
             >
               {getTestStatusIcon()}
               Test
@@ -136,7 +136,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
             min={1000}
             max={60000}
             step={1000}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           />
         </div>
 
@@ -155,7 +155,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
             onChange={(e) => handleRetryAttemptsChange(Number(e.target.value))}
             min={0}
             max={10}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           />
         </div>
 
@@ -175,7 +175,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
             min={100}
             max={10000}
             step={100}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           />
         </div>
 

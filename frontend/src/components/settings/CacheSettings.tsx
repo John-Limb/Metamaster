@@ -86,8 +86,8 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
           <button
             id="enableApiCache"
             onClick={() => handleCacheSettingChange('enableApiCache', !cacheSettings.enableApiCache)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              cacheSettings.enableApiCache ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              cacheSettings.enableApiCache ? 'bg-primary-600' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={cacheSettings.enableApiCache}
@@ -116,7 +116,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
               onChange={(e) => handleCacheSettingChange('apiCacheMaxAge', Number(e.target.value))}
               min={60}
               max={3600}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
         )}
@@ -134,8 +134,8 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
           <button
             id="enableImageCache"
             onClick={() => handleCacheSettingChange('enableImageCache', !cacheSettings.enableImageCache)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              cacheSettings.enableImageCache ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              cacheSettings.enableImageCache ? 'bg-primary-600' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={cacheSettings.enableImageCache}
@@ -164,7 +164,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
               onChange={(e) => handleCacheSettingChange('imageCacheMaxAge', Number(e.target.value))}
               min={3600}
               max={604800}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
         )}
@@ -184,7 +184,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
             onChange={(e) => handleCacheSettingChange('maxCacheSize', Number(e.target.value))}
             min={10}
             max={1000}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           />
         </div>
 

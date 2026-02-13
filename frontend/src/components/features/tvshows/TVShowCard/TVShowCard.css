@@ -6,7 +6,7 @@
 }
 
 .tvshow-card:hover {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-xl);
 }
 
 .tvshow-card:hover {
@@ -17,11 +17,11 @@
   position: relative;
   aspect-ratio: 2/3;
   overflow: hidden;
-  background-color: #f1f5f9;
+  background-color: var(--color-secondary-100);
 }
 
 .dark .tvshow-card__poster-wrapper {
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 .tvshow-card__poster {
@@ -41,11 +41,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--color-secondary-400);
 }
 
 .dark .tvshow-card__poster-placeholder {
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .tvshow-card__rating {
@@ -62,12 +62,12 @@
 }
 
 .tvshow-card__rating-stars {
-  color: #fbbf24;
+  color: var(--color-warning);
   font-size: 12px;
 }
 
 .tvshow-card__rating-value {
-  color: #fff;
+  color: var(--color-surface);
   font-size: 12px;
   font-weight: 500;
 }
@@ -94,12 +94,12 @@
 }
 
 .tvshow-card__next-episode-label {
-  color: #fff;
+  color: var(--color-surface);
   font-weight: 500;
 }
 
 .tvshow-card__next-episode-date {
-  color: #d1d5db;
+  color: var(--color-secondary-300);
   margin-left: 8px;
 }
 
@@ -132,14 +132,14 @@
 .tvshow-card__title {
   font-size: 18px;
   font-weight: 600;
-  color: #18181b;
+  color: var(--color-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .dark .tvshow-card__title {
-  color: #f3f4f6;
+  color: var(--color-text);
 }
 
 .tvshow-card__meta {
@@ -150,11 +150,11 @@
 
 .tvshow-card__episodes {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .dark .tvshow-card__episodes {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .tvshow-card__genres {

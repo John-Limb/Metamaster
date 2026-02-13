@@ -13,13 +13,13 @@
 
 .tvshow-detail-page__skeleton-backdrop {
   height: 320px;
-  background-color: #e2e8f0;
+  background-color: var(--color-secondary-200);
   border-radius: 8px;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .dark .tvshow-detail-page__skeleton-backdrop {
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 .tvshow-detail-page__skeleton-content {
@@ -33,37 +33,37 @@
 .tvshow-detail-page__skeleton-title {
   height: 40px;
   width: 75%;
-  background-color: #e2e8f0;
+  background-color: var(--color-secondary-200);
   border-radius: 8px;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .dark .tvshow-detail-page__skeleton-title {
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 .tvshow-detail-page__skeleton-meta {
   height: 24px;
   width: 50%;
-  background-color: #e2e8f0;
+  background-color: var(--color-secondary-200);
   border-radius: 8px;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .dark .tvshow-detail-page__skeleton-meta {
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 .tvshow-detail-page__skeleton-overview {
   height: 96px;
   width: 100%;
-  background-color: #e2e8f0;
+  background-color: var(--color-secondary-200);
   border-radius: 8px;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .dark .tvshow-detail-page__skeleton-overview {
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 @keyframes pulse {
@@ -86,13 +86,13 @@
 .tvshow-detail-page__backdrop-placeholder {
   width: 100%;
   height: 100%;
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 .tvshow-detail-page__hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, #0f172a, rgba(15, 23, 42, 0.5), transparent);
+  background: linear-gradient(to top, var(--color-secondary-900), rgba(15, 23, 42, 0.5), transparent);
 }
 
 .tvshow-detail-page__content {
@@ -134,18 +134,18 @@
 .tvshow-detail-page__poster {
   width: 100%;
   border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-xl);
 }
 
 .tvshow-detail-page__poster-placeholder {
   width: 100%;
   aspect-ratio: 2/3;
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .tvshow-detail-page__info {
@@ -155,7 +155,7 @@
 .tvshow-detail-page__title {
   font-size: 36px;
   font-weight: 700;
-  color: #f3f4f6;
+  color: var(--color-text);
   margin-bottom: 16px;
 }
 
@@ -168,12 +168,12 @@
 }
 
 .tvshow-detail-page__network {
-  color: #d1d5db;
+  color: var(--color-secondary-300);
   font-weight: 500;
 }
 
 .tvshow-detail-page__premiere {
-  color: #d1d5db;
+  color: var(--color-secondary-300);
 }
 
 .tvshow-detail-page__rating {
@@ -184,12 +184,12 @@
 }
 
 .tvshow-detail-page__rating-stars {
-  color: #fbbf24;
+  color: var(--color-warning);
   font-size: 18px;
 }
 
 .tvshow-detail-page__rating-value {
-  color: #d1d5db;
+  color: var(--color-secondary-300);
   font-weight: 500;
 }
 
@@ -201,7 +201,7 @@
 }
 
 .tvshow-detail-page__overview {
-  color: #d1d5db;
+  color: var(--color-text);
   line-height: 1.625;
   margin-bottom: 24px;
 }
@@ -220,7 +220,7 @@
 .tvshow-detail-page__section-title {
   font-size: 24px;
   font-weight: 700;
-  color: #f3f4f6;
+  color: var(--color-text);
   margin-bottom: 24px;
 }
 
@@ -244,11 +244,11 @@
 }
 
 .tvshow-detail-page__season-header:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-secondary-100);
 }
 
 .dark .tvshow-detail-page__season-header:hover {
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 .tvshow-detail-page__season-info {
@@ -259,24 +259,24 @@
 
 .tvshow-detail-page__season-title {
   font-weight: 600;
-  color: #18181b;
+  color: var(--color-text);
 }
 
 .dark .tvshow-detail-page__season-title {
-  color: #f3f4f6;
+  color: var(--color-text);
 }
 
 .tvshow-detail-page__season-meta {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .dark .tvshow-detail-page__season-meta {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .tvshow-detail-page__season-arrow {
-  color: #6b7280;
+  color: var(--color-text-muted);
   transition: transform 200ms;
 }
 
@@ -291,11 +291,11 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--color-border);
 }
 
 .dark .tvshow-detail-page__episodes {
-  border-top-color: #374151;
+  border-top-color: var(--color-border);
 }
 
 .tvshow-detail-page__episode-item {
@@ -304,11 +304,11 @@
   gap: 12px;
   padding-top: 8px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .dark .tvshow-detail-page__episode-item {
-  border-bottom-color: #374151;
+  border-bottom-color: var(--color-border);
 }
 
 .tvshow-detail-page__episode-item:last-child {
@@ -319,20 +319,20 @@
   width: 32px;
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .dark .tvshow-detail-page__episode-number {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .tvshow-detail-page__episode-title {
   flex: 1;
-  color: #374151;
+  color: var(--color-text);
 }
 
 .dark .tvshow-detail-page__episode-title {
-  color: #d1d5db;
+  color: var(--color-text);
 }
 
 .tvshow-detail-page__view-all {
@@ -367,17 +367,17 @@
 .tvshow-detail-page__cast-name {
   display: block;
   font-weight: 500;
-  color: #e5e7eb;
+  color: var(--color-text);
 }
 
 .tvshow-detail-page__cast-role {
   display: block;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .dark .tvshow-detail-page__cast-role {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .tvshow-detail-page__related-grid {
@@ -417,7 +417,7 @@
 .tvshow-detail-page__related-poster-placeholder {
   width: 100%;
   aspect-ratio: 2/3;
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 .tvshow-detail-page__related-content {
@@ -428,7 +428,7 @@
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: #e5e7eb;
+  color: var(--color-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

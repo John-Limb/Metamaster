@@ -20,26 +20,26 @@
   padding: 2px 8px;
   font-size: 12px;
   font-weight: 500;
-  background-color: #e0e7ff;
-  color: #4f46e5;
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-600);
   border-radius: 9999px;
 }
 
 .dark .filter-panel__badge {
   background-color: rgba(55, 48, 163, 0.5);
-  color: #a5b4fc;
+  color: var(--color-primary-300);
 }
 
 .filter-panel__content {
   padding: 16px;
-  background-color: #fff;
-  border: 1px solid #e2e8f0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
 }
 
 .dark .filter-panel__content {
-  background-color: #1f2937;
-  border-color: #374151;
+  background-color: var(--color-secondary-800);
+  border-color: var(--color-border);
 }
 
 .filter-panel__section {
@@ -53,12 +53,12 @@
 .filter-panel__section-title {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-text);
   margin-bottom: 8px;
 }
 
 .dark .filter-panel__section-title {
-  color: #d1d5db;
+  color: var(--color-text);
 }
 
 .filter-panel__options {
@@ -78,32 +78,32 @@
 }
 
 .filter-panel__option:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-secondary-100);
 }
 
 .dark .filter-panel__option:hover {
-  background-color: #374151;
+  background-color: var(--color-secondary-700);
 }
 
 .filter-panel__option-label {
   flex: 1;
   font-size: 14px;
-  color: #374151;
+  color: var(--color-text);
 }
 
 .dark .filter-panel__option-label {
-  color: #d1d5db;
+  color: var(--color-text);
 }
 
 .filter-panel__option-count {
   font-size: 12px;
-  color: #6b7280;
-  background-color: #f1f5f9;
+  color: var(--color-text-muted);
+  background-color: var(--color-secondary-100);
   padding: 2px 8px;
   border-radius: 9999px;
 }
 
 .dark .filter-panel__option-count {
-  color: #9ca3af;
-  background-color: #374151;
+  color: var(--color-text-muted);
+  background-color: var(--color-secondary-700);
 }

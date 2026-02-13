@@ -16,11 +16,14 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Design system aligned colors - matches CSS variables in design-tokens.css
+// Note: These are hex values for Storybook display; CSS variables cannot be used
+// directly in data objects without runtime resolution
 const defaultData = [
-  { label: 'Movies', value: 250 * 1024 * 1024 * 1024, color: '#3b82f6' },
-  { label: 'TV Shows', value: 180 * 1024 * 1024 * 1024, color: '#8b5cf6' },
-  { label: 'Music', value: 50 * 1024 * 1024 * 1024, color: '#10b981' },
-  { label: 'Other', value: 20 * 1024 * 1024 * 1024, color: '#f59e0b' },
+  { label: 'Movies', value: 250 * 1024 * 1024 * 1024, color: '#3b82f6' }, // var(--color-info-500)
+  { label: 'TV Shows', value: 180 * 1024 * 1024 * 1024, color: '#8b5cf6' }, // violet-500 (accent)
+  { label: 'Music', value: 50 * 1024 * 1024 * 1024, color: '#10b981' }, // var(--color-success)
+  { label: 'Other', value: 20 * 1024 * 1024 * 1024, color: '#f59e0b' }, // var(--color-warning)
 ];
 
 const defaultTotal = defaultData.reduce((acc, item) => acc + item.value, 0);

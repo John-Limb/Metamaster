@@ -33,40 +33,11 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
-  // Mock notifications
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'New movie added',
-      message: 'The Matrix Resurrections is now available',
-      type: 'success',
-      timestamp: new Date(Date.now() - 1000 * 60 * 5),
-      read: false,
-    },
-    {
-      id: '2',
-      title: 'Scan complete',
-      message: 'Your library scan finished successfully',
-      type: 'info',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30),
-      read: false,
-    },
-    {
-      id: '3',
-      title: 'Storage warning',
-      message: 'Disk space is running low',
-      type: 'warning',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      read: true,
-    },
-  ])
+  // Notifications state - would be populated from API/notification service
+  const [notifications, setNotifications] = useState<Notification[]>([])
 
-  // Mock user
-  const mockUser = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    avatar: undefined,
-  }
+  // User state - would be populated from auth service
+  const user = null
 
   // Handle scroll for shadow
   const [isScrolled, setIsScrolled] = useState(false)
@@ -307,7 +278,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
           {/* User Menu */}
           <UserMenu
-            user={mockUser}
+            user={user}
             onProfile={handleProfile}
             onSettings={handleSettings}
             onLogout={handleLogout}

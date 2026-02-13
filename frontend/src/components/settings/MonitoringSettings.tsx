@@ -47,8 +47,8 @@ export function MonitoringSettings({ className = '' }: MonitoringSettingsProps) 
             onClick={() =>
               handleSettingChange('enablePerformanceMonitoring', !settings.enablePerformanceMonitoring)
             }
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              settings.enablePerformanceMonitoring ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              settings.enablePerformanceMonitoring ? 'bg-primary-600' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={settings.enablePerformanceMonitoring}
@@ -74,8 +74,8 @@ export function MonitoringSettings({ className = '' }: MonitoringSettingsProps) 
           <button
             id="enableErrorTracking"
             onClick={() => handleSettingChange('enableErrorTracking', !settings.enableErrorTracking)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              settings.enableErrorTracking ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              settings.enableErrorTracking ? 'bg-primary-600' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={settings.enableErrorTracking}
@@ -101,8 +101,8 @@ export function MonitoringSettings({ className = '' }: MonitoringSettingsProps) 
           <button
             id="enableAnalytics"
             onClick={() => handleSettingChange('enableAnalytics', !settings.enableAnalytics)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              settings.enableAnalytics ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              settings.enableAnalytics ? 'bg-primary-600' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={settings.enableAnalytics}
@@ -127,7 +127,7 @@ export function MonitoringSettings({ className = '' }: MonitoringSettingsProps) 
             id="logLevel"
             value={settings.logLevel}
             onChange={(e) => handleSettingChange('logLevel', e.target.value)}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
             <option value="debug">Debug</option>
             <option value="info">Info</option>
@@ -149,8 +149,8 @@ export function MonitoringSettings({ className = '' }: MonitoringSettingsProps) 
           <button
             id="autoRefreshStats"
             onClick={() => handleSettingChange('autoRefreshStats', !settings.autoRefreshStats)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              settings.autoRefreshStats ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              settings.autoRefreshStats ? 'bg-primary-600' : 'bg-gray-200'
             }`}
             role="switch"
             aria-checked={settings.autoRefreshStats}
@@ -179,7 +179,7 @@ export function MonitoringSettings({ className = '' }: MonitoringSettingsProps) 
               onChange={(e) => handleSettingChange('refreshInterval', Number(e.target.value))}
               min={10}
               max={300}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
         )}

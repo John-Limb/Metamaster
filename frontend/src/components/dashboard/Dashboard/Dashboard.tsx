@@ -165,16 +165,10 @@ export function Dashboard({ className = '' }: DashboardProps) {
 
       setRecentActivities(activities)
 
-      // Generate storage data (would come from API in production)
-      if (totalMovies > 0 || totalTVShows > 0) {
-        const mockStorage: StorageData[] = [
-          { label: 'Movies', value: totalMovies * 2.5 * 1024 * 1024 * 1024, color: '#6366f1' },
-          { label: 'TV Shows', value: totalTVShows * 1.8 * 1024 * 1024 * 1024, color: '#8b5cf6' },
-          { label: 'Other', value: 50 * 1024 * 1024 * 1024, color: '#64748b' },
-        ]
-        setStorageData(mockStorage)
-        setHasStorageData(true)
-      }
+      // Storage data would come from API in production
+      // For now, show empty state until real storage API is available
+      setStorageData([])
+      setHasStorageData(false)
     } catch (err) {
       console.error('Dashboard: Error loading data', err)
       setError('Failed to load dashboard data. Please try again.')
