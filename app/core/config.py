@@ -90,6 +90,9 @@ class Settings(BaseSettings):
     celery_task_time_limit: int = 600  # seconds
     celery_task_soft_time_limit: int = 300  # seconds
 
+    # Media scanning schedule (cron expression, default 2AM daily)
+    media_scan_schedule: str = "0 2 * * *"
+
     # Logging
     log_level: str = "INFO"
 
@@ -130,6 +133,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"
 
 
 settings = Settings()

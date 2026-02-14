@@ -4,24 +4,34 @@ import { TextInput, Button, Pagination, EmptyState, Skeleton, SkeletonCard } fro
 import { FilterPanel, type FilterSection } from '@/components/features/filter'
 import { SortDropdown, type SortOption } from '@/components/features/sort'
 import { MovieCard, type MovieCardProps } from '../MovieCard'
+import { useMovieStore } from '@/stores/movieStore'
+import { movieService } from '@/services/movieService'
 import './MoviesPage.css'
-
-// Mock movie type for empty state demonstration
-interface Movie extends Omit<MovieCardProps, 'onClick' | 'onAddToQueue' | 'onEdit' | 'onDelete'> {}
 
 const MoviesPage: React.FC = () => {
   const navigate = useNavigate()
+  const {
+    movies,
+    totalMovies,
+    currentPage,
+    pageSize,
+    isLoading,
+    error,
+    fetchMovies,
+  } = useMovieStore()
+
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({})
   const [sortValue, setSortValue] = useState('title-asc')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
-  const [movies, setMovies] = useState<Movie[]>([])
-  const [totalPages, setTotalPages] = useState(1)
   const itemsPerPage = 12
+
+  // Fetch movies on mount
+  useEffect(() => {
+    fetchMovies(1, itemsPerPage)
+  }, [fetchMovies])
 
   // Debounce search query
   useEffect(() => {
@@ -31,18 +41,20 @@ const MoviesPage: React.FC = () => {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
+  const totalPages = Math.ceil(totalMovies / itemsPerPage)
+
   // Filter sections
   const filterSections: FilterSection[] = [
     {
       id: 'genre',
       label: 'Genre',
       options: [
-        { value: 'action', label: 'Action', count: 24 },
-        { value: 'comedy', label: 'Comedy', count: 18 },
-        { value: 'drama', label: 'Drama', count: 32 },
-        { value: 'horror', label: 'Horror', count: 12 },
-        { value: 'sci-fi', label: 'Sci-Fi', count: 15 },
-        { value: 'thriller', label: 'Thriller', count: 21 },
+        { value: 'action', label: 'Action', count: 0 },
+        { value: 'comedy', label: 'Comedy', count: 0 },
+        { value: 'drama', label: 'Drama', count: 0 },
+        { value: 'horror', label: 'Horror', count: 0 },
+        { value: 'sci-fi', label: 'Sci-Fi', count: 0 },
+        { value: 'thriller', label: 'Thriller', count: 0 },
       ],
       multiSelect: true,
     },
@@ -50,11 +62,11 @@ const MoviesPage: React.FC = () => {
       id: 'year',
       label: 'Year',
       options: [
-        { value: '2024', label: '2024', count: 5 },
-        { value: '2023', label: '2023', count: 12 },
-        { value: '2022', label: '2022', count: 18 },
-        { value: '2021', label: '2021', count: 15 },
-        { value: '2020', label: '2020', count: 22 },
+        { value: '2024', label: '2024', count: 0 },
+        { value: '2023', label: '2023', count: 0 },
+        { value: '2022', label: '2022', count: 0 },
+        { value: '2021', label: '2021', count: 0 },
+        { value: '2020', label: '2020', count: 0 },
       ],
       multiSelect: true,
     },
@@ -62,21 +74,11 @@ const MoviesPage: React.FC = () => {
       id: 'rating',
       label: 'Rating',
       options: [
-        { value: '5', label: '5 Stars', count: 8 },
-        { value: '4', label: '4+ Stars', count: 25 },
-        { value: '3', label: '3+ Stars', count: 45 },
+        { value: '5', label: '5 Stars', count: 0 },
+        { value: '4', label: '4+ Stars', count: 0 },
+        { value: '3', label: '3+ Stars', count: 0 },
       ],
       multiSelect: false,
-    },
-    {
-      id: 'quality',
-      label: 'Quality',
-      options: [
-        { value: '4k', label: '4K', count: 35 },
-        { value: '1080p', label: '1080p', count: 62 },
-        { value: '720p', label: '720p', count: 28 },
-      ],
-      multiSelect: true,
     },
   ]
 
@@ -97,14 +99,17 @@ const MoviesPage: React.FC = () => {
       ...prev,
       [sectionId]: values,
     }))
-    setCurrentPage(1)
   }, [])
 
   // Handle clear all filters
   const handleClearFilters = useCallback(() => {
     setSelectedFilters({})
-    setCurrentPage(1)
   }, [])
+
+  // Handle page change
+  const handlePageChange = useCallback((page: number) => {
+    fetchMovies(page, itemsPerPage)
+  }, [fetchMovies])
 
   // Handle movie click
   const handleMovieClick = useCallback((movieId: string) => {
@@ -121,21 +126,20 @@ const MoviesPage: React.FC = () => {
     console.log('Edit:', movieId)
   }, [])
 
+  // Handle scan (FFprobe)
+  const handleScan = useCallback(async (movieId: string) => {
+    try {
+      await movieService.scanMovie(movieId)
+      fetchMovies(currentPage, itemsPerPage)
+    } catch {
+      // Error already handled by errorHandler in movieService
+    }
+  }, [fetchMovies, currentPage])
+
   // Handle delete
   const handleDelete = useCallback((movieId: string) => {
     console.log('Delete:', movieId)
   }, [])
-
-  // Simulate loading
-  useEffect(() => {
-    setIsLoading(true)
-    const timer = setTimeout(() => {
-      setMovies([])
-      setTotalPages(1)
-      setIsLoading(false)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [debouncedSearch, selectedFilters, sortValue, currentPage])
 
   return (
     <div className="movies-page">
@@ -143,7 +147,11 @@ const MoviesPage: React.FC = () => {
         <div className="movies-page__title-section">
           <h1 className="movies-page__title">Movies</h1>
           <p className="movies-page__subtitle">
-            {isLoading ? 'Loading...' : 'No movies found'}
+            {isLoading
+              ? 'Loading...'
+              : totalMovies > 0
+                ? `${totalMovies} movie${totalMovies !== 1 ? 's' : ''} in your library`
+                : 'No movies found'}
           </p>
         </div>
 
@@ -244,6 +252,18 @@ const MoviesPage: React.FC = () => {
       </div>
 
       <main className="movies-page__content">
+        {error && (
+          <div className="p-4 mb-4 text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800">
+            <p>{error}</p>
+            <button
+              onClick={() => fetchMovies(currentPage, itemsPerPage)}
+              className="mt-2 text-sm underline hover:no-underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
         {isLoading ? (
           <div className={`movies-page__grid movies-page__grid--${viewMode}`}>
             {Array.from({ length: itemsPerPage }).map((_, index) => (
@@ -254,7 +274,7 @@ const MoviesPage: React.FC = () => {
           <EmptyState
             variant="empty"
             title="No movies found"
-            description="Try adjusting your search or filters to find what you're looking for."
+            description="Your movie library will appear here once media files are synced from your movie directory."
             action={{
               label: 'Clear filters',
               onClick: handleClearFilters,
@@ -266,11 +286,18 @@ const MoviesPage: React.FC = () => {
               {movies.map((movie) => (
                 <MovieCard
                   key={movie.id}
-                  {...movie}
-                  onClick={() => handleMovieClick(movie.id)}
-                  onAddToQueue={() => handleAddToQueue(movie.id)}
-                  onEdit={() => handleEdit(movie.id)}
-                  onDelete={() => handleDelete(movie.id)}
+                  id={String(movie.id)}
+                  title={movie.title}
+                  year={movie.year ?? 0}
+                  rating={movie.rating}
+                  posterUrl={movie.posterUrl}
+                  genres={movie.genre}
+                  quality={movie.quality}
+                  onClick={() => handleMovieClick(String(movie.id))}
+                  onAddToQueue={() => handleAddToQueue(String(movie.id))}
+                  onScan={() => handleScan(String(movie.id))}
+                  onEdit={() => handleEdit(String(movie.id))}
+                  onDelete={() => handleDelete(String(movie.id))}
                 />
               ))}
             </div>
@@ -280,7 +307,7 @@ const MoviesPage: React.FC = () => {
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  onPageChange={setCurrentPage}
+                  onPageChange={handlePageChange}
                 />
               </div>
             )}

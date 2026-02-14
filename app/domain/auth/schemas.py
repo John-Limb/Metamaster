@@ -114,6 +114,27 @@ class ChangePasswordRequest(BaseModel):
     )
 
 
+class UpdateProfileRequest(BaseModel):
+    """Schema for profile update request."""
+
+    email: Optional[str] = Field(None, description="New email address")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: Optional[str]) -> Optional[str]:
+        """Validate email format when provided."""
+        if v is None:
+            return v
+        is_valid, error_msg = validate_email_format(v)
+        if not is_valid:
+            raise ValueError(error_msg)
+        return v.lower()
+
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"email": "newemail@example.com"}}
+    )
+
+
 class TokenRefreshRequest(BaseModel):
     """Schema for token refresh request (cookie-based)."""
 

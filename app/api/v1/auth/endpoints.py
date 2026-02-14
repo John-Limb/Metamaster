@@ -20,6 +20,7 @@ from app.domain.auth.schemas import (
     LoginResponse,
     MessageResponse,
     TokenResponse,
+    UpdateProfileRequest,
     UserLoginRequest,
     UserRegisterRequest,
     UserResponse,
@@ -441,3 +442,47 @@ async def change_password(
         )
 
     return MessageResponse(message="Password changed successfully")
+
+
+@router.put(
+    "/profile",
+    response_model=UserResponse,
+    summary="Update user profile",
+    description="Update the current user's profile information (e.g. email).",
+)
+async def update_profile(
+    data: UpdateProfileRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> UserResponse:
+    """Update the authenticated user's profile.
+
+    Args:
+        data: The profile update data.
+        current_user: The authenticated user from the JWT token.
+        db: The database session.
+
+    Returns:
+        UserResponse with the updated user information.
+
+    Raises:
+        HTTPException: 409 if email is already taken.
+    """
+    auth_service = AuthService(db)
+
+    if data.email is not None:
+        try:
+            current_user = auth_service.update_email(current_user, data.email)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(e),
+            )
+
+    return UserResponse(
+        id=current_user.id,
+        username=current_user.username,
+        email=current_user.email,
+        avatar_url=current_user.avatar_url,
+        created_at=current_user.created_at,
+    )

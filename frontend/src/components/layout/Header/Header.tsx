@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   FaBars,
   FaSearch,
   FaSun,
   FaMoon,
   FaTimes,
+  FaHome,
+  FaFilm,
+  FaTv,
+  FaCog,
 } from 'react-icons/fa'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
@@ -27,6 +31,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const { theme, setTheme, resolvedTheme } = useTheme()
   const { user, isAuthenticated, isLoading, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const toggleSidebar = useUIStore((state) => state.toggleSidebar)
 
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -142,15 +147,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
         {/* Left Section */}
         <div className="flex items-center gap-4">
-          {/* Mobile menu button */}
-          <button
-            onClick={handleMenuClick}
-            className="lg:hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            aria-label="Toggle sidebar"
-          >
-            <FaBars className="w-5 h-5" />
-          </button>
-
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
@@ -160,6 +156,34 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               Metamaster
             </span>
           </Link>
+
+          {/* Nav Links */}
+          <nav className="flex items-center gap-1 ml-4 sm:ml-6">
+            {[
+              { to: '/', label: 'Home', icon: <FaHome className="w-4 h-4" /> },
+              { to: '/movies', label: 'Movies', icon: <FaFilm className="w-4 h-4" /> },
+              { to: '/tv-shows', label: 'TV Shows', icon: <FaTv className="w-4 h-4" /> },
+              { to: '/settings', label: 'Settings', icon: <FaCog className="w-4 h-4" /> },
+            ].map((item) => {
+              const active = item.to === '/'
+                ? location.pathname === '/'
+                : location.pathname === item.to || location.pathname.startsWith(item.to + '/')
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
+                    active
+                      ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {item.icon}
+                  <span className="hidden sm:inline">{item.label}</span>
+                </Link>
+              )
+            })}
+          </nav>
         </div>
 
         {/* Center Section - Search */}

@@ -117,6 +117,17 @@ export const movieService = {
     }
   },
 
+  // Scan a movie file with FFprobe
+  scanMovie: async (id: string) => {
+    try {
+      const response = await apiClient.post<Movie>(`/movies/${id}/scan`)
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, `scanMovie: ${id}`)
+      throw error
+    }
+  },
+
   // Get top rated movies
   getTopRatedMovies: async (page = 1, pageSize = 20) => {
     try {

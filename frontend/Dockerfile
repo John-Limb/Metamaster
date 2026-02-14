@@ -31,7 +31,9 @@ RUN apk add --no-cache nginx curl
 COPY --from=builder /app/nginx.conf /etc/nginx/nginx.conf
 
 # Create necessary directories
-RUN mkdir -p /var/cache/nginx /var/run/nginx /var/www/html
+RUN mkdir -p /var/cache/nginx /var/run/nginx /var/www/html && \
+    ln -sf /dev/stdout /var/log/nginx/access.log && \
+    ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist /var/www/html

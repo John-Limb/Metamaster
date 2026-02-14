@@ -41,6 +41,8 @@ export interface FileStats {
   totalSize: number
   filesByType: Record<string, number>
   lastUpdated: string
+  movieCount: number
+  tvShowCount: number
 }
 
 // Queue types
@@ -69,10 +71,18 @@ export interface Movie {
   year?: number
   genre?: string[]
   rating?: number
+  runtime?: number
   director?: string
   plot?: string
   posterUrl?: string
   fileId?: string
+  // Technical metadata from FFprobe
+  quality?: string
+  resolution?: string
+  codec_video?: string
+  codec_audio?: string
+  file_duration?: number
+  file_size?: number
 }
 
 // TV Show types

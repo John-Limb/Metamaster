@@ -15,16 +15,16 @@ export const NotFound: React.FC<NotFoundProps> = ({
   const navigate = useNavigate()
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
       <div className="text-center px-4">
         <div className="mb-8">
-          <svg className="mx-auto h-24 w-24 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="mx-auto h-24 w-24 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
-        <p className="text-2xl font-semibold text-gray-700 mb-4">{title}</p>
-        <p className="text-gray-600 mb-8 max-w-md">{message}</p>
+        <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-4">404</h1>
+        <p className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{title}</p>
+        <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">{message}</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => navigate('/')}
@@ -35,7 +35,7 @@ export const NotFound: React.FC<NotFoundProps> = ({
           {showBackButton && (
             <button
               onClick={() => navigate(-1)}
-              className="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition font-medium"
+              className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-6 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium"
             >
               Go Back
             </button>

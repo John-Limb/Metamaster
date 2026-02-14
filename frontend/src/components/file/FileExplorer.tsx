@@ -36,9 +36,17 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     selectFile,
     clearSelection,
     navigateToPath,
+    fetchFiles,
   } = useFileStore()
 
   const { addToast } = useUIStore()
+
+  // Fetch files when currentPath changes or on initial mount
+  useEffect(() => {
+    fetchFiles(currentPath).catch(() => {
+      // Error is already stored in fileStore.error
+    })
+  }, [currentPath, fetchFiles])
 
   const handleSelectFile = (id: string) => {
     selectFile(id)

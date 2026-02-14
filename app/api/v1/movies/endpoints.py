@@ -14,6 +14,7 @@ from app.schemas import (
 from app.services_impl import MovieService, OMDBService
 from app.infrastructure.cache.redis_cache import get_cache_service
 from app.application.search.service import SearchFilters, MovieSearchService
+from app.domain.movies.scanner import probe_movie_file
 from app.api.utils import pagination_metadata, resolve_pagination
 import logging
 import json
@@ -275,6 +276,29 @@ async def delete_movie(
     logger.debug(f"Invalidated cache for movie {movie_id} after delete")
 
     return None
+
+
+@router.post("/{movie_id}/scan", response_model=MovieResponse)
+async def scan_movie(
+    movie_id: int,
+    db: Session = Depends(get_db),
+):
+    """Run FFprobe on the movie's file and return updated metadata."""
+    try:
+        movie = probe_movie_file(db, movie_id)
+
+        # Invalidate cache for this movie
+        cache_service = get_cache_service()
+        cache_service.invalidate_movie(movie_id)
+
+        return movie
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error scanning movie {movie_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="An error occurred while scanning")
 
 
 @router.post("/{movie_id}/sync-metadata", response_model=MetadataSyncResponse)

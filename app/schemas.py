@@ -109,6 +109,14 @@ class MovieResponse(BaseModel):
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
+    # Technical metadata derived from associated MovieFile
+    quality: Optional[str] = Field(None, description="Resolution label e.g. 1080p, 4K")
+    resolution: Optional[str] = Field(None, description="Resolution e.g. 1920x1080")
+    codec_video: Optional[str] = Field(None, description="Video codec e.g. h264")
+    codec_audio: Optional[str] = Field(None, description="Audio codec e.g. aac")
+    file_duration: Optional[int] = Field(None, description="Duration in seconds")
+    file_size: Optional[int] = Field(None, description="File size in bytes")
+
     model_config = ConfigDict(from_attributes=True)
 
 

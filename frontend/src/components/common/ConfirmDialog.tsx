@@ -40,18 +40,18 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       />
 
       {/* Dialog */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 animate-slide-in">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full mx-4 animate-slide-in">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             {isDangerous && (
-              <FaExclamationTriangle className="w-5 h-5 text-red-600" />
+              <FaExclamationTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
             )}
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
           </div>
           <button
             onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
             aria-label="Close dialog"
           >
             <FaTimes className="w-5 h-5" />
@@ -60,15 +60,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
         {/* Content */}
         <div className="p-6">
-          <p className="text-gray-600 text-sm">{message}</p>
+          <p className="text-gray-600 dark:text-gray-300 text-sm">{message}</p>
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-gray-200 justify-end">
+        <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700 justify-end">
           <button
             onClick={onCancel}
             disabled={isLoading}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {cancelText}
           </button>

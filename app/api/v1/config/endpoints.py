@@ -6,8 +6,10 @@ from typing import List, Optional
 import os
 import logging
 from datetime import datetime
+from croniter import croniter
 
 from app.core.config import settings, MOVIE_DIR, TV_DIR
+from app.infrastructure.cache.redis_cache import get_cache_service
 
 logger = logging.getLogger(__name__)
 
@@ -69,19 +71,19 @@ async def check_configuration():
         id="api-keys-omdb",
         name="OMDB API Key",
         description="API key for fetching movie metadata from OMDB",
-        severity="critical",
+        severity="important",
         status="valid" if omdb_configured else "invalid",
         actionLabel="Configure API Key",
         actionPath="/settings?section=api-keys",
     ))
-    
+
     # Check TVDB API Key
     tvdb_configured = bool(settings.tvdb_api_key and settings.tvdb_api_key != "your_tvdb_api_key_here")
     items.append(ConfigurationItem(
         id="api-keys-tvdb",
         name="TVDB API Key",
         description="API key for fetching TV show metadata from TVDB",
-        severity="critical",
+        severity="important",
         status="valid" if tvdb_configured else "invalid",
         actionLabel="Configure API Key",
         actionPath="/settings?section=api-keys",
@@ -184,3 +186,41 @@ async def check_configuration_item(item_id: str):
             return item
     
     raise HTTPException(status_code=404, detail=f"Configuration item '{item_id}' not found")
+
+
+class ScanScheduleResponse(BaseModel):
+    schedule: str
+
+
+class ScanScheduleUpdate(BaseModel):
+    schedule: str
+
+
+SCAN_SCHEDULE_REDIS_KEY = "config:media_scan_schedule"
+
+
+@router.get("/scan-schedule", response_model=ScanScheduleResponse)
+async def get_scan_schedule():
+    """Return the current media scan cron schedule."""
+    cache = get_cache_service()
+    schedule = None
+    if cache.is_connected():
+        schedule = cache.redis_client.get(SCAN_SCHEDULE_REDIS_KEY)
+    if not schedule:
+        schedule = settings.media_scan_schedule
+    return ScanScheduleResponse(schedule=schedule)
+
+
+@router.put("/scan-schedule", response_model=ScanScheduleResponse)
+async def set_scan_schedule(body: ScanScheduleUpdate):
+    """Validate and store a new media scan cron schedule."""
+    if not croniter.is_valid(body.schedule):
+        raise HTTPException(status_code=400, detail="Invalid cron expression")
+
+    cache = get_cache_service()
+    if not cache.is_connected():
+        raise HTTPException(status_code=503, detail="Redis is unavailable")
+
+    cache.redis_client.set(SCAN_SCHEDULE_REDIS_KEY, body.schedule)
+    logger.info(f"Media scan schedule updated to: {body.schedule}")
+    return ScanScheduleResponse(schedule=body.schedule)

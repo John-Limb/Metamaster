@@ -44,6 +44,8 @@ bulk_metadata_sync_task = tasks_module.bulk_metadata_sync_task
 bulk_file_import_task = tasks_module.bulk_file_import_task
 process_batch_item = tasks_module.process_batch_item
 update_batch_progress = tasks_module.update_batch_progress
+scan_new_media = tasks_module.scan_new_media
+check_and_run_scan = tasks_module.check_and_run_scan
 
 __all__ = [
     "analyze_file",
@@ -55,6 +57,8 @@ __all__ = [
     "bulk_file_import_task",
     "process_batch_item",
     "update_batch_progress",
+    "scan_new_media",
+    "check_and_run_scan",
 ]
 
 

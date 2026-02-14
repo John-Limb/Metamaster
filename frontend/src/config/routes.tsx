@@ -7,7 +7,6 @@ import { LoadingSpinner, NotFound } from '@/components/common'
 const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.HomePage })))
 const FilesPage = lazy(() => import('@/pages/FilesPage').then(m => ({ default: m.FilesPage })))
 const SearchPage = lazy(() => import('@/pages/SearchPage').then(m => ({ default: m.SearchPage })))
-const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const MoviesPage = lazy(() => import('@/pages/MoviesPage').then(m => ({ default: m.MoviesPage })))
 const TVShowsPage = lazy(() => import('@/pages/TVShowsPage').then(m => ({ default: m.TVShowsPage })))
@@ -40,10 +39,6 @@ export const routes: RouteObject[] = [
   {
     path: '/search',
     element: withMainLayout(SearchPage),
-  },
-  {
-    path: '/dashboard',
-    element: withMainLayout(DashboardPage),
   },
   {
     path: '/settings',

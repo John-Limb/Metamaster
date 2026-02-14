@@ -1,7 +1,7 @@
 """SQLAlchemy ORM models for TV Show entities"""
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime, ForeignKey, Index
+from sqlalchemy import BigInteger, Column, Integer, String, Text, Float, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -97,7 +97,7 @@ class EpisodeFile(Base):
         nullable=False,
     )
     file_path = Column(String(500), unique=True, nullable=False)
-    file_size = Column(Integer)  # in bytes
+    file_size = Column(BigInteger)  # in bytes
     resolution = Column(String(20))  # e.g., "1920x1080"
     bitrate = Column(Integer)  # in kbps
     codec_video = Column(String(50))

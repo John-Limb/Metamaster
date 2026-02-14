@@ -3,7 +3,7 @@
 import json
 import logging
 from typing import Optional, List, Dict, Any, Tuple
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_, or_, func
 from app.models import Movie, TVShow
 
@@ -125,7 +125,7 @@ class MovieSearchService:
             return [], 0
 
         # Start with base query
-        query = db.query(Movie)
+        query = db.query(Movie).options(selectinload(Movie.files))
 
         # Apply genre filter
         if filters.genre:
@@ -139,7 +139,7 @@ class MovieSearchService:
             # Convert back to query for further filtering
             if filtered_movies:
                 movie_ids = [m.id for m in filtered_movies]
-                query = db.query(Movie).filter(Movie.id.in_(movie_ids))
+                query = db.query(Movie).options(selectinload(Movie.files)).filter(Movie.id.in_(movie_ids))
             else:
                 return [], 0
 

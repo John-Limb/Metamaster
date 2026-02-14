@@ -25,4 +25,11 @@ beat_schedule = {
             "queue": "media_processing",
         },
     },
+    "check_and_run_scan": {
+        "task": "app.tasks.check_and_run_scan",
+        "schedule": crontab(),  # every minute
+        "options": {
+            "queue": "default",
+        },
+    },
 }

@@ -24,14 +24,14 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       <div className={`${sizeClasses[size]} animate-spin`}>
         <div className="h-full w-full border-4 border-primary-200 border-t-primary-500 rounded-full" />
       </div>
-      {message && <p className="text-gray-600 text-sm font-medium">{message}</p>}
+      {message && <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">{message}</p>}
     </div>
   )
 
   if (fullScreen) {
     return (
       <div className={`fixed inset-0 flex items-center justify-center z-50 ${
-        overlay ? 'bg-white bg-opacity-75' : ''
+        overlay ? 'bg-white dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75' : ''
       }`}>
         {spinner}
       </div>

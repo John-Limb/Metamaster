@@ -87,7 +87,7 @@ async def detailed_health_check(db: Session = Depends(get_db)):
 
     # Add database check
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         health_status["checks"]["database"] = {"status": "healthy"}
     except Exception as e:
         health_status["checks"]["database"] = {"status": "unhealthy", "error": str(e)}

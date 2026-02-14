@@ -195,6 +195,30 @@ const checkAllConfigurations = async (): Promise<ConfigurationState> => {
   }
 }
 
+export const scanScheduleService = {
+  async getSchedule(): Promise<string> {
+    try {
+      const response = await apiClient.get<{ schedule: string }>('/config/scan-schedule')
+      return response.data.schedule
+    } catch (error: any) {
+      errorHandler.handleError(error, 'getScanSchedule')
+      throw error
+    }
+  },
+
+  async setSchedule(schedule: string): Promise<string> {
+    try {
+      const response = await apiClient.put<{ schedule: string }>('/config/scan-schedule', {
+        schedule,
+      })
+      return response.data.schedule
+    } catch (error: any) {
+      errorHandler.handleError(error, 'setScanSchedule')
+      throw error
+    }
+  },
+}
+
 export const configurationService: ConfigurationServiceInterface = {
   async checkAll() {
     try {

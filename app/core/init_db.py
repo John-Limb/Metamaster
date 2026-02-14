@@ -5,7 +5,7 @@ import secrets
 import string
 from datetime import datetime
 
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
 from app.core.database import engine, Base, SessionLocal
@@ -118,6 +118,30 @@ def log_startup_credentials(db: Session) -> dict:
     return credentials
 
 
+def _migrate_file_size_columns(engine, inspector_obj):
+    """Upgrade file_size columns from INTEGER to BIGINT to support files >2GB."""
+    migrations = [
+        ("movie_files", "file_size"),
+        ("episode_files", "file_size"),
+    ]
+    with engine.connect() as conn:
+        for table, column in migrations:
+            if table not in inspector_obj.get_table_names():
+                continue
+            cols = {c["name"]: c for c in inspector_obj.get_columns(table)}
+            col_info = cols.get(column)
+            if col_info is None:
+                continue
+            col_type = str(col_info["type"])
+            if "BIGINT" in col_type.upper():
+                continue
+            logger.info(f"Migrating {table}.{column} from {col_type} to BIGINT")
+            conn.execute(text(
+                f"ALTER TABLE {table} ALTER COLUMN {column} TYPE BIGINT"
+            ))
+            conn.commit()
+
+
 def init_database():
     """Initialize database tables and create default data if needed"""
     try:
@@ -129,6 +153,9 @@ def init_database():
         inspector_obj = inspect(engine)
         inspector_tables = inspector_obj.get_table_names()
         logger.info(f"Created tables: {inspector_tables}")
+
+        # Migrate file_size columns from INTEGER to BIGINT for large files (>2GB)
+        _migrate_file_size_columns(engine, inspector_obj)
 
         # Create admin user and log all credentials if first run
         db = SessionLocal()

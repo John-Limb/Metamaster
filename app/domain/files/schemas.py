@@ -1,6 +1,7 @@
 """Pydantic schemas for File operations"""
 
 from pydantic import BaseModel, Field, ConfigDict
+from pydantic.alias_generators import to_camel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
@@ -18,13 +19,17 @@ class FileItemBase(BaseModel):
 class FileItemResponse(FileItemBase):
     """Schema for file item response"""
 
-    id: int = Field(..., description="File ID")
+    id: str = Field(..., description="File ID")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
     is_indexed: bool = Field(default=False, description="Whether file is indexed")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
 
 
 class FileItemCreate(BaseModel):
@@ -92,6 +97,8 @@ class FileStatsResponse(BaseModel):
     totalSize: int = Field(..., description="Total size in bytes")
     filesByType: Dict[str, int] = Field(..., description="File count by type")
     lastUpdated: datetime = Field(..., description="Last update timestamp")
+    movieCount: int = Field(0, description="Number of video files in movie directory")
+    tvShowCount: int = Field(0, description="Number of video files in TV directory")
 
 
 class PaginatedFileResponse(BaseModel):

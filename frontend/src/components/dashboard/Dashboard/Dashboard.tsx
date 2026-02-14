@@ -13,6 +13,7 @@ import { healthService } from '@/services/healthService'
 import { movieService } from '@/services/movieService'
 import { tvShowService } from '@/services/tvShowService'
 import { queueService } from '@/services/queueService'
+import { fileService } from '@/services/fileService'
 import { configurationService, type ConfigurationState } from '@/services/configurationService'
 
 export interface DashboardProps {
@@ -90,29 +91,31 @@ export function Dashboard({ className = '' }: DashboardProps) {
         return
       }
 
-      // Fetch all data in parallel
-      const [health, movieResponse, tvResponse, queueStats] = await Promise.all([
+      // Fetch all data in parallel — use allSettled so one failure doesn't wipe the rest
+      const results = await Promise.allSettled([
         healthService.getDetailedHealth(),
         movieService.getMovies(1, 50),
         tvShowService.getTVShows(1, 50),
         queueService.getStats(),
-      ]).catch(() => [
-        { status: 'unknown', timestamp: new Date().toISOString() },
-        { total: 0, items: [] },
-        { total: 0, items: [] },
-        { pendingTasks: 0, completedTasks: 0, processingTasks: 0 },
+        fileService.getFileStats(),
       ])
+      const health = results[0].status === 'fulfilled' ? results[0].value : { status: 'unknown', timestamp: new Date().toISOString() }
+      const movieResponse = results[1].status === 'fulfilled' ? results[1].value : { total: 0, items: [] }
+      const tvResponse = results[2].status === 'fulfilled' ? results[2].value : { total: 0, items: [] }
+      const queueStats = results[3].status === 'fulfilled' ? results[3].value : { pendingTasks: 0, completedTasks: 0, processingTasks: 0 }
+      const fileStats = results[4].status === 'fulfilled' ? results[4].value : null
 
-      const totalMovies = movieResponse?.total || 0
-      const totalTVShows = tvResponse?.total || 0
+      const totalMovies = fileStats?.movieCount ?? movieResponse?.total ?? 0
+      const totalTVShows = fileStats?.tvShowCount ?? tvResponse?.total ?? 0
       const totalEpisodes = (tvResponse?.items || []).reduce(
         (acc: number, show: any) => acc + (show.episodes || 0),
         0
       )
-      const derivedTotalFiles = totalMovies + totalTVShows
+      const totalFiles = fileStats?.totalFiles ?? (totalMovies + totalTVShows)
+      const totalSize = fileStats?.totalSize ?? 0
 
       setStats({
-        totalFiles: derivedTotalFiles,
+        totalFiles,
         indexedFiles: totalMovies,
         pendingTasks: queueStats?.pendingTasks || 0,
         completedTasks: queueStats?.completedTasks || 0,
@@ -122,9 +125,9 @@ export function Dashboard({ className = '' }: DashboardProps) {
         totalMovies,
         totalTVShows,
         totalEpisodes,
-        totalFiles: derivedTotalFiles,
-        totalSize: 0, // Would come from storage API
-        lastUpdated: new Date().toISOString(),
+        totalFiles,
+        totalSize,
+        lastUpdated: fileStats?.lastUpdated ?? new Date().toISOString(),
       })
 
       // Build activities from health and queue
@@ -466,8 +469,8 @@ export function Dashboard({ className = '' }: DashboardProps) {
       {/* Library Stats */}
       <LibraryStats
         stats={libraryData}
-        onMovieClick={() => window.location.href = '/movies'}
-        onTVClick={() => window.location.href = '/tv-shows'}
+        onMovieClick={() => window.location.assign('/movies')}
+        onTVClick={() => window.location.assign('/tv-shows')}
       />
 
       {/* Storage Chart and Recent Activity - 2 column grid on desktop */}
@@ -496,7 +499,6 @@ export function Dashboard({ className = '' }: DashboardProps) {
         )}
         <RecentActivity
           activities={recentActivities}
-          onViewAll={() => window.location.href = '/activity'}
         />
       </div>
     </div>

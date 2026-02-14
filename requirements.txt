@@ -23,6 +23,9 @@ requests-cache==1.3.0
 # File Analysis
 ffmpeg-python==0.2.0
 
+# Scheduling
+croniter>=1.3.8
+
 # Utilities
 python-dotenv==1.0.0
 python-multipart==0.0.6

@@ -11,7 +11,7 @@ from typing import List, Optional, Tuple
 from sqlalchemy import and_, or_, func
 from sqlalchemy.orm import Session
 
-from app.core.config import settings, MEDIA_DIRECTORIES
+from app.core.config import settings, MEDIA_DIRECTORIES, MOVIE_DIR, TV_DIR
 from app.domain.files.models import FileItem
 from app.domain.files.schemas import (
     FileItemCreate,
@@ -66,6 +66,7 @@ class FileService:
         path: str = "/",
         page: int = 1,
         page_size: int = 20,
+        video_only: bool = True,
     ) -> Tuple[List[FileItem], int]:
         """
         List files in a directory.
@@ -80,18 +81,33 @@ class FileService:
         """
         # Normalize and validate path
         if path == "/" or not path:
-            # Start from media directories
-            query_path = self.media_dirs[0] if self.media_dirs else "/"
+            # Query all media directories (resolve to match stored paths)
+            path_filters = [
+                FileItem.path.startswith(str(Path(media_dir).resolve()))
+                for media_dir in self.media_dirs
+            ]
         else:
             query_path = self._normalize_path(path)
+            path_filters = [FileItem.path.startswith(query_path)]
 
         # Calculate offset
         offset = (page - 1) * page_size
 
         # Query database for files in this directory
         files_query = self.db.query(FileItem).filter(
-            FileItem.path.startswith(query_path)
+            or_(*path_filters) if len(path_filters) > 1 else path_filters[0]
         )
+
+        # Filter to video files only (keep directories for navigation)
+        if video_only:
+            video_extensions = {ext.lower() for ext in settings.watch_extensions}
+            video_patterns = [FileItem.path.like(f"%{ext}") for ext in video_extensions]
+            files_query = files_query.filter(
+                or_(
+                    FileItem.type == "directory",
+                    *video_patterns,
+                )
+            )
 
         # Count total
         total = files_query.count()
@@ -292,26 +308,36 @@ class FileService:
         return files, total
 
     def get_file_stats(self) -> FileStatsResponse:
-        """Get file statistics"""
-        # Count total files
-        total_files = self.db.query(FileItem).filter(FileItem.type == "file").count()
+        """Get file statistics (video files only)"""
+        video_extensions = {ext.lower() for ext in settings.watch_extensions}
+        movie_dir_resolved = str(Path(MOVIE_DIR).resolve())
+        tv_dir_resolved = str(Path(TV_DIR).resolve())
 
-        # Calculate total size
-        total_size_result = (
-            self.db.query(FileItem)
-            .filter(FileItem.type == "file")
-            .with_entities(func.sum(FileItem.size))
-            .scalar()
-        )
-        total_size = total_size_result or 0
+        # Get all file paths and sizes in one query
+        files = self.db.query(FileItem.path, FileItem.size).filter(
+            FileItem.type == "file"
+        ).all()
 
-        # Get files by type (extension)
+        # Filter to video files and categorize
+        total_files = 0
+        total_size = 0
+        movie_count = 0
+        tv_show_count = 0
         files_by_type = {}
-        files = self.db.query(FileItem.type, FileItem.mime_type).all()
-        for file_type, mime_type in files:
-            if file_type == "file":
-                ext = Path(mime_type or "").suffix if mime_type else "unknown"
-                files_by_type[ext] = files_by_type.get(ext, 0) + 1
+
+        for path, size in files:
+            ext = Path(path).suffix.lower()
+            if ext not in video_extensions:
+                continue
+
+            total_files += 1
+            total_size += size or 0
+            files_by_type[ext] = files_by_type.get(ext, 0) + 1
+
+            if path.startswith(movie_dir_resolved):
+                movie_count += 1
+            elif path.startswith(tv_dir_resolved):
+                tv_show_count += 1
 
         # Get last updated
         last_updated = (
@@ -326,6 +352,8 @@ class FileService:
             totalSize=total_size,
             filesByType=files_by_type,
             lastUpdated=last_updated_time,
+            movieCount=movie_count,
+            tvShowCount=tv_show_count,
         )
 
     def sync_directory(self, path: str) -> int:
@@ -348,9 +376,13 @@ class FileService:
                 self.create_file(file_data)
                 synced_count += 1
 
-            # Process files
+            # Process files (video files only)
+            video_extensions = {ext.lower() for ext in settings.watch_extensions}
             for file_name in files:
                 file_path = Path(root) / file_name
+                if file_path.suffix.lower() not in video_extensions:
+                    continue
+
                 file_type = self._get_file_type(str(file_path))
                 mime_type = self._get_mime_type(str(file_path))
                 file_size = file_path.stat().st_size if file_path.exists() else None
@@ -377,14 +409,14 @@ class FileService:
                 metadata = None
 
         return {
-            "id": file_item.id,
+            "id": str(file_item.id),
             "name": file_item.name,
             "path": file_item.path,
             "type": file_item.type,
             "size": file_item.size,
-            "mimeType": file_item.mime_type,
-            "createdAt": file_item.created_at.isoformat(),
-            "updatedAt": file_item.updated_at.isoformat(),
-            "isIndexed": file_item.is_indexed,
+            "mime_type": file_item.mime_type,
+            "created_at": file_item.created_at.isoformat(),
+            "updated_at": file_item.updated_at.isoformat(),
+            "is_indexed": file_item.is_indexed,
             "metadata": metadata,
         }

@@ -197,14 +197,16 @@ const TVShowDetailPage: React.FC = () => {
               </Badge>
             </div>
 
-            <div className="tvshow-detail-page__rating">
-              <span className="tvshow-detail-page__rating-stars">
-                {renderStars(showDetail.rating)}
-              </span>
-              <span className="tvshow-detail-page__rating-value">
-                {showDetail.rating.toFixed(1)}/10
-              </span>
-            </div>
+            {showDetail.rating != null && (
+              <div className="tvshow-detail-page__rating">
+                <span className="tvshow-detail-page__rating-stars">
+                  {renderStars(showDetail.rating)}
+                </span>
+                <span className="tvshow-detail-page__rating-value">
+                  {showDetail.rating.toFixed(1)}/10
+                </span>
+              </div>
+            )}
 
             <div className="tvshow-detail-page__genres">
               {showDetail.genres.map((genre) => (

@@ -1,9 +1,10 @@
-import { Suspense, lazy, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Suspense, lazy } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoadingSpinner } from './components/common'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { MainLayout } from './components/layout'
 
-// Lazy load route components for code splitting
+// Lazy load pages
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard').then(m => ({ default: m.Dashboard })))
 const NotFound = lazy(() => import('./components/common/NotFound'))
 
@@ -12,9 +13,12 @@ const LoginPage = lazy(() => import('./pages/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const ChangePasswordPage = lazy(() => import('./pages/ChangePasswordPage'))
 
-// Feature modules (to be implemented)
+// Feature modules
 const MoviesModule = lazy(() => import('./components/features/movies/MoviesModule'))
 const TvShowsModule = lazy(() => import('./components/features/tvshows/TvShowsModule'))
+const FilesPage = lazy(() => import('./pages/FilesPage').then(m => ({ default: m.FilesPage })))
+const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -23,54 +27,29 @@ const LoadingFallback = () => (
   </div>
 )
 
-// Error boundary for lazy loaded routes
-const RouteErrorBoundary = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      {children}
-    </Suspense>
-  )
-}
-
 function App() {
-  // Add global click handler for debugging
-  useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-      if (target.tagName === 'BUTTON') {
-        console.log('Global: Button clicked', {
-          text: target.textContent,
-          className: target.className,
-          id: target.id,
-        })
-      }
-    }
-    document.addEventListener('click', handleGlobalClick, true)
-    return () => document.removeEventListener('click', handleGlobalClick, true)
-  }, [])
-
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Auth Routes */}
+        {/* Public Auth Routes (no layout) */}
         <Route
           path="/login"
           element={
-            <RouteErrorBoundary>
+            <Suspense fallback={<LoadingFallback />}>
               <LoginPage />
-            </RouteErrorBoundary>
+            </Suspense>
           }
         />
         <Route
           path="/register"
           element={
-            <RouteErrorBoundary>
+            <Suspense fallback={<LoadingFallback />}>
               <RegisterPage />
-            </RouteErrorBoundary>
+            </Suspense>
           }
         />
 
-        {/* Protected Route for Password Change */}
+        {/* Protected Route for Password Change (no layout) */}
         <Route
           path="/change-password"
           element={
@@ -80,26 +59,42 @@ function App() {
           }
         />
 
-        {/* Protected Main Layout Route */}
+        {/* All protected routes wrapped in MainLayout */}
         <Route
           path="/"
           element={
             <ProtectedRoute>
-              <RouteErrorBoundary>
-                <Dashboard />
-              </RouteErrorBoundary>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Dashboard />
+                </Suspense>
+              </MainLayout>
             </ProtectedRoute>
           }
         />
 
-        {/* Protected Feature Routes with Lazy Loading */}
+        <Route
+          path="/files"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <FilesPage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/movies/*"
           element={
             <ProtectedRoute>
-              <RouteErrorBoundary>
-                <MoviesModule />
-              </RouteErrorBoundary>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <MoviesModule />
+                </Suspense>
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -108,20 +103,55 @@ function App() {
           path="/tv-shows/*"
           element={
             <ProtectedRoute>
-              <RouteErrorBoundary>
-                <TvShowsModule />
-              </RouteErrorBoundary>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <TvShowsModule />
+                </Suspense>
+              </MainLayout>
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <SettingsPage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <ProfilePage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Redirects for legacy/dead routes */}
+        <Route path="/dashboard" element={<Navigate to="/" replace />} />
+        <Route path="/activity" element={<Navigate to="/" replace />} />
+        <Route path="/search" element={<Navigate to="/" replace />} />
 
         {/* 404 Not Found */}
         <Route
           path="*"
           element={
-            <RouteErrorBoundary>
-              <NotFound />
-            </RouteErrorBoundary>
+            <MainLayout showFooter={false}>
+              <Suspense fallback={<LoadingFallback />}>
+                <NotFound />
+              </Suspense>
+            </MainLayout>
           }
         />
       </Routes>

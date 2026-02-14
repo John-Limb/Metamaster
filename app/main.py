@@ -10,8 +10,11 @@ import logging
 import time
 import uuid
 
-from app.core.config import settings
+from app.core.config import settings, MEDIA_DIRECTORIES
 from app.core.init_db import init_database
+from app.core.database import SessionLocal
+from app.domain.files.service import FileService
+from app.domain.movies.scanner import create_movies_from_files
 from app.tasks.celery_app import celery_app
 from app.api import health
 from app.api import movies
@@ -37,6 +40,28 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     init_database()
     logger.info("Database initialized")
+
+    # Sync media directories to database
+    logger.info("Syncing media directories to database...")
+    db = SessionLocal()
+    try:
+        file_service = FileService(db)
+        total_synced = 0
+        for media_dir in MEDIA_DIRECTORIES:
+            try:
+                synced = file_service.sync_directory(media_dir)
+                total_synced += synced
+                logger.info(f"Synced {synced} items from {media_dir}")
+            except ValueError as e:
+                logger.warning(f"Could not sync {media_dir}: {e}")
+            except Exception as e:
+                logger.error(f"Error syncing {media_dir}: {e}", exc_info=True)
+        logger.info(f"Media directory sync complete: {total_synced} total items")
+
+        # Create Movie records for video files under MOVIE_DIR that don't have one yet
+        create_movies_from_files(db)
+    finally:
+        db.close()
 
     # Initialize Celery app
     logger.info("Initializing Celery app")
@@ -147,7 +172,8 @@ app.add_middleware(
 
 
 # Include routers
-app.include_router(health.router, tags=["Health"])
+app.include_router(health.router, tags=["Health"])  # /health/ — Docker health checks
+app.include_router(health.router, prefix="/api/v1", tags=["Health"])  # /api/v1/health/ — frontend API
 app.include_router(movies.router, prefix="/api/v1")
 app.include_router(tv_shows.router, prefix="/api/v1")
 app.include_router(cache.router, prefix="/api/v1")

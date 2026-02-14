@@ -109,7 +109,7 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
           </div>
         )}
 
-        {rating !== undefined && (
+        {rating != null && (
           <div className="tvshow-card__rating">
             <span className="tvshow-card__rating-stars">{renderStars(rating)}</span>
             <span className="tvshow-card__rating-value">{rating.toFixed(1)}</span>

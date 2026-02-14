@@ -12,6 +12,7 @@ export interface MovieCardProps {
   quality?: string
   onClick?: () => void
   onAddToQueue?: () => void
+  onScan?: () => void
   onEdit?: () => void
   onDelete?: () => void
 }
@@ -26,6 +27,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   quality,
   onClick,
   onAddToQueue,
+  onScan,
   onEdit,
   onDelete,
 }) => {
@@ -75,7 +77,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           </div>
         )}
 
-        {rating !== undefined && (
+        {rating != null && (
           <div className="movie-card__rating">
             <span className="movie-card__rating-stars">{renderStars(rating)}</span>
             <span className="movie-card__rating-value">{rating.toFixed(1)}</span>
@@ -115,6 +117,32 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 >
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </Button>
+            )}
+            {onScan && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onScan()
+                }}
+                aria-label="Scan file"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                 </svg>
               </Button>
             )}

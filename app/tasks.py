@@ -5,7 +5,8 @@ import traceback
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 from sqlalchemy.orm import Session
-from app.core.config import settings
+from croniter import croniter
+from app.core.config import settings, MEDIA_DIRECTORIES
 from app.core.database import SessionLocal
 from app.core.logging_config import get_logger
 from app.models import (
@@ -684,3 +685,92 @@ def update_batch_progress(
     finally:
         if db:
             db.close()
+
+
+@celery_app.task(bind=True)
+def scan_new_media(self):
+    """Sync media directories and create Movie records for any new video files.
+
+    This task is dispatched by check_and_run_scan when the user-configured
+    cron schedule matches the current minute.
+    """
+    from app.domain.files.service import FileService
+    from app.domain.movies.scanner import create_movies_from_files
+
+    db: Optional[Session] = None
+    try:
+        with TaskMetricsRecorder("scan_new_media"):
+            logger.info("Starting periodic media scan")
+            db = SessionLocal()
+
+            file_service = FileService(db)
+            total_synced = 0
+            for media_dir in MEDIA_DIRECTORIES:
+                try:
+                    synced = file_service.sync_directory(media_dir)
+                    total_synced += synced
+                    logger.info(f"Synced {synced} items from {media_dir}")
+                except ValueError as e:
+                    logger.warning(f"Could not sync {media_dir}: {e}")
+                except Exception as e:
+                    logger.error(f"Error syncing {media_dir}: {e}", exc_info=True)
+
+            created = create_movies_from_files(db)
+
+            logger.info(
+                f"Media scan complete: {total_synced} files synced, "
+                f"{created} new movie(s) created"
+            )
+            return {
+                "status": "success",
+                "files_synced": total_synced,
+                "movies_created": created,
+            }
+    except Exception as exc:
+        logger.error(f"Error during media scan: {exc}", exc_info=True)
+        TaskErrorHandler.handle_task_failure(
+            task_id=self.request.id,
+            task_name=self.name,
+            exception=exc,
+            tb=traceback.format_exc(),
+            retry_count=0,
+        )
+        return {"status": "error", "message": str(exc)}
+    finally:
+        if db:
+            db.close()
+
+
+@celery_app.task(bind=True)
+def check_and_run_scan(self):
+    """Lightweight per-minute task that checks if the cron schedule matches now.
+
+    Reads the cron expression from Redis (key ``config:media_scan_schedule``),
+    falling back to the env-var default.  When the current minute matches the
+    schedule, dispatches ``scan_new_media``.
+    """
+    try:
+        from app.infrastructure.cache.redis_cache import get_cache_service
+
+        cache = get_cache_service()
+        schedule = None
+        if cache.is_connected():
+            schedule = cache.redis_client.get("config:media_scan_schedule")
+        if not schedule:
+            schedule = settings.media_scan_schedule
+
+        now = datetime.utcnow()
+        cron = croniter(schedule, now - timedelta(seconds=61))
+        next_run = cron.get_next(datetime)
+
+        # Match if the next fire time falls within the current minute
+        if next_run.year == now.year and next_run.month == now.month \
+                and next_run.day == now.day and next_run.hour == now.hour \
+                and next_run.minute == now.minute:
+            logger.info(f"Cron schedule '{schedule}' matched — dispatching scan_new_media")
+            scan_new_media.delay()
+        else:
+            logger.debug(f"Cron schedule '{schedule}' not matched this minute")
+
+    except Exception as exc:
+        logger.error(f"Error in check_and_run_scan: {exc}", exc_info=True)

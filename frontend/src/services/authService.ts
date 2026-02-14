@@ -174,6 +174,17 @@ export const authService = {
       body: JSON.stringify(data),
     })
   },
+
+  /**
+   * Update the current user's profile (e.g. email)
+   * Returns updated user data
+   */
+  updateProfile: async (data: { email?: string }): Promise<User> => {
+    return authFetch<User>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
 }
 
 export default authService

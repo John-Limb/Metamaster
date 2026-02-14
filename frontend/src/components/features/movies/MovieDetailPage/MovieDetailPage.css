@@ -16,6 +16,10 @@
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+.dark .movie-detail-page__skeleton-backdrop {
+  background-color: var(--color-secondary-700);
+}
+
 .movie-detail-page__skeleton-content {
   display: flex;
   flex-direction: column;
@@ -32,6 +36,10 @@
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+.dark .movie-detail-page__skeleton-title {
+  background-color: var(--color-secondary-700);
+}
+
 .movie-detail-page__skeleton-meta {
   height: 1.5rem;
   width: 50%;
@@ -40,12 +48,30 @@
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+.dark .movie-detail-page__skeleton-meta {
+  background-color: var(--color-secondary-700);
+}
+
 .movie-detail-page__skeleton-overview {
   height: 6rem;
   width: 100%;
   background-color: var(--color-secondary-200);
   border-radius: 0.5rem;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.dark .movie-detail-page__skeleton-overview {
+  background-color: var(--color-secondary-700);
+}
+
+.movie-detail-page__related-poster-placeholder {
+  aspect-ratio: 2/3;
+  background-color: var(--color-secondary-200);
+  border-radius: 0.5rem;
+}
+
+.dark .movie-detail-page__related-poster-placeholder {
+  background-color: var(--color-secondary-700);
 }
 
 .movie-detail-page__hero {
@@ -149,12 +175,6 @@
 .movie-detail-page__related-poster {
   aspect-ratio: 2/3;
   object-fit: cover;
-  border-radius: 0.5rem;
-}
-
-.movie-detail-page__related-poster-placeholder {
-  aspect-ratio: 2/3;
-  background-color: var(--color-secondary-200);
   border-radius: 0.5rem;
 }
 

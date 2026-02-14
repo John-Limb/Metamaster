@@ -1,6 +1,6 @@
 """Business logic layer for movies and TV shows"""
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func
 from app.models import Movie, TVShow, Season, Episode, APICache
 from app.schemas import MovieCreate, MovieUpdate, TVShowCreate, TVShowUpdate
@@ -22,7 +22,7 @@ class MovieService:
     @staticmethod
     def get_all_movies(db: Session, limit: int = 10, offset: int = 0):
         """Get all movies with pagination"""
-        query = db.query(Movie)
+        query = db.query(Movie).options(selectinload(Movie.files))
         total = query.count()
         movies = query.offset(offset).limit(limit).all()
         return movies, total
@@ -30,7 +30,7 @@ class MovieService:
     @staticmethod
     def get_popular_movies(db: Session, limit: int = 10, offset: int = 0):
         """Return movies ordered by descending rating then recency."""
-        query = db.query(Movie).order_by(Movie.rating.desc().nullslast(), Movie.created_at.desc())
+        query = db.query(Movie).options(selectinload(Movie.files)).order_by(Movie.rating.desc().nullslast(), Movie.created_at.desc())
         total = query.count()
         movies = query.offset(offset).limit(limit).all()
         return movies, total
@@ -38,7 +38,7 @@ class MovieService:
     @staticmethod
     def get_top_rated_movies(db: Session, limit: int = 10, offset: int = 0):
         """Return top-rated movies prioritizing highest rating and longest runtime."""
-        query = db.query(Movie).order_by(
+        query = db.query(Movie).options(selectinload(Movie.files)).order_by(
             Movie.rating.desc().nullslast(), Movie.runtime.desc().nullslast()
         )
         total = query.count()
@@ -48,7 +48,7 @@ class MovieService:
     @staticmethod
     def get_movie_by_id(db: Session, movie_id: int):
         """Get a specific movie by ID"""
-        movie = db.query(Movie).filter(Movie.id == movie_id).first()
+        movie = db.query(Movie).options(selectinload(Movie.files)).filter(Movie.id == movie_id).first()
         return movie
 
     @staticmethod
@@ -100,7 +100,7 @@ class MovieService:
     @staticmethod
     def search_movies(db: Session, query: str, limit: int = 10, offset: int = 0):
         """Search movies by title"""
-        search_query = db.query(Movie).filter(Movie.title.ilike(f"%{query}%"))
+        search_query = db.query(Movie).options(selectinload(Movie.files)).filter(Movie.title.ilike(f"%{query}%"))
         total = search_query.count()
         movies = search_query.offset(offset).limit(limit).all()
         logger.info(f"Searched movies with query: {query}, found: {total}")

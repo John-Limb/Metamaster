@@ -44,6 +44,7 @@ async def list_files(
     path: str = Query("/", description="Directory path to list"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    video_only: bool = Query(True, description="Only show video files (directories always shown)"),
     db: Session = Depends(get_db),
 ):
     """
@@ -60,7 +61,8 @@ async def list_files(
         path = "/"
 
     # Get files and total count
-    files, total = file_service.list_files(path=path, page=page, page_size=page_size)
+    files, total = file_service.list_files(path=path, page=page, page_size=page_size, video_only=video_only)
+    logger.info(f"list_files(path={path!r}, page={page}, page_size={page_size}) returned {total} total, {len(files)} on this page")
 
     # Convert to response format
     items = [file_service.file_to_response(f) for f in files]

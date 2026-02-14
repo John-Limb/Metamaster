@@ -255,6 +255,28 @@ class AuthService:
 
         return True
 
+    def update_email(self, user: User, new_email: str) -> User:
+        """Update a user's email address.
+
+        Args:
+            user: The User object.
+            new_email: The new email address (already validated/lowered by schema).
+
+        Returns:
+            The updated User object.
+
+        Raises:
+            ValueError: If the email is already taken by another user.
+        """
+        existing = self.get_user_by_email(new_email)
+        if existing and existing.id != user.id:
+            raise ValueError("Email already registered")
+
+        user.email = new_email
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
     def store_refresh_token(
         self, user_id: int, token: str, expires_at: datetime
     ) -> RefreshToken:

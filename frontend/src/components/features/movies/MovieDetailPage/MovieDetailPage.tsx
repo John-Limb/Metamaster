@@ -159,14 +159,16 @@ const MovieDetailPage: React.FC = () => {
               )}
             </div>
 
-            <div className="movie-detail-page__rating">
-              <span className="movie-detail-page__rating-stars">
-                {renderStars(movie.rating)}
-              </span>
-              <span className="movie-detail-page__rating-value">
-                {movie.rating.toFixed(1)}/10
-              </span>
-            </div>
+            {movie.rating != null && (
+              <div className="movie-detail-page__rating">
+                <span className="movie-detail-page__rating-stars">
+                  {renderStars(movie.rating)}
+                </span>
+                <span className="movie-detail-page__rating-value">
+                  {movie.rating.toFixed(1)}/10
+                </span>
+              </div>
+            )}
 
             <div className="movie-detail-page__genres">
               {movie.genres.map((genre) => (
