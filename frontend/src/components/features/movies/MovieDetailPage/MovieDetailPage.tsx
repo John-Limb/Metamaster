@@ -1,40 +1,44 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button, Badge, Card, EmptyState } from '@/components/common'
+import { movieService } from '@/services/movieService'
+import { formatFileSize } from '@/utils/helpers'
+import type { Movie } from '@/types'
 import './MovieDetailPage.css'
-
-// Mock movie detail type
-interface MovieDetail {
-  id: string
-  title: string
-  backdropUrl?: string
-  posterUrl?: string
-  year: number
-  rating: number
-  genres: string[]
-  quality?: string
-  runtime?: number
-  overview?: string
-  director?: string
-  cast: Array<{ name: string; role: string }>
-  relatedMovies: Array<{ id: string; title: string; posterUrl?: string }>
-}
 
 const MovieDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [movie, setMovie] = useState<MovieDetail | null>(null)
+  const [movie, setMovie] = useState<Movie | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Simulate loading
+    if (!id) return
     setIsLoading(true)
-    const timer = setTimeout(() => {
-      setMovie(null)
-      setIsLoading(false)
-    }, 1000)
-    return () => clearTimeout(timer)
+    setError(null)
+    movieService
+      .getMovieDetails(id)
+      .then((data) => setMovie(data))
+      .catch(() => setError('Failed to load movie details'))
+      .finally(() => setIsLoading(false))
   }, [id])
+
+  const formatDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600)
+    const m = Math.floor((seconds % 3600) / 60)
+    return h > 0 ? `${h}h ${m}m` : `${m}m`
+  }
+
+  const parseGenres = (genres?: string[] | string): string[] => {
+    if (!genres) return []
+    if (Array.isArray(genres)) return genres
+    try {
+      return JSON.parse(genres)
+    } catch {
+      return []
+    }
+  }
 
   if (isLoading) {
     return (
@@ -51,12 +55,12 @@ const MovieDetailPage: React.FC = () => {
     )
   }
 
-  if (!movie) {
+  if (!movie && !isLoading) {
     return (
       <div className="movie-detail-page">
         <EmptyState
           variant="not-found"
-          title="Movie not found"
+          title={error || 'Movie not found'}
           description="The movie you're looking for doesn't exist or has been removed."
           action={{
             label: 'Back to Movies',
@@ -72,19 +76,14 @@ const MovieDetailPage: React.FC = () => {
     return '★'.repeat(stars) + '☆'.repeat(5 - stars)
   }
 
+  const genres = parseGenres(movie?.genre)
+  const hasFileInfo = movie?.resolution || movie?.codec_video || movie?.codec_audio || movie?.file_size || movie?.file_duration
+
   return (
     <div className="movie-detail-page">
       {/* Hero Backdrop */}
       <div className="movie-detail-page__hero">
-        {movie.backdropUrl ? (
-          <img
-            src={movie.backdropUrl}
-            alt={`${movie.title} backdrop`}
-            className="movie-detail-page__backdrop"
-          />
-        ) : (
-          <div className="movie-detail-page__backdrop-placeholder" />
-        )}
+        <div className="movie-detail-page__backdrop-placeholder" />
         <div className="movie-detail-page__hero-overlay" />
       </div>
 
@@ -112,6 +111,7 @@ const MovieDetailPage: React.FC = () => {
           Back to Movies
         </Button>
 
+        {movie && (
         <div className="movie-detail-page__main">
           {/* Poster */}
           <div className="movie-detail-page__poster-wrapper">
@@ -148,7 +148,7 @@ const MovieDetailPage: React.FC = () => {
             <h1 className="movie-detail-page__title">{movie.title}</h1>
 
             <div className="movie-detail-page__meta">
-              <span className="movie-detail-page__year">{movie.year}</span>
+              {movie.year && <span className="movie-detail-page__year">{movie.year}</span>}
               {movie.runtime && (
                 <span className="movie-detail-page__runtime">
                   {Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m
@@ -170,16 +170,18 @@ const MovieDetailPage: React.FC = () => {
               </div>
             )}
 
-            <div className="movie-detail-page__genres">
-              {movie.genres.map((genre) => (
-                <Badge key={genre} variant="secondary">
-                  {genre}
-                </Badge>
-              ))}
-            </div>
+            {genres.length > 0 && (
+              <div className="movie-detail-page__genres">
+                {genres.map((genre) => (
+                  <Badge key={genre} variant="secondary">
+                    {genre}
+                  </Badge>
+                ))}
+              </div>
+            )}
 
-            {movie.overview && (
-              <p className="movie-detail-page__overview">{movie.overview}</p>
+            {movie.plot && (
+              <p className="movie-detail-page__overview">{movie.plot}</p>
             )}
 
             {movie.director && (
@@ -187,6 +189,45 @@ const MovieDetailPage: React.FC = () => {
                 <span className="movie-detail-page__detail-label">Director</span>
                 <span className="movie-detail-page__detail-value">{movie.director}</span>
               </div>
+            )}
+
+            {/* File Information */}
+            {hasFileInfo && (
+              <section className="movie-detail-page__section">
+                <h2 className="movie-detail-page__section-title">File Information</h2>
+                <div className="movie-detail-page__file-info">
+                  {movie.resolution && (
+                    <div className="movie-detail-page__detail-row">
+                      <span className="movie-detail-page__detail-label">Resolution</span>
+                      <span className="movie-detail-page__detail-value">{movie.resolution}</span>
+                    </div>
+                  )}
+                  {movie.codec_video && (
+                    <div className="movie-detail-page__detail-row">
+                      <span className="movie-detail-page__detail-label">Video Codec</span>
+                      <span className="movie-detail-page__detail-value">{movie.codec_video}</span>
+                    </div>
+                  )}
+                  {movie.codec_audio && (
+                    <div className="movie-detail-page__detail-row">
+                      <span className="movie-detail-page__detail-label">Audio Codec</span>
+                      <span className="movie-detail-page__detail-value">{movie.codec_audio}</span>
+                    </div>
+                  )}
+                  {movie.file_size != null && (
+                    <div className="movie-detail-page__detail-row">
+                      <span className="movie-detail-page__detail-label">File Size</span>
+                      <span className="movie-detail-page__detail-value">{formatFileSize(movie.file_size)}</span>
+                    </div>
+                  )}
+                  {movie.file_duration != null && (
+                    <div className="movie-detail-page__detail-row">
+                      <span className="movie-detail-page__detail-label">Duration</span>
+                      <span className="movie-detail-page__detail-value">{formatDuration(movie.file_duration)}</span>
+                    </div>
+                  )}
+                </div>
+              </section>
             )}
 
             <div className="movie-detail-page__actions">
@@ -223,52 +264,6 @@ const MovieDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Cast Section */}
-        {movie.cast.length > 0 && (
-          <section className="movie-detail-page__section">
-            <h2 className="movie-detail-page__section-title">Cast</h2>
-            <div className="movie-detail-page__cast-grid">
-              {movie.cast.map((actor) => (
-                <Card key={actor.name} variant="outlined" padding="sm">
-                  <div className="movie-detail-page__cast-item">
-                    <span className="movie-detail-page__cast-name">{actor.name}</span>
-                    <span className="movie-detail-page__cast-role">{actor.role}</span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Related Movies Section */}
-        {movie.relatedMovies.length > 0 && (
-          <section className="movie-detail-page__section">
-            <h2 className="movie-detail-page__section-title">Related Movies</h2>
-            <div className="movie-detail-page__related-grid">
-              {movie.relatedMovies.map((relatedMovie) => (
-                <Card
-                  key={relatedMovie.id}
-                  variant="elevated"
-                  className="movie-detail-page__related-card"
-                  onClick={() => navigate(`/movies/${relatedMovie.id}`)}
-                >
-                  {relatedMovie.posterUrl ? (
-                    <img
-                      src={relatedMovie.posterUrl}
-                      alt={relatedMovie.title}
-                      className="movie-detail-page__related-poster"
-                    />
-                  ) : (
-                    <div className="movie-detail-page__related-poster-placeholder" />
-                  )}
-                  <Card.Content className="movie-detail-page__related-content">
-                    <h4 className="movie-detail-page__related-title">{relatedMovie.title}</h4>
-                  </Card.Content>
-                </Card>
-              ))}
-            </div>
-          </section>
         )}
       </div>
     </div>

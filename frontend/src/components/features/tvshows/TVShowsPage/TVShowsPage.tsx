@@ -4,24 +4,35 @@ import { TextInput, Button, Pagination, EmptyState, Skeleton, SkeletonCard } fro
 import { FilterPanel, type FilterSection } from '@/components/features/filter'
 import { SortDropdown, type SortOption } from '@/components/features/sort'
 import { TVShowCard, type TVShowCardProps } from '../TVShowCard'
+import { useTVShowStore } from '@/stores/tvShowStore'
+import { tvShowService } from '@/services/tvShowService'
 import './TVShowsPage.css'
-
-// Mock TV show type for empty state demonstration
-interface TVShow extends Omit<TVShowCardProps, 'onClick' | 'onAddToQueue' | 'onEdit' | 'onDelete'> {}
 
 const TVShowsPage: React.FC = () => {
   const navigate = useNavigate()
+  const {
+    tvShows,
+    totalTVShows,
+    currentPage,
+    isLoading,
+    error,
+    fetchTVShows,
+  } = useTVShowStore()
+
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({})
   const [sortValue, setSortValue] = useState('name-asc')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
-  const [tvShows, setTvShows] = useState<TVShow[]>([])
-  const [totalPages, setTotalPages] = useState(1)
+  const [isScanning, setIsScanning] = useState(false)
+  const [scanResult, setScanResult] = useState<string | null>(null)
   const itemsPerPage = 12
+
+  // Fetch TV shows on mount
+  useEffect(() => {
+    fetchTVShows(1, itemsPerPage)
+  }, [fetchTVShows])
 
   // Debounce search query
   useEffect(() => {
@@ -31,19 +42,20 @@ const TVShowsPage: React.FC = () => {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // Filter sections (with additional status and network filters for TV shows)
+  const totalPages = Math.ceil(totalTVShows / itemsPerPage)
+
+  // Filter sections
   const filterSections: FilterSection[] = [
     {
       id: 'genre',
       label: 'Genre',
       options: [
-        { value: 'action', label: 'Action', count: 15 },
-        { value: 'comedy', label: 'Comedy', count: 22 },
-        { value: 'drama', label: 'Drama', count: 28 },
-        { value: 'horror', label: 'Horror', count: 10 },
-        { value: 'sci-fi', label: 'Sci-Fi', count: 12 },
-        { value: 'thriller', label: 'Thriller', count: 18 },
-        { value: 'reality', label: 'Reality', count: 8 },
+        { value: 'action', label: 'Action', count: 0 },
+        { value: 'comedy', label: 'Comedy', count: 0 },
+        { value: 'drama', label: 'Drama', count: 0 },
+        { value: 'horror', label: 'Horror', count: 0 },
+        { value: 'sci-fi', label: 'Sci-Fi', count: 0 },
+        { value: 'thriller', label: 'Thriller', count: 0 },
       ],
       multiSelect: true,
     },
@@ -51,34 +63,8 @@ const TVShowsPage: React.FC = () => {
       id: 'status',
       label: 'Status',
       options: [
-        { value: 'continuing', label: 'Continuing', count: 25 },
-        { value: 'ended', label: 'Ended', count: 45 },
-        { value: 'returning', label: 'Returning', count: 12 },
-      ],
-      multiSelect: true,
-    },
-    {
-      id: 'network',
-      label: 'Network',
-      options: [
-        { value: 'netflix', label: 'Netflix', count: 18 },
-        { value: 'hbo', label: 'HBO', count: 12 },
-        { value: 'hulu', label: 'Hulu', count: 8 },
-        { value: 'amazon', label: 'Amazon Prime', count: 15 },
-        { value: 'disney', label: 'Disney+', count: 10 },
-        { value: 'apple', label: 'Apple TV+', count: 6 },
-      ],
-      multiSelect: true,
-    },
-    {
-      id: 'year',
-      label: 'Year',
-      options: [
-        { value: '2024', label: '2024', count: 8 },
-        { value: '2023', label: '2023', count: 15 },
-        { value: '2022', label: '2022', count: 22 },
-        { value: '2021', label: '2021', count: 18 },
-        { value: '2020', label: '2020', count: 25 },
+        { value: 'continuing', label: 'Continuing', count: 0 },
+        { value: 'ended', label: 'Ended', count: 0 },
       ],
       multiSelect: true,
     },
@@ -86,9 +72,9 @@ const TVShowsPage: React.FC = () => {
       id: 'rating',
       label: 'Rating',
       options: [
-        { value: '5', label: '5 Stars', count: 6 },
-        { value: '4', label: '4+ Stars', count: 22 },
-        { value: '3', label: '3+ Stars', count: 38 },
+        { value: '5', label: '5 Stars', count: 0 },
+        { value: '4', label: '4+ Stars', count: 0 },
+        { value: '3', label: '3+ Stars', count: 0 },
       ],
       multiSelect: false,
     },
@@ -98,12 +84,8 @@ const TVShowsPage: React.FC = () => {
   const sortOptions: SortOption[] = [
     { value: 'name-asc', label: 'Name', direction: 'asc' },
     { value: 'name-desc', label: 'Name', direction: 'desc' },
-    { value: 'premiere-asc', label: 'Premiere Date', direction: 'asc' },
-    { value: 'premiere-desc', label: 'Premiere Date', direction: 'desc' },
     { value: 'rating-asc', label: 'Rating', direction: 'asc' },
     { value: 'rating-desc', label: 'Rating', direction: 'desc' },
-    { value: 'seasons-asc', label: 'Seasons', direction: 'asc' },
-    { value: 'seasons-desc', label: 'Seasons', direction: 'desc' },
   ]
 
   // Handle filter change
@@ -112,14 +94,17 @@ const TVShowsPage: React.FC = () => {
       ...prev,
       [sectionId]: values,
     }))
-    setCurrentPage(1)
   }, [])
 
   // Handle clear all filters
   const handleClearFilters = useCallback(() => {
     setSelectedFilters({})
-    setCurrentPage(1)
   }, [])
+
+  // Handle page change
+  const handlePageChange = useCallback((page: number) => {
+    fetchTVShows(page, itemsPerPage)
+  }, [fetchTVShows])
 
   // Handle TV show click
   const handleShowClick = useCallback((showId: string) => {
@@ -141,16 +126,23 @@ const TVShowsPage: React.FC = () => {
     console.log('Delete:', showId)
   }, [])
 
-  // Simulate loading
-  useEffect(() => {
-    setIsLoading(true)
-    const timer = setTimeout(() => {
-      setTvShows([])
-      setTotalPages(1)
-      setIsLoading(false)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [debouncedSearch, selectedFilters, sortValue, currentPage])
+  // Handle scan directory
+  const handleScanDirectory = useCallback(async () => {
+    setIsScanning(true)
+    setScanResult(null)
+    try {
+      const result = await tvShowService.scanDirectory()
+      setScanResult(
+        `Scan complete: ${result.files_synced} file(s) synced, ${result.shows_created} episode(s) created`
+      )
+      fetchTVShows(1, itemsPerPage)
+    } catch {
+      setScanResult('Scan failed. Check the server logs for details.')
+    } finally {
+      setIsScanning(false)
+      setTimeout(() => setScanResult(null), 5000)
+    }
+  }, [fetchTVShows])
 
   return (
     <div className="tvshows-page">
@@ -158,7 +150,11 @@ const TVShowsPage: React.FC = () => {
         <div className="tvshows-page__title-section">
           <h1 className="tvshows-page__title">TV Shows</h1>
           <p className="tvshows-page__subtitle">
-            {isLoading ? 'Loading...' : 'No TV shows found'}
+            {isLoading
+              ? 'Loading...'
+              : totalTVShows > 0
+                ? `${totalTVShows} show${totalTVShows !== 1 ? 's' : ''} in your library`
+                : 'No TV shows found'}
           </p>
         </div>
 
@@ -205,6 +201,14 @@ const TVShowsPage: React.FC = () => {
         </div>
 
         <div className="tvshows-page__toolbar-right">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleScanDirectory}
+            disabled={isScanning}
+          >
+            {isScanning ? 'Scanning...' : 'Scan Now'}
+          </Button>
           <div className="tvshows-page__view-toggle" role="group" aria-label="View mode">
             <Button
               variant={viewMode === 'grid' ? 'primary' : 'secondary'}
@@ -259,6 +263,24 @@ const TVShowsPage: React.FC = () => {
       </div>
 
       <main className="tvshows-page__content">
+        {scanResult && (
+          <div className="p-4 mb-4 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-800">
+            <p>{scanResult}</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="p-4 mb-4 text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800">
+            <p>{error}</p>
+            <button
+              onClick={() => fetchTVShows(currentPage, itemsPerPage)}
+              className="mt-2 text-sm underline hover:no-underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
         {isLoading ? (
           <div className={`tvshows-page__grid tvshows-page__grid--${viewMode}`}>
             {Array.from({ length: itemsPerPage }).map((_, index) => (
@@ -269,7 +291,7 @@ const TVShowsPage: React.FC = () => {
           <EmptyState
             variant="empty"
             title="No TV shows found"
-            description="Try adjusting your search or filters to find what you're looking for."
+            description="Your TV show library will appear here once media files are synced from your TV directory."
             action={{
               label: 'Clear filters',
               onClick: handleClearFilters,
@@ -281,11 +303,17 @@ const TVShowsPage: React.FC = () => {
               {tvShows.map((show) => (
                 <TVShowCard
                   key={show.id}
-                  {...show}
-                  onClick={() => handleShowClick(show.id)}
-                  onAddToQueue={() => handleAddToQueue(show.id)}
-                  onEdit={() => handleEdit(show.id)}
-                  onDelete={() => handleDelete(show.id)}
+                  id={String(show.id)}
+                  title={show.title}
+                  rating={show.rating}
+                  posterUrl={show.posterUrl}
+                  genres={show.genre}
+                  seasons={show.seasons}
+                  episodes={show.episodes}
+                  onClick={() => handleShowClick(String(show.id))}
+                  onAddToQueue={() => handleAddToQueue(String(show.id))}
+                  onEdit={() => handleEdit(String(show.id))}
+                  onDelete={() => handleDelete(String(show.id))}
                 />
               ))}
             </div>
@@ -295,7 +323,7 @@ const TVShowsPage: React.FC = () => {
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  onPageChange={setCurrentPage}
+                  onPageChange={handlePageChange}
                 />
               </div>
             )}

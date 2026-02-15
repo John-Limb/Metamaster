@@ -4,10 +4,31 @@ import redis
 import json
 import logging
 from typing import Optional, Any, Dict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, date, timedelta, timezone
+from decimal import Decimal
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+class _CacheEncoder(json.JSONEncoder):
+    """JSON encoder that handles SQLAlchemy models, datetimes, and other common types."""
+
+    def default(self, obj: Any) -> Any:
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        if isinstance(obj, date):
+            return obj.isoformat()
+        if isinstance(obj, Decimal):
+            return float(obj)
+        # Handle SQLAlchemy model instances by extracting column values
+        mapper = getattr(obj.__class__, "__mapper__", None)
+        if mapper is not None:
+            return {
+                col.key: getattr(obj, col.key)
+                for col in mapper.column_attrs
+            }
+        return super().default(obj)
 
 
 class RedisCacheService:
@@ -105,8 +126,8 @@ class RedisCacheService:
             if ttl is None:
                 ttl = self.DEFAULT_TTL
 
-            # Serialize value to JSON
-            serialized_value = json.dumps(value)
+            # Serialize value to JSON (custom encoder handles ORM models, datetimes, etc.)
+            serialized_value = json.dumps(value, cls=_CacheEncoder)
 
             # Set with expiration
             self.redis_client.setex(key, ttl, serialized_value)

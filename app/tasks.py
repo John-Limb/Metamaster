@@ -695,7 +695,8 @@ def scan_new_media(self):
     cron schedule matches the current minute.
     """
     from app.domain.files.service import FileService
-    from app.domain.movies.scanner import create_movies_from_files
+    from app.domain.movies.scanner import create_movies_from_files, enrich_new_movies
+    from app.domain.tv_shows.scanner import create_tv_shows_from_files, enrich_new_tv_shows
 
     db: Optional[Session] = None
     try:
@@ -715,16 +716,26 @@ def scan_new_media(self):
                 except Exception as e:
                     logger.error(f"Error syncing {media_dir}: {e}", exc_info=True)
 
-            created = create_movies_from_files(db)
+            movies_created = create_movies_from_files(db)
+            shows_created = create_tv_shows_from_files(db)
+
+            movies_enriched = enrich_new_movies(db)
+            shows_enriched = enrich_new_tv_shows(db)
 
             logger.info(
                 f"Media scan complete: {total_synced} files synced, "
-                f"{created} new movie(s) created"
+                f"{movies_created} new movie(s) created, "
+                f"{shows_created} new episode file(s) created, "
+                f"{movies_enriched} movie(s) enriched, "
+                f"{shows_enriched} show(s) enriched"
             )
             return {
                 "status": "success",
                 "files_synced": total_synced,
-                "movies_created": created,
+                "movies_created": movies_created,
+                "shows_created": shows_created,
+                "movies_enriched": movies_enriched,
+                "shows_enriched": shows_enriched,
             }
     except Exception as exc:
         logger.error(f"Error during media scan: {exc}", exc_info=True)

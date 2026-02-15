@@ -116,6 +116,19 @@ export const tvShowService = {
     }
   },
 
+  // Scan TV directory for new files
+  scanDirectory: async () => {
+    try {
+      const response = await apiClient.post<{ files_synced: number; shows_created: number }>(
+        '/tv-shows/scan-directory'
+      )
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, 'scanDirectory')
+      throw error
+    }
+  },
+
   // Get top rated TV shows
   getTopRatedTVShows: async (page = 1, pageSize = 20) => {
     try {

@@ -26,6 +26,8 @@ const MoviesPage: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({})
   const [sortValue, setSortValue] = useState('title-asc')
+  const [isScanning, setIsScanning] = useState(false)
+  const [scanResult, setScanResult] = useState<string | null>(null)
   const itemsPerPage = 12
 
   // Fetch movies on mount
@@ -126,6 +128,24 @@ const MoviesPage: React.FC = () => {
     console.log('Edit:', movieId)
   }, [])
 
+  // Handle scan directory
+  const handleScanDirectory = useCallback(async () => {
+    setIsScanning(true)
+    setScanResult(null)
+    try {
+      const result = await movieService.scanDirectory()
+      setScanResult(
+        `Scan complete: ${result.files_synced} file(s) synced, ${result.movies_created} movie(s) created`
+      )
+      fetchMovies(1, itemsPerPage)
+    } catch {
+      setScanResult('Scan failed. Check the server logs for details.')
+    } finally {
+      setIsScanning(false)
+      setTimeout(() => setScanResult(null), 5000)
+    }
+  }, [fetchMovies])
+
   // Handle scan (FFprobe)
   const handleScan = useCallback(async (movieId: string) => {
     try {
@@ -198,6 +218,14 @@ const MoviesPage: React.FC = () => {
         </div>
 
         <div className="movies-page__toolbar-right">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleScanDirectory}
+            disabled={isScanning}
+          >
+            {isScanning ? 'Scanning...' : 'Scan Now'}
+          </Button>
           <div className="movies-page__view-toggle" role="group" aria-label="View mode">
             <Button
               variant={viewMode === 'grid' ? 'primary' : 'secondary'}
@@ -252,6 +280,12 @@ const MoviesPage: React.FC = () => {
       </div>
 
       <main className="movies-page__content">
+        {scanResult && (
+          <div className="p-4 mb-4 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-800">
+            <p>{scanResult}</p>
+          </div>
+        )}
+
         {error && (
           <div className="p-4 mb-4 text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800">
             <p>{error}</p>
@@ -293,6 +327,11 @@ const MoviesPage: React.FC = () => {
                   posterUrl={movie.posterUrl}
                   genres={movie.genre}
                   quality={movie.quality}
+                  resolution={movie.resolution}
+                  codec_video={movie.codec_video}
+                  codec_audio={movie.codec_audio}
+                  file_size={movie.file_size}
+                  file_duration={movie.file_duration}
                   onClick={() => handleMovieClick(String(movie.id))}
                   onAddToQueue={() => handleAddToQueue(String(movie.id))}
                   onScan={() => handleScan(String(movie.id))}

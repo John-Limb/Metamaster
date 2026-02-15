@@ -18,6 +18,9 @@ from app.schemas import (
 from app.services_impl import TVShowService, TVDBService
 from app.infrastructure.cache.redis_cache import get_cache_service
 from app.application.search.service import SearchFilters, TVShowSearchService
+from app.domain.tv_shows.scanner import create_tv_shows_from_files, enrich_new_tv_shows, probe_episode_file
+from app.domain.files.service import FileService
+from app.core.config import TV_DIR
 from app.api.utils import pagination_metadata, resolve_pagination
 import logging
 import json
@@ -231,6 +234,34 @@ async def get_season_episodes(
         **pagination_metadata(total=total, limit=normalized_limit, skip=normalized_offset),
         "page": current_page,
     }
+
+
+@router.post("/scan-directory")
+async def scan_tv_directory(db: Session = Depends(get_db)):
+    """Scan the TV directory for new files and create show/season/episode records with FFprobe analysis."""
+    try:
+        file_service = FileService(db)
+        try:
+            files_synced = file_service.sync_directory(TV_DIR)
+        except ValueError as e:
+            logger.warning(f"Could not sync {TV_DIR}: {e}")
+            files_synced = 0
+
+        shows_created = create_tv_shows_from_files(db)
+        shows_enriched = enrich_new_tv_shows(db)
+
+        # Invalidate TV show list cache
+        cache_service = get_cache_service()
+        cache_service.delete_pattern(f"{cache_service.TV_SHOW_LIST_PREFIX}*")
+
+        return {
+            "files_synced": files_synced,
+            "shows_created": shows_created,
+            "shows_enriched": shows_enriched,
+        }
+    except Exception as e:
+        logger.error(f"Error scanning TV directory: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="An error occurred while scanning the TV directory")
 
 
 @router.post("", response_model=TVShowResponse, status_code=201)

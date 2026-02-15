@@ -14,7 +14,9 @@ from app.schemas import (
 from app.services_impl import MovieService, OMDBService
 from app.infrastructure.cache.redis_cache import get_cache_service
 from app.application.search.service import SearchFilters, MovieSearchService
-from app.domain.movies.scanner import probe_movie_file
+from app.domain.movies.scanner import probe_movie_file, create_movies_from_files, enrich_new_movies
+from app.domain.files.service import FileService
+from app.core.config import MOVIE_DIR
 from app.api.utils import pagination_metadata, resolve_pagination
 import logging
 import json
@@ -276,6 +278,34 @@ async def delete_movie(
     logger.debug(f"Invalidated cache for movie {movie_id} after delete")
 
     return None
+
+
+@router.post("/scan-directory")
+async def scan_movie_directory(db: Session = Depends(get_db)):
+    """Scan the movie directory for new files and create movie records with FFprobe analysis."""
+    try:
+        file_service = FileService(db)
+        try:
+            files_synced = file_service.sync_directory(MOVIE_DIR)
+        except ValueError as e:
+            logger.warning(f"Could not sync {MOVIE_DIR}: {e}")
+            files_synced = 0
+
+        movies_created = create_movies_from_files(db)
+        movies_enriched = enrich_new_movies(db)
+
+        # Invalidate movie list cache
+        cache_service = get_cache_service()
+        cache_service.delete_pattern(f"{cache_service.MOVIE_LIST_PREFIX}*")
+
+        return {
+            "files_synced": files_synced,
+            "movies_created": movies_created,
+            "movies_enriched": movies_enriched,
+        }
+    except Exception as e:
+        logger.error(f"Error scanning movie directory: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="An error occurred while scanning the movie directory")
 
 
 @router.post("/{movie_id}/scan", response_model=MovieResponse)

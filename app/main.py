@@ -14,7 +14,8 @@ from app.core.config import settings, MEDIA_DIRECTORIES
 from app.core.init_db import init_database
 from app.core.database import SessionLocal
 from app.domain.files.service import FileService
-from app.domain.movies.scanner import create_movies_from_files
+from app.domain.movies.scanner import create_movies_from_files, enrich_new_movies
+from app.domain.tv_shows.scanner import create_tv_shows_from_files, enrich_new_tv_shows
 from app.tasks.celery_app import celery_app
 from app.api import health
 from app.api import movies
@@ -58,8 +59,13 @@ async def lifespan(app: FastAPI):
                 logger.error(f"Error syncing {media_dir}: {e}", exc_info=True)
         logger.info(f"Media directory sync complete: {total_synced} total items")
 
-        # Create Movie records for video files under MOVIE_DIR that don't have one yet
+        # Create Movie/TVShow records for video files that don't have records yet
         create_movies_from_files(db)
+        create_tv_shows_from_files(db)
+
+        # Enrich newly created records with metadata from OMDB/TVDB
+        enrich_new_movies(db)
+        enrich_new_tv_shows(db)
     finally:
         db.close()
 

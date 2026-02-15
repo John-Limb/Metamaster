@@ -128,6 +128,19 @@ export const movieService = {
     }
   },
 
+  // Scan movie directory for new files
+  scanDirectory: async () => {
+    try {
+      const response = await apiClient.post<{ files_synced: number; movies_created: number }>(
+        '/movies/scan-directory'
+      )
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, 'scanDirectory')
+      throw error
+    }
+  },
+
   // Get top rated movies
   getTopRatedMovies: async (page = 1, pageSize = 20) => {
     try {

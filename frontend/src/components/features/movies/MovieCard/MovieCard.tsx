@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Card, Badge, Button } from '@/components/common'
+import { formatFileSize } from '@/utils/helpers'
 import './MovieCard.css'
 
 export interface MovieCardProps {
@@ -10,6 +11,11 @@ export interface MovieCardProps {
   rating?: number
   genres?: string[]
   quality?: string
+  resolution?: string
+  codec_video?: string
+  codec_audio?: string
+  file_size?: number
+  file_duration?: number
   onClick?: () => void
   onAddToQueue?: () => void
   onScan?: () => void
@@ -25,6 +31,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   rating,
   genres = [],
   quality,
+  resolution,
+  codec_video,
+  codec_audio,
+  file_size,
+  file_duration,
   onClick,
   onAddToQueue,
   onScan,
@@ -32,6 +43,13 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onDelete,
 }) => {
   const [showActions, setShowActions] = useState(false)
+  const hasFileStats = resolution || codec_video || codec_audio || file_size || file_duration
+
+  const formatDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600)
+    const m = Math.floor((seconds % 3600) / 60)
+    return h > 0 ? `${h}h ${m}m` : `${m}m`
+  }
 
   const renderStars = (rating: number) => {
     const stars = Math.round(rating / 2)
@@ -216,6 +234,15 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             </div>
           )}
         </div>
+        {hasFileStats && (
+          <div className="movie-card__stats">
+            {resolution && <span className="movie-card__stat">{resolution}</span>}
+            {codec_video && <span className="movie-card__stat">{codec_video}</span>}
+            {codec_audio && <span className="movie-card__stat">{codec_audio}</span>}
+            {file_size != null && <span className="movie-card__stat">{formatFileSize(file_size)}</span>}
+            {file_duration != null && <span className="movie-card__stat">{formatDuration(file_duration)}</span>}
+          </div>
+        )}
       </Card.Content>
     </Card>
   )

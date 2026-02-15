@@ -10,6 +10,8 @@ from app.core.config import settings, MOVIE_DIR
 from app.domain.files.models import FileItem
 from app.domain.movies.models import Movie, MovieFile
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
+from app.services_impl import OMDBService
+from app.tasks.async_helpers import run_async
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +155,67 @@ def create_movies_from_files(db: Session) -> int:
         db.commit()
         logger.info(f"Created {created} movie record(s) from synced files")
     return created
+
+
+def enrich_new_movies(db: Session) -> int:
+    """Search OMDB for movies missing an omdb_id and populate metadata.
+
+    Returns the number of movies successfully enriched.
+    """
+    movies = db.query(Movie).filter(Movie.omdb_id.is_(None)).all()
+    if not movies:
+        return 0
+
+    # Collect existing omdb_ids to avoid unique-constraint violations
+    existing_omdb_ids = {
+        row[0] for row in db.query(Movie.omdb_id).filter(Movie.omdb_id.isnot(None)).all()
+    }
+
+    enriched = 0
+    for movie in movies:
+        try:
+            # Step 1: Search OMDB by title/year
+            search_raw = run_async(OMDBService.search_movie(db, movie.title, movie.year))
+            if not search_raw:
+                continue
+            search_parsed = OMDBService.parse_omdb_response(search_raw)
+            if not search_parsed or not search_parsed.get("search_results"):
+                continue
+
+            omdb_id = search_parsed["search_results"][0].get("omdb_id")
+            if not omdb_id or omdb_id in existing_omdb_ids:
+                continue
+
+            # Step 2: Fetch full details
+            detail_raw = run_async(OMDBService.get_movie_details(db, omdb_id))
+            if not detail_raw:
+                movie.omdb_id = omdb_id
+                existing_omdb_ids.add(omdb_id)
+                enriched += 1
+                continue
+
+            detail = OMDBService.parse_omdb_response(detail_raw)
+            if not detail:
+                movie.omdb_id = omdb_id
+                existing_omdb_ids.add(omdb_id)
+                enriched += 1
+                continue
+
+            # Step 3: Update fields
+            movie.omdb_id = omdb_id
+            movie.plot = detail.get("plot", movie.plot)
+            movie.rating = detail.get("rating", movie.rating)
+            movie.runtime = detail.get("runtime", movie.runtime)
+            movie.genres = detail.get("genres", movie.genres)
+            existing_omdb_ids.add(omdb_id)
+            enriched += 1
+        except Exception:
+            logger.warning(f"Failed to enrich movie {movie.id} ({movie.title})", exc_info=True)
+
+    if enriched:
+        db.commit()
+        logger.info(f"Enriched {enriched} movie(s) with OMDB metadata")
+    return enriched
 
 
 def probe_movie_file(db: Session, movie_id: int) -> Movie:
