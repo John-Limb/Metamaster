@@ -41,14 +41,14 @@ jobs:
 
       - name: Upload Bandit report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bandit-report
           path: bandit-report.json
 
       - name: Upload Safety report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: safety-report
           path: safety-report.json
@@ -145,7 +145,7 @@ jobs:
             --enableRetired
 
       - name: Upload dependency-check report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dependency-check-report
           path: reports/
@@ -175,7 +175,7 @@ jobs:
           cat complexity-report.txt
 
       - name: Upload complexity report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: complexity-report
           path: complexity-report.txt
