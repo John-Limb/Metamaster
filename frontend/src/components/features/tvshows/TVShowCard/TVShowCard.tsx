@@ -5,7 +5,7 @@ import './TVShowCard.css'
 export interface TVShowCardProps {
   id: string
   title: string
-  posterUrl?: string
+  poster_url?: string
   seasons?: number
   episodes?: number
   status?: 'continuing' | 'ended' | 'returning'
@@ -25,7 +25,7 @@ export interface TVShowCardProps {
 export const TVShowCard: React.FC<TVShowCardProps> = ({
   id,
   title,
-  posterUrl,
+  poster_url,
   seasons = 0,
   episodes = 0,
   status,
@@ -77,9 +77,9 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
       onClick={onClick}
     >
       <div className="tvshow-card__poster-wrapper">
-        {posterUrl ? (
+        {poster_url ? (
           <img
-            src={posterUrl}
+            src={poster_url}
             alt={`${title} poster`}
             className="tvshow-card__poster"
             loading="lazy"

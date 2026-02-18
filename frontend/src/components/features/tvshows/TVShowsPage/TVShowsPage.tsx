@@ -4,6 +4,7 @@ import { TextInput, Button, Pagination, EmptyState, Skeleton, SkeletonCard } fro
 import { FilterPanel, type FilterSection } from '@/components/features/filter'
 import { SortDropdown, type SortOption } from '@/components/features/sort'
 import { TVShowCard, type TVShowCardProps } from '../TVShowCard'
+import { MediaDetailModal } from '@/components/features/media'
 import { useTVShowStore } from '@/stores/tvShowStore'
 import { tvShowService } from '@/services/tvShowService'
 import './TVShowsPage.css'
@@ -27,6 +28,7 @@ const TVShowsPage: React.FC = () => {
   const [sortValue, setSortValue] = useState('name-asc')
   const [isScanning, setIsScanning] = useState(false)
   const [scanResult, setScanResult] = useState<string | null>(null)
+  const [modalShowId, setModalShowId] = useState<string | null>(null)
   const itemsPerPage = 12
 
   // Fetch TV shows on mount
@@ -106,10 +108,10 @@ const TVShowsPage: React.FC = () => {
     fetchTVShows(page, itemsPerPage)
   }, [fetchTVShows])
 
-  // Handle TV show click
+  // Handle TV show click — open modal
   const handleShowClick = useCallback((showId: string) => {
-    navigate(`/tv-shows/${showId}`)
-  }, [navigate])
+    setModalShowId(showId)
+  }, [])
 
   // Handle add to queue
   const handleAddToQueue = useCallback((showId: string) => {
@@ -306,7 +308,7 @@ const TVShowsPage: React.FC = () => {
                   id={String(show.id)}
                   title={show.title}
                   rating={show.rating}
-                  posterUrl={show.posterUrl}
+                  poster_url={show.poster_url}
                   genres={show.genre}
                   seasons={show.seasons}
                   episodes={show.episodes}
@@ -330,6 +332,14 @@ const TVShowsPage: React.FC = () => {
           </>
         )}
       </main>
+
+      <MediaDetailModal
+        isOpen={modalShowId !== null}
+        mediaType="tv_show"
+        mediaId={modalShowId || ''}
+        onClose={() => setModalShowId(null)}
+        onMetadataSynced={() => fetchTVShows(currentPage, itemsPerPage)}
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaFilter, FaSort } from 'react-icons/fa'
 import { useMovieStore } from '@/stores/movieStore'
+import { MediaDetailModal } from '@/components/features/media'
 
 export const MoviesPage: React.FC = () => {
   const {
@@ -14,6 +15,8 @@ export const MoviesPage: React.FC = () => {
     setSortBy,
     fetchMovies,
   } = useMovieStore()
+
+  const [modalMovieId, setModalMovieId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchMovies(1, 20)
@@ -79,7 +82,7 @@ export const MoviesPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden animate-pulse">
-              <div className="aspect-video bg-gray-200 dark:bg-slate-700" />
+              <div className="aspect-[2/3] bg-gray-200 dark:bg-slate-700" />
               <div className="p-4 space-y-2">
                 <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-3/4" />
                 <div className="h-3 bg-gray-200 dark:bg-slate-700 rounded w-1/2" />
@@ -91,7 +94,7 @@ export const MoviesPage: React.FC = () => {
 
       {/* Movies Grid */}
       {!isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {movies.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <p className="text-gray-500 dark:text-gray-400 text-lg">No movies found</p>
@@ -103,38 +106,58 @@ export const MoviesPage: React.FC = () => {
             movies.map((movie) => (
               <div
                 key={movie.id}
-                className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+                onClick={() => setModalMovieId(String(movie.id))}
+                className="group bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer"
               >
-                <div className="aspect-video bg-gray-200 dark:bg-slate-700 flex items-center justify-center">
-                  {movie.posterUrl ? (
+                <div className="relative aspect-[2/3] bg-gray-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
+                  {movie.poster_url ? (
                     <img
-                      src={movie.posterUrl}
+                      src={movie.poster_url}
                       alt={movie.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
                     />
                   ) : (
-                    <svg
-                      className="w-12 h-12 text-gray-400 dark:text-slate-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"
-                      />
-                    </svg>
+                    <div className="flex flex-col items-center gap-2 text-gray-400 dark:text-slate-500">
+                      <svg
+                        className="w-12 h-12"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"
+                        />
+                      </svg>
+                      <span className="text-xs">No poster</span>
+                    </div>
+                  )}
+
+                  {/* Rating badge */}
+                  {movie.rating != null && (
+                    <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full">
+                      <span className="text-amber-400 text-xs">★</span>
+                      <span className="text-white text-xs font-medium">{movie.rating.toFixed(1)}</span>
+                    </div>
+                  )}
+
+                  {/* Quality badge */}
+                  {movie.quality && (
+                    <span className="absolute top-2 right-2 px-2 py-0.5 bg-indigo-600/90 text-white text-xs font-medium rounded-full">
+                      {movie.quality}
+                    </span>
                   )}
                 </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                <div className="p-3">
+                  <h3 className="font-semibold text-gray-900 dark:text-white truncate text-sm">
                     {movie.title}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {movie.year ?? 'Unknown year'}
-                    {movie.rating != null && ` · ${movie.rating.toFixed(1)}`}
+                    {movie.genre && movie.genre.length > 0 && ` · ${movie.genre.slice(0, 2).join(', ')}`}
                   </p>
                 </div>
               </div>
@@ -165,6 +188,15 @@ export const MoviesPage: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Detail Modal */}
+      <MediaDetailModal
+        isOpen={modalMovieId !== null}
+        mediaType="movie"
+        mediaId={modalMovieId || ''}
+        onClose={() => setModalMovieId(null)}
+        onMetadataSynced={() => fetchMovies(currentPage, pageSize)}
+      />
     </div>
   )
 }

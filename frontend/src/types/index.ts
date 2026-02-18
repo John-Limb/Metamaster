@@ -70,12 +70,16 @@ export interface Movie {
   title: string
   year?: number
   genre?: string[]
+  genres?: string
   rating?: number
   runtime?: number
   director?: string
   plot?: string
-  posterUrl?: string
+  poster_url?: string
+  omdb_id?: string
   fileId?: string
+  created_at?: string
+  updated_at?: string
   // Technical metadata from FFprobe
   quality?: string
   resolution?: string
@@ -91,10 +95,16 @@ export interface TVShow {
   title: string
   year?: number
   genre?: string[]
+  genres?: string
   rating?: number
   seasons?: number
   episodes?: number
-  posterUrl?: string
+  status?: string
+  plot?: string
+  poster_url?: string
+  tvdb_id?: string
+  created_at?: string
+  updated_at?: string
 }
 
 // File classification types

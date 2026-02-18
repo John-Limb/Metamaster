@@ -101,6 +101,17 @@ export const tvShowService = {
     }
   },
 
+  // Sync metadata from TVDB
+  syncMetadata: async (id: string) => {
+    try {
+      const response = await apiClient.post<TVShow>(`/tv-shows/${id}/sync-metadata`)
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, `syncMetadata: ${id}`)
+      throw error
+    }
+  },
+
   // Get popular TV shows
   getPopularTVShows: async (page = 1, pageSize = 20) => {
     try {

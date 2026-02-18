@@ -6,7 +6,7 @@ import './MovieCard.css'
 export interface MovieCardProps {
   id: string
   title: string
-  posterUrl?: string
+  poster_url?: string
   year: number
   rating?: number
   genres?: string[]
@@ -26,7 +26,7 @@ export interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({
   id,
   title,
-  posterUrl,
+  poster_url,
   year,
   rating,
   genres = [],
@@ -63,9 +63,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
       onClick={onClick}
     >
       <div className="movie-card__poster-wrapper">
-        {posterUrl ? (
+        {poster_url ? (
           <img
-            src={posterUrl}
+            src={poster_url}
             alt={`${title} poster`}
             className="movie-card__poster"
             loading="lazy"

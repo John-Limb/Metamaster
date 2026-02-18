@@ -111,6 +111,7 @@ class MovieResponse(BaseModel):
     runtime: Optional[int] = None
     genres: Optional[str] = None
     omdb_id: Optional[str] = None
+    poster_url: Optional[str] = Field(None, description="URL to movie poster image")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
@@ -177,6 +178,7 @@ class TVShowResponse(BaseModel):
     genres: Optional[str] = None
     status: Optional[str] = None
     tvdb_id: Optional[str] = None
+    poster_url: Optional[str] = Field(None, description="URL to TV show poster image")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 

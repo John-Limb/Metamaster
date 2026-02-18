@@ -399,9 +399,20 @@ async def sync_tv_show_metadata(
             show.genres = parsed_data["genres"]
             updated_fields.append("genres")
 
+        poster = parsed_data.get("poster")
+        if poster and poster != "N/A" and poster != show.poster_url:
+            old_values["poster_url"] = show.poster_url
+            show.poster_url = poster
+            updated_fields.append("poster_url")
+
         # Commit changes
         db.commit()
         db.refresh(show)
+
+        # Invalidate cache for this TV show and TV show lists
+        cache_service = get_cache_service()
+        cache_service.invalidate_tv_show(show_id)
+        logger.debug(f"Invalidated cache for TV show {show_id} after metadata sync")
 
         logger.info(
             f"Successfully synced metadata for TV show {show_id}. "
@@ -416,6 +427,7 @@ async def sync_tv_show_metadata(
             "status": show.status,
             "genres": json.loads(show.genres) if show.genres else [],
             "tvdb_id": show.tvdb_id,
+            "poster_url": show.poster_url,
         }
 
         return {

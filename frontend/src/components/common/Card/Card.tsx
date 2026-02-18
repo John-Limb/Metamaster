@@ -111,7 +111,7 @@ export const Card: React.FC<CardProps> & {
     <Component
       className={cardClasses}
       onClick={onClick}
-      disabled={onClick ? true : undefined}
+      disabled={undefined}
       tabIndex={onClick || hoverable ? 0 : undefined}
       role={role || (onClick || hoverable ? 'button' : undefined)}
       aria-label={onClick ? undefined : undefined}

@@ -418,9 +418,20 @@ async def sync_movie_metadata(
             movie.genres = parsed_data["genres"]
             updated_fields.append("genres")
 
+        poster = parsed_data.get("poster")
+        if poster and poster != "N/A" and poster != movie.poster_url:
+            old_values["poster_url"] = movie.poster_url
+            movie.poster_url = poster
+            updated_fields.append("poster_url")
+
         # Commit changes
         db.commit()
         db.refresh(movie)
+
+        # Invalidate cache for this movie and movie lists
+        cache_service = get_cache_service()
+        cache_service.invalidate_movie(movie_id)
+        logger.debug(f"Invalidated cache for movie {movie_id} after metadata sync")
 
         logger.info(
             f"Successfully synced metadata for movie {movie_id}. "
@@ -436,6 +447,7 @@ async def sync_movie_metadata(
             "runtime": movie.runtime,
             "genres": json.loads(movie.genres) if movie.genres else [],
             "omdb_id": movie.omdb_id,
+            "poster_url": movie.poster_url,
         }
 
         return {

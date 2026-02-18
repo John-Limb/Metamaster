@@ -117,6 +117,17 @@ export const movieService = {
     }
   },
 
+  // Sync metadata from OMDB
+  syncMetadata: async (id: string) => {
+    try {
+      const response = await apiClient.post<Movie>(`/movies/${id}/sync-metadata`)
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, `syncMetadata: ${id}`)
+      throw error
+    }
+  },
+
   // Scan a movie file with FFprobe
   scanMovie: async (id: string) => {
     try {

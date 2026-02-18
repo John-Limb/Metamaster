@@ -8,7 +8,7 @@ interface TVShowDetail {
   id: string
   title: string
   backdropUrl?: string
-  posterUrl?: string
+  poster_url?: string
   rating: number
   status: 'continuing' | 'ended' | 'returning'
   genres: string[]
@@ -22,7 +22,7 @@ interface TVShowDetail {
     airDate?: string
   }>
   cast: Array<{ name: string; role: string }>
-  relatedShows: Array<{ id: string; title: string; posterUrl?: string }>
+  relatedShows: Array<{ id: string; title: string; poster_url?: string }>
 }
 
 const TVShowDetailPage: React.FC = () => {
@@ -151,9 +151,9 @@ const TVShowDetailPage: React.FC = () => {
         <div className="tvshow-detail-page__main">
           {/* Poster */}
           <div className="tvshow-detail-page__poster-wrapper">
-            {showDetail.posterUrl ? (
+            {showDetail.poster_url ? (
               <img
-                src={showDetail.posterUrl}
+                src={showDetail.poster_url}
                 alt={`${showDetail.title} poster`}
                 className="tvshow-detail-page__poster"
               />
@@ -355,9 +355,9 @@ const TVShowDetailPage: React.FC = () => {
                   className="tvshow-detail-page__related-card"
                   onClick={() => navigate(`/tv-shows/${relatedShow.id}`)}
                 >
-                  {relatedShow.posterUrl ? (
+                  {relatedShow.poster_url ? (
                     <img
-                      src={relatedShow.posterUrl}
+                      src={relatedShow.poster_url}
                       alt={relatedShow.title}
                       className="tvshow-detail-page__related-poster"
                     />

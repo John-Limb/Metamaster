@@ -19,6 +19,7 @@ class Movie(Base):
     rating = Column(Float)
     runtime = Column(Integer)  # in minutes
     genres = Column(Text)  # JSON array stored as string
+    poster_url = Column(String(500))  # URL to movie poster image
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -115,9 +115,9 @@ const MovieDetailPage: React.FC = () => {
         <div className="movie-detail-page__main">
           {/* Poster */}
           <div className="movie-detail-page__poster-wrapper">
-            {movie.posterUrl ? (
+            {movie.poster_url ? (
               <img
-                src={movie.posterUrl}
+                src={movie.poster_url}
                 alt={`${movie.title} poster`}
                 className="movie-detail-page__poster"
               />

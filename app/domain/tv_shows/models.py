@@ -18,6 +18,7 @@ class TVShow(Base):
     rating = Column(Float)
     genres = Column(Text)  # JSON array stored as string
     status = Column(String(50))  # "Continuing" or "Ended"
+    poster_url = Column(String(500))  # URL to TV show poster image
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
