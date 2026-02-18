@@ -1,6 +1,12 @@
 import { apiClient } from '@/utils/api'
 import { errorHandler } from '@/utils/errorHandler'
-import type { FileItem, PaginatedResponse, ApiResponse, FileStats } from '@/types'
+import type {
+  FileItem,
+  PaginatedResponse,
+  ApiResponse,
+  FileStats,
+  FileClassifyResponse,
+} from '@/types'
 import type { AxiosProgressEvent } from 'axios'
 
 export const fileService = {
@@ -124,6 +130,20 @@ export const fileService = {
       return response.data
     } catch (error: any) {
       errorHandler.handleError(error, `batchMoveFiles: ${ids.length} files to ${newPath}`)
+      throw error
+    }
+  },
+
+  // Classify files by filename patterns
+  classifyFiles: async (filenames?: string[], fileIds?: number[]) => {
+    try {
+      const response = await apiClient.post<FileClassifyResponse>('/files/classify', {
+        filenames,
+        file_ids: fileIds,
+      })
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, 'classifyFiles')
       throw error
     }
   },

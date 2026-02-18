@@ -97,6 +97,24 @@ export interface TVShow {
   posterUrl?: string
 }
 
+// File classification types
+export interface FileClassificationResult {
+  filename: string
+  type: 'movie' | 'tv_show'
+  confidence: 'high' | 'medium' | 'low'
+  pattern_matched: string
+  title?: string
+  show_name?: string
+  year?: number
+  season?: number
+  episode?: number
+}
+
+export interface FileClassifyResponse {
+  results: FileClassificationResult[]
+  total: number
+}
+
 // Search types
 export interface SearchFilters {
   query?: string

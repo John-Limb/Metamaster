@@ -148,3 +148,31 @@ class FileOperationResponse(BaseModel):
     success: bool
     message: str
     data: Optional[FileItemResponse] = None
+
+
+class FileClassifyRequest(BaseModel):
+    """Schema for file classification request"""
+
+    filenames: Optional[List[str]] = Field(None, description="List of filenames to classify")
+    file_ids: Optional[List[int]] = Field(None, description="List of file IDs to classify")
+
+
+class FileClassificationResult(BaseModel):
+    """Schema for a single file classification result"""
+
+    filename: str = Field(..., description="The filename that was classified")
+    type: str = Field(..., description="Classified type: 'movie' or 'tv_show'")
+    confidence: str = Field(..., description="Classification confidence: 'high', 'medium', or 'low'")
+    pattern_matched: str = Field(..., description="Which pattern was matched")
+    title: Optional[str] = Field(None, description="Extracted movie title")
+    show_name: Optional[str] = Field(None, description="Extracted TV show name")
+    year: Optional[int] = Field(None, description="Extracted year")
+    season: Optional[int] = Field(None, description="Extracted season number")
+    episode: Optional[int] = Field(None, description="Extracted episode number")
+
+
+class FileClassifyResponse(BaseModel):
+    """Schema for file classification response"""
+
+    results: List[FileClassificationResult]
+    total: int

@@ -25,7 +25,11 @@ from app.domain.files.schemas import (
     FileBatchMoveRequest,
     FileSearchResponse,
     FileOperationResponse,
+    FileClassifyRequest,
+    FileClassificationResult,
+    FileClassifyResponse,
 )
+from app.application.pattern_recognition.service import PatternRecognitionService
 from app.api.utils import pagination_metadata, resolve_pagination
 import logging
 
@@ -122,6 +126,69 @@ async def search_files(
         "pageSize": page_size,
         "totalPages": total_pages,
     }
+
+
+@router.post("/classify", response_model=FileClassifyResponse)
+async def classify_files(
+    request: FileClassifyRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Classify files as movies or TV shows based on filename patterns.
+
+    Accepts filenames directly and/or file IDs to look up. Returns classification
+    results with type, confidence, and extracted metadata for each file.
+    """
+    if not request.filenames and not request.file_ids:
+        raise HTTPException(
+            status_code=400,
+            detail="At least one of 'filenames' or 'file_ids' must be provided",
+        )
+
+    classifier = PatternRecognitionService()
+    results = []
+
+    if request.filenames:
+        for filename in request.filenames:
+            classification = classifier.classify_file(filename)
+            results.append(
+                FileClassificationResult(
+                    filename=filename,
+                    type=classification["type"],
+                    confidence=classification["confidence"],
+                    pattern_matched=classification["pattern_matched"],
+                    title=classification.get("title"),
+                    show_name=classification.get("show_name"),
+                    year=classification.get("year"),
+                    season=classification.get("season"),
+                    episode=classification.get("episode"),
+                )
+            )
+
+    if request.file_ids:
+        file_service = FileService(db)
+        for file_id in request.file_ids:
+            file_item = file_service.get_file_by_id(file_id)
+            if not file_item:
+                raise HTTPException(
+                    status_code=404, detail=f"File not found: {file_id}"
+                )
+            classification = classifier.classify_file(file_item.name)
+            results.append(
+                FileClassificationResult(
+                    filename=file_item.name,
+                    type=classification["type"],
+                    confidence=classification["confidence"],
+                    pattern_matched=classification["pattern_matched"],
+                    title=classification.get("title"),
+                    show_name=classification.get("show_name"),
+                    year=classification.get("year"),
+                    season=classification.get("season"),
+                    episode=classification.get("episode"),
+                )
+            )
+
+    return FileClassifyResponse(results=results, total=len(results))
 
 
 @router.get("/{file_id}", response_model=FileItemResponse)

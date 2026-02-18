@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from app.models import FileQueue
 from app.core.database import SessionLocal
+from app.application.pattern_recognition.service import PatternRecognitionService
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class FileQueueManager:
         """
         self.session = session or SessionLocal()
         self._owns_session = session is None
+        self._classifier = PatternRecognitionService()
 
     def __del__(self):
         """Clean up session if manager owns it."""
@@ -48,14 +50,17 @@ class FileQueueManager:
             self.session.close()
 
     def add_file(
-        self, file_path: str, file_type: str, metadata: Optional[Dict[str, Any]] = None
+        self,
+        file_path: str,
+        file_type: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> int:
         """
         Add a file to the queue.
 
         Args:
             file_path: Path to the file
-            file_type: Type of media ("movie" or "tv_show")
+            file_type: Type of media ("movie" or "tv_show"). If None, auto-classified from filename.
             metadata: Optional metadata dictionary (currently unused but reserved for future use)
 
         Returns:
@@ -67,6 +72,14 @@ class FileQueueManager:
         """
         if not file_path or not file_path.strip():
             raise ValueError("file_path cannot be empty")
+
+        if file_type is None:
+            result = self._classifier.classify_file(file_path)
+            file_type = result["type"]
+            logger.info(
+                f"Auto-classified '{file_path}' as '{file_type}' "
+                f"(confidence: {result.get('confidence', 'unknown')})"
+            )
 
         if file_type not in ("movie", "tv_show"):
             raise ValueError(f"file_type must be 'movie' or 'tv_show', got '{file_type}'")
@@ -134,6 +147,14 @@ class FileQueueManager:
                 if not file_path or not file_path.strip():
                     logger.warning("Skipping entry with empty file_path")
                     continue
+
+                if file_type is None:
+                    result = self._classifier.classify_file(file_path)
+                    file_type = result["type"]
+                    logger.info(
+                        f"Auto-classified '{file_path}' as '{file_type}' "
+                        f"(confidence: {result.get('confidence', 'unknown')})"
+                    )
 
                 if file_type not in ("movie", "tv_show"):
                     logger.warning(f"Skipping entry with invalid file_type: {file_type}")

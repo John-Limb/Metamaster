@@ -1,7 +1,7 @@
 """Tests for the PatternRecognitionService"""
 
 import pytest
-from app.services.pattern_recognition import PatternRecognitionService
+from app.application.pattern_recognition.service import PatternRecognitionService
 
 
 @pytest.fixture

@@ -47,6 +47,11 @@ __all__ = [
     "BatchOperationResponse",
     "PaginatedBatchOperationResponse",
     "BatchOperationListItem",
+    # Queue Schemas
+    "QueueStatsResponse",
+    "QueueTaskResponse",
+    "PaginatedQueueTaskResponse",
+    "QueueOperationResponse",
 ]
 
 
@@ -767,3 +772,46 @@ class BatchOperationListItem(BaseModel):
     created_at: datetime = Field(..., description="Creation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# Queue Schemas
+# ============================================================================
+
+
+class QueueStatsResponse(BaseModel):
+    """Schema for queue statistics response"""
+
+    totalTasks: int = Field(..., description="Total number of tasks in queue")
+    pendingTasks: int = Field(..., description="Number of pending tasks")
+    processingTasks: int = Field(..., description="Number of tasks being processed")
+    completedTasks: int = Field(..., description="Number of completed tasks")
+    failedTasks: int = Field(..., description="Number of failed tasks")
+
+
+class QueueTaskResponse(BaseModel):
+    """Schema for a queue task"""
+
+    id: str = Field(..., description="Queue task ID")
+    type: str = Field(..., description="Task type (analyze/sync/index/process)")
+    status: str = Field(..., description="Task status (pending/processing/completed/failed)")
+    progress: float = Field(0, description="Task progress percentage")
+    createdAt: Optional[datetime] = Field(None, description="Task creation timestamp")
+    updatedAt: Optional[datetime] = Field(None, description="Task last update timestamp")
+    error: Optional[str] = Field(None, description="Error message if task failed")
+
+
+class PaginatedQueueTaskResponse(BaseModel):
+    """Paginated response for queue tasks"""
+
+    items: List[QueueTaskResponse] = Field(..., description="List of queue tasks")
+    total: int = Field(..., description="Total number of tasks")
+    page: int = Field(..., description="Current page")
+    pageSize: int = Field(..., description="Items per page")
+
+
+class QueueOperationResponse(BaseModel):
+    """Response for queue operations (retry, cancel, clear)"""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    message: str = Field(..., description="Operation result message")
