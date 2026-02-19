@@ -85,6 +85,15 @@ class Movie(Base):
         f = self._primary_file
         return f.file_size if f else None
 
+    @property
+    def audio_channels(self):
+        f = self._primary_file
+        if not f or not f.audio_channels:
+            return None
+        channels = f.audio_channels
+        labels = {1: "Mono", 2: "Stereo", 6: "5.1", 8: "7.1"}
+        return labels.get(channels, f"{channels}ch")
+
 
 class MovieFile(Base):
     """Movie file metadata"""
@@ -99,6 +108,7 @@ class MovieFile(Base):
     bitrate = Column(Integer)  # in kbps
     codec_video = Column(String(50))
     codec_audio = Column(String(50))
+    audio_channels = Column(Integer)  # number of audio channels (2=stereo, 6=5.1, 8=7.1)
     duration = Column(Integer)  # in seconds
     last_modified = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)

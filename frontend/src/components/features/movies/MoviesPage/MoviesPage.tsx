@@ -332,6 +332,7 @@ const MoviesPage: React.FC = () => {
                   resolution={movie.resolution}
                   codec_video={movie.codec_video}
                   codec_audio={movie.codec_audio}
+                  audio_channels={movie.audio_channels}
                   file_size={movie.file_size}
                   file_duration={movie.file_duration}
                   onClick={() => handleMovieClick(String(movie.id))}

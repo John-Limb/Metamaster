@@ -120,6 +120,7 @@ class MovieResponse(BaseModel):
     resolution: Optional[str] = Field(None, description="Resolution e.g. 1920x1080")
     codec_video: Optional[str] = Field(None, description="Video codec e.g. h264")
     codec_audio: Optional[str] = Field(None, description="Audio codec e.g. aac")
+    audio_channels: Optional[str] = Field(None, description="Audio channels e.g. 5.1, Stereo")
     file_duration: Optional[int] = Field(None, description="Duration in seconds")
     file_size: Optional[int] = Field(None, description="File size in bytes")
 

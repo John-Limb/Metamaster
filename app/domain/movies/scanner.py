@@ -89,6 +89,18 @@ def probe_file(ffprobe: FFProbeWrapper, file_path: str) -> dict:
         if isinstance(duration, (int, float)) and duration > 0:
             result["duration"] = int(duration)
 
+        # Extract audio channel count
+        audio_stream = next(
+            (s for s in metadata.get("streams", {})
+             if isinstance(s, dict) and s.get("codec_type") == "audio"),
+            None,
+        )
+        if audio_stream and audio_stream.get("channels"):
+            try:
+                result["audio_channels"] = int(audio_stream["channels"])
+            except (ValueError, TypeError):
+                pass
+
         return result
     except Exception as e:
         logger.warning(f"FFprobe failed for {file_path}: {e}")
@@ -144,6 +156,7 @@ def create_movies_from_files(db: Session) -> int:
             resolution=probe_data.get("resolution"),
             codec_video=probe_data.get("codec_video"),
             codec_audio=probe_data.get("codec_audio"),
+            audio_channels=probe_data.get("audio_channels"),
             bitrate=probe_data.get("bitrate"),
             duration=probe_data.get("duration"),
         )
@@ -207,6 +220,9 @@ def enrich_new_movies(db: Session) -> int:
             movie.rating = detail.get("rating", movie.rating)
             movie.runtime = detail.get("runtime", movie.runtime)
             movie.genres = detail.get("genres", movie.genres)
+            poster = detail.get("poster")
+            if poster and poster != "N/A":
+                movie.poster_url = poster
             existing_omdb_ids.add(omdb_id)
             enriched += 1
         except Exception:
@@ -216,6 +232,40 @@ def enrich_new_movies(db: Session) -> int:
         db.commit()
         logger.info(f"Enriched {enriched} movie(s) with OMDB metadata")
     return enriched
+
+
+def probe_unscanned_movies(db: Session) -> int:
+    """Run FFprobe on movie files that are missing resolution or audio_channels data.
+
+    Returns the number of files scanned.
+    """
+    ffprobe = get_ffprobe()
+    if not ffprobe:
+        return 0
+
+    unscanned = (
+        db.query(MovieFile)
+        .filter(
+            (MovieFile.resolution.is_(None)) | (MovieFile.resolution == "")
+            | (MovieFile.audio_channels.is_(None))
+        )
+        .all()
+    )
+    if not unscanned:
+        return 0
+
+    scanned = 0
+    for movie_file in unscanned:
+        probe_data = probe_file(ffprobe, movie_file.file_path)
+        if probe_data:
+            for field, value in probe_data.items():
+                setattr(movie_file, field, value)
+            scanned += 1
+
+    if scanned:
+        db.commit()
+        logger.info(f"FFprobe scanned {scanned} previously unscanned movie file(s)")
+    return scanned
 
 
 def probe_movie_file(db: Session, movie_id: int) -> Movie:

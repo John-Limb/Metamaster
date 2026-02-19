@@ -21,13 +21,21 @@ class _CacheEncoder(json.JSONEncoder):
             return obj.isoformat()
         if isinstance(obj, Decimal):
             return float(obj)
-        # Handle SQLAlchemy model instances by extracting column values
+        # Handle SQLAlchemy model instances by extracting column values + @property attrs
         mapper = getattr(obj.__class__, "__mapper__", None)
         if mapper is not None:
-            return {
+            data = {
                 col.key: getattr(obj, col.key)
                 for col in mapper.column_attrs
             }
+            # Include @property descriptors (e.g. quality, resolution, codec_video, etc.)
+            for attr_name in dir(obj.__class__):
+                if isinstance(getattr(obj.__class__, attr_name, None), property):
+                    try:
+                        data[attr_name] = getattr(obj, attr_name)
+                    except Exception:
+                        pass
+            return data
         return super().default(obj)
 
 

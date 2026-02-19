@@ -103,6 +103,7 @@ class EpisodeFile(Base):
     bitrate = Column(Integer)  # in kbps
     codec_video = Column(String(50))
     codec_audio = Column(String(50))
+    audio_channels = Column(Integer)  # number of audio channels (2=stereo, 6=5.1, 8=7.1)
     duration = Column(Integer)  # in seconds
     last_modified = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)

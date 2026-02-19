@@ -11,6 +11,7 @@ import time
 import uuid
 
 from app.core.config import settings, MEDIA_DIRECTORIES
+from app.core.logging_config import setup_logging
 from app.core.init_db import init_database
 from app.core.database import SessionLocal
 from app.domain.files.service import FileService
@@ -27,11 +28,8 @@ from app.api.v1.config import router as config_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.queue.endpoints import router as queue_router
 
-# Configure logging with structured format
-logging.basicConfig(
-    level=settings.log_level,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
+# Configure structured logging with daily rotation
+setup_logging()
 logger = logging.getLogger(__name__)
 
 

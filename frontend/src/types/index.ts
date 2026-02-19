@@ -85,6 +85,7 @@ export interface Movie {
   resolution?: string
   codec_video?: string
   codec_audio?: string
+  audio_channels?: string
   file_duration?: number
   file_size?: number
 }

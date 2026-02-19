@@ -73,6 +73,18 @@ class JSONFormatter(logging.Formatter):
         if hasattr(record, "task_status"):
             log_data["task_status"] = record.task_status
 
+        # External API fields
+        if hasattr(record, "api_service"):
+            log_data["api_service"] = record.api_service
+        if hasattr(record, "api_url"):
+            log_data["api_url"] = record.api_url
+        if hasattr(record, "response_status"):
+            log_data["response_status"] = record.response_status
+        if hasattr(record, "response_size"):
+            log_data["response_size"] = record.response_size
+        if hasattr(record, "attempt"):
+            log_data["attempt"] = record.attempt
+
         return json.dumps(log_data)
 
 
@@ -98,87 +110,50 @@ def setup_logging() -> None:
     console_handler.setFormatter(console_formatter)
     root_logger.addHandler(console_handler)
 
-    # File handler with rotation
-    file_handler = logging.handlers.RotatingFileHandler(
-        filename=log_dir / "app.log",
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=10,  # Keep 10 backup files
-        encoding="utf-8",
-    )
-    file_handler.setLevel(getattr(logging, settings.log_level))
-    file_handler.setFormatter(console_formatter)
-    root_logger.addHandler(file_handler)
+    # Daily rotation: one file per day, keep 3 days of history
+    def _daily_handler(filename: str, level: int) -> logging.handlers.TimedRotatingFileHandler:
+        handler = logging.handlers.TimedRotatingFileHandler(
+            filename=log_dir / filename,
+            when="midnight",
+            interval=1,
+            backupCount=3,
+            encoding="utf-8",
+            utc=True,
+        )
+        handler.setLevel(level)
+        handler.setFormatter(console_formatter)
+        handler.suffix = "%Y-%m-%d"
+        return handler
 
-    # Error file handler with rotation
-    error_handler = logging.handlers.RotatingFileHandler(
-        filename=log_dir / "error.log",
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=10,
-        encoding="utf-8",
-    )
-    error_handler.setLevel(logging.ERROR)
-    error_handler.setFormatter(console_formatter)
-    root_logger.addHandler(error_handler)
+    # General application log
+    root_logger.addHandler(_daily_handler("app.log", getattr(logging, settings.log_level)))
 
-    # Performance file handler with rotation
-    perf_handler = logging.handlers.RotatingFileHandler(
-        filename=log_dir / "performance.log",
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=10,
-        encoding="utf-8",
-    )
-    perf_handler.setLevel(logging.INFO)
-    perf_handler.setFormatter(console_formatter)
+    # Error log
+    root_logger.addHandler(_daily_handler("error.log", logging.ERROR))
+
+    # Performance log
     perf_logger = logging.getLogger("performance")
-    perf_logger.addHandler(perf_handler)
+    perf_logger.addHandler(_daily_handler("performance.log", logging.INFO))
 
-    # Database query logger
-    db_handler = logging.handlers.RotatingFileHandler(
-        filename=log_dir / "database.log",
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=10,
-        encoding="utf-8",
-    )
-    db_handler.setLevel(logging.DEBUG)
-    db_handler.setFormatter(console_formatter)
+    # Database query log
     db_logger = logging.getLogger("database")
-    db_logger.addHandler(db_handler)
+    db_logger.addHandler(_daily_handler("database.log", logging.DEBUG))
 
-    # Cache logger
-    cache_handler = logging.handlers.RotatingFileHandler(
-        filename=log_dir / "cache.log",
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=10,
-        encoding="utf-8",
-    )
-    cache_handler.setLevel(logging.DEBUG)
-    cache_handler.setFormatter(console_formatter)
+    # Cache log
     cache_logger = logging.getLogger("cache")
-    cache_logger.addHandler(cache_handler)
+    cache_logger.addHandler(_daily_handler("cache.log", logging.DEBUG))
 
-    # Task logger
-    task_handler = logging.handlers.RotatingFileHandler(
-        filename=log_dir / "tasks.log",
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=10,
-        encoding="utf-8",
-    )
-    task_handler.setLevel(logging.DEBUG)
-    task_handler.setFormatter(console_formatter)
+    # Task log
     task_logger = logging.getLogger("tasks")
-    task_logger.addHandler(task_handler)
+    task_logger.addHandler(_daily_handler("tasks.log", logging.DEBUG))
 
-    # API logger
-    api_handler = logging.handlers.RotatingFileHandler(
-        filename=log_dir / "api.log",
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=10,
-        encoding="utf-8",
-    )
-    api_handler.setLevel(logging.INFO)
-    api_handler.setFormatter(console_formatter)
+    # API request log
     api_logger = logging.getLogger("api")
-    api_logger.addHandler(api_handler)
+    api_logger.addHandler(_daily_handler("api.log", logging.INFO))
+
+    # External API log (OMDB, TVDB outbound calls)
+    external_api_logger = logging.getLogger("external_api")
+    external_api_logger.addHandler(_daily_handler("external_api.log", logging.DEBUG))
 
 
 def get_logger(name: str) -> logging.Logger:

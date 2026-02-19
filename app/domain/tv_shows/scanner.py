@@ -158,6 +158,7 @@ def create_tv_shows_from_files(db: Session) -> int:
             resolution=probe_data.get("resolution"),
             codec_video=probe_data.get("codec_video"),
             codec_audio=probe_data.get("codec_audio"),
+            audio_channels=probe_data.get("audio_channels"),
             bitrate=probe_data.get("bitrate"),
             duration=probe_data.get("duration"),
         )
@@ -221,6 +222,9 @@ def enrich_new_tv_shows(db: Session) -> int:
             show.rating = detail.get("rating", show.rating)
             show.genres = detail.get("genres", show.genres)
             show.status = detail.get("status", show.status)
+            poster = detail.get("poster")
+            if poster and poster != "N/A":
+                show.poster_url = poster
             existing_tvdb_ids.add(tvdb_id)
             enriched += 1
         except Exception:
@@ -230,6 +234,40 @@ def enrich_new_tv_shows(db: Session) -> int:
         db.commit()
         logger.info(f"Enriched {enriched} TV show(s) with TVDB metadata")
     return enriched
+
+
+def probe_unscanned_episodes(db: Session) -> int:
+    """Run FFprobe on episode files that are missing resolution or audio_channels data.
+
+    Returns the number of files scanned.
+    """
+    ffprobe = get_ffprobe()
+    if not ffprobe:
+        return 0
+
+    unscanned = (
+        db.query(EpisodeFile)
+        .filter(
+            (EpisodeFile.resolution.is_(None)) | (EpisodeFile.resolution == "")
+            | (EpisodeFile.audio_channels.is_(None))
+        )
+        .all()
+    )
+    if not unscanned:
+        return 0
+
+    scanned = 0
+    for episode_file in unscanned:
+        probe_data = probe_file(ffprobe, episode_file.file_path)
+        if probe_data:
+            for field, value in probe_data.items():
+                setattr(episode_file, field, value)
+            scanned += 1
+
+    if scanned:
+        db.commit()
+        logger.info(f"FFprobe scanned {scanned} previously unscanned episode file(s)")
+    return scanned
 
 
 def probe_episode_file(db: Session, episode_id: int) -> Episode:

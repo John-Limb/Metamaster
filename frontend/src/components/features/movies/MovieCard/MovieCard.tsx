@@ -14,6 +14,7 @@ export interface MovieCardProps {
   resolution?: string
   codec_video?: string
   codec_audio?: string
+  audio_channels?: string
   file_size?: number
   file_duration?: number
   onClick?: () => void
@@ -34,6 +35,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   resolution,
   codec_video,
   codec_audio,
+  audio_channels,
   file_size,
   file_duration,
   onClick,
@@ -43,7 +45,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onDelete,
 }) => {
   const [showActions, setShowActions] = useState(false)
-  const hasFileStats = resolution || codec_video || codec_audio || file_size || file_duration
+  const hasFileStats = resolution || codec_video || codec_audio || audio_channels || file_size || file_duration
 
   const formatDuration = (seconds: number) => {
     const h = Math.floor(seconds / 3600)
@@ -239,6 +241,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             {resolution && <span className="movie-card__stat">{resolution}</span>}
             {codec_video && <span className="movie-card__stat">{codec_video}</span>}
             {codec_audio && <span className="movie-card__stat">{codec_audio}</span>}
+            {audio_channels && <span className="movie-card__stat">{audio_channels}</span>}
             {file_size != null && <span className="movie-card__stat">{formatFileSize(file_size)}</span>}
             {file_duration != null && <span className="movie-card__stat">{formatDuration(file_duration)}</span>}
           </div>

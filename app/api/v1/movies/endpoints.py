@@ -14,7 +14,7 @@ from app.schemas import (
 from app.services_impl import MovieService, OMDBService
 from app.infrastructure.cache.redis_cache import get_cache_service
 from app.application.search.service import SearchFilters, MovieSearchService
-from app.domain.movies.scanner import probe_movie_file, create_movies_from_files, enrich_new_movies
+from app.domain.movies.scanner import probe_movie_file, create_movies_from_files, enrich_new_movies, probe_unscanned_movies
 from app.domain.files.service import FileService
 from app.core.config import MOVIE_DIR
 from app.api.utils import pagination_metadata, resolve_pagination
@@ -293,6 +293,7 @@ async def scan_movie_directory(db: Session = Depends(get_db)):
 
         movies_created = create_movies_from_files(db)
         movies_enriched = enrich_new_movies(db)
+        files_scanned = probe_unscanned_movies(db)
 
         # Invalidate movie list cache
         cache_service = get_cache_service()
@@ -302,6 +303,7 @@ async def scan_movie_directory(db: Session = Depends(get_db)):
             "files_synced": files_synced,
             "movies_created": movies_created,
             "movies_enriched": movies_enriched,
+            "files_scanned": files_scanned,
         }
     except Exception as e:
         logger.error(f"Error scanning movie directory: {e}", exc_info=True)

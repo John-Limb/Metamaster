@@ -14,6 +14,13 @@ from typing import Optional, Dict, Any
 import time
 
 logger = logging.getLogger(__name__)
+external_api_logger = logging.getLogger("external_api")
+
+
+def _mask_url(url: str) -> str:
+    """Mask API keys in URLs for safe logging."""
+    import re
+    return re.sub(r'(apikey=)[^&]+', r'\1***', url)
 
 
 class MovieService:
@@ -147,8 +154,15 @@ class OMDBService:
         )
 
         if cache_entry:
-            logger.info(f"Cache hit for OMDB query: {cache_key}")
+            external_api_logger.debug(
+                f"OMDB cache HIT: {cache_key}",
+                extra={"api_service": "omdb", "cache_key": cache_key, "cache_hit": True},
+            )
             return json.loads(cache_entry.response_data)
+        external_api_logger.debug(
+            f"OMDB cache MISS: {cache_key}",
+            extra={"api_service": "omdb", "cache_key": cache_key, "cache_hit": False},
+        )
         return None
 
     @staticmethod
@@ -185,50 +199,88 @@ class OMDBService:
         url: str, max_retries: int = 3, base_delay: float = 1.0
     ) -> Optional[Dict[str, Any]]:
         """Make HTTP request with exponential backoff retry logic"""
+        masked_url = _mask_url(url)
         async with httpx.AsyncClient(timeout=10.0) as client:
             for attempt in range(max_retries):
+                start_time = time.time()
                 try:
+                    external_api_logger.info(
+                        f"OMDB >> GET {masked_url} (attempt {attempt + 1}/{max_retries})",
+                        extra={"api_service": "omdb", "api_url": masked_url, "attempt": attempt + 1},
+                    )
+
                     response = await client.get(url)
+                    elapsed_ms = (time.time() - start_time) * 1000
+
+                    external_api_logger.info(
+                        f"OMDB << {response.status_code} in {elapsed_ms:.0f}ms "
+                        f"({len(response.content)} bytes) {masked_url}",
+                        extra={
+                            "api_service": "omdb",
+                            "api_url": masked_url,
+                            "response_status": response.status_code,
+                            "duration": elapsed_ms,
+                            "response_size": len(response.content),
+                        },
+                    )
+
                     response.raise_for_status()
                     data = response.json()
 
                     # Check for OMDB API error response
                     if data.get("Response") == "False":
                         error_msg = data.get("Error", "Unknown error")
-                        logger.warning(f"OMDB API error: {error_msg}")
+                        external_api_logger.warning(
+                            f"OMDB API returned error: {error_msg}",
+                            extra={"api_service": "omdb", "api_url": masked_url},
+                        )
                         return None
 
                     return data
 
                 except httpx.HTTPStatusError as e:
+                    elapsed_ms = (time.time() - start_time) * 1000
                     if e.response.status_code == 429:  # Rate limited
                         delay = base_delay * (2**attempt)
-                        logger.warning(
-                            f"Rate limited by OMDB. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})"
+                        external_api_logger.warning(
+                            f"OMDB rate limited (429). Retrying in {delay}s (attempt {attempt + 1}/{max_retries})",
+                            extra={"api_service": "omdb", "api_url": masked_url, "response_status": 429, "duration": elapsed_ms},
                         )
                         await asyncio.sleep(delay)
                     elif e.response.status_code >= 500:  # Server error
                         delay = base_delay * (2**attempt)
-                        logger.warning(
-                            f"OMDB server error ({e.response.status_code}). Retrying in {delay}s (attempt {attempt + 1}/{max_retries})"
+                        external_api_logger.warning(
+                            f"OMDB server error ({e.response.status_code}). Retrying in {delay}s (attempt {attempt + 1}/{max_retries})",
+                            extra={"api_service": "omdb", "api_url": masked_url, "response_status": e.response.status_code, "duration": elapsed_ms},
                         )
                         await asyncio.sleep(delay)
                     else:
-                        logger.error(f"OMDB HTTP error: {e.response.status_code}")
+                        external_api_logger.error(
+                            f"OMDB HTTP error: {e.response.status_code} for {masked_url}",
+                            extra={"api_service": "omdb", "api_url": masked_url, "response_status": e.response.status_code, "duration": elapsed_ms},
+                        )
                         return None
 
                 except httpx.RequestError as e:
+                    elapsed_ms = (time.time() - start_time) * 1000
                     delay = base_delay * (2**attempt)
-                    logger.warning(
-                        f"OMDB request error: {e}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})"
+                    external_api_logger.warning(
+                        f"OMDB request error: {e}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})",
+                        extra={"api_service": "omdb", "api_url": masked_url, "duration": elapsed_ms},
                     )
                     await asyncio.sleep(delay)
 
                 except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse OMDB response: {e}")
+                    external_api_logger.error(
+                        f"Failed to parse OMDB response: {e}",
+                        extra={"api_service": "omdb", "api_url": masked_url},
+                    )
                     return None
 
-            logger.error(f"Failed to get response from OMDB after {max_retries} attempts")
+            external_api_logger.error(
+                f"OMDB request failed after {max_retries} attempts: {masked_url}",
+                extra={"api_service": "omdb", "api_url": masked_url},
+            )
             return None
 
     @classmethod
@@ -431,12 +483,31 @@ class TVDBService:
             logger.error("TVDB_API_KEY or TVDB_PIN not configured")
             return None
 
+        login_url = f"{cls.TVDB_BASE_URL}{cls.LOGIN_ENDPOINT}"
         try:
+            start_time = time.time()
+            external_api_logger.info(
+                f"TVDB >> POST {login_url} (auth login)",
+                extra={"api_service": "tvdb", "api_url": login_url},
+            )
+
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(
-                    f"{cls.TVDB_BASE_URL}{cls.LOGIN_ENDPOINT}",
+                    login_url,
                     json={"apikey": settings.tvdb_api_key, "pin": settings.tvdb_pin},
                 )
+                elapsed_ms = (time.time() - start_time) * 1000
+
+                external_api_logger.info(
+                    f"TVDB << {response.status_code} in {elapsed_ms:.0f}ms (auth login)",
+                    extra={
+                        "api_service": "tvdb",
+                        "api_url": login_url,
+                        "response_status": response.status_code,
+                        "duration": elapsed_ms,
+                    },
+                )
+
                 response.raise_for_status()
                 data = response.json()
 
@@ -444,16 +515,23 @@ class TVDBService:
                     cls._auth_token = data["data"].get("token")
                     # Token typically valid for 24 hours, refresh after 23 hours
                     cls._token_expiry = datetime.utcnow() + timedelta(hours=23)
-                    logger.info("TVDB authentication token obtained")
+                    external_api_logger.info(
+                        "TVDB auth token obtained successfully",
+                        extra={"api_service": "tvdb"},
+                    )
                     return cls._auth_token
                 else:
-                    logger.error(
-                        f"TVDB authentication failed: {data.get('message', 'Unknown error')}"
+                    external_api_logger.error(
+                        f"TVDB authentication failed: {data.get('message', 'Unknown error')}",
+                        extra={"api_service": "tvdb", "api_url": login_url},
                     )
                     return None
 
         except Exception as e:
-            logger.error(f"TVDB authentication error: {e}")
+            external_api_logger.error(
+                f"TVDB authentication error: {e}",
+                extra={"api_service": "tvdb", "api_url": login_url},
+            )
             return None
 
     @staticmethod
@@ -476,8 +554,15 @@ class TVDBService:
         )
 
         if cache_entry:
-            logger.info(f"Cache hit for TVDB query: {cache_key}")
+            external_api_logger.debug(
+                f"TVDB cache HIT: {cache_key}",
+                extra={"api_service": "tvdb", "cache_key": cache_key, "cache_hit": True},
+            )
             return json.loads(cache_entry.response_data)
+        external_api_logger.debug(
+            f"TVDB cache MISS: {cache_key}",
+            extra={"api_service": "tvdb", "cache_key": cache_key, "cache_hit": False},
+        )
         return None
 
     @staticmethod
@@ -516,51 +601,91 @@ class TVDBService:
         """Make HTTP request with exponential backoff retry logic"""
         async with httpx.AsyncClient(timeout=10.0) as client:
             for attempt in range(max_retries):
+                start_time = time.time()
                 try:
+                    external_api_logger.info(
+                        f"TVDB >> GET {url} (attempt {attempt + 1}/{max_retries})",
+                        extra={"api_service": "tvdb", "api_url": url, "attempt": attempt + 1},
+                    )
+
                     response = await client.get(url, headers=headers)
+                    elapsed_ms = (time.time() - start_time) * 1000
+
+                    external_api_logger.info(
+                        f"TVDB << {response.status_code} in {elapsed_ms:.0f}ms "
+                        f"({len(response.content)} bytes) {url}",
+                        extra={
+                            "api_service": "tvdb",
+                            "api_url": url,
+                            "response_status": response.status_code,
+                            "duration": elapsed_ms,
+                            "response_size": len(response.content),
+                        },
+                    )
+
                     response.raise_for_status()
                     data = response.json()
 
                     # Check for TVDB API error response
                     if data.get("status") != "success":
                         error_msg = data.get("message", "Unknown error")
-                        logger.warning(f"TVDB API error: {error_msg}")
+                        external_api_logger.warning(
+                            f"TVDB API returned error: {error_msg}",
+                            extra={"api_service": "tvdb", "api_url": url},
+                        )
                         return None
 
                     return data
 
                 except httpx.HTTPStatusError as e:
+                    elapsed_ms = (time.time() - start_time) * 1000
                     if e.response.status_code == 429:  # Rate limited
                         delay = base_delay * (2**attempt)
-                        logger.warning(
-                            f"Rate limited by TVDB. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})"
+                        external_api_logger.warning(
+                            f"TVDB rate limited (429). Retrying in {delay}s (attempt {attempt + 1}/{max_retries})",
+                            extra={"api_service": "tvdb", "api_url": url, "response_status": 429, "duration": elapsed_ms},
                         )
                         await asyncio.sleep(delay)
                     elif e.response.status_code == 401:  # Unauthorized
-                        logger.error("TVDB authentication failed (401)")
+                        external_api_logger.error(
+                            "TVDB authentication failed (401)",
+                            extra={"api_service": "tvdb", "api_url": url, "response_status": 401, "duration": elapsed_ms},
+                        )
                         return None
                     elif e.response.status_code >= 500:  # Server error
                         delay = base_delay * (2**attempt)
-                        logger.warning(
-                            f"TVDB server error ({e.response.status_code}). Retrying in {delay}s (attempt {attempt + 1}/{max_retries})"
+                        external_api_logger.warning(
+                            f"TVDB server error ({e.response.status_code}). Retrying in {delay}s (attempt {attempt + 1}/{max_retries})",
+                            extra={"api_service": "tvdb", "api_url": url, "response_status": e.response.status_code, "duration": elapsed_ms},
                         )
                         await asyncio.sleep(delay)
                     else:
-                        logger.error(f"TVDB HTTP error: {e.response.status_code}")
+                        external_api_logger.error(
+                            f"TVDB HTTP error: {e.response.status_code} for {url}",
+                            extra={"api_service": "tvdb", "api_url": url, "response_status": e.response.status_code, "duration": elapsed_ms},
+                        )
                         return None
 
                 except httpx.RequestError as e:
+                    elapsed_ms = (time.time() - start_time) * 1000
                     delay = base_delay * (2**attempt)
-                    logger.warning(
-                        f"TVDB request error: {e}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})"
+                    external_api_logger.warning(
+                        f"TVDB request error: {e}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})",
+                        extra={"api_service": "tvdb", "api_url": url, "duration": elapsed_ms},
                     )
                     await asyncio.sleep(delay)
 
                 except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse TVDB response: {e}")
+                    external_api_logger.error(
+                        f"Failed to parse TVDB response: {e}",
+                        extra={"api_service": "tvdb", "api_url": url},
+                    )
                     return None
 
-            logger.error(f"Failed to get response from TVDB after {max_retries} attempts")
+            external_api_logger.error(
+                f"TVDB request failed after {max_retries} attempts: {url}",
+                extra={"api_service": "tvdb", "api_url": url},
+            )
             return None
 
     @classmethod

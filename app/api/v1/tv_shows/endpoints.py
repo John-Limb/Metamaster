@@ -18,7 +18,7 @@ from app.schemas import (
 from app.services_impl import TVShowService, TVDBService
 from app.infrastructure.cache.redis_cache import get_cache_service
 from app.application.search.service import SearchFilters, TVShowSearchService
-from app.domain.tv_shows.scanner import create_tv_shows_from_files, enrich_new_tv_shows, probe_episode_file
+from app.domain.tv_shows.scanner import create_tv_shows_from_files, enrich_new_tv_shows, probe_episode_file, probe_unscanned_episodes
 from app.domain.files.service import FileService
 from app.core.config import TV_DIR
 from app.api.utils import pagination_metadata, resolve_pagination
@@ -249,6 +249,7 @@ async def scan_tv_directory(db: Session = Depends(get_db)):
 
         shows_created = create_tv_shows_from_files(db)
         shows_enriched = enrich_new_tv_shows(db)
+        files_scanned = probe_unscanned_episodes(db)
 
         # Invalidate TV show list cache
         cache_service = get_cache_service()
@@ -258,6 +259,7 @@ async def scan_tv_directory(db: Session = Depends(get_db)):
             "files_synced": files_synced,
             "shows_created": shows_created,
             "shows_enriched": shows_enriched,
+            "files_scanned": files_scanned,
         }
     except Exception as e:
         logger.error(f"Error scanning TV directory: {e}", exc_info=True)
