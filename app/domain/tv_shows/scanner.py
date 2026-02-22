@@ -105,10 +105,15 @@ def create_tv_shows_from_files(db: Session) -> int:
         if fi.path in existing_paths:
             continue
 
+        logger.info(f"[TV] Detected: {fi.name}")
+
         show_name, season_num, episode_num = parse_tv_filename(fi.path)
         if not show_name or season_num is None or episode_num is None:
-            logger.debug(f"Could not parse TV show info from: {fi.path}")
+            logger.debug(f"[TV] Could not parse show info from: {fi.name} — skipping")
             continue
+
+        ep_label = f"S{season_num:02d}E{episode_num:02d}"
+        logger.info(f"[TV] Parsed: '{show_name}' {ep_label}")
 
         # Get or create TVShow
         show_name_lower = show_name.lower()
@@ -118,6 +123,8 @@ def create_tv_shows_from_files(db: Session) -> int:
             show = db.query(TVShow).filter(TVShow.title.ilike(show_name)).first()
             if not show:
                 detected_id = extract_external_id_from_path(fi.path)
+                if detected_id:
+                    logger.info(f"[TV] External ID detected in path: {detected_id}")
                 show = TVShow(
                     title=show_name,
                     enrichment_status="local_only",
@@ -125,6 +132,7 @@ def create_tv_shows_from_files(db: Session) -> int:
                 )
                 db.add(show)
                 db.flush()
+                logger.info(f"[TV] New show created: '{show_name}' (ID: {show.id})")
             show_cache[show_name_lower] = show
 
         # Get or create Season
@@ -156,6 +164,14 @@ def create_tv_shows_from_files(db: Session) -> int:
 
         # Create EpisodeFile with FFprobe data
         probe_data = probe_file(ffprobe, fi.path) if ffprobe else {}
+        if probe_data:
+            resolution = probe_data.get("resolution", "?")
+            video = probe_data.get("codec_video", "?")
+            audio = probe_data.get("codec_audio", "?")
+            logger.info(f"[TV] FFprobe: {resolution}, {video}/{audio}")
+        else:
+            logger.debug(f"[TV] FFprobe skipped or unavailable for: {fi.name}")
+
         episode_file = EpisodeFile(
             episode_id=episode.id,
             file_path=fi.path,
@@ -170,10 +186,11 @@ def create_tv_shows_from_files(db: Session) -> int:
         db.add(episode_file)
         existing_paths.add(fi.path)
         created += 1
+        logger.info(f"[TV] Episode file created: '{show_name}' {ep_label}")
 
     if created:
         db.commit()
-        logger.info(f"Created {created} episode file record(s) from synced files")
+        logger.info(f"[TV] {created} new episode file(s) saved to database")
 
     return created
 
@@ -194,19 +211,28 @@ def enrich_new_tv_shows(db: Session) -> int:
     enriched = 0
     for show in shows:
         try:
+            logger.info(f"[TV] Enriching: '{show.title}'")
+
             # Step 1: Search TVDB by title
+            logger.info(f"[TV] TVDB search: '{show.title}'")
             search_raw = run_async(TVDBService.search_show(db, show.title))
             if not search_raw:
+                logger.info(f"[TV] TVDB: no results for '{show.title}'")
                 continue
             search_parsed = TVDBService.parse_tvdb_search_response(search_raw)
             if not search_parsed or not search_parsed.get("search_results"):
+                logger.info(f"[TV] TVDB: no match for '{show.title}'")
                 continue
 
             tvdb_id = search_parsed["search_results"][0].get("tvdb_id")
             if not tvdb_id or tvdb_id in existing_tvdb_ids:
+                logger.debug(f"[TV] TVDB: duplicate or missing ID for '{show.title}' — skipping")
                 continue
 
+            logger.info(f"[TV] TVDB match: '{show.title}' → {tvdb_id}")
+
             # Step 2: Fetch full details
+            logger.info(f"[TV] TVDB fetching details: {tvdb_id}")
             detail_raw = run_async(TVDBService.get_series_details(db, tvdb_id))
             if not detail_raw:
                 show.tvdb_id = tvdb_id
@@ -232,12 +258,17 @@ def enrich_new_tv_shows(db: Session) -> int:
                 show.poster_url = poster
             existing_tvdb_ids.add(tvdb_id)
             enriched += 1
+
+            rating_str = f"★{show.rating}" if show.rating else "no rating"
+            genres_str = ", ".join(show.genres) if isinstance(show.genres, list) else str(show.genres or "")
+            logger.info(f"[TV] Enriched: '{show.title}' — {rating_str}, {genres_str}")
+
         except Exception:
-            logger.warning(f"Failed to enrich TV show {show.id} ({show.title})", exc_info=True)
+            logger.warning(f"[TV] Failed to enrich '{show.title}' (ID: {show.id})", exc_info=True)
 
     if enriched:
         db.commit()
-        logger.info(f"Enriched {enriched} TV show(s) with TVDB metadata")
+        logger.info(f"[TV] {enriched} show(s) enriched with TVDB metadata")
     return enriched
 
 

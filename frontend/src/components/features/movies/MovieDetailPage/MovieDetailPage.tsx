@@ -48,7 +48,6 @@ const MovieDetailPage: React.FC = () => {
     return (
       <div className="movie-detail-page">
         <div className="movie-detail-page__loading">
-          <div className="movie-detail-page__skeleton-backdrop" />
           <div className="movie-detail-page__skeleton-content">
             <div className="movie-detail-page__skeleton-title" />
             <div className="movie-detail-page__skeleton-meta" />
@@ -85,12 +84,6 @@ const MovieDetailPage: React.FC = () => {
 
   return (
     <div className="movie-detail-page">
-      {/* Hero Backdrop */}
-      <div className="movie-detail-page__hero">
-        <div className="movie-detail-page__backdrop-placeholder" />
-        <div className="movie-detail-page__hero-overlay" />
-      </div>
-
       {/* Content */}
       <div className="movie-detail-page__content">
         {/* Back Button */}

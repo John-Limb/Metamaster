@@ -167,11 +167,20 @@ def create_movies_from_files(db: Session) -> int:
         if fi.path in existing_paths:
             continue
 
+        logger.info(f"[Movie] Detected: {fi.name}")
+
         title, year = title_from_filename(fi.name)
         if not title:
+            logger.debug(f"[Movie] Could not parse title from: {fi.name} — skipping")
             continue
 
+        year_str = str(year) if year else "unknown year"
+        logger.info(f"[Movie] Parsed: '{title}' ({year_str})")
+
         detected_id = extract_external_id_from_path(fi.path)
+        if detected_id:
+            logger.info(f"[Movie] External ID detected in path: {detected_id}")
+
         movie = Movie(
             title=title,
             year=year,
@@ -182,6 +191,13 @@ def create_movies_from_files(db: Session) -> int:
         db.flush()
 
         probe_data = probe_file(ffprobe, fi.path) if ffprobe else {}
+        if probe_data:
+            resolution = probe_data.get("resolution", "?")
+            video = probe_data.get("codec_video", "?")
+            audio = probe_data.get("codec_audio", "?")
+            logger.info(f"[Movie] FFprobe: {resolution}, {video}/{audio}")
+        else:
+            logger.debug(f"[Movie] FFprobe skipped or unavailable for: {fi.name}")
 
         movie_file = MovieFile(
             movie_id=movie.id,
@@ -197,10 +213,11 @@ def create_movies_from_files(db: Session) -> int:
         db.add(movie_file)
         existing_paths.add(fi.path)
         created += 1
+        logger.info(f"[Movie] Record created: '{title}' (ID: {movie.id})")
 
     if created:
         db.commit()
-        logger.info(f"Created {created} movie record(s) from synced files")
+        logger.info(f"[Movie] {created} new record(s) saved to database")
     return created
 
 
@@ -221,19 +238,29 @@ def enrich_new_movies(db: Session) -> int:
     enriched = 0
     for movie in movies:
         try:
+            year_str = str(movie.year) if movie.year else "unknown year"
+            logger.info(f"[Movie] Enriching: '{movie.title}' ({year_str})")
+
             # Step 1: Search OMDB by title/year
+            logger.info(f"[Movie] OMDB search: '{movie.title}'")
             search_raw = run_async(OMDBService.search_movie(db, movie.title, movie.year))
             if not search_raw:
+                logger.info(f"[Movie] OMDB: no results for '{movie.title}'")
                 continue
             search_parsed = OMDBService.parse_omdb_response(search_raw)
             if not search_parsed or not search_parsed.get("search_results"):
+                logger.info(f"[Movie] OMDB: no match for '{movie.title}'")
                 continue
 
             omdb_id = search_parsed["search_results"][0].get("omdb_id")
             if not omdb_id or omdb_id in existing_omdb_ids:
+                logger.debug(f"[Movie] OMDB: duplicate or missing ID for '{movie.title}' — skipping")
                 continue
 
+            logger.info(f"[Movie] OMDB match: '{movie.title}' → {omdb_id}")
+
             # Step 2: Fetch full details
+            logger.info(f"[Movie] OMDB fetching details: {omdb_id}")
             detail_raw = run_async(OMDBService.get_movie_details(db, omdb_id))
             if not detail_raw:
                 movie.omdb_id = omdb_id
@@ -259,12 +286,17 @@ def enrich_new_movies(db: Session) -> int:
                 movie.poster_url = poster
             existing_omdb_ids.add(omdb_id)
             enriched += 1
+
+            rating_str = f"★{movie.rating}" if movie.rating else "no rating"
+            genres_str = ", ".join(movie.genres) if isinstance(movie.genres, list) else str(movie.genres or "")
+            logger.info(f"[Movie] Enriched: '{movie.title}' — {rating_str}, {genres_str}")
+
         except Exception:
-            logger.warning(f"Failed to enrich movie {movie.id} ({movie.title})", exc_info=True)
+            logger.warning(f"[Movie] Failed to enrich '{movie.title}' (ID: {movie.id})", exc_info=True)
 
     if enriched:
         db.commit()
-        logger.info(f"Enriched {enriched} movie(s) with OMDB metadata")
+        logger.info(f"[Movie] {enriched} movie(s) enriched with OMDB metadata")
     return enriched
 
 

@@ -35,6 +35,7 @@ from app.api.v1.enrichment.endpoints import router as enrichment_router
 # Configure structured logging with daily rotation
 setup_logging()
 logger = logging.getLogger(__name__)
+access_logger = logging.getLogger("access")
 
 
 @asynccontextmanager
@@ -127,10 +128,12 @@ async def log_requests(request: Request, call_next):
     acr_method = request.headers.get("access-control-request-method")
     acr_headers = request.headers.get("access-control-request-headers")
 
-    logger.info(f"[{request_id}] {request.method} {request.url.path} - " f"Client: {client_host}")
+    access_logger.info(
+        f"[{request_id}] {request.method} {request.url.path} - Client: {client_host}"
+    )
 
     if request.method.upper() == "OPTIONS":
-        logger.info(
+        access_logger.info(
             f"[{request_id}] Preflight details - Origin: {origin or 'unset'}, "
             f"Host: {host_header or 'unset'}, "
             f"Access-Control-Request-Method: {acr_method or 'unset'}, "
@@ -146,7 +149,7 @@ async def log_requests(request: Request, call_next):
         )
         if response.status_code >= 400 and origin:
             log_message += f" - Origin: {origin}"
-        logger.info(log_message)
+        access_logger.info(log_message)
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Process-Time"] = str(process_time)
         return response

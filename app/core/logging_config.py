@@ -155,6 +155,19 @@ def setup_logging() -> None:
     external_api_logger = logging.getLogger("external_api")
     external_api_logger.addHandler(_daily_handler("external_api.log", logging.DEBUG))
 
+    # HTTP access log — file only, never console
+    # Captures the log_requests middleware and uvicorn.access at INFO+
+    access_handler = _daily_handler("access.log", logging.INFO)
+    access_logger = logging.getLogger("access")
+    access_logger.addHandler(access_handler)
+    access_logger.propagate = False
+
+    # Redirect uvicorn's own access logger to the same file, suppress console output
+    uvicorn_access = logging.getLogger("uvicorn.access")
+    uvicorn_access.handlers.clear()
+    uvicorn_access.addHandler(access_handler)
+    uvicorn_access.propagate = False
+
 
 def get_logger(name: str) -> logging.Logger:
     """Get a logger instance for a specific module"""
