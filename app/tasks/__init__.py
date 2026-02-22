@@ -2,11 +2,15 @@
 
 # Import from the tasks module (not from this package)
 # This avoids circular imports by importing from the parent module
-import sys
-from pathlib import Path
 from importlib import util
+from pathlib import Path
 
 from app.tasks.celery_app import celery_app
+from app.tasks.enrichment import (
+    enrich_movie_external,
+    enrich_tv_show_external,
+    retry_failed_enrichment,
+)
 
 # Get the parent directory (app/)
 app_dir = Path(__file__).parent.parent
@@ -59,11 +63,29 @@ __all__ = [
     "update_batch_progress",
     "scan_new_media",
     "check_and_run_scan",
+    "retry_failed_enrichment",
+    "enrich_movie_external",
+    "enrich_tv_show_external",
 ]
 
+# Celery task aliases — only register Celery task objects (not plain helper functions)
+_celery_task_aliases = [
+    "analyze_file",
+    "enrich_metadata",
+    "cleanup_cache",
+    "cleanup_queue",
+    "sync_metadata",
+    "bulk_metadata_sync_task",
+    "bulk_file_import_task",
+    "process_batch_item",
+    "update_batch_progress",
+    "scan_new_media",
+    "check_and_run_scan",
+    "retry_failed_enrichment",
+]
 
 # Restore the original Celery task names so existing beat schedules and callers keep working
-for _alias in __all__:
+for _alias in _celery_task_aliases:
     _register_task_alias(globals()[_alias], _alias)
 
 del _alias

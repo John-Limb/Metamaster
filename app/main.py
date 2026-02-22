@@ -15,8 +15,11 @@ from app.core.logging_config import setup_logging
 from app.core.init_db import init_database
 from app.core.database import SessionLocal
 from app.domain.files.service import FileService
-from app.domain.movies.scanner import create_movies_from_files, enrich_new_movies
-from app.domain.tv_shows.scanner import create_tv_shows_from_files, enrich_new_tv_shows
+from app.domain.movies.scanner import create_movies_from_files
+from app.domain.tv_shows.scanner import create_tv_shows_from_files
+from app.tasks.enrichment import enrich_movie_external, enrich_tv_show_external
+from app.domain.movies.models import Movie
+from app.domain.tv_shows.models import TVShow
 from app.tasks.celery_app import celery_app
 from app.api import health
 from app.api import movies
@@ -27,6 +30,7 @@ from app.api import files
 from app.api.v1.config import router as config_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.queue.endpoints import router as queue_router
+from app.api.v1.enrichment.endpoints import router as enrichment_router
 
 # Configure structured logging with daily rotation
 setup_logging()
@@ -62,9 +66,24 @@ async def lifespan(app: FastAPI):
         create_movies_from_files(db)
         create_tv_shows_from_files(db)
 
-        # Enrich newly created records with metadata from OMDB/TVDB
-        enrich_new_movies(db)
-        enrich_new_tv_shows(db)
+        # Dispatch async enrichment for all unenriched items
+        pending_movies = (
+            db.query(Movie)
+            .filter(Movie.enrichment_status.in_(["local_only", "external_failed"]))
+            .all()
+        )
+        for m in pending_movies:
+            enrich_movie_external(
+                m.id
+            )  # Call directly (not .delay()) since Celery may not be running at startup
+
+        pending_shows = (
+            db.query(TVShow)
+            .filter(TVShow.enrichment_status.in_(["local_only", "external_failed"]))
+            .all()
+        )
+        for s in pending_shows:
+            enrich_tv_show_external(s.id)
     finally:
         db.close()
 
@@ -178,7 +197,9 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router, tags=["Health"])  # /health/ — Docker health checks
-app.include_router(health.router, prefix="/api/v1", tags=["Health"])  # /api/v1/health/ — frontend API
+app.include_router(
+    health.router, prefix="/api/v1", tags=["Health"]
+)  # /api/v1/health/ — frontend API
 app.include_router(movies.router, prefix="/api/v1")
 app.include_router(tv_shows.router, prefix="/api/v1")
 app.include_router(cache.router, prefix="/api/v1")
@@ -187,6 +208,7 @@ app.include_router(config_router, prefix="/api/v1")
 app.include_router(files.router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(queue_router, prefix="/api/v1")
+app.include_router(enrichment_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Root"])

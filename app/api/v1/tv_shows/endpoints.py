@@ -1,29 +1,34 @@
 """TV Show API endpoints"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.schemas import (
-    TVShowCreate,
-    TVShowUpdate,
-    TVShowResponse,
-    PaginatedTVShowResponse,
-    PaginatedTVShowResponseWithFilters,
-    PaginatedSeasonResponse,
-    PaginatedEpisodeResponse,
-    SeasonResponse,
-    EpisodeResponse,
-    MetadataSyncResponse,
-)
-from app.services_impl import TVShowService, TVDBService
-from app.infrastructure.cache.redis_cache import get_cache_service
-from app.application.search.service import SearchFilters, TVShowSearchService
-from app.domain.tv_shows.scanner import create_tv_shows_from_files, enrich_new_tv_shows, probe_episode_file, probe_unscanned_episodes
-from app.domain.files.service import FileService
-from app.core.config import TV_DIR
-from app.api.utils import pagination_metadata, resolve_pagination
-import logging
 import json
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel as PydanticBase
+from sqlalchemy.orm import Session
+
+from app.api.utils import pagination_metadata, resolve_pagination
+from app.application.search.service import SearchFilters, TVShowSearchService
+from app.core.config import TV_DIR
+from app.core.database import get_db
+from app.domain.files.service import FileService
+from app.domain.tv_shows.models import TVShow as TVShowModel
+from app.domain.tv_shows.scanner import (
+    create_tv_shows_from_files,
+    probe_unscanned_episodes,
+)
+from app.infrastructure.cache.redis_cache import get_cache_service
+from app.schemas import (
+    MetadataSyncResponse,
+    PaginatedEpisodeResponse,
+    PaginatedSeasonResponse,
+    PaginatedTVShowResponseWithFilters,
+    TVShowCreate,
+    TVShowResponse,
+    TVShowUpdate,
+)
+from app.services_impl import TVDBService, TVShowService
+from app.tasks.enrichment import enrich_tv_show_external
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +76,7 @@ async def list_tv_shows(
     # Try to get from cache
     cached_result = cache_service.get(cache_key)
     if cached_result:
-        logger.debug(f"Returning cached TV show list with filters")
+        logger.debug("Returning cached TV show list with filters")
         return cached_result
 
     # Create search filters
@@ -238,7 +243,7 @@ async def get_season_episodes(
 
 @router.post("/scan-directory")
 async def scan_tv_directory(db: Session = Depends(get_db)):
-    """Scan the TV directory for new files and create show/season/episode records with FFprobe analysis."""
+    """Scan the TV directory for new files and create show/season/episode records with FFprobe analysis."""  # noqa: E501
     try:
         file_service = FileService(db)
         try:
@@ -248,7 +253,14 @@ async def scan_tv_directory(db: Session = Depends(get_db)):
             files_synced = 0
 
         shows_created = create_tv_shows_from_files(db)
-        shows_enriched = enrich_new_tv_shows(db)
+        pending_shows = (
+            db.query(TVShowModel)
+            .filter(TVShowModel.enrichment_status.in_(["local_only", "external_failed"]))
+            .all()
+        )
+        for s in pending_shows:
+            enrich_tv_show_external(s.id)
+        shows_enriched = len(pending_shows)
         files_scanned = probe_unscanned_episodes(db)
 
         # Invalidate TV show list cache
@@ -263,7 +275,9 @@ async def scan_tv_directory(db: Session = Depends(get_db)):
         }
     except Exception as e:
         logger.error(f"Error scanning TV directory: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An error occurred while scanning the TV directory")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while scanning the TV directory"
+        )
 
 
 @router.post("", response_model=TVShowResponse, status_code=201)
@@ -434,7 +448,7 @@ async def sync_tv_show_metadata(
 
         return {
             "success": True,
-            "message": f"TV show metadata synced successfully. Updated {len(updated_fields)} field(s).",
+            "message": f"TV show metadata synced successfully. Updated {len(updated_fields)} field(s).",  # noqa: E501
             "movie_id": None,
             "show_id": show_id,
             "updated_fields": updated_fields,
@@ -446,3 +460,43 @@ async def sync_tv_show_metadata(
     except Exception as e:
         logger.error(f"Error syncing metadata for TV show {show_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An error occurred while syncing metadata")
+
+
+class ExternalIdPayload(PydanticBase):
+    external_id: str
+
+
+@router.patch("/{show_id}/external-id", response_model=TVShowResponse)
+async def set_tvshow_external_id(
+    show_id: int,
+    payload: ExternalIdPayload,
+    db: Session = Depends(get_db),
+):
+    """Set a manual TVDB ID and trigger enrichment immediately."""
+    show = TVShowService.get_tv_show_by_id(db, show_id)
+    if not show:
+        raise HTTPException(status_code=404, detail="TV show not found")
+    show.manual_external_id = payload.external_id
+    show.enrichment_status = "local_only"
+    show.enrichment_error = None
+    db.commit()
+    db.refresh(show)
+    enrich_tv_show_external(show.id)
+    cache_service = get_cache_service()
+    cache_service.invalidate_tv_show(show_id)
+    return show
+
+
+@router.post("/{show_id}/enrich", status_code=202)
+async def trigger_tvshow_enrichment(
+    show_id: int,
+    db: Session = Depends(get_db),
+):
+    """Manually trigger external enrichment for a TV show."""
+    show = TVShowService.get_tv_show_by_id(db, show_id)
+    if not show:
+        raise HTTPException(status_code=404, detail="TV show not found")
+    enrich_tv_show_external(show.id)
+    cache_service = get_cache_service()
+    cache_service.invalidate_tv_show(show_id)
+    return {"message": "Enrichment triggered", "show_id": show_id}

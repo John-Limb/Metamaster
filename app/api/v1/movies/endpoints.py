@@ -1,25 +1,34 @@
 """Movie API endpoints"""
 
+import json
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel as PydanticBase
 from sqlalchemy.orm import Session
+
+from app.api.utils import pagination_metadata, resolve_pagination
+from app.application.search.service import MovieSearchService, SearchFilters
+from app.core.config import MOVIE_DIR
 from app.core.database import get_db
+from app.domain.files.service import FileService
+from app.domain.movies.models import Movie as MovieModel
+from app.domain.movies.scanner import (
+    create_movies_from_files,
+    probe_movie_file,
+    probe_unscanned_movies,
+)
+from app.infrastructure.cache.redis_cache import get_cache_service
 from app.schemas import (
+    MetadataSyncResponse,
     MovieCreate,
-    MovieUpdate,
     MovieResponse,
+    MovieUpdate,
     PaginatedMovieResponse,
     PaginatedMovieResponseWithFilters,
-    MetadataSyncResponse,
 )
 from app.services_impl import MovieService, OMDBService
-from app.infrastructure.cache.redis_cache import get_cache_service
-from app.application.search.service import SearchFilters, MovieSearchService
-from app.domain.movies.scanner import probe_movie_file, create_movies_from_files, enrich_new_movies, probe_unscanned_movies
-from app.domain.files.service import FileService
-from app.core.config import MOVIE_DIR
-from app.api.utils import pagination_metadata, resolve_pagination
-import logging
-import json
+from app.tasks.enrichment import enrich_movie_external
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +78,7 @@ async def list_movies(
     # Try to get from cache
     cached_result = cache_service.get(cache_key)
     if cached_result:
-        logger.debug(f"Returning cached movie list with filters")
+        logger.debug("Returning cached movie list with filters")
         return cached_result
 
     # Create search filters
@@ -292,7 +301,14 @@ async def scan_movie_directory(db: Session = Depends(get_db)):
             files_synced = 0
 
         movies_created = create_movies_from_files(db)
-        movies_enriched = enrich_new_movies(db)
+        pending = (
+            db.query(MovieModel)
+            .filter(MovieModel.enrichment_status.in_(["local_only", "external_failed"]))
+            .all()
+        )
+        for m in pending:
+            enrich_movie_external(m.id)
+        movies_enriched = len(pending)
         files_scanned = probe_unscanned_movies(db)
 
         # Invalidate movie list cache
@@ -307,7 +323,9 @@ async def scan_movie_directory(db: Session = Depends(get_db)):
         }
     except Exception as e:
         logger.error(f"Error scanning movie directory: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An error occurred while scanning the movie directory")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while scanning the movie directory"
+        )
 
 
 @router.post("/{movie_id}/scan", response_model=MovieResponse)
@@ -454,7 +472,7 @@ async def sync_movie_metadata(
 
         return {
             "success": True,
-            "message": f"Movie metadata synced successfully. Updated {len(updated_fields)} field(s).",
+            "message": f"Movie metadata synced successfully. Updated {len(updated_fields)} field(s).",  # noqa: E501
             "movie_id": movie_id,
             "show_id": None,
             "updated_fields": updated_fields,
@@ -466,3 +484,43 @@ async def sync_movie_metadata(
     except Exception as e:
         logger.error(f"Error syncing metadata for movie {movie_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An error occurred while syncing metadata")
+
+
+class ExternalIdPayload(PydanticBase):
+    external_id: str
+
+
+@router.patch("/{movie_id}/external-id", response_model=MovieResponse)
+async def set_movie_external_id(
+    movie_id: int,
+    payload: ExternalIdPayload,
+    db: Session = Depends(get_db),
+):
+    """Set a manual OMDB/IMDB ID and trigger enrichment immediately."""
+    movie = MovieService.get_movie_by_id(db, movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    movie.manual_external_id = payload.external_id
+    movie.enrichment_status = "local_only"
+    movie.enrichment_error = None
+    db.commit()
+    db.refresh(movie)
+    enrich_movie_external(movie.id)
+    cache_service = get_cache_service()
+    cache_service.invalidate_movie(movie_id)
+    return movie
+
+
+@router.post("/{movie_id}/enrich", status_code=202)
+async def trigger_movie_enrichment(
+    movie_id: int,
+    db: Session = Depends(get_db),
+):
+    """Manually trigger external enrichment for a movie."""
+    movie = MovieService.get_movie_by_id(db, movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    enrich_movie_external(movie.id)
+    cache_service = get_cache_service()
+    cache_service.invalidate_movie(movie_id)
+    return {"message": "Enrichment triggered", "movie_id": movie_id}

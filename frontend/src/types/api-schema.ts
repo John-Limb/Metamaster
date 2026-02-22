@@ -298,6 +298,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/movies/{movie_id}/external-id": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Set Movie External Id
+         * @description Set a manual OMDB/IMDB ID and trigger enrichment immediately.
+         */
+        patch: { requestBody?: { content: { "application/json": { external_id: string } } }; responses: { 200: { content: { "application/json": unknown } } } };
+        trace?: never;
+    };
+    "/api/v1/movies/{movie_id}/enrich": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trigger Movie Enrichment
+         * @description Manually trigger external enrichment for a movie.
+         */
+        post: { responses: { 202: { content: { "application/json": { message: string; movie_id: number } } } } };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tv-shows": {
         parameters: {
             query?: never;
@@ -436,6 +476,66 @@ export interface paths {
          *     - **metadata**: Updated metadata
          */
         post: operations["sync_tv_show_metadata_api_v1_tv_shows__show_id__sync_metadata_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tv-shows/{show_id}/external-id": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Set Tvshow External Id
+         * @description Set a manual TVDB ID and trigger enrichment immediately.
+         */
+        patch: { requestBody?: { content: { "application/json": { external_id: string } } }; responses: { 200: { content: { "application/json": unknown } } } };
+        trace?: never;
+    };
+    "/api/v1/tv-shows/{show_id}/enrich": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trigger Tvshow Enrichment
+         * @description Manually trigger external enrichment for a TV show.
+         */
+        post: { responses: { 202: { content: { "application/json": { message: string; show_id: number } } } } };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/enrichment/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Pending Enrichment
+         * @description Return all movies and TV shows that need enrichment attention.
+         */
+        get: { responses: { 200: { content: { "application/json": { movies: unknown[]; tv_shows: unknown[]; total: number } } } } };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1245,6 +1345,14 @@ export interface components {
             updated_at: string;
         };
         /**
+         * ExternalIdPayload
+         * @description Payload for setting a manual external ID
+         */
+        ExternalIdPayload: {
+            /** External Id */
+            external_id: string;
+        };
+        /**
          * FilterMetadata
          * @description Schema for filter metadata in responses
          * @example {
@@ -1413,6 +1521,11 @@ export interface components {
             /** Omdb Id */
             omdb_id?: string | null;
             /**
+             * Poster Url
+             * @description URL to movie poster image
+             */
+            poster_url?: string | null;
+            /**
              * Created At
              * Format: date-time
              * @description Creation timestamp
@@ -1424,6 +1537,61 @@ export interface components {
              * @description Last update timestamp
              */
             updated_at: string;
+            /**
+             * Enrichment Status
+             * @description Current enrichment status
+             */
+            enrichment_status?: ("pending_local" | "local_only" | "pending_external" | "fully_enriched" | "external_failed" | "not_found") | null;
+            /**
+             * Detected External Id
+             * @description Auto-detected OMDB/IMDB ID
+             */
+            detected_external_id?: string | null;
+            /**
+             * Manual External Id
+             * @description Manually set OMDB/IMDB ID
+             */
+            manual_external_id?: string | null;
+            /**
+             * Enrichment Error
+             * @description Last enrichment error message
+             */
+            enrichment_error?: string | null;
+            /**
+             * Quality
+             * @description Resolution label e.g. 1080p, 4K
+             */
+            quality?: string | null;
+            /**
+             * Resolution
+             * @description Resolution e.g. 1920x1080
+             */
+            resolution?: string | null;
+            /**
+             * Codec Video
+             * @description Video codec e.g. h264
+             */
+            codec_video?: string | null;
+            /**
+             * Codec Audio
+             * @description Audio codec e.g. aac
+             */
+            codec_audio?: string | null;
+            /**
+             * Audio Channels
+             * @description Audio channels e.g. 5.1, Stereo
+             */
+            audio_channels?: string | null;
+            /**
+             * File Duration
+             * @description Duration in seconds
+             */
+            file_duration?: number | null;
+            /**
+             * File Size
+             * @description File size in bytes
+             */
+            file_size?: number | null;
         };
         /**
          * MovieUpdate
@@ -1825,6 +1993,11 @@ export interface components {
             /** Tvdb Id */
             tvdb_id?: string | null;
             /**
+             * Poster Url
+             * @description URL to TV show poster image
+             */
+            poster_url?: string | null;
+            /**
              * Created At
              * Format: date-time
              * @description Creation timestamp
@@ -1836,6 +2009,26 @@ export interface components {
              * @description Last update timestamp
              */
             updated_at: string;
+            /**
+             * Enrichment Status
+             * @description Current enrichment status
+             */
+            enrichment_status?: ("pending_local" | "local_only" | "pending_external" | "fully_enriched" | "external_failed" | "not_found") | null;
+            /**
+             * Detected External Id
+             * @description Auto-detected TVDB ID
+             */
+            detected_external_id?: string | null;
+            /**
+             * Manual External Id
+             * @description Manually set TVDB ID
+             */
+            manual_external_id?: string | null;
+            /**
+             * Enrichment Error
+             * @description Last enrichment error message
+             */
+            enrichment_error?: string | null;
         };
         /**
          * TVShowUpdate

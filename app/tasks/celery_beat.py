@@ -32,4 +32,11 @@ beat_schedule = {
             "queue": "default",
         },
     },
+    "retry_failed_enrichment": {
+        "task": "app.tasks.retry_failed_enrichment",
+        "schedule": crontab(minute=0, hour="*/2"),  # every 2 hours
+        "options": {
+            "queue": "external_api",
+        },
+    },
 }
