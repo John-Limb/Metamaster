@@ -1,4 +1,4 @@
-"""Celery tasks for external metadata enrichment (OMDB / TVDB)."""
+"""Celery tasks for external metadata enrichment (TMDB)."""
 
 import logging
 
@@ -7,7 +7,7 @@ import httpx
 from app.core.database import SessionLocal
 from app.domain.movies.models import Movie
 from app.domain.tv_shows.models import TVShow
-from app.services_impl import OMDBService, TVDBService
+from app.services_impl import TMDBService
 from app.tasks.async_helpers import run_async
 from app.tasks.celery_app import celery_app
 
@@ -17,7 +17,7 @@ RETRYABLE_STATUSES = ("local_only", "external_failed")
 
 
 def enrich_movie_external(movie_id: int) -> None:
-    """Fetch OMDB metadata for a single movie. Sets enrichment_status accordingly.
+    """Fetch TMDB metadata for a single movie. Sets enrichment_status accordingly.
 
     ID resolution priority: manual_external_id > detected_external_id > title search.
     """
@@ -29,7 +29,7 @@ def enrich_movie_external(movie_id: int) -> None:
             return
 
         existing_ids = {
-            row[0] for row in db.query(Movie.omdb_id).filter(Movie.omdb_id.isnot(None)).all()
+            row[0] for row in db.query(Movie.tmdb_id).filter(Movie.tmdb_id.isnot(None)).all()
         }
 
         try:
@@ -39,47 +39,47 @@ def enrich_movie_external(movie_id: int) -> None:
             external_id = movie.manual_external_id or movie.detected_external_id
 
             if external_id:
-                raw = run_async(OMDBService.get_movie_details(db, external_id))
+                raw = run_async(TMDBService.get_movie_details(db, external_id))
             else:
-                raw = run_async(OMDBService.search_movie(db, movie.title, movie.year))
+                raw = run_async(TMDBService.search_movie(db, movie.title, movie.year))
                 if raw:
-                    parsed_search = OMDBService.parse_omdb_response(raw)
+                    parsed_search = TMDBService.parse_movie_search_response(raw)
                     results = (parsed_search or {}).get("search_results", [])
-                    external_id = results[0].get("omdb_id") if results else None
+                    external_id = results[0].get("tmdb_id") if results else None
                     if not external_id:
                         movie.enrichment_status = "not_found"
-                        movie.enrichment_error = "No match found in OMDB"
+                        movie.enrichment_error = "No match found in TMDB"
                         db.commit()
                         return
-                    raw = run_async(OMDBService.get_movie_details(db, external_id))
+                    raw = run_async(TMDBService.get_movie_details(db, external_id))
                 else:
                     movie.enrichment_status = "not_found"
-                    movie.enrichment_error = "No match found in OMDB"
+                    movie.enrichment_error = "No match found in TMDB"
                     db.commit()
                     return
 
             if not raw:
                 movie.enrichment_status = "not_found"
-                movie.enrichment_error = "OMDB returned no data for this ID"
+                movie.enrichment_error = "TMDB returned no data for this ID"
                 db.commit()
                 return
 
-            detail = OMDBService.parse_omdb_response(raw)
+            detail = TMDBService.parse_movie_details_response(raw)
             if not detail:
                 movie.enrichment_status = "not_found"
-                movie.enrichment_error = "Could not parse OMDB response"
+                movie.enrichment_error = "Could not parse TMDB response"
                 db.commit()
                 return
 
-            omdb_id = detail.get("omdb_id") or external_id
-            if omdb_id and omdb_id not in existing_ids:
-                movie.omdb_id = omdb_id
+            tmdb_id = detail.get("tmdb_id") or external_id
+            if tmdb_id and tmdb_id not in existing_ids:
+                movie.tmdb_id = tmdb_id
             movie.plot = detail.get("plot", movie.plot)
             movie.rating = detail.get("rating", movie.rating)
             movie.runtime = detail.get("runtime", movie.runtime)
             movie.genres = detail.get("genres", movie.genres)
             poster = detail.get("poster")
-            if poster and poster != "N/A":
+            if poster:
                 movie.poster_url = poster
             movie.enrichment_status = "fully_enriched"
             movie.enrichment_error = None
@@ -101,7 +101,7 @@ def enrich_movie_external(movie_id: int) -> None:
 
 
 def enrich_tv_show_external(show_id: int) -> None:
-    """Fetch TVDB metadata for a single TV show. Sets enrichment_status accordingly."""
+    """Fetch TMDB metadata for a single TV show. Sets enrichment_status accordingly."""
     db = SessionLocal()
     try:
         show = db.query(TVShow).filter(TVShow.id == show_id).first()
@@ -116,41 +116,41 @@ def enrich_tv_show_external(show_id: int) -> None:
             db.commit()
 
             if external_id:
-                raw = run_async(TVDBService.get_series_details(db, external_id))
+                raw = run_async(TMDBService.get_series_details(db, external_id))
             else:
-                raw = run_async(TVDBService.search_show(db, show.title))
+                raw = run_async(TMDBService.search_show(db, show.title))
                 if raw:
-                    parsed = TVDBService.parse_tvdb_search_response(raw)
+                    parsed = TMDBService.parse_series_search_response(raw)
                     results = (parsed or {}).get("search_results", [])
-                    external_id = results[0].get("tvdb_id") if results else None
+                    external_id = results[0].get("tmdb_id") if results else None
                     if not external_id:
                         show.enrichment_status = "not_found"
-                        show.enrichment_error = "No match found in TVDB"
+                        show.enrichment_error = "No match found in TMDB"
                         db.commit()
                         return
-                    raw = run_async(TVDBService.get_series_details(db, external_id))
+                    raw = run_async(TMDBService.get_series_details(db, external_id))
                 else:
                     show.enrichment_status = "not_found"
-                    show.enrichment_error = "No match found in TVDB"
+                    show.enrichment_error = "No match found in TMDB"
                     db.commit()
                     return
 
             if not raw:
                 show.enrichment_status = "not_found"
-                show.enrichment_error = "TVDB returned no data for this ID"
+                show.enrichment_error = "TMDB returned no data for this ID"
                 db.commit()
                 return
 
-            detail = TVDBService.parse_tvdb_series_response(raw) if raw else None
+            detail = TMDBService.parse_series_response(raw) if raw else None
             if not detail:
                 show.enrichment_status = "not_found"
-                show.enrichment_error = "Could not parse TVDB response"
+                show.enrichment_error = "Could not parse TMDB response"
                 db.commit()
                 return
 
-            tvdb_id = detail.get("tvdb_id") or external_id
-            if tvdb_id:
-                show.tvdb_id = tvdb_id
+            tmdb_id = detail.get("tmdb_id") or external_id
+            if tmdb_id:
+                show.tmdb_id = tmdb_id
             show.plot = detail.get("plot", show.plot)
             show.rating = detail.get("rating", show.rating)
             show.genres = detail.get("genres", show.genres)

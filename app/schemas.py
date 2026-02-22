@@ -78,7 +78,7 @@ class MovieCreate(BaseModel):
     rating: Optional[float] = Field(None, ge=0, le=10, description="Movie rating (0-10)")
     runtime: Optional[int] = Field(None, ge=0, description="Runtime in minutes")
     genres: Optional[str] = Field(None, description="Genres as JSON array string")
-    omdb_id: Optional[str] = Field(None, description="OMDB ID")
+    tmdb_id: Optional[str] = Field(None, description="TMDB ID")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -89,7 +89,7 @@ class MovieCreate(BaseModel):
                 "rating": 9.3,
                 "runtime": 142,
                 "genres": '["Drama"]',
-                "omdb_id": "tt0111161",
+                "tmdb_id": "278",
             }
         }
     )
@@ -104,7 +104,7 @@ class MovieUpdate(BaseModel):
     rating: Optional[float] = Field(None, ge=0, le=10)
     runtime: Optional[int] = Field(None, ge=0)
     genres: Optional[str] = None
-    omdb_id: Optional[str] = None
+    tmdb_id: Optional[str] = None
 
     model_config = ConfigDict(json_schema_extra={"example": {"rating": 9.5, "runtime": 145}})
 
@@ -119,7 +119,7 @@ class MovieResponse(BaseModel):
     rating: Optional[float] = None
     runtime: Optional[int] = None
     genres: Optional[str] = None
-    omdb_id: Optional[str] = None
+    tmdb_id: Optional[str] = None
     poster_url: Optional[str] = Field(None, description="URL to movie poster image")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
@@ -129,10 +129,10 @@ class MovieResponse(BaseModel):
         None, description="Current enrichment status"
     )
     detected_external_id: Optional[str] = Field(
-        None, description="Auto-detected OMDB/IMDB ID"
+        None, description="Auto-detected external ID"
     )
     manual_external_id: Optional[str] = Field(
-        None, description="Manually set OMDB/IMDB ID"
+        None, description="Manually set external ID"
     )
     enrichment_error: Optional[str] = Field(
         None, description="Last enrichment error message"
@@ -163,7 +163,7 @@ class TVShowCreate(BaseModel):
     rating: Optional[float] = Field(None, ge=0, le=10, description="TV show rating (0-10)")
     genres: Optional[str] = Field(None, description="Genres as JSON array string")
     status: Optional[str] = Field(None, description="Status: 'Continuing' or 'Ended'")
-    tvdb_id: Optional[str] = Field(None, description="TVDB ID")
+    tmdb_id: Optional[str] = Field(None, description="TMDB ID")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -172,8 +172,8 @@ class TVShowCreate(BaseModel):
                 "plot": "A high school chemistry teacher...",
                 "rating": 9.5,
                 "genres": '["Drama", "Crime"]',
-                "status": "Ended",
-                "tvdb_id": "81189",
+                "status": "ended",
+                "tmdb_id": "1396",
             }
         }
     )
@@ -187,9 +187,9 @@ class TVShowUpdate(BaseModel):
     rating: Optional[float] = Field(None, ge=0, le=10)
     genres: Optional[str] = None
     status: Optional[str] = None
-    tvdb_id: Optional[str] = None
+    tmdb_id: Optional[str] = None
 
-    model_config = ConfigDict(json_schema_extra={"example": {"rating": 9.6, "status": "Ended"}})
+    model_config = ConfigDict(json_schema_extra={"example": {"rating": 9.6, "status": "ended"}})
 
 
 class TVShowResponse(BaseModel):
@@ -201,7 +201,7 @@ class TVShowResponse(BaseModel):
     rating: Optional[float] = None
     genres: Optional[str] = None
     status: Optional[str] = None
-    tvdb_id: Optional[str] = None
+    tmdb_id: Optional[str] = None
     poster_url: Optional[str] = Field(None, description="URL to TV show poster image")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
@@ -211,10 +211,10 @@ class TVShowResponse(BaseModel):
         None, description="Current enrichment status"
     )
     detected_external_id: Optional[str] = Field(
-        None, description="Auto-detected TVDB ID"
+        None, description="Auto-detected external ID"
     )
     manual_external_id: Optional[str] = Field(
-        None, description="Manually set TVDB ID"
+        None, description="Manually set external ID"
     )
     enrichment_error: Optional[str] = Field(
         None, description="Last enrichment error message"
@@ -233,7 +233,7 @@ class SeasonResponse(BaseModel):
 
     id: int = Field(..., description="Season ID")
     season_number: int = Field(..., description="Season number")
-    tvdb_id: Optional[str] = None
+    tmdb_id: Optional[str] = None
     episode_count: Optional[int] = Field(None, description="Number of episodes in season")
     created_at: datetime = Field(..., description="Creation timestamp")
 
@@ -249,7 +249,7 @@ class EpisodeResponse(BaseModel):
     plot: Optional[str] = None
     air_date: Optional[str] = Field(None, description="Air date in YYYY-MM-DD format")
     rating: Optional[float] = None
-    tvdb_id: Optional[str] = None
+    tmdb_id: Optional[str] = None
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 

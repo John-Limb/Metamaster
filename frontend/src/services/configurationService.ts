@@ -31,19 +31,10 @@ export interface ConfigurationServiceInterface {
 const CONFIGURATION_ITEMS: ConfigurationItem[] = [
   // Critical (Error)
   {
-    id: 'api-keys-omdb',
-    name: 'OMDB API Key',
-    description: 'API key for fetching movie metadata from OMDB',
-    severity: 'critical',
-    status: 'checking',
-    actionLabel: 'Configure API Key',
-    actionPath: '/settings?section=api-keys',
-  },
-  {
-    id: 'api-keys-tvdb',
-    name: 'TVDB API Key',
-    description: 'API key for fetching TV show metadata from TVDB',
-    severity: 'critical',
+    id: 'api-keys-tmdb',
+    name: 'TMDB API Key',
+    description: 'API key for fetching movie and TV show metadata from The Movie Database',
+    severity: 'important',
     status: 'checking',
     actionLabel: 'Configure API Key',
     actionPath: '/settings?section=api-keys',
@@ -144,12 +135,11 @@ const saveDismissedItems = (items: Set<string>): void => {
 
 // Environment variable mapping for configuration items
 const ENV_VAR_MAPPING: Record<string, string[]> = {
-  'api-keys-omdb': ['VITE_OMDB_API_KEY'],
-  'api-keys-tvdb': ['VITE_TVDB_API_KEY', 'VITE_TVDB_PIN'],
+  'api-keys-tmdb': ['VITE_TMDB_API_KEY'],
   'database-connection': ['VITE_DATABASE_URL', 'DATABASE_URL'],
   'file-system-paths': ['VITE_MOVIE_DIR', 'VITE_TV_DIR', 'MOVIE_DIR', 'TV_DIR'],
   'file-monitoring': ['VITE_WATCH_EXTENSIONS', 'VITE_FILE_MONITORING'],
-  'metadata-sources': ['VITE_OMDB_API_KEY', 'VITE_TVDB_API_KEY'],
+  'metadata-sources': ['VITE_TMDB_API_KEY'],
   'storage-location': ['VITE_MOVIE_DIR', 'VITE_TV_DIR'],
   'dark-mode-preference': ['VITE_DARK_MODE'],
   'notification-settings': ['VITE_NOTIFICATIONS_ENABLED'],
@@ -165,7 +155,7 @@ const checkConfigurationItem = async (item: ConfigurationItem): Promise<Configur
   // Check if any of the mapped environment variables are set
   const isConfigured = envVars.some(envVar => {
     const value = import.meta.env?.[envVar]
-    return value && value !== '' && value !== 'your_omdb_api_key_here' && value !== 'your_tvdb_api_key_here'
+    return value && value !== '' && value !== 'your_tmdb_api_key_here'
   })
 
   // Simulate async check

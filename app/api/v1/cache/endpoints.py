@@ -77,7 +77,7 @@ async def invalidate_cache_by_type(
     Invalidate all cache entries for a specific API type.
 
     Parameters:
-    - **cache_type**: API type to invalidate (e.g., 'omdb', 'tvdb')
+    - **cache_type**: API type to invalidate (e.g., 'tmdb', 'generic')
 
     Returns:
     - **success**: Whether operation was successful
@@ -86,7 +86,7 @@ async def invalidate_cache_by_type(
     """
     try:
         # Validate cache type
-        valid_types = ["omdb", "tvdb", "generic"]
+        valid_types = ["tmdb", "generic"]
         if cache_type not in valid_types:
             raise HTTPException(
                 status_code=400,
@@ -118,7 +118,7 @@ async def list_cache_by_type(
     List cache entries for a specific API type with pagination.
 
     Parameters:
-    - **cache_type**: API type to list (e.g., 'omdb', 'tvdb')
+    - **cache_type**: API type to list (e.g., 'tmdb', 'generic')
     - **limit**: Number of items per page (1-100, default: 10)
     - **offset**: Offset from start (default: 0)
 
@@ -130,7 +130,7 @@ async def list_cache_by_type(
     """
     try:
         # Validate cache type
-        valid_types = ["omdb", "tvdb", "generic"]
+        valid_types = ["tmdb", "generic"]
         if cache_type not in valid_types:
             raise HTTPException(
                 status_code=400,

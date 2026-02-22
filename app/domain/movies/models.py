@@ -14,7 +14,7 @@ class Movie(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), nullable=False)
     year = Column(Integer)
-    omdb_id = Column(String(50), unique=True)
+    tmdb_id = Column(String(50), unique=True)
     plot = Column(Text)
     rating = Column(Float)
     runtime = Column(Integer)  # in minutes
@@ -37,7 +37,7 @@ class Movie(Base):
 
     __table_args__ = (
         Index("idx_movies_title", "title"),
-        Index("idx_movies_omdb_id", "omdb_id"),
+        Index("idx_movies_tmdb_id", "tmdb_id"),
         Index("idx_movies_year", "year"),
     )
 

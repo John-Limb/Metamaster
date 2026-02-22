@@ -1,5 +1,5 @@
-"""OMDB API integration module"""
+"""TMDB API integration module (movies)"""
 
-from app.services_impl import OMDBService
+from app.services_impl import TMDBService
 
-__all__ = ["OMDBService"]
+__all__ = ["TMDBService"]

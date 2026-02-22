@@ -64,27 +64,15 @@ async def check_configuration():
     - File System Paths (MOVIE_DIR, TV_DIR)
     """
     items = []
-    
-    # Check OMDB API Key
-    omdb_configured = bool(settings.omdb_api_key and settings.omdb_api_key != "your_omdb_api_key_here")
-    items.append(ConfigurationItem(
-        id="api-keys-omdb",
-        name="OMDB API Key",
-        description="API key for fetching movie metadata from OMDB",
-        severity="important",
-        status="valid" if omdb_configured else "invalid",
-        actionLabel="Configure API Key",
-        actionPath="/settings?section=api-keys",
-    ))
 
-    # Check TVDB API Key
-    tvdb_configured = bool(settings.tvdb_api_key and settings.tvdb_api_key != "your_tvdb_api_key_here")
+    # Check TMDB API Key (covers both movies and TV shows)
+    tmdb_configured = bool(settings.tmdb_api_key and settings.tmdb_api_key != "your_tmdb_api_key_here")
     items.append(ConfigurationItem(
-        id="api-keys-tvdb",
-        name="TVDB API Key",
-        description="API key for fetching TV show metadata from TVDB",
+        id="api-keys-tmdb",
+        name="TMDB API Key",
+        description="API key for fetching movie and TV show metadata from The Movie Database",
         severity="important",
-        status="valid" if tvdb_configured else "invalid",
+        status="valid" if tmdb_configured else "invalid",
         actionLabel="Configure API Key",
         actionPath="/settings?section=api-keys",
     ))
@@ -130,7 +118,7 @@ async def check_configuration():
     ))
     
     # Metadata Sources
-    metadata_configured = omdb_configured or tvdb_configured
+    metadata_configured = tmdb_configured
     items.append(ConfigurationItem(
         id="metadata-sources",
         name="Metadata Sources",
@@ -169,8 +157,7 @@ async def check_configuration_item(item_id: str):
     Check a specific configuration item by ID.
     
     Valid item IDs:
-    - api-keys-omdb
-    - api-keys-tvdb
+    - api-keys-tmdb
     - database-connection
     - file-system-paths
     - file-monitoring

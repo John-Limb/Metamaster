@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { StatCard } from '../StatCard'
 import { LibraryStats } from '../LibraryStats'
 import { RecentActivity, type Activity } from '../RecentActivity'
@@ -14,7 +15,69 @@ import { movieService } from '@/services/movieService'
 import { tvShowService } from '@/services/tvShowService'
 import { queueService } from '@/services/queueService'
 import { fileService } from '@/services/fileService'
-import { configurationService, type ConfigurationState } from '@/services/configurationService'
+import { configurationService, type ConfigurationState, type ConfigurationItem } from '@/services/configurationService'
+import { type EnrichmentStats } from '@/services/movieService'
+
+const API_STATUS_IDS = ['api-keys-omdb', 'api-keys-tvdb']
+
+function ExternalApiStatus({ items }: { items: ConfigurationItem[] }) {
+  const apiItems = items.filter(i => API_STATUS_IDS.includes(i.id))
+  const allValid = apiItems.length > 0 && apiItems.every(i => i.status === 'valid')
+  const hasInvalid = apiItems.some(i => i.status === 'invalid')
+
+  const labels: Record<string, string> = {
+    'api-keys-tmdb': 'TMDB',
+  }
+
+  return (
+    <Card variant="elevated" className="flex flex-col gap-3">
+      <h3 className="text-base font-semibold text-slate-900 dark:text-white">External APIs</h3>
+
+      {apiItems.length === 0 ? (
+        <p className="text-sm text-slate-400 dark:text-slate-500">Checking…</p>
+      ) : (
+        <div className="space-y-2">
+          {apiItems.map(item => (
+            <div key={item.id} className="flex items-center gap-2">
+              <span
+                className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                  item.status === 'valid'
+                    ? 'bg-emerald-500'
+                    : item.status === 'invalid'
+                    ? 'bg-red-500'
+                    : 'bg-amber-400 animate-pulse'
+                }`}
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300 flex-1">
+                {labels[item.id] ?? item.name}
+              </span>
+              <span className={`text-xs font-medium ${
+                item.status === 'valid'
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : item.status === 'invalid'
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-amber-600 dark:text-amber-400'
+              }`}>
+                {item.status === 'valid' ? 'Connected' : item.status === 'invalid' ? 'Missing' : 'Checking'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {allValid && (
+        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+          All external APIs connected
+        </p>
+      )}
+      {hasInvalid && (
+        <p className="text-xs text-red-500 dark:text-red-400">
+          Missing API keys will prevent metadata enrichment.
+        </p>
+      )}
+    </Card>
+  )
+}
 
 export interface DashboardProps {
   className?: string
@@ -43,6 +106,7 @@ interface StorageData {
 }
 
 export function Dashboard({ className = '' }: DashboardProps) {
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -68,9 +132,11 @@ export function Dashboard({ className = '' }: DashboardProps) {
     lastUpdated: new Date().toISOString(),
   })
 
+  const [enrichmentStats, setEnrichmentStats] = useState<EnrichmentStats | null>(null)
   const [recentActivities, setRecentActivities] = useState<Activity[]>([])
   const [storageData, setStorageData] = useState<StorageData[]>([])
   const [hasStorageData, setHasStorageData] = useState(false)
+  const [configItems, setConfigItems] = useState<ConfigurationItem[]>([])
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -84,6 +150,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
         isConfigured: criticalItems.length === 0,
         pathsConfigured: config.items.length > 0 ? config.items.filter(i => i.status === 'valid').length : 0,
       })
+      setConfigItems(config.items)
 
       // Only load data if configured
       if (!config.isComplete) {
@@ -98,12 +165,15 @@ export function Dashboard({ className = '' }: DashboardProps) {
         tvShowService.getTVShows(1, 50),
         queueService.getStats(),
         fileService.getFileStats(),
+        movieService.getEnrichmentStats(),
       ])
       const health = results[0].status === 'fulfilled' ? results[0].value : { status: 'unknown', timestamp: new Date().toISOString() }
       const movieResponse = results[1].status === 'fulfilled' ? results[1].value : { total: 0, items: [] }
       const tvResponse = results[2].status === 'fulfilled' ? results[2].value : { total: 0, items: [] }
       const queueStats = results[3].status === 'fulfilled' ? results[3].value : { pendingTasks: 0, completedTasks: 0, processingTasks: 0 }
       const fileStats = results[4].status === 'fulfilled' ? results[4].value : null
+      const enrichStats = results[5].status === 'fulfilled' ? results[5].value as EnrichmentStats : null
+      setEnrichmentStats(enrichStats)
 
       const totalMovies = fileStats?.movieCount ?? movieResponse?.total ?? 0
       const totalTVShows = fileStats?.tvShowCount ?? tvResponse?.total ?? 0
@@ -415,16 +485,21 @@ export function Dashboard({ className = '' }: DashboardProps) {
         </Button>
       </div>
 
-      {/* Quick Actions */}
-      <QuickActions actions={quickActions} />
+      {/* Quick Actions + External API Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <QuickActions actions={quickActions} />
+        </div>
+        <ExternalApiStatus items={configItems} />
+      </div>
 
       {/* Stat Cards - Responsive grid: 1 col mobile, 2 cols tablet, 4 cols desktop */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Files"
           value={stats.totalFiles.toLocaleString()}
-          change={{ value: 12, label: 'vs last month' }}
           variant="primary"
+          onClick={() => navigate('/files')}
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -433,9 +508,14 @@ export function Dashboard({ className = '' }: DashboardProps) {
         />
         <StatCard
           title="Indexed Files"
-          value={stats.indexedFiles.toLocaleString()}
-          change={{ value: 8, label: 'vs last month' }}
+          value={enrichmentStats?.total ?? stats.indexedFiles}
           variant="success"
+          onClick={() => navigate('/enrichment')}
+          breakdown={enrichmentStats ? [
+            { label: 'Indexed', value: enrichmentStats.indexed, color: 'success' },
+            { label: 'Pending', value: enrichmentStats.pending, color: 'warning' },
+            { label: 'Failed', value: enrichmentStats.failed, color: 'danger' },
+          ] : undefined}
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -445,7 +525,6 @@ export function Dashboard({ className = '' }: DashboardProps) {
         <StatCard
           title="Pending Tasks"
           value={stats.pendingTasks}
-          change={{ value: 2, label: 'vs yesterday' }}
           variant="warning"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -454,9 +533,8 @@ export function Dashboard({ className = '' }: DashboardProps) {
           }
         />
         <StatCard
-          title="Completed Today"
+          title="Completed Tasks"
           value={stats.completedTasks}
-          change={{ value: 15, label: 'vs yesterday' }}
           variant="default"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

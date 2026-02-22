@@ -201,12 +201,6 @@
   flex-direction: column;
 }
 
-.movie-detail-page__actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-}
-
 .movie-detail-page__related {
   margin-top: 3rem;
   padding-top: 2rem;

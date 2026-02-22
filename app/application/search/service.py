@@ -22,6 +22,7 @@ class SearchFilters:
         sort_by: str = "title",
         skip: int = 0,
         limit: int = 10,
+        enrichment_statuses: Optional[List[str]] = None,
     ):
         """
         Initialize search filters
@@ -34,6 +35,7 @@ class SearchFilters:
             sort_by: Field to sort by (title, rating, year, date_added)
             skip: Number of items to skip (pagination)
             limit: Number of items to return (pagination)
+            enrichment_statuses: List of enrichment_status values to include
         """
         self.genre = genre.lower() if genre else None
         self.min_rating = min_rating
@@ -42,6 +44,7 @@ class SearchFilters:
         self.sort_by = sort_by
         self.skip = skip
         self.limit = limit
+        self.enrichment_statuses = enrichment_statuses
 
     def validate(self) -> Tuple[bool, Optional[str]]:
         """
@@ -154,6 +157,10 @@ class MovieSearchService:
         if filters.year is not None:
             query = query.filter(Movie.year == filters.year)
 
+        # Apply enrichment status filter
+        if filters.enrichment_statuses:
+            query = query.filter(Movie.enrichment_status.in_(filters.enrichment_statuses))
+
         # Get total count before pagination
         total = query.count()
 
@@ -248,6 +255,10 @@ class TVShowSearchService:
 
         # Note: TVShow doesn't have a year field, so year filter is skipped
         # (year filtering is only for movies)
+
+        # Apply enrichment status filter
+        if filters.enrichment_statuses:
+            query = query.filter(TVShow.enrichment_status.in_(filters.enrichment_statuses))
 
         # Get total count before pagination
         total = query.count()

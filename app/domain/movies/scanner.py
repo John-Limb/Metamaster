@@ -10,7 +10,7 @@ from app.core.config import MOVIE_DIR, settings
 from app.domain.files.models import FileItem
 from app.domain.movies.models import Movie, MovieFile
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
-from app.services_impl import OMDBService
+from app.services_impl import TMDBService
 from app.tasks.async_helpers import run_async
 
 logger = logging.getLogger(__name__)
@@ -42,28 +42,28 @@ def title_from_filename(filename: str) -> tuple[str, int | None]:
 _IMDB_BRACE_PATTERN = re.compile(r"\{imdb-(?P<id>tt\d{7,8})\}", re.IGNORECASE)
 _IMDB_PAREN_PATTERN = re.compile(r"\((?P<id>tt\d{7,8})\)")
 _IMDB_BARE_PATTERN = re.compile(r"\b(?P<id>tt\d{7,8})\b")
-_TVDB_PATTERN = re.compile(r"\{tvdb-(?P<id>\d{4,7})\}", re.IGNORECASE)
+_TMDB_PATTERN = re.compile(r"\{tmdb-(?P<id>\d+)\}", re.IGNORECASE)
 
 _IMDB_PATTERNS = [_IMDB_BRACE_PATTERN, _IMDB_PAREN_PATTERN, _IMDB_BARE_PATTERN]
 
 
 def extract_external_id_from_path(file_path: str) -> str | None:
-    """Parse an IMDB or TVDB ID embedded in a file path or parent folder name.
+    """Parse an IMDB or TMDB ID embedded in a file path or parent folder name.
 
     Checks the filename stem and the immediate parent directory name.
-    Returns the ID string (e.g. 'tt1375666' or '81189'), or None if not found.
-    Priority: IMDB patterns > TVDB pattern.
+    Returns the ID string (e.g. 'tt1375666' or '1396'), or None if not found.
+    Priority: TMDB pattern > IMDB patterns.
     """
     path = Path(file_path)
     candidates = [path.stem, path.parent.name]
     for text in candidates:
+        m = _TMDB_PATTERN.search(text)
+        if m:
+            return m.group("id")
         for pattern in _IMDB_PATTERNS:
             m = pattern.search(text)
             if m:
                 return m.group("id")
-        m = _TVDB_PATTERN.search(text)
-        if m:
-            return m.group("id")
     return None
 
 
@@ -148,7 +148,18 @@ def create_movies_from_files(db: Session) -> int:
 
     ffprobe = get_ffprobe()
 
-    existing_paths = {row[0] for row in db.query(MovieFile.file_path).all()}
+    # Backfill: mark any FileItem as indexed if a MovieFile already references its path
+    indexed_paths = {row[0] for row in db.query(MovieFile.file_path).all()}
+    backfilled = (
+        db.query(FileItem)
+        .filter(FileItem.is_indexed.is_(False), FileItem.path.in_(indexed_paths))
+        .update({"is_indexed": True}, synchronize_session=False)
+    )
+    if backfilled:
+        db.commit()
+        logger.info(f"[Movie] Backfilled is_indexed=True on {backfilled} existing FileItem(s)")
+
+    existing_paths = indexed_paths
 
     movie_files = (
         db.query(FileItem)
@@ -211,6 +222,7 @@ def create_movies_from_files(db: Session) -> int:
             duration=probe_data.get("duration"),
         )
         db.add(movie_file)
+        fi.is_indexed = True
         existing_paths.add(fi.path)
         created += 1
         logger.info(f"[Movie] Record created: '{title}' (ID: {movie.id})")
@@ -222,17 +234,17 @@ def create_movies_from_files(db: Session) -> int:
 
 
 def enrich_new_movies(db: Session) -> int:
-    """Search OMDB for movies missing an omdb_id and populate metadata.
+    """Search TMDB for movies missing a tmdb_id and populate metadata.
 
     Returns the number of movies successfully enriched.
     """
-    movies = db.query(Movie).filter(Movie.omdb_id.is_(None)).all()
+    movies = db.query(Movie).filter(Movie.tmdb_id.is_(None)).all()
     if not movies:
         return 0
 
-    # Collect existing omdb_ids to avoid unique-constraint violations
-    existing_omdb_ids = {
-        row[0] for row in db.query(Movie.omdb_id).filter(Movie.omdb_id.isnot(None)).all()
+    # Collect existing tmdb_ids to avoid unique-constraint violations
+    existing_tmdb_ids = {
+        row[0] for row in db.query(Movie.tmdb_id).filter(Movie.tmdb_id.isnot(None)).all()
     }
 
     enriched = 0
@@ -241,50 +253,50 @@ def enrich_new_movies(db: Session) -> int:
             year_str = str(movie.year) if movie.year else "unknown year"
             logger.info(f"[Movie] Enriching: '{movie.title}' ({year_str})")
 
-            # Step 1: Search OMDB by title/year
-            logger.info(f"[Movie] OMDB search: '{movie.title}'")
-            search_raw = run_async(OMDBService.search_movie(db, movie.title, movie.year))
+            # Step 1: Search TMDB by title/year
+            logger.info(f"[Movie] TMDB search: '{movie.title}'")
+            search_raw = run_async(TMDBService.search_movie(db, movie.title, movie.year))
             if not search_raw:
-                logger.info(f"[Movie] OMDB: no results for '{movie.title}'")
+                logger.info(f"[Movie] TMDB: no results for '{movie.title}'")
                 continue
-            search_parsed = OMDBService.parse_omdb_response(search_raw)
+            search_parsed = TMDBService.parse_movie_search_response(search_raw)
             if not search_parsed or not search_parsed.get("search_results"):
-                logger.info(f"[Movie] OMDB: no match for '{movie.title}'")
+                logger.info(f"[Movie] TMDB: no match for '{movie.title}'")
                 continue
 
-            omdb_id = search_parsed["search_results"][0].get("omdb_id")
-            if not omdb_id or omdb_id in existing_omdb_ids:
-                logger.debug(f"[Movie] OMDB: duplicate or missing ID for '{movie.title}' — skipping")
+            tmdb_id = search_parsed["search_results"][0].get("tmdb_id")
+            if not tmdb_id or tmdb_id in existing_tmdb_ids:
+                logger.debug(f"[Movie] TMDB: duplicate or missing ID for '{movie.title}' — skipping")
                 continue
 
-            logger.info(f"[Movie] OMDB match: '{movie.title}' → {omdb_id}")
+            logger.info(f"[Movie] TMDB match: '{movie.title}' → {tmdb_id}")
 
             # Step 2: Fetch full details
-            logger.info(f"[Movie] OMDB fetching details: {omdb_id}")
-            detail_raw = run_async(OMDBService.get_movie_details(db, omdb_id))
+            logger.info(f"[Movie] TMDB fetching details: {tmdb_id}")
+            detail_raw = run_async(TMDBService.get_movie_details(db, tmdb_id))
             if not detail_raw:
-                movie.omdb_id = omdb_id
-                existing_omdb_ids.add(omdb_id)
+                movie.tmdb_id = tmdb_id
+                existing_tmdb_ids.add(tmdb_id)
                 enriched += 1
                 continue
 
-            detail = OMDBService.parse_omdb_response(detail_raw)
+            detail = TMDBService.parse_movie_details_response(detail_raw)
             if not detail:
-                movie.omdb_id = omdb_id
-                existing_omdb_ids.add(omdb_id)
+                movie.tmdb_id = tmdb_id
+                existing_tmdb_ids.add(tmdb_id)
                 enriched += 1
                 continue
 
             # Step 3: Update fields
-            movie.omdb_id = omdb_id
+            movie.tmdb_id = tmdb_id
             movie.plot = detail.get("plot", movie.plot)
             movie.rating = detail.get("rating", movie.rating)
             movie.runtime = detail.get("runtime", movie.runtime)
             movie.genres = detail.get("genres", movie.genres)
             poster = detail.get("poster")
-            if poster and poster != "N/A":
+            if poster:
                 movie.poster_url = poster
-            existing_omdb_ids.add(omdb_id)
+            existing_tmdb_ids.add(tmdb_id)
             enriched += 1
 
             rating_str = f"★{movie.rating}" if movie.rating else "no rating"
@@ -296,7 +308,7 @@ def enrich_new_movies(db: Session) -> int:
 
     if enriched:
         db.commit()
-        logger.info(f"[Movie] {enriched} movie(s) enriched with OMDB metadata")
+        logger.info(f"[Movie] {enriched} movie(s) enriched with TMDB metadata")
     return enriched
 
 

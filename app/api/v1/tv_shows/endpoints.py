@@ -27,12 +27,38 @@ from app.schemas import (
     TVShowResponse,
     TVShowUpdate,
 )
-from app.services_impl import TVDBService, TVShowService
+from app.services_impl import TMDBService, TVShowService
 from app.tasks.enrichment import enrich_tv_show_external
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/tv-shows", tags=["TV Shows"])
+
+_ENRICHMENT_STATUS_GROUPS = {
+    "indexed": ["fully_enriched"],
+    "pending": ["local_only", "pending_local", "pending_external"],
+    "failed": ["external_failed", "not_found"],
+}
+
+
+@router.get("/enrichment-stats")
+async def get_tv_show_enrichment_stats(db: Session = Depends(get_db)):
+    """Return TV show counts grouped by enrichment status (indexed / pending / failed)."""
+    from sqlalchemy import func
+
+    rows = (
+        db.query(TVShowModel.enrichment_status, func.count(TVShowModel.id))
+        .group_by(TVShowModel.enrichment_status)
+        .all()
+    )
+    counts: dict = dict(rows)
+
+    indexed = counts.get("fully_enriched", 0)
+    pending = sum(counts.get(s, 0) for s in ["local_only", "pending_local", "pending_external"])
+    failed = sum(counts.get(s, 0) for s in ["external_failed", "not_found"])
+    total = sum(counts.values())
+
+    return {"total": total, "indexed": indexed, "pending": pending, "failed": failed}
 
 
 @router.get("", response_model=PaginatedTVShowResponseWithFilters)
@@ -41,6 +67,7 @@ async def list_tv_shows(
     min_rating: float = Query(None, ge=0, le=10, description="Minimum rating (0-10)"),
     max_rating: float = Query(None, ge=0, le=10, description="Maximum rating (0-10)"),
     sort_by: str = Query("title", description="Sort by: title, rating, date_added"),
+    status: str = Query(None, description="Enrichment group: indexed, pending, or failed"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
     skip: int = Query(0, ge=0, description="Offset from start"),
     page: int = Query(None, ge=1, description="Alternative page number"),
@@ -66,11 +93,16 @@ async def list_tv_shows(
         page_size=page_size,
     )
 
+    # Validate enrichment status group
+    if status and status not in _ENRICHMENT_STATUS_GROUPS:
+        raise HTTPException(status_code=400, detail="status must be one of: indexed, pending, failed")
+    enrichment_statuses = _ENRICHMENT_STATUS_GROUPS.get(status) if status else None
+
     # Build cache key including all filter parameters
     cache_key = (
         f"{cache_service.TV_SHOW_LIST_PREFIX}"
         f"genre={genre}:min_rating={min_rating}:max_rating={max_rating}:"
-        f"sort_by={sort_by}:limit={normalized_limit}:skip={normalized_skip}"
+        f"sort_by={sort_by}:status={status}:limit={normalized_limit}:skip={normalized_skip}"
     )
 
     # Try to get from cache
@@ -88,6 +120,7 @@ async def list_tv_shows(
         sort_by=sort_by,
         skip=normalized_skip,
         limit=normalized_limit,
+        enrichment_statuses=enrichment_statuses,
     )
 
     # Validate filters
@@ -188,7 +221,7 @@ async def get_tv_show_seasons(
         season_dict = {
             "id": season.id,
             "season_number": season.season_number,
-            "tvdb_id": season.tvdb_id,
+            "tmdb_id": season.tmdb_id,
             "episode_count": len(season.episodes),
             "created_at": season.created_at,
         }
@@ -339,11 +372,11 @@ async def sync_tv_show_metadata(
     db: Session = Depends(get_db),
 ):
     """
-    Fetch TV show metadata from TVDB and update the TV show record.
+    Fetch TV show metadata from TMDB and update the TV show record.
 
     This endpoint:
     1. Retrieves the TV show from the database
-    2. Fetches updated metadata from TVDB using the show's TVDB ID
+    2. Fetches updated metadata from TMDB using the show's TMDB ID
     3. Updates the TV show record with new metadata
     4. Returns the updated TV show information
 
@@ -363,27 +396,27 @@ async def sync_tv_show_metadata(
         if not show:
             raise HTTPException(status_code=404, detail="TV show not found")
 
-        # Check if show has TVDB ID
-        if not show.tvdb_id:
+        # Check if show has TMDB ID
+        if not show.tmdb_id:
             raise HTTPException(
                 status_code=400,
-                detail="TV show does not have a TVDB ID. Cannot sync metadata.",
+                detail="TV show does not have a TMDB ID. Cannot sync metadata.",
             )
 
-        logger.info(f"Syncing metadata for TV show {show_id} (TVDB ID: {show.tvdb_id})")
+        logger.info(f"Syncing metadata for TV show {show_id} (TMDB ID: {show.tmdb_id})")
 
-        # Fetch metadata from TVDB
-        tvdb_data = await TVDBService.get_series_details(db, show.tvdb_id)
-        if not tvdb_data:
+        # Fetch metadata from TMDB
+        tmdb_data = await TMDBService.get_series_details(db, show.tmdb_id)
+        if not tmdb_data:
             raise HTTPException(
                 status_code=500,
-                detail="Failed to fetch metadata from TVDB. Please try again later.",
+                detail="Failed to fetch metadata from TMDB. Please try again later.",
             )
 
-        # Parse TVDB response
-        parsed_data = TVDBService.parse_tvdb_series_response(tvdb_data)
+        # Parse TMDB response
+        parsed_data = TMDBService.parse_series_response(tmdb_data)
         if not parsed_data:
-            raise HTTPException(status_code=500, detail="Failed to parse TVDB response")
+            raise HTTPException(status_code=500, detail="Failed to parse TMDB response")
 
         # Track which fields were updated
         updated_fields = []
@@ -416,7 +449,7 @@ async def sync_tv_show_metadata(
             updated_fields.append("genres")
 
         poster = parsed_data.get("poster")
-        if poster and poster != "N/A" and poster != show.poster_url:
+        if poster and poster != show.poster_url:
             old_values["poster_url"] = show.poster_url
             show.poster_url = poster
             updated_fields.append("poster_url")
@@ -442,7 +475,7 @@ async def sync_tv_show_metadata(
             "rating": show.rating,
             "status": show.status,
             "genres": json.loads(show.genres) if show.genres else [],
-            "tvdb_id": show.tvdb_id,
+            "tmdb_id": show.tmdb_id,
             "poster_url": show.poster_url,
         }
 
@@ -472,7 +505,7 @@ async def set_tvshow_external_id(
     payload: ExternalIdPayload,
     db: Session = Depends(get_db),
 ):
-    """Set a manual TVDB ID and trigger enrichment immediately."""
+    """Set a manual TMDB ID and trigger enrichment immediately."""
     show = TVShowService.get_tv_show_by_id(db, show_id)
     if not show:
         raise HTTPException(status_code=404, detail="TV show not found")

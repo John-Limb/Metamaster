@@ -33,7 +33,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     selectedFiles,
     currentPath,
     isLoading,
-    selectFile,
+    toggleFileSelection,
     clearSelection,
     navigateToPath,
     fetchFiles,
@@ -49,10 +49,10 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
   }, [currentPath, fetchFiles])
 
   const handleSelectFile = (id: string) => {
-    selectFile(id)
+    toggleFileSelection(id)
     const file = files.find((f) => f.id === id)
     if (file) {
-      setSelectedFileDetails(file)
+      setSelectedFileDetails(selectedFiles.includes(id) ? null : file)
     }
   }
 
@@ -101,27 +101,29 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4 bg-white rounded-lg shadow-sm p-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
+        <div className="flex items-center gap-2 min-w-0">
           {currentPath !== '/' && (
             <button
               onClick={handleNavigateBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition flex-shrink-0"
               title="Go back"
             >
-              <FaArrowLeft className="w-4 h-4 text-gray-600" />
+              <FaArrowLeft className="w-4 h-4 text-slate-600 dark:text-slate-400" />
             </button>
           )}
-          <span className="text-sm font-medium text-gray-700">{currentPath}</span>
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
+            {currentPath}
+          </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-lg transition ${
               viewMode === 'grid'
-                ? 'bg-blue-100 text-blue-600'
-                : 'hover:bg-gray-100 text-gray-600'
+                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400'
+                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
             }`}
             title="Grid view"
           >
@@ -131,8 +133,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             onClick={() => setViewMode('list')}
             className={`p-2 rounded-lg transition ${
               viewMode === 'list'
-                ? 'bg-blue-100 text-blue-600'
-                : 'hover:bg-gray-100 text-gray-600'
+                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400'
+                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
             }`}
             title="List view"
           >
@@ -142,8 +144,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             onClick={() => setViewMode('tree')}
             className={`p-2 rounded-lg transition ${
               viewMode === 'tree'
-                ? 'bg-blue-100 text-blue-600'
-                : 'hover:bg-gray-100 text-gray-600'
+                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400'
+                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
             }`}
             title="Tree view"
           >
@@ -155,7 +157,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
       {/* Main content */}
       <div className="flex gap-4 flex-1 min-h-0">
         {/* File view */}
-        <div className="flex-1 min-w-0 bg-white rounded-lg shadow-sm overflow-auto">
+        <div className="flex-1 min-w-0 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg overflow-auto">
           {viewMode === 'grid' && (
             <div className="p-4">
               <FileGrid
@@ -194,7 +196,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
         {/* Details panel */}
         {showDetailsPanel && selectedFileDetails && (
-          <div className="w-80 bg-white rounded-lg shadow-sm overflow-auto">
+          <div className="w-72 flex-shrink-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-auto">
             <FileDetailsPanel file={selectedFileDetails} />
           </div>
         )}

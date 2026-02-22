@@ -55,16 +55,10 @@ class Settings(BaseSettings):
     redis_cache_tv_show_ttl: int = 86400  # 24 hours
     redis_cache_list_ttl: int = 1800  # 30 minutes
 
-    # OMDB API
-    omdb_api_key: Optional[str] = None
-    omdb_rate_limit: int = 1  # requests per second
-    omdb_cache_ttl: int = 2592000  # 30 days in seconds
-
-    # TVDB API
-    tvdb_api_key: Optional[str] = None
-    tvdb_pin: Optional[str] = None
-    tvdb_rate_limit: int = 3  # requests per second (30/10)
-    tvdb_cache_ttl: int = 2592000  # 30 days in seconds
+    # TMDB API (The Movie Database — covers both movies and TV shows)
+    tmdb_api_key: Optional[str] = None
+    tmdb_rate_limit: int = 4  # requests per second (~40/10s)
+    tmdb_cache_ttl: int = 2592000  # 30 days in seconds
 
     watch_extensions: list = [
         ".mp4",

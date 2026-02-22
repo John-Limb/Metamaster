@@ -3,6 +3,12 @@ import { Card } from '@/components/common/Card'
 import { Badge } from '@/components/common/Badge'
 import { Skeleton, SkeletonText } from '@/components/common/Skeleton'
 
+export interface StatCardBreakdownItem {
+  label: string
+  value: number
+  color: 'success' | 'warning' | 'danger'
+}
+
 export interface StatCardProps {
   title: string
   value: string | number
@@ -10,6 +16,7 @@ export interface StatCardProps {
     value: number
     label: string // e.g., "vs last month"
   }
+  breakdown?: StatCardBreakdownItem[]
   icon?: React.ReactNode
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger'
   loading?: boolean
@@ -69,10 +76,17 @@ const getTrendDirection = (value: number): 'up' | 'down' | 'neutral' => {
   return 'neutral'
 }
 
+const BREAKDOWN_COLOR_CLASSES = {
+  success: 'text-emerald-600 dark:text-emerald-400',
+  warning: 'text-amber-600 dark:text-amber-400',
+  danger: 'text-red-600 dark:text-red-400',
+}
+
 export function StatCard({
   title,
   value,
   change,
+  breakdown,
   icon,
   variant = 'default',
   loading = false,
@@ -137,6 +151,20 @@ export function StatCard({
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 {change.label}
               </span>
+            </div>
+          )}
+          {breakdown && breakdown.length > 0 && (
+            <div className="mt-3 flex items-center gap-3">
+              {breakdown.map((item) => (
+                <div key={item.label} className="flex items-center gap-1">
+                  <span className={`text-sm font-semibold ${BREAKDOWN_COLOR_CLASSES[item.color]}`}>
+                    {item.value}
+                  </span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
         </div>

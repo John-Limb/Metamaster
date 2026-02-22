@@ -27,12 +27,39 @@ from app.schemas import (
     PaginatedMovieResponse,
     PaginatedMovieResponseWithFilters,
 )
-from app.services_impl import MovieService, OMDBService
+from app.services_impl import MovieService, TMDBService
 from app.tasks.enrichment import enrich_movie_external
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/movies", tags=["Movies"])
+
+
+_ENRICHMENT_STATUS_GROUPS = {
+    "indexed": ["fully_enriched"],
+    "pending": ["local_only", "pending_local", "pending_external"],
+    "failed": ["external_failed", "not_found"],
+}
+
+
+@router.get("/enrichment-stats")
+async def get_enrichment_stats(db: Session = Depends(get_db)):
+    """Return movie counts grouped by enrichment status (indexed / pending / failed)."""
+    from sqlalchemy import func
+
+    rows = (
+        db.query(MovieModel.enrichment_status, func.count(MovieModel.id))
+        .group_by(MovieModel.enrichment_status)
+        .all()
+    )
+    counts: dict = dict(rows)
+
+    indexed = counts.get("fully_enriched", 0)
+    pending = sum(counts.get(s, 0) for s in ["local_only", "pending_local", "pending_external"])
+    failed = sum(counts.get(s, 0) for s in ["external_failed", "not_found"])
+    total = sum(counts.values())
+
+    return {"total": total, "indexed": indexed, "pending": pending, "failed": failed}
 
 
 @router.get("", response_model=PaginatedMovieResponseWithFilters)
@@ -42,6 +69,7 @@ async def list_movies(
     max_rating: float = Query(None, ge=0, le=10, description="Maximum rating (0-10)"),
     year: int = Query(None, ge=1800, le=2100, description="Release year"),
     sort_by: str = Query("title", description="Sort by: title, rating, year, date_added"),
+    status: str = Query(None, description="Enrichment group: indexed, pending, or failed"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
     skip: int = Query(0, ge=0, description="Offset from start"),
     page: int = Query(None, ge=1, description="Alternative page number"),
@@ -68,11 +96,16 @@ async def list_movies(
         page_size=page_size,
     )
 
+    # Validate enrichment status group
+    if status and status not in _ENRICHMENT_STATUS_GROUPS:
+        raise HTTPException(status_code=400, detail="status must be one of: indexed, pending, failed")
+    enrichment_statuses = _ENRICHMENT_STATUS_GROUPS.get(status) if status else None
+
     # Build cache key including all filter parameters
     cache_key = (
         f"{cache_service.MOVIE_LIST_PREFIX}"
         f"genre={genre}:min_rating={min_rating}:max_rating={max_rating}:"
-        f"year={year}:sort_by={sort_by}:limit={normalized_limit}:skip={normalized_skip}"
+        f"year={year}:sort_by={sort_by}:status={status}:limit={normalized_limit}:skip={normalized_skip}"
     )
 
     # Try to get from cache
@@ -90,6 +123,7 @@ async def list_movies(
         sort_by=sort_by,
         skip=normalized_skip,
         limit=normalized_limit,
+        enrichment_statuses=enrichment_statuses,
     )
 
     # Validate filters
@@ -110,6 +144,8 @@ async def list_movies(
         applied_filters["max_rating"] = max_rating
     if year is not None:
         applied_filters["year"] = year
+    if status:
+        applied_filters["status"] = status
 
     result = {
         "items": movies,
@@ -357,11 +393,11 @@ async def sync_movie_metadata(
     db: Session = Depends(get_db),
 ):
     """
-    Fetch movie metadata from OMDB and update the movie record.
+    Fetch movie metadata from TMDB and update the movie record.
 
     This endpoint:
     1. Retrieves the movie from the database
-    2. Fetches updated metadata from OMDB using the movie's OMDB ID
+    2. Fetches updated metadata from TMDB using the movie's TMDB ID
     3. Updates the movie record with new metadata
     4. Returns the updated movie information
 
@@ -381,27 +417,27 @@ async def sync_movie_metadata(
         if not movie:
             raise HTTPException(status_code=404, detail="Movie not found")
 
-        # Check if movie has OMDB ID
-        if not movie.omdb_id:
+        # Check if movie has TMDB ID
+        if not movie.tmdb_id:
             raise HTTPException(
                 status_code=400,
-                detail="Movie does not have an OMDB ID. Cannot sync metadata.",
+                detail="Movie does not have a TMDB ID. Cannot sync metadata.",
             )
 
-        logger.info(f"Syncing metadata for movie {movie_id} (OMDB ID: {movie.omdb_id})")
+        logger.info(f"Syncing metadata for movie {movie_id} (TMDB ID: {movie.tmdb_id})")
 
-        # Fetch metadata from OMDB
-        omdb_data = await OMDBService.get_movie_details(db, movie.omdb_id)
-        if not omdb_data:
+        # Fetch metadata from TMDB
+        tmdb_data = await TMDBService.get_movie_details(db, movie.tmdb_id)
+        if not tmdb_data:
             raise HTTPException(
                 status_code=500,
-                detail="Failed to fetch metadata from OMDB. Please try again later.",
+                detail="Failed to fetch metadata from TMDB. Please try again later.",
             )
 
-        # Parse OMDB response
-        parsed_data = OMDBService.parse_omdb_response(omdb_data)
+        # Parse TMDB response
+        parsed_data = TMDBService.parse_movie_details_response(tmdb_data)
         if not parsed_data:
-            raise HTTPException(status_code=500, detail="Failed to parse OMDB response")
+            raise HTTPException(status_code=500, detail="Failed to parse TMDB response")
 
         # Track which fields were updated
         updated_fields = []
@@ -439,7 +475,7 @@ async def sync_movie_metadata(
             updated_fields.append("genres")
 
         poster = parsed_data.get("poster")
-        if poster and poster != "N/A" and poster != movie.poster_url:
+        if poster and poster != movie.poster_url:
             old_values["poster_url"] = movie.poster_url
             movie.poster_url = poster
             updated_fields.append("poster_url")
@@ -466,7 +502,7 @@ async def sync_movie_metadata(
             "rating": movie.rating,
             "runtime": movie.runtime,
             "genres": json.loads(movie.genres) if movie.genres else [],
-            "omdb_id": movie.omdb_id,
+            "tmdb_id": movie.tmdb_id,
             "poster_url": movie.poster_url,
         }
 
@@ -496,7 +532,7 @@ async def set_movie_external_id(
     payload: ExternalIdPayload,
     db: Session = Depends(get_db),
 ):
-    """Set a manual OMDB/IMDB ID and trigger enrichment immediately."""
+    """Set a manual TMDB ID and trigger enrichment immediately."""
     movie = MovieService.get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")

@@ -32,75 +32,75 @@ export const FileDetailsPanel: React.FC<FileDetailsPanelProps> = ({ file }) => {
   return (
     <div className="p-6 space-y-6">
       {/* File Icon and Name */}
-      <div className="flex flex-col items-center gap-4 pb-6 border-b border-gray-200">
+      <div className="flex flex-col items-center gap-4 pb-6 border-b border-slate-200 dark:border-slate-700">
         <div className="text-6xl">
           {isDirectory ? (
             <FaFolder className="text-blue-500" />
           ) : (
-            <FaFile className="text-gray-500" />
+            <FaFile className="text-slate-400 dark:text-slate-500" />
           )}
         </div>
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-900 break-words">{file.name}</h3>
-          <p className="text-sm text-gray-500 mt-1">{file.type}</p>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white break-words">{file.name}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{file.type}</p>
         </div>
       </div>
 
       {/* File Properties */}
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold text-gray-900">Properties</h4>
+        <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Properties</h4>
 
         {/* Path */}
         <div>
-          <label className="text-xs font-medium text-gray-500 uppercase">Path</label>
-          <p className="text-sm text-gray-900 break-all mt-1">{file.path}</p>
+          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Path</label>
+          <p className="text-sm text-slate-900 dark:text-slate-200 break-all mt-1">{file.path}</p>
         </div>
 
         {/* File ID */}
         <div>
-          <label className="text-xs font-medium text-gray-500 uppercase">ID</label>
-          <p className="text-sm text-gray-900 font-mono break-all mt-1">{file.id}</p>
+          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">ID</label>
+          <p className="text-sm text-slate-900 dark:text-slate-200 font-mono break-all mt-1">{file.id}</p>
         </div>
 
         {/* Size */}
         <div className="flex items-center gap-2">
-          <FaDatabase className="w-4 h-4 text-gray-400" />
+          <FaDatabase className="w-4 h-4 text-slate-400 dark:text-slate-500" />
           <div className="flex-1">
-            <label className="text-xs font-medium text-gray-500 uppercase">Size</label>
-            <p className="text-sm text-gray-900 mt-1">{formatFileSize(file.size)}</p>
+            <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Size</label>
+            <p className="text-sm text-slate-900 dark:text-slate-200 mt-1">{formatFileSize(file.size)}</p>
           </div>
         </div>
 
         {/* MIME Type */}
         {file.mimeType && (
           <div>
-            <label className="text-xs font-medium text-gray-500 uppercase">MIME Type</label>
-            <p className="text-sm text-gray-900 mt-1">{file.mimeType}</p>
+            <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">MIME Type</label>
+            <p className="text-sm text-slate-900 dark:text-slate-200 mt-1">{file.mimeType}</p>
           </div>
         )}
 
         {/* Created Date */}
         <div className="flex items-center gap-2">
-          <FaClock className="w-4 h-4 text-gray-400" />
+          <FaClock className="w-4 h-4 text-slate-400 dark:text-slate-500" />
           <div className="flex-1">
-            <label className="text-xs font-medium text-gray-500 uppercase">Created</label>
-            <p className="text-sm text-gray-900 mt-1">{formatDate(file.createdAt)}</p>
+            <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Created</label>
+            <p className="text-sm text-slate-900 dark:text-slate-200 mt-1">{formatDate(file.createdAt)}</p>
           </div>
         </div>
 
         {/* Modified Date */}
         <div className="flex items-center gap-2">
-          <FaClock className="w-4 h-4 text-gray-400" />
+          <FaClock className="w-4 h-4 text-slate-400 dark:text-slate-500" />
           <div className="flex-1">
-            <label className="text-xs font-medium text-gray-500 uppercase">Modified</label>
-            <p className="text-sm text-gray-900 mt-1">{formatDate(file.updatedAt)}</p>
+            <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Modified</label>
+            <p className="text-sm text-slate-900 dark:text-slate-200 mt-1">{formatDate(file.updatedAt)}</p>
           </div>
         </div>
 
         {/* Indexed Status */}
         <div>
-          <label className="text-xs font-medium text-gray-500 uppercase">Indexed</label>
-          <p className="text-sm text-gray-900 mt-1">
+          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Indexed</label>
+          <p className="text-sm text-slate-900 dark:text-slate-200 mt-1">
             {file.isIndexed ? (
               <span className="inline-flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -108,7 +108,7 @@ export const FileDetailsPanel: React.FC<FileDetailsPanelProps> = ({ file }) => {
               </span>
             ) : (
               <span className="inline-flex items-center gap-2">
-                <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+                <span className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full"></span>
                 No
               </span>
             )}
@@ -118,13 +118,13 @@ export const FileDetailsPanel: React.FC<FileDetailsPanelProps> = ({ file }) => {
 
       {/* Metadata */}
       {file.metadata && Object.keys(file.metadata).length > 0 && (
-        <div className="space-y-4 pt-6 border-t border-gray-200">
-          <h4 className="text-sm font-semibold text-gray-900">Metadata</h4>
+        <div className="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-700">
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Metadata</h4>
           <div className="space-y-3">
             {Object.entries(file.metadata).map(([key, value]) => (
               <div key={key}>
-                <label className="text-xs font-medium text-gray-500 uppercase">{key}</label>
-                <p className="text-sm text-gray-900 mt-1 break-words">
+                <label className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">{key}</label>
+                <p className="text-sm text-slate-900 dark:text-slate-200 mt-1 break-words">
                   {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                 </p>
               </div>

@@ -19,6 +19,7 @@ const TvShowsModule = lazy(() => import('./components/features/tvshows/TvShowsMo
 const FilesPage = lazy(() => import('./pages/FilesPage').then(m => ({ default: m.FilesPage })))
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })))
+const EnrichmentPage = lazy(() => import('./pages/EnrichmentPage').then(m => ({ default: m.EnrichmentPage })))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -132,6 +133,19 @@ function App() {
               <MainLayout>
                 <Suspense fallback={<LoadingFallback />}>
                   <ProfilePage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/enrichment"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <EnrichmentPage />
                 </Suspense>
               </MainLayout>
             </ProtectedRoute>
