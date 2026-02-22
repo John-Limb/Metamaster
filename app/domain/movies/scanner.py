@@ -6,7 +6,7 @@ from pathlib import Path
 
 from sqlalchemy.orm import Session
 
-from app.core.config import settings, MOVIE_DIR
+from app.core.config import MOVIE_DIR, settings
 from app.domain.files.models import FileItem
 from app.domain.movies.models import Movie, MovieFile
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
@@ -27,16 +27,44 @@ def title_from_filename(filename: str) -> tuple[str, int | None]:
     stem = Path(filename).stem
 
     year = None
-    year_match = re.search(r'[\.\s\(](\d{4})[\.\s\)]', stem)
+    year_match = re.search(r"[\.\s\(](\d{4})[\.\s\)]", stem)
     if year_match:
         candidate = int(year_match.group(1))
         if 1900 <= candidate <= 2099:
             year = candidate
             stem = stem[: year_match.start()]
 
-    title = stem.replace('.', ' ').replace('_', ' ').strip()
-    title = re.sub(r'\s+', ' ', title)
+    title = stem.replace(".", " ").replace("_", " ").strip()
+    title = re.sub(r"\s+", " ", title)
     return title, year
+
+
+_IMDB_BRACE_PATTERN = re.compile(r"\{imdb-(?P<id>tt\d{7,8})\}", re.IGNORECASE)
+_IMDB_PAREN_PATTERN = re.compile(r"\((?P<id>tt\d{7,8})\)")
+_IMDB_BARE_PATTERN = re.compile(r"\b(?P<id>tt\d{7,8})\b")
+_TVDB_PATTERN = re.compile(r"\{tvdb-(?P<id>\d{4,7})\}", re.IGNORECASE)
+
+_IMDB_PATTERNS = [_IMDB_BRACE_PATTERN, _IMDB_PAREN_PATTERN, _IMDB_BARE_PATTERN]
+
+
+def extract_external_id_from_path(file_path: str) -> str | None:
+    """Parse an IMDB or TVDB ID embedded in a file path or parent folder name.
+
+    Checks the filename stem and the immediate parent directory name.
+    Returns the ID string (e.g. 'tt1375666' or '81189'), or None if not found.
+    Priority: IMDB patterns > TVDB pattern.
+    """
+    path = Path(file_path)
+    candidates = [path.stem, path.parent.name]
+    for text in candidates:
+        for pattern in _IMDB_PATTERNS:
+            m = pattern.search(text)
+            if m:
+                return m.group("id")
+        m = _TVDB_PATTERN.search(text)
+        if m:
+            return m.group("id")
+    return None
 
 
 def get_ffprobe() -> FFProbeWrapper | None:
@@ -91,8 +119,11 @@ def probe_file(ffprobe: FFProbeWrapper, file_path: str) -> dict:
 
         # Extract audio channel count
         audio_stream = next(
-            (s for s in metadata.get("streams", {})
-             if isinstance(s, dict) and s.get("codec_type") == "audio"),
+            (
+                s
+                for s in metadata.get("streams", {})
+                if isinstance(s, dict) and s.get("codec_type") == "audio"
+            ),
             None,
         )
         if audio_stream and audio_stream.get("channels"):
@@ -117,10 +148,7 @@ def create_movies_from_files(db: Session) -> int:
 
     ffprobe = get_ffprobe()
 
-    existing_paths = {
-        row[0]
-        for row in db.query(MovieFile.file_path).all()
-    }
+    existing_paths = {row[0] for row in db.query(MovieFile.file_path).all()}
 
     movie_files = (
         db.query(FileItem)
@@ -143,7 +171,13 @@ def create_movies_from_files(db: Session) -> int:
         if not title:
             continue
 
-        movie = Movie(title=title, year=year)
+        detected_id = extract_external_id_from_path(fi.path)
+        movie = Movie(
+            title=title,
+            year=year,
+            enrichment_status="local_only",
+            detected_external_id=detected_id,
+        )
         db.add(movie)
         db.flush()
 
@@ -246,7 +280,8 @@ def probe_unscanned_movies(db: Session) -> int:
     unscanned = (
         db.query(MovieFile)
         .filter(
-            (MovieFile.resolution.is_(None)) | (MovieFile.resolution == "")
+            (MovieFile.resolution.is_(None))
+            | (MovieFile.resolution == "")
             | (MovieFile.audio_channels.is_(None))
         )
         .all()

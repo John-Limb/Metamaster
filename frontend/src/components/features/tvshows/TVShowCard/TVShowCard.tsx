@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Card, Badge, Button } from '@/components/common'
+import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import './TVShowCard.css'
 
 export interface TVShowCardProps {
@@ -16,6 +17,7 @@ export interface TVShowCardProps {
   }
   rating?: number
   genres?: string[]
+  enrichment_status?: string | null
   onClick?: () => void
   onAddToQueue?: () => void
   onEdit?: () => void
@@ -32,6 +34,7 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
   nextEpisode,
   rating,
   genres = [],
+  enrichment_status,
   onClick,
   onAddToQueue,
   onEdit,
@@ -127,6 +130,10 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
               {seasons} {seasons === 1 ? 'Season' : 'Seasons'}
             </Badge>
           )}
+        </div>
+
+        <div className="absolute top-2 right-2">
+          <EnrichmentBadge status={enrichment_status as any} />
         </div>
 
         {nextEpisode && (

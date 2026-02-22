@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Card, Badge, Button } from '@/components/common'
+import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import { formatFileSize } from '@/utils/helpers'
 import './MovieCard.css'
 
@@ -17,6 +18,7 @@ export interface MovieCardProps {
   audio_channels?: string
   file_size?: number
   file_duration?: number
+  enrichment_status?: string | null
   onClick?: () => void
   onAddToQueue?: () => void
   onScan?: () => void
@@ -38,6 +40,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   audio_channels,
   file_size,
   file_duration,
+  enrichment_status,
   onClick,
   onAddToQueue,
   onScan,
@@ -109,6 +112,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             {quality}
           </Badge>
         )}
+
+        <div className="absolute top-2 right-2">
+          <EnrichmentBadge status={enrichment_status as any} />
+        </div>
 
         <div
           className={`movie-card__overlay ${showActions ? 'movie-card__overlay--visible' : ''}`}

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button, Badge, Card, EmptyState } from '@/components/common'
 import { movieService } from '@/services/movieService'
+import { enrichmentService } from '@/services/enrichmentService'
+import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import { formatFileSize } from '@/utils/helpers'
 import type { Movie } from '@/types'
 import './MovieDetailPage.css'
@@ -12,6 +14,8 @@ const MovieDetailPage: React.FC = () => {
   const [movie, setMovie] = useState<Movie | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [externalIdInput, setExternalIdInput] = useState('')
+  const [enriching, setEnriching] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -229,6 +233,99 @@ const MovieDetailPage: React.FC = () => {
                 </div>
               </section>
             )}
+
+            {/* Enrichment Status */}
+            <section className="movie-detail-page__section">
+              <h2 className="movie-detail-page__section-title">Enrichment Status</h2>
+              <div className="movie-detail-page__file-info">
+                <div className="movie-detail-page__detail-row">
+                  <span className="movie-detail-page__detail-label">Status</span>
+                  <span className="movie-detail-page__detail-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <EnrichmentBadge status={(movie as any).enrichment_status} />
+                    <span>{(movie as any).enrichment_status ?? 'unknown'}</span>
+                  </span>
+                </div>
+
+                {(movie as any).enrichment_error && (
+                  <div className="movie-detail-page__detail-row">
+                    <span className="movie-detail-page__detail-label">Error</span>
+                    <span className="movie-detail-page__detail-value" style={{ color: 'var(--color-error, #ef4444)', fontSize: '0.875rem' }}>
+                      {(movie as any).enrichment_error}
+                    </span>
+                  </div>
+                )}
+
+                {(movie as any).detected_external_id && (
+                  <div className="movie-detail-page__detail-row">
+                    <span className="movie-detail-page__detail-label">Detected ID</span>
+                    <span className="movie-detail-page__detail-value" style={{ fontSize: '0.875rem' }}>
+                      <code>{(movie as any).detected_external_id}</code>
+                    </span>
+                  </div>
+                )}
+
+                {(movie as any).manual_external_id && (
+                  <div className="movie-detail-page__detail-row">
+                    <span className="movie-detail-page__detail-label">Manual Override</span>
+                    <span className="movie-detail-page__detail-value" style={{ fontSize: '0.875rem' }}>
+                      <code>{(movie as any).manual_external_id}</code>
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  placeholder="OMDB / IMDB ID (e.g. tt1234567)"
+                  value={externalIdInput}
+                  onChange={(e) => setExternalIdInput(e.target.value)}
+                  style={{
+                    flex: 1,
+                    border: '1px solid var(--color-border, #d1d5db)',
+                    borderRadius: '0.375rem',
+                    padding: '0.25rem 0.5rem',
+                    fontSize: '0.875rem',
+                    background: 'var(--color-surface, #fff)',
+                    color: 'var(--color-text, inherit)',
+                  }}
+                />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={async () => {
+                    if (!externalIdInput.trim() || !movie) return
+                    setEnriching(true)
+                    try {
+                      await enrichmentService.setMovieExternalId(Number(movie.id), externalIdInput.trim())
+                      window.location.reload()
+                    } finally {
+                      setEnriching(false)
+                    }
+                  }}
+                  disabled={enriching || !externalIdInput.trim()}
+                >
+                  {enriching ? 'Saving...' : 'Save & Enrich'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={async () => {
+                    if (!movie) return
+                    setEnriching(true)
+                    try {
+                      await enrichmentService.triggerMovieEnrich(Number(movie.id))
+                      window.location.reload()
+                    } finally {
+                      setEnriching(false)
+                    }
+                  }}
+                  disabled={enriching}
+                >
+                  {enriching ? '...' : 'Re-Enrich'}
+                </Button>
+              </div>
+            </section>
 
             <div className="movie-detail-page__actions">
               <Button variant="primary" size="lg">

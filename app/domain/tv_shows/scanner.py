@@ -6,23 +6,23 @@ from pathlib import Path
 
 from sqlalchemy.orm import Session
 
-from app.core.config import settings, TV_DIR
+from app.core.config import TV_DIR, settings
 from app.domain.files.models import FileItem
-from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
-from app.domain.movies.scanner import get_ffprobe, probe_file
+from app.domain.movies.scanner import extract_external_id_from_path, get_ffprobe, probe_file
+from app.domain.tv_shows.models import Episode, EpisodeFile, Season, TVShow
 from app.services_impl import TVDBService
 from app.tasks.async_helpers import run_async
 
 logger = logging.getLogger(__name__)
 
 # Pattern: S01E02, s01e02, S1E2, etc.
-SEASON_EPISODE_RE = re.compile(r'[Ss](\d{1,2})[Ee](\d{1,3})')
+SEASON_EPISODE_RE = re.compile(r"[Ss](\d{1,2})[Ee](\d{1,3})")
 
 # Pattern for season directory: "Season 1", "Season 01", "season1"
-SEASON_DIR_RE = re.compile(r'[Ss]eason\s*(\d{1,2})', re.IGNORECASE)
+SEASON_DIR_RE = re.compile(r"[Ss]eason\s*(\d{1,2})", re.IGNORECASE)
 
 # Pattern for episode in filename without season: "E02", "e02", "EP02"
-EPISODE_ONLY_RE = re.compile(r'[Ee][Pp]?(\d{1,3})')
+EPISODE_ONLY_RE = re.compile(r"[Ee][Pp]?(\d{1,3})")
 
 
 def parse_tv_filename(file_path: str) -> tuple[str | None, int | None, int | None]:
@@ -41,8 +41,8 @@ def parse_tv_filename(file_path: str) -> tuple[str | None, int | None, int | Non
         season_num = int(match.group(1))
         episode_num = int(match.group(2))
         # Show name is everything before the SxxExx pattern
-        show_name = filename[:match.start()].replace('.', ' ').replace('_', ' ').strip()
-        show_name = re.sub(r'\s+', ' ', show_name).strip(' -')
+        show_name = filename[: match.start()].replace(".", " ").replace("_", " ").strip()
+        show_name = re.sub(r"\s+", " ", show_name).strip(" -")
         if show_name:
             return show_name, season_num, episode_num
 
@@ -61,7 +61,7 @@ def parse_tv_filename(file_path: str) -> tuple[str | None, int | None, int | Non
             if idx > 0:
                 candidate = parts[idx - 1]
                 # Skip if it's a root-level media directory
-                if candidate not in ('tv', 'media', ''):
+                if candidate not in ("tv", "media", ""):
                     show_name = candidate
 
     # Try to get episode number from filename
@@ -117,7 +117,12 @@ def create_tv_shows_from_files(db: Session) -> int:
         else:
             show = db.query(TVShow).filter(TVShow.title.ilike(show_name)).first()
             if not show:
-                show = TVShow(title=show_name)
+                detected_id = extract_external_id_from_path(fi.path)
+                show = TVShow(
+                    title=show_name,
+                    enrichment_status="local_only",
+                    detected_external_id=detected_id,
+                )
                 db.add(show)
                 db.flush()
             show_cache[show_name_lower] = show
@@ -248,7 +253,8 @@ def probe_unscanned_episodes(db: Session) -> int:
     unscanned = (
         db.query(EpisodeFile)
         .filter(
-            (EpisodeFile.resolution.is_(None)) | (EpisodeFile.resolution == "")
+            (EpisodeFile.resolution.is_(None))
+            | (EpisodeFile.resolution == "")
             | (EpisodeFile.audio_channels.is_(None))
         )
         .all()

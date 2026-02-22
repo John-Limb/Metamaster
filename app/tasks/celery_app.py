@@ -42,6 +42,7 @@ celery_app.conf.update(
         "app.tasks.process_media_file": {"queue": "media_processing"},
         "app.tasks.extract_metadata": {"queue": "metadata_extraction"},
         "app.tasks.fetch_external_data": {"queue": "external_api"},
+        "app.tasks.retry_failed_enrichment": {"queue": "external_api"},
     },
     # Queue configuration
     task_queues=(

@@ -1,8 +1,17 @@
 """Pydantic schemas for request/response validation"""
 
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
+
+EnrichmentStatus = Literal[
+    "pending_local",
+    "local_only",
+    "pending_external",
+    "fully_enriched",
+    "external_failed",
+    "not_found",
+]
 
 
 __all__ = [
@@ -115,6 +124,20 @@ class MovieResponse(BaseModel):
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
+    # Enrichment status fields
+    enrichment_status: Optional[EnrichmentStatus] = Field(
+        None, description="Current enrichment status"
+    )
+    detected_external_id: Optional[str] = Field(
+        None, description="Auto-detected OMDB/IMDB ID"
+    )
+    manual_external_id: Optional[str] = Field(
+        None, description="Manually set OMDB/IMDB ID"
+    )
+    enrichment_error: Optional[str] = Field(
+        None, description="Last enrichment error message"
+    )
+
     # Technical metadata derived from associated MovieFile
     quality: Optional[str] = Field(None, description="Resolution label e.g. 1080p, 4K")
     resolution: Optional[str] = Field(None, description="Resolution e.g. 1920x1080")
@@ -182,6 +205,20 @@ class TVShowResponse(BaseModel):
     poster_url: Optional[str] = Field(None, description="URL to TV show poster image")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
+
+    # Enrichment status fields
+    enrichment_status: Optional[EnrichmentStatus] = Field(
+        None, description="Current enrichment status"
+    )
+    detected_external_id: Optional[str] = Field(
+        None, description="Auto-detected TVDB ID"
+    )
+    manual_external_id: Optional[str] = Field(
+        None, description="Manually set TVDB ID"
+    )
+    enrichment_error: Optional[str] = Field(
+        None, description="Last enrichment error message"
+    )
 
     model_config = ConfigDict(from_attributes=True)
 

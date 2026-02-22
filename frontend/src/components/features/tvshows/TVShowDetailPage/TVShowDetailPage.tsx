@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button, Badge, Card, EmptyState } from '@/components/common'
+import { enrichmentService } from '@/services/enrichmentService'
+import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import './TVShowDetailPage.css'
 
 // Mock TV show detail type
@@ -31,6 +33,8 @@ const TVShowDetailPage: React.FC = () => {
   const [showDetail, setShowDetail] = useState<TVShowDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [expandedSeason, setExpandedSeason] = useState<number | null>(null)
+  const [externalIdInput, setExternalIdInput] = useState('')
+  const [enriching, setEnriching] = useState(false)
 
   useEffect(() => {
     // Simulate loading
@@ -372,6 +376,75 @@ const TVShowDetailPage: React.FC = () => {
             </div>
           </section>
         )}
+
+        {/* Enrichment Status Panel */}
+        <section style={{ marginTop: '2rem', padding: '1rem', border: '1px solid var(--color-border, #e5e7eb)', borderRadius: '0.5rem', background: 'var(--color-surface, #fff)' }}>
+          <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', fontWeight: 600 }}>Enrichment Status</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <EnrichmentBadge status={(showDetail as any)?.enrichment_status ?? 'local_only'} />
+            <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted, #6b7280)' }}>
+              {(showDetail as any)?.enrichment_status ?? 'local_only'}
+            </span>
+          </div>
+          {(showDetail as any)?.enrichment_error && (
+            <p style={{ color: 'var(--color-danger, #ef4444)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+              {(showDetail as any).enrichment_error}
+            </p>
+          )}
+          {(showDetail as any)?.detected_external_id && (
+            <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted, #6b7280)', marginBottom: '0.25rem' }}>
+              Detected from filename: <code>{(showDetail as any).detected_external_id}</code>
+            </p>
+          )}
+          {(showDetail as any)?.manual_external_id && (
+            <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted, #6b7280)', marginBottom: '0.5rem' }}>
+              Manual override: <code>{(showDetail as any).manual_external_id}</code>
+            </p>
+          )}
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="TVDB ID (e.g. 81189)"
+              value={externalIdInput}
+              onChange={(e) => setExternalIdInput(e.target.value)}
+              style={{ flex: 1, border: '1px solid var(--color-border, #d1d5db)', borderRadius: '0.375rem', padding: '0.25rem 0.5rem', fontSize: '0.875rem', background: 'var(--color-surface, #fff)', color: 'var(--color-text, inherit)' }}
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={async () => {
+                if (!externalIdInput.trim() || !id) return
+                setEnriching(true)
+                try {
+                  await enrichmentService.setTvShowExternalId(Number(id), externalIdInput.trim())
+                  window.location.reload()
+                } finally {
+                  setEnriching(false)
+                }
+              }}
+              disabled={enriching || !externalIdInput.trim()}
+            >
+              {enriching ? 'Saving...' : 'Save & Enrich'}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={async () => {
+                if (!id) return
+                setEnriching(true)
+                try {
+                  await enrichmentService.triggerTvShowEnrich(Number(id))
+                  window.location.reload()
+                } finally {
+                  setEnriching(false)
+                }
+              }}
+              disabled={enriching}
+            >
+              {enriching ? '...' : 'Re-Enrich'}
+            </Button>
+          </div>
+        </section>
       </div>
     </div>
   )
