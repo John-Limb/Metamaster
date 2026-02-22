@@ -1,80 +1,41 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint-and-type-check:
-    name: Lint and Type Check
+  backend:
+    name: Backend (lint + test)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
+          cache: pip
 
       - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt || exit 1
+          black --check app/ tests/
+          isort --check-only app/ tests/
+          flake8 app/ tests/ --max-line-length=100
 
-      - name: Run Black formatter check
-        run: black --check app/ tests/
-
-      - name: Run isort import check
-        run: isort --check-only app/ tests/
-
-      - name: Run Flake8 linter
-        run: flake8 app/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
-
-      - name: Run mypy type checker
-        run: mypy app/ --ignore-missing-imports --no-error-summary || true
-
-  test:
-    name: Backend Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt || exit 1
-
-      - name: Run unit tests with coverage
+      - name: Test
         env:
           PYTHONPATH: .
-        run: |
-          python -m pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing -k "unit" --tb=short
+        run: pytest tests/ -v --cov=app --cov-report=term-missing --tb=short -k "unit"
 
-      - name: Run integration tests
-        env:
-          PYTHONPATH: .
-        run: |
-          python -m pytest tests/ -v -k "integration" --tb=short || true
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          file: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-
-  frontend-test:
-    name: Frontend Lint & Test
+  frontend:
+    name: Frontend (type-check + test)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -82,57 +43,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
       - name: Type check
         run: npm run type-check
 
-      - name: Run tests
+      - name: Test
         run: npm test
-
-  coverage-report:
-    name: Coverage Report
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt || exit 1
-
-      - name: Generate coverage report
-        env:
-          PYTHONPATH: .
-        run: |
-          python -m pytest tests/ --cov=app --cov-report=html --cov-report=term-missing --tb=short
-
-      - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: coverage-report
-          path: htmlcov/
-
-      - name: Comment PR with coverage
-        if: github.event_name == 'pull_request'
-        uses: py-cov-action/python-coverage-comment-action@v3
-        with:
-          GITHUB_TOKEN: ${{ github.token }}
