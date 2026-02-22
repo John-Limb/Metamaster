@@ -10,6 +10,7 @@ const SearchPage = lazy(() => import('@/pages/SearchPage').then(m => ({ default:
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const MoviesPage = lazy(() => import('@/pages/MoviesPage').then(m => ({ default: m.MoviesPage })))
 const TVShowsPage = lazy(() => import('@/pages/TVShowsPage').then(m => ({ default: m.TVShowsPage })))
+const EnrichmentPage = lazy(() => import('@/pages/EnrichmentPage').then(m => ({ default: m.EnrichmentPage })))
 
 // Loading fallback component
 const PageLoader = () => (
@@ -51,6 +52,10 @@ export const routes: RouteObject[] = [
   {
     path: '/tv-shows',
     element: withMainLayout(TVShowsPage),
+  },
+  {
+    path: '/enrichment',
+    element: withMainLayout(EnrichmentPage),
   },
   {
     path: '*',

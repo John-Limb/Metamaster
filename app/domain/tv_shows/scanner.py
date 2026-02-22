@@ -10,7 +10,7 @@ from app.core.config import TV_DIR, settings
 from app.domain.files.models import FileItem
 from app.domain.movies.scanner import extract_external_id_from_path, get_ffprobe, probe_file
 from app.domain.tv_shows.models import Episode, EpisodeFile, Season, TVShow
-from app.services_impl import TVDBService
+from app.services_impl import TMDBService
 from app.tasks.async_helpers import run_async
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,18 @@ def create_tv_shows_from_files(db: Session) -> int:
     tv_dir_resolved = str(Path(TV_DIR).resolve())
     ffprobe = get_ffprobe()
 
-    existing_paths = {row[0] for row in db.query(EpisodeFile.file_path).all()}
+    # Backfill: mark any FileItem as indexed if an EpisodeFile already references its path
+    indexed_paths = {row[0] for row in db.query(EpisodeFile.file_path).all()}
+    backfilled = (
+        db.query(FileItem)
+        .filter(FileItem.is_indexed.is_(False), FileItem.path.in_(indexed_paths))
+        .update({"is_indexed": True}, synchronize_session=False)
+    )
+    if backfilled:
+        db.commit()
+        logger.info(f"[TV] Backfilled is_indexed=True on {backfilled} existing FileItem(s)")
+
+    existing_paths = indexed_paths
 
     tv_files = (
         db.query(FileItem)
@@ -124,7 +135,7 @@ def create_tv_shows_from_files(db: Session) -> int:
             if not show:
                 detected_id = extract_external_id_from_path(fi.path)
                 if detected_id:
-                    logger.info(f"[TV] External ID detected in path: {detected_id}")
+                    logger.info(f"[TV] TMDB/external ID detected in path: {detected_id}")
                 show = TVShow(
                     title=show_name,
                     enrichment_status="local_only",
@@ -184,6 +195,7 @@ def create_tv_shows_from_files(db: Session) -> int:
             duration=probe_data.get("duration"),
         )
         db.add(episode_file)
+        fi.is_indexed = True
         existing_paths.add(fi.path)
         created += 1
         logger.info(f"[TV] Episode file created: '{show_name}' {ep_label}")
@@ -196,16 +208,16 @@ def create_tv_shows_from_files(db: Session) -> int:
 
 
 def enrich_new_tv_shows(db: Session) -> int:
-    """Search TVDB for TV shows missing a tvdb_id and populate metadata.
+    """Search TMDB for TV shows missing a tmdb_id and populate metadata.
 
     Returns the number of shows successfully enriched.
     """
-    shows = db.query(TVShow).filter(TVShow.tvdb_id.is_(None)).all()
+    shows = db.query(TVShow).filter(TVShow.tmdb_id.is_(None)).all()
     if not shows:
         return 0
 
-    existing_tvdb_ids = {
-        row[0] for row in db.query(TVShow.tvdb_id).filter(TVShow.tvdb_id.isnot(None)).all()
+    existing_tmdb_ids = {
+        row[0] for row in db.query(TVShow.tmdb_id).filter(TVShow.tmdb_id.isnot(None)).all()
     }
 
     enriched = 0
@@ -213,50 +225,50 @@ def enrich_new_tv_shows(db: Session) -> int:
         try:
             logger.info(f"[TV] Enriching: '{show.title}'")
 
-            # Step 1: Search TVDB by title
-            logger.info(f"[TV] TVDB search: '{show.title}'")
-            search_raw = run_async(TVDBService.search_show(db, show.title))
+            # Step 1: Search TMDB by title
+            logger.info(f"[TV] TMDB search: '{show.title}'")
+            search_raw = run_async(TMDBService.search_show(db, show.title))
             if not search_raw:
-                logger.info(f"[TV] TVDB: no results for '{show.title}'")
+                logger.info(f"[TV] TMDB: no results for '{show.title}'")
                 continue
-            search_parsed = TVDBService.parse_tvdb_search_response(search_raw)
+            search_parsed = TMDBService.parse_series_search_response(search_raw)
             if not search_parsed or not search_parsed.get("search_results"):
-                logger.info(f"[TV] TVDB: no match for '{show.title}'")
+                logger.info(f"[TV] TMDB: no match for '{show.title}'")
                 continue
 
-            tvdb_id = search_parsed["search_results"][0].get("tvdb_id")
-            if not tvdb_id or tvdb_id in existing_tvdb_ids:
-                logger.debug(f"[TV] TVDB: duplicate or missing ID for '{show.title}' — skipping")
+            tmdb_id = search_parsed["search_results"][0].get("tmdb_id")
+            if not tmdb_id or tmdb_id in existing_tmdb_ids:
+                logger.debug(f"[TV] TMDB: duplicate or missing ID for '{show.title}' — skipping")
                 continue
 
-            logger.info(f"[TV] TVDB match: '{show.title}' → {tvdb_id}")
+            logger.info(f"[TV] TMDB match: '{show.title}' → {tmdb_id}")
 
             # Step 2: Fetch full details
-            logger.info(f"[TV] TVDB fetching details: {tvdb_id}")
-            detail_raw = run_async(TVDBService.get_series_details(db, tvdb_id))
+            logger.info(f"[TV] TMDB fetching details: {tmdb_id}")
+            detail_raw = run_async(TMDBService.get_series_details(db, tmdb_id))
             if not detail_raw:
-                show.tvdb_id = tvdb_id
-                existing_tvdb_ids.add(tvdb_id)
+                show.tmdb_id = tmdb_id
+                existing_tmdb_ids.add(tmdb_id)
                 enriched += 1
                 continue
 
-            detail = TVDBService.parse_tvdb_series_response(detail_raw)
+            detail = TMDBService.parse_series_response(detail_raw)
             if not detail:
-                show.tvdb_id = tvdb_id
-                existing_tvdb_ids.add(tvdb_id)
+                show.tmdb_id = tmdb_id
+                existing_tmdb_ids.add(tmdb_id)
                 enriched += 1
                 continue
 
             # Step 3: Update fields
-            show.tvdb_id = tvdb_id
+            show.tmdb_id = tmdb_id
             show.plot = detail.get("plot", show.plot)
             show.rating = detail.get("rating", show.rating)
             show.genres = detail.get("genres", show.genres)
             show.status = detail.get("status", show.status)
             poster = detail.get("poster")
-            if poster and poster != "N/A":
+            if poster:
                 show.poster_url = poster
-            existing_tvdb_ids.add(tvdb_id)
+            existing_tmdb_ids.add(tmdb_id)
             enriched += 1
 
             rating_str = f"★{show.rating}" if show.rating else "no rating"
@@ -268,7 +280,7 @@ def enrich_new_tv_shows(db: Session) -> int:
 
     if enriched:
         db.commit()
-        logger.info(f"[TV] {enriched} show(s) enriched with TVDB metadata")
+        logger.info(f"[TV] {enriched} show(s) enriched with TMDB metadata")
     return enriched
 
 

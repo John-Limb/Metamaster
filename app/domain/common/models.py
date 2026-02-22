@@ -11,7 +11,7 @@ class APICache(Base):
     __tablename__ = "api_cache"
 
     id = Column(Integer, primary_key=True, index=True)
-    api_type = Column(String(20), nullable=False)  # "omdb" or "tvdb"
+    api_type = Column(String(20), nullable=False)  # "tmdb"
     query_key = Column(String(255), nullable=False)
     response_data = Column(Text, nullable=False)  # JSON response
     expires_at = Column(DateTime, index=True)

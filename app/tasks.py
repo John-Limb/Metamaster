@@ -18,7 +18,7 @@ from app.models import (
     EpisodeFile,
     BatchOperation,
 )
-from app.services_impl import OMDBService, TVDBService
+from app.services_impl import TMDBService
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
 from app.infrastructure.file_system.queue_manager import FileQueueManager
 from app.infrastructure.monitoring.error_handler import TaskErrorHandler
@@ -132,11 +132,11 @@ def enrich_metadata(self, media_id: int, media_type: str):
                     logger.error(f"Movie not found: {media_id}")
                     raise RuntimeError(f"Movie not found: {media_id}")
 
-                # Fetch from OMDB if we have an omdb_id
-                if media.omdb_id:
-                    omdb_data = run_async(OMDBService.get_movie_details(db, media.omdb_id))
+                # Fetch from TMDB if we have a tmdb_id
+                if media.tmdb_id:
+                    omdb_data = run_async(TMDBService.get_movie_details(db, media.tmdb_id))
                     if omdb_data:
-                        parsed = OMDBService.parse_omdb_response(omdb_data)
+                        parsed = TMDBService.parse_movie_details_response(omdb_data)
                         if parsed:
                             # Update movie with enriched data
                             media.plot = parsed.get("plot", media.plot)
@@ -165,11 +165,11 @@ def enrich_metadata(self, media_id: int, media_type: str):
                     logger.error(f"TV Show not found: {media_id}")
                     raise RuntimeError(f"TV Show not found: {media_id}")
 
-                # Fetch from TVDB if we have a tvdb_id
-                if media.tvdb_id:
-                    tvdb_data = run_async(TVDBService.get_series_details(db, media.tvdb_id))
+                # Fetch from TMDB if we have a tmdb_id
+                if media.tmdb_id:
+                    tvdb_data = run_async(TMDBService.get_series_details(db, media.tmdb_id))
                     if tvdb_data:
-                        parsed = TVDBService.parse_tvdb_series_response(tvdb_data)
+                        parsed = TMDBService.parse_series_response(tvdb_data)
                         if parsed:
                             # Update TV show with enriched data
                             media.plot = parsed.get("plot", media.plot)
@@ -389,10 +389,10 @@ def sync_metadata(self):
                 time.sleep(1)
 
             try:
-                if movie.omdb_id:
-                    omdb_data = run_async(OMDBService.get_movie_details(db, movie.omdb_id))
-                    if omdb_data:
-                        parsed = OMDBService.parse_omdb_response(omdb_data)
+                if movie.tmdb_id:
+                    tmdb_data = run_async(TMDBService.get_movie_details(db, movie.tmdb_id))
+                    if tmdb_data:
+                        parsed = TMDBService.parse_movie_details_response(tmdb_data)
                         if parsed:
                             movie.plot = parsed.get("plot", movie.plot)
                             movie.rating = parsed.get("rating", movie.rating)
@@ -417,10 +417,10 @@ def sync_metadata(self):
                 time.sleep(1)
 
             try:
-                if show.tvdb_id:
-                    tvdb_data = run_async(TVDBService.get_series_details(db, show.tvdb_id))
-                    if tvdb_data:
-                        parsed = TVDBService.parse_tvdb_series_response(tvdb_data)
+                if show.tmdb_id:
+                    tmdb_data = run_async(TMDBService.get_series_details(db, show.tmdb_id))
+                    if tmdb_data:
+                        parsed = TMDBService.parse_series_response(tmdb_data)
                         if parsed:
                             show.plot = parsed.get("plot", show.plot)
                             show.rating = parsed.get("rating", show.rating)
@@ -595,10 +595,10 @@ def process_batch_item(self, batch_id: int, item_id: int, item_type: str, operat
                 if not movie:
                     return {"success": False, "error": "Movie not found"}
 
-                if movie.omdb_id:
-                    omdb_data = run_async(OMDBService.get_movie_details(db, movie.omdb_id))
-                    if omdb_data:
-                        parsed = OMDBService.parse_omdb_response(omdb_data)
+                if movie.tmdb_id:
+                    tmdb_data = run_async(TMDBService.get_movie_details(db, movie.tmdb_id))
+                    if tmdb_data:
+                        parsed = TMDBService.parse_movie_details_response(tmdb_data)
                         if parsed:
                             movie.plot = parsed.get("plot", movie.plot)
                             movie.rating = parsed.get("rating", movie.rating)
@@ -613,10 +613,10 @@ def process_batch_item(self, batch_id: int, item_id: int, item_type: str, operat
                 if not show:
                     return {"success": False, "error": "TV show not found"}
 
-                if show.tvdb_id:
-                    tvdb_data = run_async(TVDBService.get_series_details(db, show.tvdb_id))
-                    if tvdb_data:
-                        parsed = TVDBService.parse_tvdb_series_response(tvdb_data)
+                if show.tmdb_id:
+                    tmdb_data = run_async(TMDBService.get_series_details(db, show.tmdb_id))
+                    if tmdb_data:
+                        parsed = TMDBService.parse_series_response(tmdb_data)
                         if parsed:
                             show.plot = parsed.get("plot", show.plot)
                             show.rating = parsed.get("rating", show.rating)

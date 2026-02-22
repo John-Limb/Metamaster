@@ -340,7 +340,7 @@ class RedisCacheService:
                     "rating": movie.rating,
                     "runtime": movie.runtime,
                     "genres": movie.genres,
-                    "omdb_id": movie.omdb_id,
+                    "tmdb_id": movie.tmdb_id,
                 }
                 if self.set(key, movie_dict, ttl=self.MOVIE_TTL):
                     movie_count += 1
@@ -355,7 +355,7 @@ class RedisCacheService:
                     "rating": show.rating,
                     "status": show.status,
                     "genres": show.genres,
-                    "tvdb_id": show.tvdb_id,
+                    "tmdb_id": show.tmdb_id,
                 }
                 if self.set(key, show_dict, ttl=self.TV_SHOW_TTL):
                     tv_show_count += 1

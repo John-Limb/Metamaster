@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional, List, Tuple
 from sqlalchemy.orm import Session
 from app.models import BatchOperation, Movie, TVShow, MovieFile, EpisodeFile
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
+from app.services_impl import TMDBService
 import os
 
 logger = logging.getLogger(__name__)
@@ -349,12 +350,12 @@ class BatchOperationService:
             if not movie:
                 return {"success": False, "error": "Movie not found"}
 
-            if not movie.omdb_id:
-                return {"success": True, "message": "No OMDB ID available"}
+            if not movie.tmdb_id:
+                return {"success": True, "message": "No TMDB ID available"}
 
-            omdb_data = await OMDBService.get_movie_details(self.db, movie.omdb_id)
+            omdb_data = await TMDBService.get_movie_details(self.db, movie.tmdb_id)
             if omdb_data:
-                parsed = OMDBService.parse_omdb_response(omdb_data)
+                parsed = TMDBService.parse_movie_details_response(omdb_data)
                 if parsed:
                     movie.plot = parsed.get("plot", movie.plot)
                     movie.rating = parsed.get("rating", movie.rating)
@@ -364,7 +365,7 @@ class BatchOperationService:
                     self.db.commit()
                     return {"success": True}
 
-            return {"success": True, "message": "No data returned from OMDB"}
+            return {"success": True, "message": "No data returned from TMDB"}
 
         except Exception as e:
             logger.error(f"Error syncing movie {movie_id}: {str(e)}")
@@ -384,12 +385,12 @@ class BatchOperationService:
             if not show:
                 return {"success": False, "error": "TV show not found"}
 
-            if not show.tvdb_id:
-                return {"success": True, "message": "No TVDB ID available"}
+            if not show.tmdb_id:
+                return {"success": True, "message": "No TMDB ID available"}
 
-            tvdb_data = await TVDBService.get_series_details(self.db, show.tvdb_id)
-            if tvdb_data:
-                parsed = TVDBService.parse_tvdb_series_response(tvdb_data)
+            tmdb_data = await TMDBService.get_series_details(self.db, show.tmdb_id)
+            if tmdb_data:
+                parsed = TMDBService.parse_series_response(tmdb_data)
                 if parsed:
                     show.plot = parsed.get("plot", show.plot)
                     show.rating = parsed.get("rating", show.rating)
@@ -399,7 +400,7 @@ class BatchOperationService:
                     self.db.commit()
                     return {"success": True}
 
-            return {"success": True, "message": "No data returned from TVDB"}
+            return {"success": True, "message": "No data returned from TMDB"}
 
         except Exception as e:
             logger.error(f"Error syncing TV show {show_id}: {str(e)}")

@@ -84,8 +84,10 @@ export const FileCard: React.FC<FileCardProps> = ({
   if (viewMode === 'list') {
     return (
       <div
-        className={`flex items-center gap-4 px-4 py-3 border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition ${
-          isSelected ? 'bg-blue-50' : ''
+        className={`flex items-center gap-4 px-4 py-3 border-b border-slate-200 dark:border-slate-700 cursor-pointer transition ${
+          isSelected
+            ? 'bg-indigo-50 dark:bg-indigo-900/20'
+            : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
         }`}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
@@ -95,17 +97,17 @@ export const FileCard: React.FC<FileCardProps> = ({
           type="checkbox"
           checked={isSelected}
           onChange={() => onSelect?.(file.id)}
-          className="w-4 h-4 rounded border-gray-300"
+          className="w-4 h-4 rounded border-slate-300 dark:border-slate-600"
           onClick={(e) => e.stopPropagation()}
         />
         <div className="flex-shrink-0">{getFileIcon(file)}</div>
         <div className="flex-grow min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-          <p className="text-xs text-gray-500">{formatDate(file.updatedAt)}</p>
+          <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{file.name}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(file.updatedAt)}</p>
         </div>
         <div className="flex-shrink-0 text-right">
-          <p className="text-sm text-gray-600">{formatFileSize(file.size)}</p>
-          <p className="text-xs text-gray-400">{file.type}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{formatFileSize(file.size)}</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">{file.type}</p>
         </div>
       </div>
     )
@@ -115,7 +117,9 @@ export const FileCard: React.FC<FileCardProps> = ({
   return (
     <div
       className={`p-4 rounded-lg border-2 transition cursor-pointer ${
-        isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white'
+        isSelected
+          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+          : 'border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 bg-white dark:bg-slate-800'
       }`}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -124,17 +128,17 @@ export const FileCard: React.FC<FileCardProps> = ({
       <div className="flex flex-col items-center gap-3">
         <div className="flex-shrink-0">{getFileIcon(file)}</div>
         <div className="text-center min-w-0 w-full">
-          <p className="text-sm font-medium text-gray-900 truncate" title={file.name}>
+          <p className="text-sm font-medium text-slate-900 dark:text-white truncate" title={file.name}>
             {file.name}
           </p>
-          <p className="text-xs text-gray-500 mt-1">{formatFileSize(file.size)}</p>
-          <p className="text-xs text-gray-400">{formatDate(file.updatedAt)}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{formatFileSize(file.size)}</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">{formatDate(file.updatedAt)}</p>
         </div>
         <input
           type="checkbox"
           checked={isSelected}
           onChange={() => onSelect?.(file.id)}
-          className="w-4 h-4 rounded border-gray-300"
+          className="w-4 h-4 rounded border-slate-300 dark:border-slate-600"
           onClick={(e) => e.stopPropagation()}
         />
       </div>

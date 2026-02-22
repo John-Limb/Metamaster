@@ -270,7 +270,7 @@ const MovieDetailPage: React.FC = () => {
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center' }}>
                 <input
                   type="text"
-                  placeholder="OMDB / IMDB ID (e.g. tt1234567)"
+                  placeholder="TMDB ID (e.g. 278)"
                   value={externalIdInput}
                   onChange={(e) => setExternalIdInput(e.target.value)}
                   style={{
@@ -320,38 +320,6 @@ const MovieDetailPage: React.FC = () => {
               </div>
             </section>
 
-            <div className="movie-detail-page__actions">
-              <Button variant="primary" size="lg">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  stroke="none"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                Play
-              </Button>
-              <Button variant="secondary" size="lg">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Add to Queue
-              </Button>
-            </div>
           </div>
         </div>
         )}

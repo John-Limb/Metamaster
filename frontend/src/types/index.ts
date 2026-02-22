@@ -64,6 +64,14 @@ export interface QueueStats {
   failedTasks: number
 }
 
+export type EnrichmentStatusValue =
+  | 'pending_local'
+  | 'local_only'
+  | 'pending_external'
+  | 'fully_enriched'
+  | 'external_failed'
+  | 'not_found'
+
 // Movie types
 export interface Movie {
   id: string
@@ -76,10 +84,12 @@ export interface Movie {
   director?: string
   plot?: string
   poster_url?: string
-  omdb_id?: string
+  tmdb_id?: string
   fileId?: string
   created_at?: string
   updated_at?: string
+  enrichment_status?: EnrichmentStatusValue | null
+  enrichment_error?: string | null
   // Technical metadata from FFprobe
   quality?: string
   resolution?: string
@@ -103,9 +113,31 @@ export interface TVShow {
   status?: string
   plot?: string
   poster_url?: string
-  tvdb_id?: string
+  tmdb_id?: string
   created_at?: string
   updated_at?: string
+  enrichment_status?: EnrichmentStatusValue | null
+  enrichment_error?: string | null
+}
+
+export interface Season {
+  id: number
+  season_number: number
+  tmdb_id?: string | null
+  episode_count?: number | null
+  created_at: string
+}
+
+export interface Episode {
+  id: number
+  episode_number: number
+  title?: string | null
+  plot?: string | null
+  air_date?: string | null
+  rating?: number | null
+  tmdb_id?: string | null
+  created_at: string
+  updated_at: string
 }
 
 // File classification types

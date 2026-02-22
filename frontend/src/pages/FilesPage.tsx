@@ -1,62 +1,35 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Breadcrumb } from '@/components/common'
+import React, { useState } from 'react'
 import { FileExplorer, FileScanner } from '@/components/file'
-import { useFileStore } from '@/stores/fileStore'
-import type { BreadcrumbItem } from '@/components/common'
 
 export const FilesPage: React.FC = () => {
-  const navigate = useNavigate()
-  const { currentPath, navigateToPath } = useFileStore()
-
-  // Generate breadcrumb items from current path
-  const generateBreadcrumbs = (): BreadcrumbItem[] => {
-    const parts = currentPath.split('/').filter(Boolean)
-    const items: BreadcrumbItem[] = []
-
-    // Add root
-    items.push({
-      label: 'Files',
-      onClick: () => navigateToPath('/'),
-    })
-
-    // Add path segments
-    let accumulatedPath = ''
-    parts.forEach((part) => {
-      accumulatedPath += '/' + part
-      items.push({
-        label: part,
-        onClick: () => navigateToPath(accumulatedPath),
-      })
-    })
-
-    return items
-  }
-
-  const breadcrumbItems = generateBreadcrumbs()
+  const [showScanner, setShowScanner] = useState(false)
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="h-full flex flex-col gap-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Files</h1>
-        <p className="text-gray-600">Browse and manage your files</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Files</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Browse and manage your media files</p>
+        </div>
+        <button
+          onClick={() => setShowScanner((s) => !s)}
+          className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+        >
+          {showScanner ? 'Hide Scanner' : 'Show Scanner'}
+        </button>
       </div>
 
-      {/* Breadcrumb Navigation */}
-      <Breadcrumb items={breadcrumbItems} showHome={true} onHomeClick={() => navigateToPath('/')} />
-
       {/* Main Content */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* File Explorer */}
-        <div className="lg:col-span-2 min-h-0">
+      <div className="flex-1 min-h-0 flex flex-col gap-4">
+        <div className="flex-1 min-h-0">
           <FileExplorer showDetailsPanel={true} />
         </div>
-
-        {/* File Scanner Sidebar */}
-        <div className="lg:col-span-1">
-          <FileScanner />
-        </div>
+        {showScanner && (
+          <div>
+            <FileScanner />
+          </div>
+        )}
       </div>
     </div>
   )

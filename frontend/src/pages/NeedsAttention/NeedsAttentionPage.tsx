@@ -208,7 +208,7 @@ export const NeedsAttentionPage: React.FC = () => {
                       type="text"
                       value={inputValue}
                       onChange={(e) => handleExternalIdChange(type, item.id, e.target.value)}
-                      placeholder={type === 'movie' ? 'Enter IMDB ID (e.g. tt1234567)' : 'Enter TVDB ID'}
+                      placeholder={type === 'movie' ? 'Enter TMDB ID (e.g. 278)' : 'Enter TMDB ID (e.g. 1396)'}
                       className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <button

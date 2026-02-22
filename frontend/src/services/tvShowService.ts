@@ -1,6 +1,9 @@
 import { apiClient } from '@/utils/api'
 import { errorHandler } from '@/utils/errorHandler'
-import type { TVShow, PaginatedResponse, ApiResponse } from '@/types'
+import type { TVShow, Season, Episode, PaginatedResponse, ApiResponse } from '@/types'
+import type { EnrichmentStatusGroup, EnrichmentStats } from '@/services/movieService'
+
+export type { EnrichmentStatusGroup, EnrichmentStats }
 
 const buildPaginationQuery = (page?: number, pageSize?: number) => {
   const params = new URLSearchParams()
@@ -14,15 +17,57 @@ const buildPaginationQuery = (page?: number, pageSize?: number) => {
 }
 
 export const tvShowService = {
-  // Get all TV shows
-  getTVShows: async (page = 1, pageSize = 20) => {
+  // Get all TV shows, optionally filtered by enrichment status group
+  getTVShows: async (page = 1, pageSize = 20, status?: EnrichmentStatusGroup) => {
     try {
-      const paginationQuery = buildPaginationQuery(page, pageSize)
-      const suffix = paginationQuery ? `?${paginationQuery}` : ''
+      const params = new URLSearchParams()
+      if (page >= 1) params.append('page', String(page))
+      if (pageSize > 0) params.append('pageSize', String(pageSize))
+      if (status) params.append('status', status)
+      const suffix = params.toString() ? `?${params.toString()}` : ''
       const response = await apiClient.get<PaginatedResponse<TVShow>>(`/tv-shows${suffix}`)
       return response.data
     } catch (error: any) {
       errorHandler.handleError(error, `getTVShows: page=${page}`)
+      throw error
+    }
+  },
+
+  // Get seasons for a TV show
+  getSeasons: async (showId: string, page = 1, pageSize = 50) => {
+    try {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
+      const response = await apiClient.get<PaginatedResponse<Season>>(
+        `/tv-shows/${showId}/seasons?${params}`
+      )
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, `getSeasons: showId=${showId}`)
+      throw error
+    }
+  },
+
+  // Get episodes for a season
+  getEpisodes: async (showId: string, seasonId: number, page = 1, pageSize = 100) => {
+    try {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
+      const response = await apiClient.get<PaginatedResponse<Episode>>(
+        `/tv-shows/${showId}/seasons/${seasonId}/episodes?${params}`
+      )
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, `getEpisodes: showId=${showId}, seasonId=${seasonId}`)
+      throw error
+    }
+  },
+
+  // Get enrichment status counts (indexed / pending / failed)
+  getEnrichmentStats: async (): Promise<EnrichmentStats> => {
+    try {
+      const response = await apiClient.get<EnrichmentStats>('/tv-shows/enrichment-stats')
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, 'getEnrichmentStats (tv-shows)')
       throw error
     }
   },
@@ -101,7 +146,7 @@ export const tvShowService = {
     }
   },
 
-  // Sync metadata from TVDB
+  // Sync metadata from TMDB
   syncMetadata: async (id: string) => {
     try {
       const response = await apiClient.post<TVShow>(`/tv-shows/${id}/sync-metadata`)

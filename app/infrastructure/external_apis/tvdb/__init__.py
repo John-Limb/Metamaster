@@ -1,5 +1,5 @@
-"""TVDB API integration module"""
+"""TMDB API integration module (TV shows)"""
 
-from app.services_impl import TVDBService
+from app.services_impl import TMDBService
 
-__all__ = ["TVDBService"]
+__all__ = ["TMDBService"]

@@ -1,451 +1,359 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Button, Badge, Card, EmptyState } from '@/components/common'
+import { Badge, EmptyState } from '@/components/common'
+import { tvShowService } from '@/services/tvShowService'
 import { enrichmentService } from '@/services/enrichmentService'
 import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
-import './TVShowDetailPage.css'
-
-// Mock TV show detail type
-interface TVShowDetail {
-  id: string
-  title: string
-  backdropUrl?: string
-  poster_url?: string
-  rating: number
-  status: 'continuing' | 'ended' | 'returning'
-  genres: string[]
-  network?: string
-  premiereDate?: string
-  overview?: string
-  seasons: Array<{
-    seasonNumber: number
-    episodeCount: number
-    title: string
-    airDate?: string
-  }>
-  cast: Array<{ name: string; role: string }>
-  relatedShows: Array<{ id: string; title: string; poster_url?: string }>
-}
+import { Button } from '@/components/common/Button'
+import type { TVShow, Season, Episode } from '@/types'
 
 const TVShowDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [showDetail, setShowDetail] = useState<TVShowDetail | null>(null)
+
+  const [show, setShow] = useState<TVShow | null>(null)
+  const [seasons, setSeasons] = useState<Season[]>([])
+  const [episodeMap, setEpisodeMap] = useState<Record<number, Episode[]>>({})
+  const [loadingSeasons, setLoadingSeasons] = useState<Set<number>>(new Set())
+  const [expandedSeasonId, setExpandedSeasonId] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [expandedSeason, setExpandedSeason] = useState<number | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [externalIdInput, setExternalIdInput] = useState('')
   const [enriching, setEnriching] = useState(false)
 
   useEffect(() => {
-    // Simulate loading
+    if (!id) return
     setIsLoading(true)
-    const timer = setTimeout(() => {
-      setShowDetail(null)
-      setIsLoading(false)
-    }, 1000)
-    return () => clearTimeout(timer)
+    setError(null)
+
+    Promise.all([
+      tvShowService.getTVShowDetails(id),
+      tvShowService.getSeasons(id),
+    ])
+      .then(([showData, seasonsData]) => {
+        setShow(showData as unknown as TVShow)
+        setSeasons(seasonsData?.items ?? [])
+      })
+      .catch(() => setError('Failed to load TV show details.'))
+      .finally(() => setIsLoading(false))
   }, [id])
+
+  const handleToggleSeason = useCallback(async (season: Season) => {
+    if (expandedSeasonId === season.id) {
+      setExpandedSeasonId(null)
+      return
+    }
+    setExpandedSeasonId(season.id)
+
+    if (episodeMap[season.id]) return // already loaded
+
+    setLoadingSeasons((prev) => new Set(prev).add(season.id))
+    try {
+      const data = await tvShowService.getEpisodes(id!, season.id)
+      setEpisodeMap((prev) => ({ ...prev, [season.id]: data?.items ?? [] }))
+    } catch {
+      setEpisodeMap((prev) => ({ ...prev, [season.id]: [] }))
+    } finally {
+      setLoadingSeasons((prev) => {
+        const next = new Set(prev)
+        next.delete(season.id)
+        return next
+      })
+    }
+  }, [expandedSeasonId, episodeMap, id])
+
+  const getStatusVariant = (status?: string) => {
+    if (status === 'continuing') return 'success'
+    if (status === 'ended') return 'secondary'
+    return 'secondary'
+  }
+
+  const formatAirDate = (date?: string | null) => {
+    if (!date) return null
+    try {
+      return new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    } catch {
+      return date
+    }
+  }
+
+  const parseGenres = (genres?: string | string[] | null): string[] => {
+    if (!genres) return []
+    if (Array.isArray(genres)) return genres
+    try { return JSON.parse(genres) } catch { return [genres] }
+  }
 
   if (isLoading) {
     return (
-      <div className="tvshow-detail-page">
-        <div className="tvshow-detail-page__loading">
-          <div className="tvshow-detail-page__skeleton-backdrop" />
-          <div className="tvshow-detail-page__skeleton-content">
-            <div className="tvshow-detail-page__skeleton-title" />
-            <div className="tvshow-detail-page__skeleton-meta" />
-            <div className="tvshow-detail-page__skeleton-overview" />
+      <div className="space-y-6 animate-pulse">
+        <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
+        <div className="flex gap-6">
+          <div className="w-40 h-56 bg-slate-200 dark:bg-slate-700 rounded-lg flex-shrink-0" />
+          <div className="flex-1 space-y-3">
+            <div className="h-8 w-64 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-4 w-40 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
           </div>
         </div>
       </div>
     )
   }
 
-  if (!showDetail) {
+  if (error || !show) {
     return (
-      <div className="tvshow-detail-page">
-        <EmptyState
-          variant="not-found"
-          title="TV Show not found"
-          description="The TV show you're looking for doesn't exist or has been removed."
-          action={{
-            label: 'Back to TV Shows',
-            onClick: () => navigate('/tv-shows'),
-          }}
-        />
-      </div>
+      <EmptyState
+        variant="not-found"
+        title="TV show not found"
+        description={error ?? 'The TV show you\'re looking for doesn\'t exist.'}
+        action={{ label: 'Back to TV Shows', onClick: () => navigate('/tv-shows') }}
+      />
     )
   }
 
-  const renderStars = (rating: number) => {
-    const stars = Math.round(rating / 2)
-    return '★'.repeat(stars) + '☆'.repeat(5 - stars)
-  }
-
-  const getStatusBadgeVariant = (status?: string) => {
-    switch (status) {
-      case 'continuing':
-        return 'success'
-      case 'returning':
-        return 'indigo'
-      case 'ended':
-        return 'secondary'
-      default:
-        return 'secondary'
-    }
-  }
-
-  const getStatusLabel = (status?: string) => {
-    switch (status) {
-      case 'continuing':
-        return 'Continuing'
-      case 'returning':
-        return 'Returning'
-      case 'ended':
-        return 'Ended'
-      default:
-        return 'Unknown'
-    }
-  }
-
-  const toggleSeason = (seasonNumber: number) => {
-    setExpandedSeason(expandedSeason === seasonNumber ? null : seasonNumber)
-  }
+  const genres = parseGenres(show.genres ?? show.genre)
 
   return (
-    <div className="tvshow-detail-page">
-      {/* Hero Backdrop */}
-      <div className="tvshow-detail-page__hero">
-        {showDetail.backdropUrl ? (
-          <img
-            src={showDetail.backdropUrl}
-            alt={`${showDetail.title} backdrop`}
-            className="tvshow-detail-page__backdrop"
-          />
-        ) : (
-          <div className="tvshow-detail-page__backdrop-placeholder" />
-        )}
-        <div className="tvshow-detail-page__hero-overlay" />
-      </div>
+    <div className="space-y-8">
+      {/* Back */}
+      <button
+        onClick={() => navigate('/tv-shows')}
+        className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Back to TV Shows
+      </button>
 
-      {/* Content */}
-      <div className="tvshow-detail-page__content">
-        {/* Back Button */}
-        <Button
-          variant="secondary"
-          onClick={() => navigate('/tv-shows')}
-          className="tvshow-detail-page__back-btn"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Back to TV Shows
-        </Button>
-
-        <div className="tvshow-detail-page__main">
-          {/* Poster */}
-          <div className="tvshow-detail-page__poster-wrapper">
-            {showDetail.poster_url ? (
-              <img
-                src={showDetail.poster_url}
-                alt={`${showDetail.title} poster`}
-                className="tvshow-detail-page__poster"
-              />
-            ) : (
-              <div className="tvshow-detail-page__poster-placeholder">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="64"
-                  height="64"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-                  <line x1="7" y1="2" x2="7" y2="22" />
-                  <line x1="17" y1="2" x2="17" y2="22" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                </svg>
-              </div>
-            )}
-          </div>
-
-          {/* Info */}
-          <div className="tvshow-detail-page__info">
-            <h1 className="tvshow-detail-page__title">{showDetail.title}</h1>
-
-            <div className="tvshow-detail-page__meta">
-              {showDetail.network && (
-                <span className="tvshow-detail-page__network">{showDetail.network}</span>
-              )}
-              {showDetail.premiereDate && (
-                <span className="tvshow-detail-page__premiere">
-                  Premiered {showDetail.premiereDate}
-                </span>
-              )}
-              <Badge variant={getStatusBadgeVariant(showDetail.status)}>
-                {getStatusLabel(showDetail.status)}
-              </Badge>
+      {/* Header */}
+      <div className="flex gap-6">
+        {/* Poster */}
+        <div className="flex-shrink-0 w-36 sm:w-44">
+          {show.poster_url ? (
+            <img
+              src={show.poster_url}
+              alt={show.title}
+              className="w-full rounded-lg shadow-md object-cover aspect-[2/3]"
+            />
+          ) : (
+            <div className="w-full aspect-[2/3] rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+              <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+              </svg>
             </div>
-
-            {showDetail.rating != null && (
-              <div className="tvshow-detail-page__rating">
-                <span className="tvshow-detail-page__rating-stars">
-                  {renderStars(showDetail.rating)}
-                </span>
-                <span className="tvshow-detail-page__rating-value">
-                  {showDetail.rating.toFixed(1)}/10
-                </span>
-              </div>
-            )}
-
-            <div className="tvshow-detail-page__genres">
-              {showDetail.genres.map((genre) => (
-                <Badge key={genre} variant="secondary">
-                  {genre}
-                </Badge>
-              ))}
-            </div>
-
-            {showDetail.overview && (
-              <p className="tvshow-detail-page__overview">{showDetail.overview}</p>
-            )}
-
-            <div className="tvshow-detail-page__actions">
-              <Button variant="primary" size="lg">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  stroke="none"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                Play Latest
-              </Button>
-              <Button variant="secondary" size="lg">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Add to Queue
-              </Button>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Seasons & Episodes Section */}
-        <section className="tvshow-detail-page__section">
-          <h2 className="tvshow-detail-page__section-title">Seasons & Episodes</h2>
-          <div className="tvshow-detail-page__seasons">
-            {showDetail.seasons.map((season) => (
-              <Card key={season.seasonNumber} variant="outlined" className="tvshow-detail-page__season-card">
-                <div
-                  className="tvshow-detail-page__season-header"
-                  onClick={() => toggleSeason(season.seasonNumber)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && toggleSeason(season.seasonNumber)}
-                >
-                  <div className="tvshow-detail-page__season-info">
-                    <h3 className="tvshow-detail-page__season-title">{season.title}</h3>
-                    <span className="tvshow-detail-page__season-meta">
-                      {season.episodeCount} episodes
-                      {season.airDate && ` • ${season.airDate}`}
-                    </span>
-                  </div>
-                  <svg
-                    className={`tvshow-detail-page__season-arrow ${expandedSeason === season.seasonNumber ? 'tvshow-detail-page__season-arrow--expanded' : ''}`}
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-                {expandedSeason === season.seasonNumber && (
-                  <div className="tvshow-detail-page__episodes">
-                    {Array.from({ length: Math.min(season.episodeCount, 5) }).map((_, index) => (
-                      <div key={index} className="tvshow-detail-page__episode-item">
-                        <span className="tvshow-detail-page__episode-number">
-                          {index + 1}
+        {/* Info */}
+        <div className="flex-1 min-w-0 space-y-3">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{show.title}</h1>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {show.status && (
+              <Badge variant={getStatusVariant(show.status)}>
+                {show.status.charAt(0).toUpperCase() + show.status.slice(1)}
+              </Badge>
+            )}
+            {show.rating != null && (
+              <span className="text-sm text-amber-500 font-medium">★ {show.rating.toFixed(1)}</span>
+            )}
+            {seasons.length > 0 && (
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                {seasons.length} {seasons.length === 1 ? 'season' : 'seasons'}
+              </span>
+            )}
+          </div>
+
+          {genres.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {genres.map((g) => (
+                <Badge key={g} variant="secondary">{g}</Badge>
+              ))}
+            </div>
+          )}
+
+          {show.plot && (
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
+              {show.plot}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Seasons & Episodes */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Seasons & Episodes</h2>
+
+        {seasons.length === 0 ? (
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-10 text-center text-slate-500 dark:text-slate-400 text-sm">
+            No season data available yet.
+          </div>
+        ) : (
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden divide-y divide-slate-200 dark:divide-slate-700">
+            {seasons
+              .slice()
+              .sort((a, b) => a.season_number - b.season_number)
+              .map((season) => {
+                const isExpanded = expandedSeasonId === season.id
+                const isLoadingEpisodes = loadingSeasons.has(season.id)
+                const episodes = episodeMap[season.id] ?? []
+
+                return (
+                  <div key={season.id}>
+                    {/* Season row */}
+                    <button
+                      className="w-full flex items-center justify-between px-4 py-3 text-left
+                        bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50
+                        transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                      onClick={() => handleToggleSeason(season)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-slate-900 dark:text-white">
+                          Season {season.season_number}
                         </span>
-                        <span className="tvshow-detail-page__episode-title">
-                          Episode {index + 1}
-                        </span>
-                        <Button variant="ghost" size="sm">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            stroke="none"
-                          >
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                          </svg>
-                        </Button>
+                        {season.episode_count != null && (
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            {season.episode_count} {season.episode_count === 1 ? 'episode' : 'episodes'}
+                          </span>
+                        )}
                       </div>
-                    ))}
-                    {season.episodeCount > 5 && (
-                      <Button variant="secondary" size="sm" className="tvshow-detail-page__view-all">
-                        View all {season.episodeCount} episodes
-                      </Button>
+                      <svg
+                        className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Episode list */}
+                    {isExpanded && (
+                      <div className="bg-slate-50 dark:bg-slate-900/50">
+                        {isLoadingEpisodes ? (
+                          <div className="flex items-center justify-center py-8">
+                            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        ) : episodes.length === 0 ? (
+                          <p className="px-6 py-6 text-sm text-slate-500 dark:text-slate-400 text-center">
+                            No episodes found for this season.
+                          </p>
+                        ) : (
+                          <div className="divide-y divide-slate-200 dark:divide-slate-700/50">
+                            {episodes
+                              .slice()
+                              .sort((a, b) => a.episode_number - b.episode_number)
+                              .map((ep) => (
+                                <div
+                                  key={ep.id}
+                                  className="flex items-start gap-4 px-6 py-3"
+                                >
+                                  {/* Episode number */}
+                                  <span className="flex-shrink-0 w-8 text-sm font-mono text-slate-400 dark:text-slate-500 pt-0.5">
+                                    {String(ep.episode_number).padStart(2, '0')}
+                                  </span>
+
+                                  {/* Title + plot */}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                      {ep.title ?? `Episode ${ep.episode_number}`}
+                                    </p>
+                                    {ep.plot && (
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                                        {ep.plot}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* Meta */}
+                                  <div className="flex-shrink-0 text-right space-y-0.5">
+                                    {ep.air_date && (
+                                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                                        {formatAirDate(ep.air_date)}
+                                      </p>
+                                    )}
+                                    {ep.rating != null && (
+                                      <p className="text-xs text-amber-500 font-medium">
+                                        ★ {ep.rating.toFixed(1)}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </Card>
-            ))}
+                )
+              })}
           </div>
-        </section>
-
-        {/* Cast Section */}
-        {showDetail.cast.length > 0 && (
-          <section className="tvshow-detail-page__section">
-            <h2 className="tvshow-detail-page__section-title">Cast</h2>
-            <div className="tvshow-detail-page__cast-grid">
-              {showDetail.cast.map((actor) => (
-                <Card key={actor.name} variant="outlined" padding="sm">
-                  <div className="tvshow-detail-page__cast-item">
-                    <span className="tvshow-detail-page__cast-name">{actor.name}</span>
-                    <span className="tvshow-detail-page__cast-role">{actor.role}</span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </section>
         )}
+      </section>
 
-        {/* Related Shows Section */}
-        {showDetail.relatedShows.length > 0 && (
-          <section className="tvshow-detail-page__section">
-            <h2 className="tvshow-detail-page__section-title">Related Shows</h2>
-            <div className="tvshow-detail-page__related-grid">
-              {showDetail.relatedShows.map((relatedShow) => (
-                <Card
-                  key={relatedShow.id}
-                  variant="elevated"
-                  className="tvshow-detail-page__related-card"
-                  onClick={() => navigate(`/tv-shows/${relatedShow.id}`)}
-                >
-                  {relatedShow.poster_url ? (
-                    <img
-                      src={relatedShow.poster_url}
-                      alt={relatedShow.title}
-                      className="tvshow-detail-page__related-poster"
-                    />
-                  ) : (
-                    <div className="tvshow-detail-page__related-poster-placeholder" />
-                  )}
-                  <Card.Content className="tvshow-detail-page__related-content">
-                    <h4 className="tvshow-detail-page__related-title">{relatedShow.title}</h4>
-                  </Card.Content>
-                </Card>
-              ))}
-            </div>
-          </section>
+      {/* Enrichment */}
+      <section className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Enrichment Status</h3>
+        <div className="flex items-center gap-2">
+          <EnrichmentBadge status={(show as any).enrichment_status} />
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            {(show as any).enrichment_status ?? 'unknown'}
+          </span>
+        </div>
+        {(show as any).enrichment_error && (
+          <p className="text-xs text-red-500 dark:text-red-400">
+            {(show as any).enrichment_error}
+          </p>
         )}
-
-        {/* Enrichment Status Panel */}
-        <section style={{ marginTop: '2rem', padding: '1rem', border: '1px solid var(--color-border, #e5e7eb)', borderRadius: '0.5rem', background: 'var(--color-surface, #fff)' }}>
-          <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', fontWeight: 600 }}>Enrichment Status</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <EnrichmentBadge status={(showDetail as any)?.enrichment_status ?? 'local_only'} />
-            <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted, #6b7280)' }}>
-              {(showDetail as any)?.enrichment_status ?? 'local_only'}
-            </span>
-          </div>
-          {(showDetail as any)?.enrichment_error && (
-            <p style={{ color: 'var(--color-danger, #ef4444)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-              {(showDetail as any).enrichment_error}
-            </p>
-          )}
-          {(showDetail as any)?.detected_external_id && (
-            <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted, #6b7280)', marginBottom: '0.25rem' }}>
-              Detected from filename: <code>{(showDetail as any).detected_external_id}</code>
-            </p>
-          )}
-          {(showDetail as any)?.manual_external_id && (
-            <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted, #6b7280)', marginBottom: '0.5rem' }}>
-              Manual override: <code>{(showDetail as any).manual_external_id}</code>
-            </p>
-          )}
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center' }}>
-            <input
-              type="text"
-              placeholder="TVDB ID (e.g. 81189)"
-              value={externalIdInput}
-              onChange={(e) => setExternalIdInput(e.target.value)}
-              style={{ flex: 1, border: '1px solid var(--color-border, #d1d5db)', borderRadius: '0.375rem', padding: '0.25rem 0.5rem', fontSize: '0.875rem', background: 'var(--color-surface, #fff)', color: 'var(--color-text, inherit)' }}
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={async () => {
-                if (!externalIdInput.trim() || !id) return
-                setEnriching(true)
-                try {
-                  await enrichmentService.setTvShowExternalId(Number(id), externalIdInput.trim())
-                  window.location.reload()
-                } finally {
-                  setEnriching(false)
-                }
-              }}
-              disabled={enriching || !externalIdInput.trim()}
-            >
-              {enriching ? 'Saving...' : 'Save & Enrich'}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={async () => {
-                if (!id) return
-                setEnriching(true)
-                try {
-                  await enrichmentService.triggerTvShowEnrich(Number(id))
-                  window.location.reload()
-                } finally {
-                  setEnriching(false)
-                }
-              }}
-              disabled={enriching}
-            >
-              {enriching ? '...' : 'Re-Enrich'}
-            </Button>
-          </div>
-        </section>
-      </div>
+        {(show as any).detected_external_id && (
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Detected from filename: <code className="font-mono">{(show as any).detected_external_id}</code>
+          </p>
+        )}
+        <div className="flex gap-2 items-center">
+          <input
+            type="text"
+            placeholder="TMDB ID (e.g. 1396)"
+            value={externalIdInput}
+            onChange={(e) => setExternalIdInput(e.target.value)}
+            className="flex-1 min-w-0 text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={enriching || !externalIdInput.trim()}
+            onClick={async () => {
+              if (!externalIdInput.trim() || !id) return
+              setEnriching(true)
+              try {
+                await enrichmentService.setTvShowExternalId(Number(id), externalIdInput.trim())
+                window.location.reload()
+              } finally {
+                setEnriching(false)
+              }
+            }}
+          >
+            {enriching ? 'Saving…' : 'Save & Enrich'}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={enriching}
+            onClick={async () => {
+              if (!id) return
+              setEnriching(true)
+              try {
+                await enrichmentService.triggerTvShowEnrich(Number(id))
+                window.location.reload()
+              } finally {
+                setEnriching(false)
+              }
+            }}
+          >
+            {enriching ? '…' : 'Re-Enrich'}
+          </Button>
+        </div>
+      </section>
     </div>
   )
 }

@@ -37,7 +37,7 @@ describe('NeedsAttentionPage', () => {
           id: 1,
           title: 'Inception',
           enrichment_status: 'not_found',
-          enrichment_error: 'No match found in OMDB',
+          enrichment_error: 'No match found in TMDB',
         },
       ],
       tv_shows: [],

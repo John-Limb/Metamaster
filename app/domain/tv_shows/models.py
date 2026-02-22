@@ -13,11 +13,11 @@ class TVShow(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), nullable=False)
-    tvdb_id = Column(String(50), unique=True)
+    tmdb_id = Column(String(50), unique=True)
     plot = Column(Text)
     rating = Column(Float)
     genres = Column(Text)  # JSON array stored as string
-    status = Column(String(50))  # "Continuing" or "Ended"
+    status = Column(String(50))  # "continuing" or "ended"
     poster_url = Column(String(500))  # URL to TV show poster image
     enrichment_status = Column(
         SAEnum('pending_local', 'local_only', 'pending_external', 'fully_enriched', 'external_failed', 'not_found', name='enrichmentstatus'),
@@ -36,7 +36,7 @@ class TVShow(Base):
 
     __table_args__ = (
         Index("idx_tv_shows_title", "title"),
-        Index("idx_tv_shows_tvdb_id", "tvdb_id"),
+        Index("idx_tv_shows_tmdb_id", "tmdb_id"),
     )
 
 
@@ -52,7 +52,7 @@ class Season(Base):
         nullable=False,
     )
     season_number = Column(Integer, nullable=False)
-    tvdb_id = Column(String(50))
+    tmdb_id = Column(String(50))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -77,7 +77,7 @@ class Episode(Base):
         nullable=False,
     )
     episode_number = Column(Integer, nullable=False)
-    tvdb_id = Column(String(50), unique=True)
+    tmdb_id = Column(String(50), unique=True)
     title = Column(String(255))
     plot = Column(Text)
     air_date = Column(String(10))  # YYYY-MM-DD format
@@ -91,7 +91,7 @@ class Episode(Base):
 
     __table_args__ = (
         Index("idx_episodes_season_id", "season_id"),
-        Index("idx_episodes_tvdb_id", "tvdb_id"),
+        Index("idx_episodes_tmdb_id", "tmdb_id"),
     )
 
 

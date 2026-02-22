@@ -1,5 +1,5 @@
-"""TVDB API client re-export module"""
+"""TMDB API client re-export module (TV shows)"""
 
-from app.services_impl import TVDBService
+from app.services_impl import TMDBService
 
-__all__ = ["TVDBService"]
+__all__ = ["TMDBService"]

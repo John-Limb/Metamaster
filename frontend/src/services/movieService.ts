@@ -14,16 +14,39 @@ const buildPaginationQuery = (page?: number, pageSize?: number) => {
   return params.toString()
 }
 
+export type EnrichmentStatusGroup = 'indexed' | 'pending' | 'failed'
+
+export interface EnrichmentStats {
+  total: number
+  indexed: number
+  pending: number
+  failed: number
+}
+
 export const movieService = {
-  // Get all movies
-  getMovies: async (page = 1, pageSize = 20) => {
+  // Get all movies, optionally filtered by enrichment status group
+  getMovies: async (page = 1, pageSize = 20, status?: EnrichmentStatusGroup) => {
     try {
-      const paginationQuery = buildPaginationQuery(page, pageSize)
-      const suffix = paginationQuery ? `?${paginationQuery}` : ''
+      const params = new URLSearchParams()
+      if (page >= 1) params.append('page', String(page))
+      if (pageSize > 0) params.append('pageSize', String(pageSize))
+      if (status) params.append('status', status)
+      const suffix = params.toString() ? `?${params.toString()}` : ''
       const response = await apiClient.get<PaginatedResponse<Movie>>(`/movies${suffix}`)
       return response.data
     } catch (error: any) {
       errorHandler.handleError(error, `getMovies: page=${page}`)
+      throw error
+    }
+  },
+
+  // Get enrichment status counts (indexed / pending / failed)
+  getEnrichmentStats: async (): Promise<EnrichmentStats> => {
+    try {
+      const response = await apiClient.get<EnrichmentStats>('/movies/enrichment-stats')
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, 'getEnrichmentStats')
       throw error
     }
   },
@@ -117,7 +140,7 @@ export const movieService = {
     }
   },
 
-  // Sync metadata from OMDB
+  // Sync metadata from TMDB
   syncMetadata: async (id: string) => {
     try {
       const response = await apiClient.post<Movie>(`/movies/${id}/sync-metadata`)
