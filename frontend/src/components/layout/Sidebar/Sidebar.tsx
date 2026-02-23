@@ -10,6 +10,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaInfoCircle,
+  FaDatabase,
 } from 'react-icons/fa'
 import { useUIStore } from '@/stores/uiStore'
 
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
   { label: 'Search', path: '/search', icon: <FaSearch className="w-5 h-5" /> },
   { label: 'Movies', path: '/movies', icon: <FaFilm className="w-5 h-5" />, badge: 'New' },
   { label: 'TV Shows', path: '/tv-shows', icon: <FaTv className="w-5 h-5" /> },
+  { label: 'Storage', path: '/storage', icon: <FaDatabase className="w-5 h-5" /> },
   { label: 'Settings', path: '/settings', icon: <FaCog className="w-5 h-5" /> },
 ]
 
