@@ -17,6 +17,8 @@ import { queueService } from '@/services/queueService'
 import { fileService } from '@/services/fileService'
 import { configurationService, type ConfigurationState, type ConfigurationItem } from '@/services/configurationService'
 import { type EnrichmentStats } from '@/services/movieService'
+import { storageService, type StorageSummary } from '@/services/storageService'
+import { formatFileSize } from '@/utils/helpers'
 
 const API_STATUS_IDS = ['api-keys-tmdb-token', 'api-keys-tmdb-key']
 
@@ -100,12 +102,6 @@ interface LibraryData {
   lastUpdated: string
 }
 
-interface StorageData {
-  label: string
-  value: number
-  color: string
-}
-
 export function Dashboard({ className = '' }: DashboardProps) {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(true)
@@ -135,8 +131,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
 
   const [enrichmentStats, setEnrichmentStats] = useState<EnrichmentStats | null>(null)
   const [recentActivities, setRecentActivities] = useState<Activity[]>([])
-  const [storageData, setStorageData] = useState<StorageData[]>([])
-  const [hasStorageData, setHasStorageData] = useState(false)
+  const [storageSummary, setStorageSummary] = useState<StorageSummary | null>(null)
   const [configItems, setConfigItems] = useState<ConfigurationItem[]>([])
 
   const loadDashboardData = useCallback(async () => {
@@ -167,6 +162,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
         queueService.getStats(),
         fileService.getFileStats(),
         movieService.getEnrichmentStats(),
+        storageService.getSummary(),
       ])
       const health = results[0].status === 'fulfilled' ? results[0].value : { status: 'unknown', timestamp: new Date().toISOString() }
       const movieResponse = results[1].status === 'fulfilled' ? results[1].value : { total: 0, items: [] }
@@ -174,7 +170,9 @@ export function Dashboard({ className = '' }: DashboardProps) {
       const queueStats = results[3].status === 'fulfilled' ? results[3].value : { pendingTasks: 0, completedTasks: 0, processingTasks: 0 }
       const fileStats = results[4].status === 'fulfilled' ? results[4].value : null
       const enrichStats = results[5].status === 'fulfilled' ? results[5].value as EnrichmentStats : null
+      const storageSummaryResult = results[6]
       setEnrichmentStats(enrichStats)
+      setStorageSummary(storageSummaryResult.status === 'fulfilled' ? storageSummaryResult.value as StorageSummary : null)
 
       const totalMovies = fileStats?.movieCount ?? movieResponse?.total ?? 0
       const totalTVShows = fileStats?.tvShowCount ?? tvResponse?.total ?? 0
@@ -239,10 +237,6 @@ export function Dashboard({ className = '' }: DashboardProps) {
 
       setRecentActivities(activities)
 
-      // Storage data would come from API in production
-      // For now, show empty state until real storage API is available
-      setStorageData([])
-      setHasStorageData(false)
     } catch (err) {
       console.error('Dashboard: Error loading data', err)
       setError('Failed to load dashboard data. Please try again.')
@@ -466,9 +460,6 @@ export function Dashboard({ className = '' }: DashboardProps) {
     )
   }
 
-  // Calculate total storage
-  const totalStorage = storageData.reduce((acc, item) => acc + item.value, 0)
-
   return (
     <div className={`space-y-6 ${className}`} role="main" aria-label="Dashboard">
       {/* Page Header */}
@@ -554,8 +545,39 @@ export function Dashboard({ className = '' }: DashboardProps) {
 
       {/* Storage Chart and Recent Activity - 2 column grid on desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {hasStorageData ? (
-          <StorageChart data={storageData} total={totalStorage} />
+        {storageSummary ? (
+          <div
+            className="cursor-pointer"
+            onClick={() => navigate('/storage')}
+            role="link"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && navigate('/storage')}
+          >
+            <StorageChart
+              data={[
+                { label: 'Movies', value: storageSummary.library.movies_bytes, color: '#6366f1' },
+                { label: 'TV Shows', value: storageSummary.library.tv_bytes, color: '#8b5cf6' },
+              ]}
+              total={storageSummary.library.movies_bytes + storageSummary.library.tv_bytes}
+            />
+            {storageSummary.disk.total_bytes > 0 && (() => {
+              const pct = Math.round(storageSummary.disk.used_bytes / storageSummary.disk.total_bytes * 100)
+              return (
+                <div className="px-6 pb-4 -mt-2">
+                  <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    <span>{formatFileSize(storageSummary.disk.used_bytes)} used</span>
+                    <span>{formatFileSize(storageSummary.disk.total_bytes)} total</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                      style={{ width: `${Math.min(pct, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
         ) : (
           <Card variant="elevated">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
@@ -568,11 +590,8 @@ export function Dashboard({ className = '' }: DashboardProps) {
                 </svg>
               </div>
               <h4 className="text-base font-medium text-slate-900 dark:text-white mb-2">
-                Storage analytics coming soon
+                Storage analytics loading…
               </h4>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Configure your media library to enable storage tracking.
-              </p>
             </div>
           </Card>
         )}

@@ -31,6 +31,7 @@ from app.api.v1.config import router as config_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.queue.endpoints import router as queue_router
 from app.api.v1.enrichment.endpoints import router as enrichment_router
+from app.api.v1.storage.endpoints import router as storage_router
 
 # Configure structured logging with daily rotation
 setup_logging()
@@ -85,6 +86,11 @@ async def lifespan(app: FastAPI):
         )
         for s in pending_shows:
             enrich_tv_show_external(s.id)
+
+        # Enrich any files missing technical metadata (duration, codec, resolution)
+        logger.info("Triggering technical metadata enrichment for new files...")
+        from app.tasks import enrich_file_technical_metadata as _enrich_task
+        _enrich_task.delay()
     finally:
         db.close()
 
@@ -212,6 +218,7 @@ app.include_router(files.router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(queue_router, prefix="/api/v1")
 app.include_router(enrichment_router, prefix="/api/v1")
+app.include_router(storage_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Root"])

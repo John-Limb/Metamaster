@@ -20,6 +20,7 @@ const FilesPage = lazy(() => import('./pages/FilesPage').then(m => ({ default: m
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })))
 const EnrichmentPage = lazy(() => import('./pages/EnrichmentPage').then(m => ({ default: m.EnrichmentPage })))
+const StoragePage = lazy(() => import('./pages/StoragePage').then(m => ({ default: m.StoragePage })))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -146,6 +147,19 @@ function App() {
               <MainLayout>
                 <Suspense fallback={<LoadingFallback />}>
                   <EnrichmentPage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/storage"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <StoragePage />
                 </Suspense>
               </MainLayout>
             </ProtectedRoute>
