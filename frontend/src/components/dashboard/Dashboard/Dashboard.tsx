@@ -18,7 +18,7 @@ import { fileService } from '@/services/fileService'
 import { configurationService, type ConfigurationState, type ConfigurationItem } from '@/services/configurationService'
 import { type EnrichmentStats } from '@/services/movieService'
 
-const API_STATUS_IDS = ['api-keys-omdb', 'api-keys-tvdb']
+const API_STATUS_IDS = ['api-keys-tmdb-token', 'api-keys-tmdb-key']
 
 function ExternalApiStatus({ items }: { items: ConfigurationItem[] }) {
   const apiItems = items.filter(i => API_STATUS_IDS.includes(i.id))
@@ -26,7 +26,8 @@ function ExternalApiStatus({ items }: { items: ConfigurationItem[] }) {
   const hasInvalid = apiItems.some(i => i.status === 'invalid')
 
   const labels: Record<string, string> = {
-    'api-keys-tmdb': 'TMDB',
+    'api-keys-tmdb-token': 'TMDB Access Token',
+    'api-keys-tmdb-key': 'TMDB API Key',
   }
 
   return (
