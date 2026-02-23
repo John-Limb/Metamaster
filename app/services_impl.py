@@ -199,7 +199,11 @@ class TMDBService:
 
     @staticmethod
     async def _make_request_with_retry(
-        url: str, headers: Dict[str, str], max_retries: int = 3, base_delay: float = 1.0
+        url: str,
+        headers: Dict[str, str],
+        params: Optional[Dict[str, Any]] = None,
+        max_retries: int = 3,
+        base_delay: float = 1.0,
     ) -> Optional[Dict[str, Any]]:
         """Make HTTP request with exponential backoff retry logic."""
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -211,7 +215,7 @@ class TMDBService:
                         extra={"api_service": "tmdb", "api_url": url, "attempt": attempt + 1},
                     )
 
-                    response = await client.get(url, headers=headers)
+                    response = await client.get(url, headers=headers, params=params or {})
                     elapsed_ms = (time.time() - start_time) * 1000
 
                     external_api_logger.info(
@@ -287,12 +291,24 @@ class TMDBService:
             return None
 
     @classmethod
-    def _get_headers(cls) -> Optional[Dict[str, str]]:
-        """Return Authorization headers, or None if API key is not configured."""
-        if not settings.tmdb_api_key:
-            logger.error("TMDB_API_KEY not configured")
-            return None
-        return {"Authorization": f"Bearer {settings.tmdb_api_key}", "accept": "application/json"}
+    def _get_auth(cls) -> Optional[tuple]:
+        """Return (headers, query_params) for TMDB authentication.
+
+        Priority: TMDB_READ_ACCESS_TOKEN (Bearer) > TMDB_API_KEY (?api_key=).
+        Returns None if neither is configured.
+        """
+        if settings.tmdb_read_access_token:
+            return (
+                {"Authorization": f"Bearer {settings.tmdb_read_access_token}", "accept": "application/json"},
+                {},
+            )
+        if settings.tmdb_api_key:
+            return (
+                {"accept": "application/json"},
+                {"api_key": settings.tmdb_api_key},
+            )
+        logger.error("No TMDB credentials configured — set TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY")
+        return None
 
     @staticmethod
     def _normalize_tv_status(status: str) -> str:
@@ -320,9 +336,10 @@ class TMDBService:
         cls, db: Session, title: str, year: Optional[int] = None
     ) -> Optional[Dict[str, Any]]:
         """Search TMDB for a movie by title and optional year."""
-        headers = cls._get_headers()
-        if not headers:
+        auth = cls._get_auth()
+        if not auth:
             return None
+        headers, params = auth
 
         cache_params: Dict[str, Any] = {"title": title}
         if year:
@@ -335,13 +352,13 @@ class TMDBService:
 
         await cls._rate_limit()
 
-        params = f"query={title}"
+        query_str = f"query={title}"
         if year:
-            params += f"&year={year}"
-        url = f"{cls.TMDB_BASE_URL}/search/movie?{params}"
+            query_str += f"&year={year}"
+        url = f"{cls.TMDB_BASE_URL}/search/movie?{query_str}"
 
         logger.info(f"Searching TMDB for movie: {title} (year: {year})")
-        result = await cls._make_request_with_retry(url, headers)
+        result = await cls._make_request_with_retry(url, headers, params)
 
         if result:
             cls._set_cache(db, cache_key, result, settings.tmdb_cache_ttl)
@@ -350,9 +367,10 @@ class TMDBService:
     @classmethod
     async def get_movie_details(cls, db: Session, tmdb_id: str) -> Optional[Dict[str, Any]]:
         """Fetch full movie details from TMDB by TMDB ID."""
-        headers = cls._get_headers()
-        if not headers:
+        auth = cls._get_auth()
+        if not auth:
             return None
+        headers, params = auth
 
         cache_key = cls._get_cache_key("movie_details", {"tmdb_id": tmdb_id})
         cached = cls._get_cache(db, cache_key)
@@ -363,7 +381,7 @@ class TMDBService:
 
         url = f"{cls.TMDB_BASE_URL}/movie/{tmdb_id}"
         logger.info(f"Fetching TMDB movie details for ID: {tmdb_id}")
-        result = await cls._make_request_with_retry(url, headers)
+        result = await cls._make_request_with_retry(url, headers, params)
 
         if result:
             cls._set_cache(db, cache_key, result, settings.tmdb_cache_ttl)
@@ -433,9 +451,10 @@ class TMDBService:
     @classmethod
     async def search_show(cls, db: Session, title: str) -> Optional[Dict[str, Any]]:
         """Search TMDB for a TV show by title."""
-        headers = cls._get_headers()
-        if not headers:
+        auth = cls._get_auth()
+        if not auth:
             return None
+        headers, params = auth
 
         cache_key = cls._get_cache_key("tv_search", {"title": title})
         cached = cls._get_cache(db, cache_key)
@@ -446,7 +465,7 @@ class TMDBService:
 
         url = f"{cls.TMDB_BASE_URL}/search/tv?query={title}"
         logger.info(f"Searching TMDB for TV show: {title}")
-        result = await cls._make_request_with_retry(url, headers)
+        result = await cls._make_request_with_retry(url, headers, params)
 
         if result:
             cls._set_cache(db, cache_key, result, settings.tmdb_cache_ttl)
@@ -455,9 +474,10 @@ class TMDBService:
     @classmethod
     async def get_series_details(cls, db: Session, tmdb_id: str) -> Optional[Dict[str, Any]]:
         """Fetch full TV series details from TMDB by TMDB ID."""
-        headers = cls._get_headers()
-        if not headers:
+        auth = cls._get_auth()
+        if not auth:
             return None
+        headers, params = auth
 
         cache_key = cls._get_cache_key("tv_details", {"tmdb_id": tmdb_id})
         cached = cls._get_cache(db, cache_key)
@@ -468,7 +488,7 @@ class TMDBService:
 
         url = f"{cls.TMDB_BASE_URL}/tv/{tmdb_id}"
         logger.info(f"Fetching TMDB series details for ID: {tmdb_id}")
-        result = await cls._make_request_with_retry(url, headers)
+        result = await cls._make_request_with_retry(url, headers, params)
 
         if result:
             cls._set_cache(db, cache_key, result, settings.tmdb_cache_ttl)
@@ -479,9 +499,10 @@ class TMDBService:
         cls, db: Session, tmdb_id: str, season_number: int
     ) -> Optional[Dict[str, Any]]:
         """Fetch season details (including episode list) from TMDB."""
-        headers = cls._get_headers()
-        if not headers:
+        auth = cls._get_auth()
+        if not auth:
             return None
+        headers, params = auth
 
         cache_key = cls._get_cache_key("tv_season", {"tmdb_id": tmdb_id, "season": season_number})
         cached = cls._get_cache(db, cache_key)
@@ -492,7 +513,7 @@ class TMDBService:
 
         url = f"{cls.TMDB_BASE_URL}/tv/{tmdb_id}/season/{season_number}"
         logger.info(f"Fetching TMDB season {season_number} for series ID: {tmdb_id}")
-        result = await cls._make_request_with_retry(url, headers)
+        result = await cls._make_request_with_retry(url, headers, params)
 
         if result:
             cls._set_cache(db, cache_key, result, settings.tmdb_cache_ttl)

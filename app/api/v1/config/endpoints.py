@@ -65,14 +65,37 @@ async def check_configuration():
     """
     items = []
 
-    # Check TMDB API Key (covers both movies and TV shows)
-    tmdb_configured = bool(settings.tmdb_api_key and settings.tmdb_api_key != "your_tmdb_api_key_here")
+    # Check TMDB credentials — Read Access Token (preferred) and v3 API Key (fallback)
+    token_set = bool(settings.tmdb_read_access_token)
+    key_set = bool(settings.tmdb_api_key and settings.tmdb_api_key != "your_tmdb_api_key_here")
+
+    token_desc = "Long JWT for Bearer auth — get from TMDB Settings → API Read Access Token (v4 auth)"
+    if token_set:
+        token_desc += " — active"
+
     items.append(ConfigurationItem(
-        id="api-keys-tmdb",
-        name="TMDB API Key",
-        description="API key for fetching movie and TV show metadata from The Movie Database",
+        id="api-keys-tmdb-token",
+        name="TMDB Access Token",
+        description=token_desc,
         severity="important",
-        status="valid" if tmdb_configured else "invalid",
+        status="valid" if token_set else "invalid",
+        actionLabel="Configure Token",
+        actionPath="/settings?section=api-keys",
+    ))
+
+    if key_set and token_set:
+        key_desc = "v3 API Key — present but not active (Access Token takes priority)"
+    elif key_set:
+        key_desc = "v3 API Key — active (set TMDB_READ_ACCESS_TOKEN to use Bearer auth instead)"
+    else:
+        key_desc = "v3 API Key — not set"
+
+    items.append(ConfigurationItem(
+        id="api-keys-tmdb-key",
+        name="TMDB API Key",
+        description=key_desc,
+        severity="optional" if token_set else "important",
+        status="valid" if key_set else "invalid",
         actionLabel="Configure API Key",
         actionPath="/settings?section=api-keys",
     ))
@@ -118,7 +141,7 @@ async def check_configuration():
     ))
     
     # Metadata Sources
-    metadata_configured = tmdb_configured
+    metadata_configured = token_set or key_set
     items.append(ConfigurationItem(
         id="metadata-sources",
         name="Metadata Sources",
