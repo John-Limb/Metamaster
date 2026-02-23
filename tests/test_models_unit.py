@@ -44,7 +44,7 @@ class TestMovieModel:
         movie = Movie(
             title="The Matrix",
             year=1999,
-            omdb_id="tt0133093",
+            tmdb_id="tt0133093",
             plot="A computer hacker learns about reality",
             rating=8.7,
             runtime=136,
@@ -81,10 +81,10 @@ class TestMovieModel:
 
         assert movie.updated_at >= original_updated
 
-    def test_movie_unique_omdb_id(self, db_session):
-        """Test unique constraint on omdb_id"""
-        movie1 = Movie(title="Movie 1", omdb_id="tt0133093")
-        movie2 = Movie(title="Movie 2", omdb_id="tt0133093")
+    def test_movie_unique_tmdb_id(self, db_session):
+        """Test unique constraint on tmdb_id"""
+        movie1 = Movie(title="Movie 1", tmdb_id="tt0133093")
+        movie2 = Movie(title="Movie 2", tmdb_id="tt0133093")
 
         db_session.add(movie1)
         db_session.commit()
@@ -199,7 +199,7 @@ class TestTVShowModel:
         """Test creating a TV show"""
         show = TVShow(
             title="Breaking Bad",
-            tvdb_id="81189",
+            tmdb_id="81189",
             plot="A chemistry teacher turns to cooking meth",
             rating=9.5,
             genres='["Drama", "Crime"]',
@@ -213,10 +213,10 @@ class TestTVShowModel:
         assert retrieved.rating == 9.5
         assert retrieved.status == "Ended"
 
-    def test_tv_show_unique_tvdb_id(self, db_session):
-        """Test unique constraint on tvdb_id"""
-        show1 = TVShow(title="Show 1", tvdb_id="81189")
-        show2 = TVShow(title="Show 2", tvdb_id="81189")
+    def test_tv_show_unique_tmdb_id(self, db_session):
+        """Test unique constraint on tmdb_id"""
+        show1 = TVShow(title="Show 1", tmdb_id="81189")
+        show2 = TVShow(title="Show 2", tmdb_id="81189")
 
         db_session.add(show1)
         db_session.commit()
@@ -240,7 +240,7 @@ class TestSeasonModel:
         db_session.add(show)
         db_session.commit()
 
-        season = Season(show_id=show.id, season_number=1, tvdb_id="123456")
+        season = Season(show_id=show.id, season_number=1, tmdb_id="123456")
         db_session.add(season)
         db_session.commit()
 
@@ -300,7 +300,7 @@ class TestEpisodeModel:
         episode = Episode(
             season_id=season.id,
             episode_number=1,
-            tvdb_id="123456",
+            tmdb_id="123456",
             title="Pilot",
             plot="The beginning",
             air_date="2008-01-20",
@@ -314,15 +314,15 @@ class TestEpisodeModel:
         assert retrieved.title == "Pilot"
         assert retrieved.rating == 8.5
 
-    def test_episode_unique_tvdb_id(self, db_session):
-        """Test unique constraint on episode tvdb_id"""
+    def test_episode_unique_tmdb_id(self, db_session):
+        """Test unique constraint on episode tmdb_id"""
         show = TVShow(title="Show")
         season = Season(show_id=1, season_number=1)
         db_session.add_all([show, season])
         db_session.commit()
 
-        ep1 = Episode(season_id=season.id, episode_number=1, tvdb_id="123")
-        ep2 = Episode(season_id=season.id, episode_number=2, tvdb_id="123")
+        ep1 = Episode(season_id=season.id, episode_number=1, tmdb_id="123")
+        ep2 = Episode(season_id=season.id, episode_number=2, tmdb_id="123")
 
         db_session.add(ep1)
         db_session.commit()
@@ -419,7 +419,7 @@ class TestAPICacheModel:
     def test_create_api_cache(self, db_session):
         """Test creating API cache entry"""
         cache = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="tt0133093",
             response_data='{"title": "The Matrix"}',
             expires_at=datetime.utcnow() + timedelta(days=30),
@@ -429,7 +429,7 @@ class TestAPICacheModel:
 
         retrieved = db_session.query(APICache).filter_by(query_key="tt0133093").first()
         assert retrieved is not None
-        assert retrieved.api_type == "omdb"
+        assert retrieved.api_type == "tmdb"
 
     def test_api_cache_expiration(self, db_session):
         """Test API cache expiration"""
@@ -437,10 +437,10 @@ class TestAPICacheModel:
         future = datetime.utcnow() + timedelta(days=30)
 
         expired = APICache(
-            api_type="omdb", query_key="expired", response_data="{}", expires_at=past
+            api_type="tmdb", query_key="expired", response_data="{}", expires_at=past
         )
         active = APICache(
-            api_type="omdb", query_key="active", response_data="{}", expires_at=future
+            api_type="tmdb", query_key="active", response_data="{}", expires_at=future
         )
 
         db_session.add_all([expired, active])

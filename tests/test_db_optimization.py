@@ -55,7 +55,7 @@ def sample_movies(test_db):
         Movie(
             title="Test Movie 1",
             year=2020,
-            omdb_id="tt0000001",
+            tmdb_id="tt0000001",
             plot="Test plot 1",
             rating=8.5,
             runtime=120,
@@ -64,7 +64,7 @@ def sample_movies(test_db):
         Movie(
             title="Test Movie 2",
             year=2021,
-            omdb_id="tt0000002",
+            tmdb_id="tt0000002",
             plot="Test plot 2",
             rating=7.5,
             runtime=110,
@@ -73,7 +73,7 @@ def sample_movies(test_db):
         Movie(
             title="Test Movie 3",
             year=2022,
-            omdb_id="tt0000003",
+            tmdb_id="tt0000003",
             plot="Test plot 3",
             rating=9.0,
             runtime=130,
@@ -94,7 +94,7 @@ def sample_tv_shows(test_db):
     shows = [
         TVShow(
             title="Test Show 1",
-            tvdb_id="tt0000001",
+            tmdb_id="tt0000001",
             plot="Test plot 1",
             rating=8.5,
             genres="Drama,Crime",
@@ -102,7 +102,7 @@ def sample_tv_shows(test_db):
         ),
         TVShow(
             title="Test Show 2",
-            tvdb_id="tt0000002",
+            tmdb_id="tt0000002",
             plot="Test plot 2",
             rating=7.5,
             genres="Comedy",

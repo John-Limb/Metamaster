@@ -12,7 +12,7 @@ def make_movie(id=1, title="Inception", year=2010, enrichment_status="local_only
     m.enrichment_status = enrichment_status
     m.detected_external_id = detected_external_id
     m.manual_external_id = manual_external_id
-    m.omdb_id = None
+    m.tmdb_id = None
     m.plot = None
     m.rating = None
     m.runtime = None
@@ -23,9 +23,9 @@ def make_movie(id=1, title="Inception", year=2010, enrichment_status="local_only
 
 
 @patch("app.tasks.enrichment.SessionLocal")
-@patch("app.tasks.enrichment.OMDBService")
+@patch("app.tasks.enrichment.TMDBService")
 @patch("app.tasks.enrichment.run_async")
-def test_enrich_movie_uses_manual_id_first(mock_run_async, MockOMDB, MockSession):
+def test_enrich_movie_uses_manual_id_first(mock_run_async, MockTMDB, MockSession):
     """manual_external_id takes priority — goes straight to get_movie_details, no search."""
     movie = make_movie(manual_external_id="tt9999999")
     db = MagicMock()
@@ -34,9 +34,9 @@ def test_enrich_movie_uses_manual_id_first(mock_run_async, MockOMDB, MockSession
     db.query.return_value.filter.return_value.all.return_value = []
 
     # Return a raw response for get_movie_details
-    mock_run_async.return_value = {"Response": "True", "Title": "Inception", "imdbID": "tt9999999"}
-    MockOMDB.parse_omdb_response.return_value = {
-        "omdb_id": "tt9999999",
+    mock_run_async.return_value = {"id": 27205, "title": "Inception"}
+    MockTMDB.parse_movie_details_response.return_value = {
+        "tmdb_id": "27205",
         "plot": "A dream heist",
         "rating": 8.8,
     }
@@ -45,14 +45,14 @@ def test_enrich_movie_uses_manual_id_first(mock_run_async, MockOMDB, MockSession
     enrich_movie_external(1)
 
     # Should NOT call search_movie
-    MockOMDB.search_movie.assert_not_called()
+    MockTMDB.search_movie.assert_not_called()
     assert movie.enrichment_status == "fully_enriched"
 
 
 @patch("app.tasks.enrichment.SessionLocal")
-@patch("app.tasks.enrichment.OMDBService")
+@patch("app.tasks.enrichment.TMDBService")
 @patch("app.tasks.enrichment.run_async")
-def test_enrich_movie_sets_external_failed_on_network_error(mock_run_async, MockOMDB, MockSession):
+def test_enrich_movie_sets_external_failed_on_network_error(mock_run_async, MockTMDB, MockSession):
     """Network error sets status to external_failed."""
     movie = make_movie()
     db = MagicMock()
@@ -70,9 +70,9 @@ def test_enrich_movie_sets_external_failed_on_network_error(mock_run_async, Mock
 
 
 @patch("app.tasks.enrichment.SessionLocal")
-@patch("app.tasks.enrichment.OMDBService")
+@patch("app.tasks.enrichment.TMDBService")
 @patch("app.tasks.enrichment.run_async")
-def test_enrich_movie_sets_not_found_when_no_results(mock_run_async, MockOMDB, MockSession):
+def test_enrich_movie_sets_not_found_when_no_results(mock_run_async, MockTMDB, MockSession):
     """Empty API response sets status to not_found."""
     movie = make_movie()
     db = MagicMock()

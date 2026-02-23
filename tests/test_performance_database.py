@@ -45,7 +45,7 @@ def sample_movies(test_db):
             title=f"Test Movie {i}",
             year=2020 + (i % 5),
             rating=7.0 + (i % 30) * 0.1,
-            omdb_id=f"tt{1000000 + i}",
+            tmdb_id=f"tt{1000000 + i}",
         )
         test_db.add(movie)
         movies.append(movie)
@@ -61,7 +61,7 @@ def sample_tv_shows(test_db):
         show = TVShow(
             title=f"Test Show {i}",
             rating=8.0 + (i % 20) * 0.1,
-            tvdb_id=f"ts{1000000 + i}",
+            tmdb_id=f"ts{1000000 + i}",
         )
         test_db.add(show)
         test_db.flush()
@@ -159,12 +159,12 @@ class TestIndexEffectiveness:
 
     def test_indexed_column_query_performance(self, test_db, sample_movies):
         """Test query performance on indexed column"""
-        # omdb_id should be indexed
+        # tmdb_id should be indexed
         analyzer = ResponseTimeAnalyzer()
 
         for i in range(50):
             start = time.time()
-            movie = test_db.query(Movie).filter(Movie.omdb_id == f"tt{1000000 + (i % 100)}").first()
+            movie = test_db.query(Movie).filter(Movie.tmdb_id == f"tt{1000000 + (i % 100)}").first()
             end = time.time()
             analyzer.add_response_time(end - start)
 
@@ -240,7 +240,7 @@ class TestConcurrentQueries:
                 title=f"Concurrent Movie {i}",
                 year=2020,
                 rating=7.5,
-                omdb_id=f"tt{2000000 + i}",
+                tmdb_id=f"tt{2000000 + i}",
             )
             test_db.add(movie)
         test_db.commit()
@@ -348,7 +348,7 @@ class TestDatabaseThroughput:
                 title=f"Throughput Movie {i}",
                 year=2020,
                 rating=7.5,
-                omdb_id=f"tt{3000000 + i}",
+                tmdb_id=f"tt{3000000 + i}",
             )
             test_db.add(movie)
         test_db.commit()

@@ -135,7 +135,7 @@ class TestMovieImportWorkflow:
             rating=8.7,
             plot="A computer hacker learns about the true nature of reality",
             genres='["Sci-Fi", "Action"]',
-            omdb_id="tt0133093",
+            tmdb_id="tt0133093",
         )
         db_session.add(movie)
         db_session.commit()
@@ -174,7 +174,7 @@ class TestMovieImportWorkflow:
     def test_movie_import_workflow_with_metadata_enrichment(self, db_session, temp_media_dir):
         """Test movie import with metadata enrichment from external API"""
         # Create movie
-        movie = Movie(title="Inception", year=2010, omdb_id="tt1375666")
+        movie = Movie(title="Inception", year=2010, tmdb_id="tt1375666")
         db_session.add(movie)
         db_session.commit()
         db_session.refresh(movie)
@@ -246,7 +246,7 @@ class TestTVShowImportWorkflow:
             plot="A high school chemistry teacher",
             genres='["Drama", "Crime"]',
             status="Ended",
-            tvdb_id="81189",
+            tmdb_id="81189",
         )
         db_session.add(show)
         db_session.commit()
@@ -445,7 +445,7 @@ class TestBatchMetadataSyncWorkflow:
         # Create movies to sync
         movie_ids = []
         for i in range(5):
-            movie = Movie(title=f"Movie {i}", year=2020, omdb_id=f"tt{1000000 + i}")
+            movie = Movie(title=f"Movie {i}", year=2020, tmdb_id=f"tt{1000000 + i}")
             db_session.add(movie)
             db_session.commit()
             db_session.refresh(movie)

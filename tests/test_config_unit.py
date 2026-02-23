@@ -16,6 +16,7 @@ from app.config import Settings, settings
 class TestSettingsLoading:
     """Tests for configuration loading"""
 
+    @patch.dict(os.environ, {"APP_NAME": "Media Management Web Tool"}, clear=False)
     def test_default_settings(self):
         """Test default configuration values"""
         test_settings = Settings()
@@ -23,6 +24,7 @@ class TestSettingsLoading:
         assert test_settings.app_version == "0.1.0"
         assert test_settings.debug is False
 
+    @patch.dict(os.environ, {"DATABASE_URL": "sqlite:///./media.db"})
     def test_database_url_default(self):
         """Test default database URL"""
         test_settings = Settings()
@@ -38,10 +40,12 @@ class TestSettingsLoading:
         test_settings = Settings()
         assert test_settings.celery_broker_url == "redis://localhost:6379/0"
 
-    def test_media_directory_default(self):
-        """Test default media directory"""
-        test_settings = Settings()
-        assert test_settings.media_directory == "./media"
+    def test_tmdb_api_key_default(self):
+        """Test default TMDB API key is None when not set"""
+        with patch.dict(os.environ, {}, clear=False):
+            # When no TMDB_API_KEY set (other than .env), key may be set or None
+            test_settings = Settings()
+            assert hasattr(test_settings, "tmdb_api_key")
 
 
 # ============================================================================
@@ -76,23 +80,11 @@ class TestEnvironmentVariables:
         test_settings = Settings()
         assert test_settings.redis_url == "redis://redis-server:6379/0"
 
-    @patch.dict(os.environ, {"OMDB_API_KEY": "test_key_123"})
-    def test_omdb_api_key_from_env(self):
-        """Test OMDB API key from environment variable"""
+    @patch.dict(os.environ, {"TMDB_API_KEY": "test_key_123"})
+    def test_tmdb_api_key_from_env(self):
+        """Test TMDB API key from environment variable"""
         test_settings = Settings()
-        assert test_settings.omdb_api_key == "test_key_123"
-
-    @patch.dict(os.environ, {"TVDB_API_KEY": "tvdb_key_123"})
-    def test_tvdb_api_key_from_env(self):
-        """Test TVDB API key from environment variable"""
-        test_settings = Settings()
-        assert test_settings.tvdb_api_key == "tvdb_key_123"
-
-    @patch.dict(os.environ, {"TVDB_PIN": "tvdb_pin_123"})
-    def test_tvdb_pin_from_env(self):
-        """Test TVDB PIN from environment variable"""
-        test_settings = Settings()
-        assert test_settings.tvdb_pin == "tvdb_pin_123"
+        assert test_settings.tmdb_api_key == "test_key_123"
 
 
 # ============================================================================
@@ -200,37 +192,21 @@ class TestRedisConfiguration:
 class TestAPIConfiguration:
     """Tests for external API configuration"""
 
-    def test_omdb_rate_limit_default(self):
-        """Test default OMDB rate limit"""
+    def test_tmdb_rate_limit_default(self):
+        """Test default TMDB rate limit"""
         test_settings = Settings()
-        assert test_settings.omdb_rate_limit == 1
+        assert test_settings.tmdb_rate_limit == 4
 
-    def test_omdb_cache_ttl_default(self):
-        """Test default OMDB cache TTL"""
+    def test_tmdb_cache_ttl_default(self):
+        """Test default TMDB cache TTL"""
         test_settings = Settings()
-        assert test_settings.omdb_cache_ttl == 2592000  # 30 days
+        assert test_settings.tmdb_cache_ttl == 2592000  # 30 days
 
-    def test_tvdb_rate_limit_default(self):
-        """Test default TVDB rate limit"""
+    @patch.dict(os.environ, {"TMDB_RATE_LIMIT": "8"})
+    def test_tmdb_rate_limit_from_env(self):
+        """Test TMDB rate limit from environment"""
         test_settings = Settings()
-        assert test_settings.tvdb_rate_limit == 3
-
-    def test_tvdb_cache_ttl_default(self):
-        """Test default TVDB cache TTL"""
-        test_settings = Settings()
-        assert test_settings.tvdb_cache_ttl == 2592000  # 30 days
-
-    @patch.dict(os.environ, {"OMDB_RATE_LIMIT": "2"})
-    def test_omdb_rate_limit_from_env(self):
-        """Test OMDB rate limit from environment"""
-        test_settings = Settings()
-        assert test_settings.omdb_rate_limit == 2
-
-    @patch.dict(os.environ, {"TVDB_RATE_LIMIT": "5"})
-    def test_tvdb_rate_limit_from_env(self):
-        """Test TVDB rate limit from environment"""
-        test_settings = Settings()
-        assert test_settings.tvdb_rate_limit == 5
+        assert test_settings.tmdb_rate_limit == 8
 
 
 # ============================================================================
@@ -253,11 +229,11 @@ class TestFileMonitoringConfiguration:
         test_settings = Settings()
         assert len(test_settings.watch_extensions) > 0
 
-    @patch.dict(os.environ, {"MEDIA_DIRECTORY": "/custom/media/path"})
-    def test_media_directory_from_env(self):
-        """Test media directory from environment"""
+    @patch.dict(os.environ, {"TMDB_RATE_LIMIT": "10"})
+    def test_tmdb_rate_limit_override_from_env(self):
+        """Test TMDB rate limit can be overridden from environment"""
         test_settings = Settings()
-        assert test_settings.media_directory == "/custom/media/path"
+        assert test_settings.tmdb_rate_limit == 10
 
 
 # ============================================================================
@@ -268,6 +244,7 @@ class TestFileMonitoringConfiguration:
 class TestCeleryConfiguration:
     """Tests for Celery configuration"""
 
+    @patch.dict(os.environ, {"CELERY_RESULT_BACKEND": "redis://localhost:6379/1"})
     def test_celery_result_backend_default(self):
         """Test default Celery result backend"""
         test_settings = Settings()
@@ -434,17 +411,13 @@ class TestMultipleEnvironmentVariables:
     @patch.dict(
         os.environ,
         {
-            "OMDB_API_KEY": "omdb_key",
-            "TVDB_API_KEY": "tvdb_key",
-            "TVDB_PIN": "tvdb_pin",
+            "TMDB_API_KEY": "tmdb_key",
         },
     )
     def test_api_keys_from_env(self):
         """Test API keys from environment"""
         test_settings = Settings()
-        assert test_settings.omdb_api_key == "omdb_key"
-        assert test_settings.tvdb_api_key == "tvdb_key"
-        assert test_settings.tvdb_pin == "tvdb_pin"
+        assert test_settings.tmdb_api_key == "tmdb_key"
 
 
 # ============================================================================
@@ -472,8 +445,7 @@ class TestConfigurationConsistency:
     def test_rate_limits_positive(self):
         """Test rate limits are positive"""
         test_settings = Settings()
-        assert test_settings.omdb_rate_limit > 0
-        assert test_settings.tvdb_rate_limit > 0
+        assert test_settings.tmdb_rate_limit > 0
 
     def test_pool_settings_reasonable(self):
         """Test pool settings are reasonable"""

@@ -9,10 +9,10 @@ def test_create_tv_shows_does_not_call_tvdb():
     db.query.return_value.filter.return_value.all.return_value = []
     db.query.return_value.all.return_value = []
 
-    with patch("app.domain.tv_shows.scanner.TVDBService") as MockTVDB:
+    with patch("app.domain.tv_shows.scanner.TMDBService") as MockTMDB:
         create_tv_shows_from_files(db)
-        MockTVDB.search_show.assert_not_called()
-        MockTVDB.get_show_details.assert_not_called()
+        MockTMDB.search_show.assert_not_called()
+        MockTMDB.get_series_details.assert_not_called()
 
 
 def test_create_tv_shows_sets_local_only_status():

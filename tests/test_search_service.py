@@ -35,7 +35,7 @@ def sample_movies(db: Session):
             rating=9.3,
             genres=json.dumps(["Drama"]),
             plot="Two imprisoned men bond over a number of years...",
-            omdb_id="tt0111161",
+            tmdb_id="tt0111161",
         ),
         Movie(
             title="The Godfather",
@@ -43,7 +43,7 @@ def sample_movies(db: Session):
             rating=9.2,
             genres=json.dumps(["Crime", "Drama"]),
             plot="The aging patriarch of an organized crime dynasty...",
-            omdb_id="tt0068646",
+            tmdb_id="tt0068646",
         ),
         Movie(
             title="The Dark Knight",
@@ -51,7 +51,7 @@ def sample_movies(db: Session):
             rating=9.0,
             genres=json.dumps(["Action", "Crime", "Drama"]),
             plot="When the menace known as the Joker wreaks havoc...",
-            omdb_id="tt0468569",
+            tmdb_id="tt0468569",
         ),
         Movie(
             title="Pulp Fiction",
@@ -59,7 +59,7 @@ def sample_movies(db: Session):
             rating=8.9,
             genres=json.dumps(["Crime", "Drama"]),
             plot="The lives of two mob hitmen, a boxer, a gangster...",
-            omdb_id="tt0110912",
+            tmdb_id="tt0110912",
         ),
         Movie(
             title="Forrest Gump",
@@ -67,7 +67,7 @@ def sample_movies(db: Session):
             rating=8.8,
             genres=json.dumps(["Drama", "Romance"]),
             plot="The presidencies of Kennedy and Johnson unfold...",
-            omdb_id="tt0109830",
+            tmdb_id="tt0109830",
         ),
         Movie(
             title="Inception",
@@ -75,7 +75,7 @@ def sample_movies(db: Session):
             rating=8.8,
             genres=json.dumps(["Action", "Sci-Fi", "Thriller"]),
             plot="A skilled thief who steals corporate secrets...",
-            omdb_id="tt1375666",
+            tmdb_id="tt1375666",
         ),
         Movie(
             title="The Matrix",
@@ -83,7 +83,7 @@ def sample_movies(db: Session):
             rating=8.7,
             genres=json.dumps(["Action", "Sci-Fi"]),
             plot="A computer hacker learns from mysterious rebels...",
-            omdb_id="tt0133093",
+            tmdb_id="tt0133093",
         ),
         Movie(
             title="Interstellar",
@@ -91,7 +91,7 @@ def sample_movies(db: Session):
             rating=8.6,
             genres=json.dumps(["Adventure", "Drama", "Sci-Fi"]),
             plot="A team of explorers travel through a wormhole...",
-            omdb_id="tt0816692",
+            tmdb_id="tt0816692",
         ),
         Movie(
             title="The Avengers",
@@ -99,7 +99,7 @@ def sample_movies(db: Session):
             rating=8.0,
             genres=json.dumps(["Action", "Adventure", "Sci-Fi"]),
             plot="Earth's mightiest heroes must come together...",
-            omdb_id="tt0848228",
+            tmdb_id="tt0848228",
         ),
         Movie(
             title="Avatar",
@@ -107,7 +107,7 @@ def sample_movies(db: Session):
             rating=7.8,
             genres=json.dumps(["Action", "Adventure", "Fantasy"]),
             plot="A paraplegic Marine dispatched to the moon Pandora...",
-            omdb_id="tt0499549",
+            tmdb_id="tt0499549",
         ),
     ]
 
@@ -127,7 +127,7 @@ def sample_tv_shows(db: Session):
             rating=9.5,
             genres=json.dumps(["Crime", "Drama", "Thriller"]),
             plot="A high school chemistry teacher...",
-            tvdb_id="81189",
+            tmdb_id="81189",
             status="Ended",
         ),
         TVShow(
@@ -135,7 +135,7 @@ def sample_tv_shows(db: Session):
             rating=9.2,
             genres=json.dumps(["Action", "Adventure", "Drama"]),
             plot="Nine noble families fight for control...",
-            tvdb_id="121361",
+            tmdb_id="121361",
             status="Ended",
         ),
         TVShow(
@@ -143,7 +143,7 @@ def sample_tv_shows(db: Session):
             rating=9.0,
             genres=json.dumps(["Comedy"]),
             plot="A mockumentary on a group of typical office workers...",
-            tvdb_id="6091",
+            tmdb_id="6091",
             status="Ended",
         ),
         TVShow(
@@ -151,7 +151,7 @@ def sample_tv_shows(db: Session):
             rating=8.7,
             genres=json.dumps(["Drama", "Fantasy", "Horror"]),
             plot="When a young boy disappears, his friends...",
-            tvdb_id="121688",
+            tmdb_id="121688",
             status="Continuing",
         ),
         TVShow(
@@ -159,7 +159,7 @@ def sample_tv_shows(db: Session):
             rating=8.6,
             genres=json.dumps(["Biography", "Drama", "History"]),
             plot="Follows the political rivalries and romance...",
-            tvdb_id="270680",
+            tmdb_id="270680",
             status="Ended",
         ),
         TVShow(
@@ -167,7 +167,7 @@ def sample_tv_shows(db: Session):
             rating=8.9,
             genres=json.dumps(["Comedy", "Romance"]),
             plot="Follows the personal and professional lives...",
-            tvdb_id="1668",
+            tmdb_id="1668",
             status="Ended",
         ),
         TVShow(
@@ -175,7 +175,7 @@ def sample_tv_shows(db: Session):
             rating=8.7,
             genres=json.dumps(["Action", "Adventure", "Sci-Fi"]),
             plot="After the fall of the Empire, a lone gunfighter...",
-            tvdb_id="349232",
+            tmdb_id="349232",
             status="Continuing",
         ),
         TVShow(
@@ -183,7 +183,7 @@ def sample_tv_shows(db: Session):
             rating=9.1,
             genres=json.dumps(["Crime", "Drama", "Mystery"]),
             plot="A modern update finds the famous sleuth...",
-            tvdb_id="121362",
+            tmdb_id="121362",
             status="Ended",
         ),
     ]

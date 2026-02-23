@@ -97,7 +97,7 @@ def sample_movies(test_db):
             rating=9.3,
             genres=json.dumps(["Drama"]),
             plot="Two imprisoned men bond over a number of years...",
-            omdb_id="tt0111161",
+            tmdb_id="tt0111161",
             runtime=142,
         ),
         Movie(
@@ -106,7 +106,7 @@ def sample_movies(test_db):
             rating=9.2,
             genres=json.dumps(["Crime", "Drama"]),
             plot="The aging patriarch of an organized crime dynasty...",
-            omdb_id="tt0068646",
+            tmdb_id="tt0068646",
             runtime=175,
         ),
         Movie(
@@ -115,7 +115,7 @@ def sample_movies(test_db):
             rating=9.0,
             genres=json.dumps(["Action", "Crime", "Drama"]),
             plot="When the menace known as the Joker wreaks havoc...",
-            omdb_id="tt0468569",
+            tmdb_id="tt0468569",
             runtime=152,
         ),
         Movie(
@@ -124,7 +124,7 @@ def sample_movies(test_db):
             rating=8.8,
             genres=json.dumps(["Action", "Sci-Fi", "Thriller"]),
             plot="A skilled thief who steals corporate secrets...",
-            omdb_id="tt1375666",
+            tmdb_id="tt1375666",
             runtime=148,
         ),
         Movie(
@@ -133,7 +133,7 @@ def sample_movies(test_db):
             rating=8.7,
             genres=json.dumps(["Action", "Sci-Fi"]),
             plot="A computer hacker learns from mysterious rebels...",
-            omdb_id="tt0133093",
+            tmdb_id="tt0133093",
             runtime=136,
         ),
     ]
@@ -148,7 +148,7 @@ def sample_tv_shows(test_db):
     shows = [
         TVShow(
             title="Breaking Bad",
-            tvdb_id="tvdb81189",
+            tmdb_id="tvdb81189",
             rating=9.5,
             genres=json.dumps(["Crime", "Drama", "Thriller"]),
             plot="A high school chemistry teacher...",
@@ -156,7 +156,7 @@ def sample_tv_shows(test_db):
         ),
         TVShow(
             title="Game of Thrones",
-            tvdb_id="tvdb121361",
+            tmdb_id="tvdb121361",
             rating=9.2,
             genres=json.dumps(["Action", "Adventure", "Drama"]),
             plot="Nine noble families fight for control...",
@@ -164,7 +164,7 @@ def sample_tv_shows(test_db):
         ),
         TVShow(
             title="The Office",
-            tvdb_id="tvdb6091",
+            tmdb_id="tvdb6091",
             rating=9.0,
             genres=json.dumps(["Comedy"]),
             plot="A mockumentary on a group of typical office workers...",

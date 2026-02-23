@@ -63,8 +63,8 @@ def test_create_movies_sets_local_only_status(mock_ffprobe):
         )
 
 
-def test_create_movies_does_not_call_omdb():
-    """Stage 1 must never invoke OMDBService methods during create_movies_from_files."""
+def test_create_movies_does_not_call_tmdb():
+    """Stage 1 must never invoke TMDBService methods during create_movies_from_files."""
     fi = _make_fi()
     db = _make_db(fi)
 
@@ -74,15 +74,15 @@ def test_create_movies_does_not_call_omdb():
 
         import app.domain.movies.scanner as scanner_module
 
-        # Patch OMDBService if it exists so we can assert it was never called
-        if hasattr(scanner_module, "OMDBService"):
-            with patch.object(scanner_module.OMDBService, "search_movie") as mock_search, \
-                 patch.object(scanner_module.OMDBService, "get_movie_details") as mock_details:
+        # Patch TMDBService if it exists so we can assert it was never called
+        if hasattr(scanner_module, "TMDBService"):
+            with patch.object(scanner_module.TMDBService, "search_movie") as mock_search, \
+                 patch.object(scanner_module.TMDBService, "get_movie_details") as mock_details:
                 create_movies_from_files(db)
                 mock_search.assert_not_called()
                 mock_details.assert_not_called()
         else:
-            # OMDBService not imported at all — trivially passes
+            # TMDBService not imported at module level — trivially passes
             create_movies_from_files(db)
 
 

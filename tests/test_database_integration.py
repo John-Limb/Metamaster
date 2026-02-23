@@ -67,7 +67,7 @@ class TestMovieCRUD:
             runtime=142,
             plot="Two imprisoned men bond over a number of years",
             genres='["Drama"]',
-            omdb_id="tt0111161",
+            tmdb_id="tt0111161",
         )
         db_session.add(movie)
         db_session.commit()
@@ -117,10 +117,10 @@ class TestMovieCRUD:
         deleted = db_session.query(Movie).filter(Movie.id == movie_id).first()
         assert deleted is None
 
-    def test_movie_unique_omdb_id(self, db_session):
-        """Test unique constraint on omdb_id"""
-        movie1 = Movie(title="Movie 1", omdb_id="tt0111161")
-        movie2 = Movie(title="Movie 2", omdb_id="tt0111161")
+    def test_movie_unique_tmdb_id(self, db_session):
+        """Test unique constraint on tmdb_id"""
+        movie1 = Movie(title="Movie 1", tmdb_id="tt0111161")
+        movie2 = Movie(title="Movie 2", tmdb_id="tt0111161")
 
         db_session.add(movie1)
         db_session.commit()
@@ -146,7 +146,7 @@ class TestTVShowCRUD:
             plot="A high school chemistry teacher",
             genres='["Drama", "Crime"]',
             status="Ended",
-            tvdb_id="81189",
+            tmdb_id="81189",
         )
         db_session.add(show)
         db_session.commit()
@@ -455,15 +455,15 @@ class TestQueryOptimization:
         assert result is not None
         assert result.title == "Movie 50"
 
-    def test_query_by_omdb_id(self, db_session):
-        """Test querying by omdb_id (indexed)"""
-        movie = Movie(title="Test", omdb_id="tt0111161")
+    def test_query_by_tmdb_id(self, db_session):
+        """Test querying by tmdb_id (indexed)"""
+        movie = Movie(title="Test", tmdb_id="tt0111161")
         db_session.add(movie)
         db_session.commit()
 
-        result = db_session.query(Movie).filter(Movie.omdb_id == "tt0111161").first()
+        result = db_session.query(Movie).filter(Movie.tmdb_id == "tt0111161").first()
         assert result is not None
-        assert result.omdb_id == "tt0111161"
+        assert result.tmdb_id == "tt0111161"
 
     def test_query_by_year(self, db_session):
         """Test querying by year (indexed)"""
@@ -504,22 +504,22 @@ class TestIndexEffectiveness:
         result = db_session.query(Movie).filter(Movie.title == "Movie 25").first()
         assert result is not None
 
-    def test_movie_omdb_id_index(self, db_session):
-        """Test movie omdb_id index"""
-        movie = Movie(title="Test", omdb_id="tt0111161")
+    def test_movie_tmdb_id_index(self, db_session):
+        """Test movie tmdb_id index"""
+        movie = Movie(title="Test", tmdb_id="tt0111161")
         db_session.add(movie)
         db_session.commit()
 
-        result = db_session.query(Movie).filter(Movie.omdb_id == "tt0111161").first()
+        result = db_session.query(Movie).filter(Movie.tmdb_id == "tt0111161").first()
         assert result is not None
 
-    def test_tv_show_tvdb_id_index(self, db_session):
-        """Test TV show tvdb_id index"""
-        show = TVShow(title="Test", tvdb_id="81189")
+    def test_tv_show_tmdb_id_index(self, db_session):
+        """Test TV show tmdb_id index"""
+        show = TVShow(title="Test", tmdb_id="81189")
         db_session.add(show)
         db_session.commit()
 
-        result = db_session.query(TVShow).filter(TVShow.tvdb_id == "81189").first()
+        result = db_session.query(TVShow).filter(TVShow.tmdb_id == "81189").first()
         assert result is not None
 
     def test_file_queue_status_index(self, db_session):
@@ -547,7 +547,7 @@ class TestAPICache:
     def test_create_cache_entry(self, db_session):
         """Test creating a cache entry"""
         cache = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="tt0111161",
             response_data='{"title": "The Shawshank Redemption"}',
             expires_at=datetime.utcnow() + timedelta(days=30),
@@ -557,12 +557,12 @@ class TestAPICache:
         db_session.refresh(cache)
 
         assert cache.id is not None
-        assert cache.api_type == "omdb"
+        assert cache.api_type == "tmdb"
 
     def test_query_cache_by_type_and_key(self, db_session):
         """Test querying cache by type and key"""
         cache = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="tt0111161",
             response_data='{"title": "The Shawshank Redemption"}',
         )
@@ -571,7 +571,7 @@ class TestAPICache:
 
         result = (
             db_session.query(APICache)
-            .filter(APICache.api_type == "omdb", APICache.query_key == "tt0111161")
+            .filter(APICache.api_type == "tmdb", APICache.query_key == "tt0111161")
             .first()
         )
         assert result is not None
@@ -579,13 +579,13 @@ class TestAPICache:
     def test_delete_expired_cache(self, db_session):
         """Test deleting expired cache entries"""
         expired = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="expired",
             response_data="{}",
             expires_at=datetime.utcnow() - timedelta(hours=1),
         )
         active = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="active",
             response_data="{}",
             expires_at=datetime.utcnow() + timedelta(days=1),

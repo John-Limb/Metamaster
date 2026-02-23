@@ -254,7 +254,7 @@ class TestBackgroundTasks:
 
         # Create expired cache entries
         expired_entry = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="test_key",
             response_data='{"test": "data"}',
             expires_at=datetime.utcnow() - timedelta(hours=1),
@@ -262,7 +262,7 @@ class TestBackgroundTasks:
 
         # Create non-expired entry
         active_entry = APICache(
-            api_type="tvdb",
+            api_type="tmdb",
             query_key="test_key_2",
             response_data='{"test": "data"}',
             expires_at=datetime.utcnow() + timedelta(hours=1),

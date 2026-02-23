@@ -78,7 +78,7 @@ class TestDatabasePersistence:
     def test_movie_persistence_across_sessions(self, db_session):
         """Test movie data persists across database sessions"""
         # Create movie in first session
-        movie = Movie(title="The Shawshank Redemption", year=1994, rating=9.3, omdb_id="tt0111161")
+        movie = Movie(title="The Shawshank Redemption", year=1994, rating=9.3, tmdb_id="tt0111161")
         db_session.add(movie)
         db_session.commit()
         movie_id = movie.id
@@ -92,7 +92,7 @@ class TestDatabasePersistence:
     def test_tv_show_persistence_across_sessions(self, db_session):
         """Test TV show data persists across database sessions"""
         # Create TV show
-        show = TVShow(title="Breaking Bad", rating=9.5, status="Ended", tvdb_id="81189")
+        show = TVShow(title="Breaking Bad", rating=9.5, status="Ended", tmdb_id="81189")
         db_session.add(show)
         db_session.commit()
         show_id = show.id
@@ -200,7 +200,7 @@ class TestCachePersistence:
         """Test API cache entries persist"""
         # Create cache entry
         cache_entry = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="tt0111161",
             response_data=json.dumps(
                 {"title": "The Shawshank Redemption", "year": 1994, "rating": 9.3}
@@ -214,7 +214,7 @@ class TestCachePersistence:
         # Retrieve
         retrieved = db_session.query(APICache).filter(APICache.id == cache_id).first()
         assert retrieved is not None
-        assert retrieved.api_type == "omdb"
+        assert retrieved.api_type == "tmdb"
         assert retrieved.query_key == "tt0111161"
 
         # Verify data integrity
@@ -228,14 +228,14 @@ class TestCachePersistence:
         now = datetime.utcnow()
 
         cache1 = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="key1",
             response_data="{}",
             expires_at=now + timedelta(hours=1),
         )
 
         cache2 = APICache(
-            api_type="tvdb",
+            api_type="tmdb",
             query_key="key2",
             response_data="{}",
             expires_at=now + timedelta(hours=24),
@@ -257,14 +257,14 @@ class TestCachePersistence:
         now = datetime.utcnow()
 
         expired = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="expired",
             response_data="{}",
             expires_at=now - timedelta(hours=1),
         )
 
         valid = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="valid",
             response_data="{}",
             expires_at=now + timedelta(hours=1),
@@ -562,13 +562,13 @@ class TestDataIntegrityVerification:
 
     def test_unique_constraint_enforcement(self, db_session):
         """Test unique constraints are enforced"""
-        # Create movie with unique omdb_id
-        movie1 = Movie(title="Movie 1", omdb_id="tt0111161")
+        # Create movie with unique tmdb_id
+        movie1 = Movie(title="Movie 1", tmdb_id="tt0111161")
         db_session.add(movie1)
         db_session.commit()
 
         # Attempt to create duplicate
-        movie2 = Movie(title="Movie 2", omdb_id="tt0111161")
+        movie2 = Movie(title="Movie 2", tmdb_id="tt0111161")
         db_session.add(movie2)
 
         with pytest.raises(Exception):  # IntegrityError

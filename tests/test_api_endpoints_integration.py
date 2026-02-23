@@ -77,7 +77,7 @@ class TestMovieEndpoints:
             "runtime": 142,
             "plot": "Two imprisoned men bond over a number of years",
             "genres": '["Drama"]',
-            "omdb_id": "tt0111161",
+            "tmdb_id": "tt0111161",
         }
         response = client.post("/movies", json=movie_data)
         assert response.status_code == 201
@@ -89,7 +89,7 @@ class TestMovieEndpoints:
     def test_get_movie(self, client, test_db):
         """Test retrieving a movie by ID"""
         # Create a movie first
-        movie = Movie(title="Inception", year=2010, rating=8.8, runtime=148, omdb_id="tt1375666")
+        movie = Movie(title="Inception", year=2010, rating=8.8, runtime=148, tmdb_id="tt1375666")
         test_db.add(movie)
         test_db.commit()
         test_db.refresh(movie)
@@ -191,7 +191,7 @@ class TestTVShowEndpoints:
             "plot": "A high school chemistry teacher",
             "genres": '["Drama", "Crime"]',
             "status": "Ended",
-            "tvdb_id": "81189",
+            "tmdb_id": "81189",
         }
         response = client.post("/tv-shows", json=show_data)
         assert response.status_code == 201
@@ -201,7 +201,7 @@ class TestTVShowEndpoints:
 
     def test_get_tv_show(self, client, test_db):
         """Test retrieving a TV show by ID"""
-        show = TVShow(title="Game of Thrones", rating=9.2, tvdb_id="121361")
+        show = TVShow(title="Game of Thrones", rating=9.2, tmdb_id="121361")
         test_db.add(show)
         test_db.commit()
         test_db.refresh(show)
@@ -309,7 +309,7 @@ class TestCacheEndpoints:
         """Test deleting expired cache entries"""
         # Add expired cache entry
         expired_cache = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="test_key",
             response_data='{"test": "data"}',
             expires_at=datetime.utcnow() - timedelta(hours=1),
@@ -334,7 +334,7 @@ class TestCacheEndpoints:
         # Add cache entries
         for i in range(3):
             cache = APICache(
-                api_type="omdb", query_key=f"key_{i}", response_data='{"test": "data"}'
+                api_type="tmdb", query_key=f"key_{i}", response_data='{"test": "data"}'
             )
             test_db.add(cache)
         test_db.commit()

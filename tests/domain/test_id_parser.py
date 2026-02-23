@@ -12,8 +12,8 @@ from app.domain.movies.scanner import extract_external_id_from_path
     ("/movies/Dune (tt1160419)/dune.mkv", "tt1160419"),
     # Bare ID in folder name
     ("/movies/The Matrix (1999) tt0133093/matrix.mkv", "tt0133093"),
-    # TVDB style in folder
-    ("/tv/Breaking Bad {tvdb-81189}/S01E01.mkv", "81189"),
+    # TMDB style in folder (Plex/Jellyfin brace convention)
+    ("/tv/Breaking Bad {tmdb-1396}/S01E01.mkv", "1396"),
     # No ID present — returns None
     ("/movies/Some Random Movie (2020)/movie.mkv", None),
 ])

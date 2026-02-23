@@ -251,7 +251,7 @@ class TestRedisCacheService:
         mock_movie.rating = 8.5
         mock_movie.runtime = 120
         mock_movie.genres = '["Action", "Drama"]'
-        mock_movie.omdb_id = "tt1234567"
+        mock_movie.tmdb_id = "tt1234567"
 
         mock_show = Mock(spec=TVShow)
         mock_show.id = 1
@@ -260,7 +260,7 @@ class TestRedisCacheService:
         mock_show.rating = 8.0
         mock_show.status = "Ongoing"
         mock_show.genres = '["Drama"]'
-        mock_show.tvdb_id = "123456"
+        mock_show.tmdb_id = "123456"
 
         cache_service.redis_client.setex.return_value = True
 

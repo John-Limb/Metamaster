@@ -198,8 +198,7 @@ class TestConfigCheckEndpoint:
     @patch("app.api.v1.config.endpoints.settings")
     def test_config_complete_without_api_keys(self, mock_settings, mock_path, client):
         """Config is complete when paths + db configured, even without API keys"""
-        mock_settings.omdb_api_key = "your_omdb_api_key_here"  # placeholder
-        mock_settings.tvdb_api_key = "your_tvdb_api_key_here"  # placeholder
+        mock_settings.tmdb_api_key = "your_tmdb_api_key_here"  # placeholder
         mock_settings.database_url = "postgresql://localhost/metamaster"
         response = client.get("/api/v1/config/check")
         assert response.status_code == 200
@@ -209,13 +208,10 @@ class TestConfigCheckEndpoint:
     @patch("app.api.v1.config.endpoints.check_path_exists", return_value=True)
     @patch("app.api.v1.config.endpoints.settings")
     def test_api_keys_severity_is_important(self, mock_settings, mock_path, client):
-        """OMDB and TVDB API keys should have severity 'important', not 'critical'"""
-        mock_settings.omdb_api_key = ""
-        mock_settings.tvdb_api_key = ""
+        """TMDB API key should have severity 'important', not 'critical'"""
+        mock_settings.tmdb_api_key = ""
         mock_settings.database_url = "postgresql://localhost/metamaster"
         response = client.get("/api/v1/config/check")
         data = response.json()
-        omdb_item = next(i for i in data["items"] if i["id"] == "api-keys-omdb")
-        tvdb_item = next(i for i in data["items"] if i["id"] == "api-keys-tvdb")
-        assert omdb_item["severity"] == "important"
-        assert tvdb_item["severity"] == "important"
+        tmdb_item = next(i for i in data["items"] if i["id"] == "api-keys-tmdb")
+        assert tmdb_item["severity"] == "important"

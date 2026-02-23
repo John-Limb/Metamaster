@@ -34,7 +34,7 @@ def batch_service(db):
 @pytest.fixture
 def sample_movies(db):
     """Create sample movie records for testing"""
-    movies = [Movie(title=f"Movie {i}", omdb_id=f"tt{i:07d}") for i in range(1, 6)]
+    movies = [Movie(title=f"Movie {i}", tmdb_id=f"tt{i:07d}") for i in range(1, 6)]
     db.add_all(movies)
     db.commit()
     return movies
@@ -43,7 +43,7 @@ def sample_movies(db):
 @pytest.fixture
 def sample_tv_shows(db):
     """Create sample TV show records for testing"""
-    shows = [TVShow(title=f"Show {i}", tvdb_id=f"tvdb{i}") for i in range(1, 6)]
+    shows = [TVShow(title=f"Show {i}", tmdb_id=f"tvdb{i}") for i in range(1, 6)]
     db.add_all(shows)
     db.commit()
     return shows
@@ -70,7 +70,7 @@ class TestBatchOperationCreation:
 
     def test_create_batch_operation_with_metadata(self, batch_service):
         """Test creating batch operation with metadata"""
-        metadata = {"media_type": "tv_show", "source": "tvdb"}
+        metadata = {"media_type": "tv_show", "source": "tmdb"}
         batch_op = batch_service.create_batch_operation(
             operation_type="file_import", total_items=50, metadata=metadata
         )
@@ -302,7 +302,7 @@ class TestBulkMetadataSync:
 
         media_ids = [m.id for m in sample_movies]
 
-        with patch("app.services.batch_operations.OMDBService.get_movie_details") as mock_omdb:
+        with patch("app.application.batch_operations.service.TMDBService.get_movie_details") as mock_omdb:
             mock_omdb.return_value = {
                 "Title": "Test Movie",
                 "imdbRating": "8.5",
@@ -326,7 +326,7 @@ class TestBulkMetadataSync:
 
         media_ids = [s.id for s in sample_tv_shows]
 
-        with patch("app.services.batch_operations.TVDBService.get_series_details") as mock_tvdb:
+        with patch("app.application.batch_operations.service.TMDBService.get_series_details") as mock_tvdb:
             mock_tvdb.return_value = {
                 "seriesName": "Test Show",
                 "siteRating": "8.0",
@@ -348,7 +348,7 @@ class TestBulkMetadataSync:
 
         media_ids = [m.id for m in sample_movies]
 
-        with patch("app.services.batch_operations.OMDBService.get_movie_details") as mock_omdb:
+        with patch("app.application.batch_operations.service.TMDBService.get_movie_details") as mock_omdb:
             # Simulate some failures
             mock_omdb.side_effect = [
                 {"Title": "Movie 1", "imdbRating": "8.0"},
@@ -419,7 +419,7 @@ class TestBatchMetadata:
 
     def test_get_batch_metadata(self, batch_service):
         """Test retrieving batch metadata"""
-        metadata = {"media_type": "movie", "source": "omdb"}
+        metadata = {"media_type": "movie", "source": "tmdb"}
         batch_op = batch_service.create_batch_operation(
             operation_type="metadata_sync", total_items=100, metadata=metadata
         )

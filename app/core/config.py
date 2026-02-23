@@ -122,6 +122,7 @@ class Settings(BaseSettings):
         "app:8000",
         "frontend",
         "MetaMaster_frontend",
+        "testserver",
     ]
 
     class Config:

@@ -50,7 +50,7 @@ class TestMovieCreateSchema:
             rating=8.7,
             runtime=136,
             genres='["Sci-Fi", "Action"]',
-            omdb_id="tt0133093",
+            tmdb_id="tt0133093",
         )
         assert movie.title == "The Matrix"
         assert movie.year == 1999
@@ -139,7 +139,7 @@ class TestMovieResponseSchema:
             plot = "Test plot"
             runtime = 120
             genres = '["Drama"]'
-            omdb_id = "tt123"
+            tmdb_id = "tt123"
             created_at = datetime.utcnow()
             updated_at = datetime.utcnow()
 
@@ -164,7 +164,7 @@ class TestTVShowCreateSchema:
             rating=9.5,
             genres='["Drama", "Crime"]',
             status="Ended",
-            tvdb_id="81189",
+            tmdb_id="81189",
         )
         assert show.title == "Breaking Bad"
         assert show.rating == 9.5
@@ -232,7 +232,7 @@ class TestSeasonResponseSchema:
         """Test valid season response"""
         now = datetime.utcnow()
         response = SeasonResponse(
-            id=1, season_number=1, tvdb_id="123456", episode_count=10, created_at=now
+            id=1, season_number=1, tmdb_id="123456", episode_count=10, created_at=now
         )
         assert response.id == 1
         assert response.season_number == 1
@@ -251,7 +251,7 @@ class TestEpisodeResponseSchema:
             plot="The beginning",
             air_date="2008-01-20",
             rating=8.5,
-            tvdb_id="123456",
+            tmdb_id="123456",
             created_at=now,
             updated_at=now,
         )
@@ -320,7 +320,7 @@ class TestCacheStatsResponseSchema:
             expired_entries=30,
             total_size_bytes=5242880,
             total_size_mb=5.0,
-            by_api_type={"omdb": 80, "tvdb": 70},
+            by_api_type={"tmdb": 80},
             timestamp="2026-02-07T12:00:00Z",
         )
         assert response.total_entries == 150

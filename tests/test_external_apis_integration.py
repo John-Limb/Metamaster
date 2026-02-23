@@ -41,7 +41,7 @@ def db_session():
 class TestOMDBAPIIntegration:
     """Tests for OMDB API integration (mocked)"""
 
-    @patch("app.services.OMDBService.get_movie_details")
+    @patch("app.services_impl.TMDBService.get_movie_details")
     async def test_get_movie_details_success(self, mock_get_details, db_session):
         """Test successful OMDB API call"""
         mock_response = {
@@ -59,7 +59,7 @@ class TestOMDBAPIIntegration:
         assert result["Title"] == "The Shawshank Redemption"
         assert result["imdbRating"] == "9.3"
 
-    @patch("app.services.OMDBService.get_movie_details")
+    @patch("app.services_impl.TMDBService.get_movie_details")
     async def test_get_movie_details_not_found(self, mock_get_details, db_session):
         """Test OMDB API call for non-existent movie"""
         mock_get_details.return_value = None
@@ -67,7 +67,7 @@ class TestOMDBAPIIntegration:
         result = await mock_get_details(db_session, "tt9999999")
         assert result is None
 
-    @patch("app.services.OMDBService.get_movie_details")
+    @patch("app.services_impl.TMDBService.get_movie_details")
     async def test_get_movie_details_api_error(self, mock_get_details, db_session):
         """Test OMDB API error handling"""
         mock_get_details.side_effect = Exception("API Error")
@@ -75,17 +75,17 @@ class TestOMDBAPIIntegration:
         with pytest.raises(Exception):
             await mock_get_details(db_session, "tt0111161")
 
-    @patch("app.services.OMDBService.parse_omdb_response")
-    def test_parse_omdb_response(self, mock_parse):
-        """Test parsing OMDB response"""
-        omdb_data = {
-            "Title": "Inception",
-            "Year": "2010",
-            "imdbRating": "8.8",
-            "Runtime": "148 min",
-            "Plot": "A skilled thief",
-            "Genre": "Action, Sci-Fi",
-            "imdbID": "tt1375666",
+    @patch("app.services_impl.TMDBService.parse_movie_details_response")
+    def test_parse_movie_details_response(self, mock_parse):
+        """Test parsing TMDB movie details response"""
+        tmdb_data = {
+            "id": 27205,
+            "title": "Inception",
+            "release_date": "2010-07-16",
+            "vote_average": 8.8,
+            "runtime": 148,
+            "overview": "A skilled thief",
+            "genres": [{"id": 28, "name": "Action"}, {"id": 878, "name": "Sci-Fi"}],
         }
 
         mock_parse.return_value = {
@@ -95,7 +95,7 @@ class TestOMDBAPIIntegration:
             "runtime": 148,
             "plot": "A skilled thief",
             "genres": '["Action", "Sci-Fi"]',
-            "omdb_id": "tt1375666",
+            "tmdb_id": "27205",
         }
 
         result = mock_parse(omdb_data)
@@ -103,7 +103,7 @@ class TestOMDBAPIIntegration:
         assert result["year"] == 2010
         assert result["rating"] == 8.8
 
-    @patch("app.services.OMDBService.get_movie_details")
+    @patch("app.services_impl.TMDBService.get_movie_details")
     async def test_omdb_rate_limiting(self, mock_get_details, db_session):
         """Test OMDB API rate limiting"""
         mock_get_details.return_value = {"Title": "Test"}
@@ -116,14 +116,14 @@ class TestOMDBAPIIntegration:
         # Verify calls were made
         assert mock_get_details.call_count == 5
 
-    @patch("app.services.OMDBService.get_movie_details")
+    @patch("app.services_impl.TMDBService.get_movie_details")
     async def test_omdb_cache_hit(self, mock_get_details, db_session):
         """Test OMDB API cache hit"""
         # Add cached entry
         cache = APICache(
-            api_type="omdb",
-            query_key="tt0111161",
-            response_data='{"Title": "The Shawshank Redemption"}',
+            api_type="tmdb",
+            query_key="movie_details_tmdb_id=278",
+            response_data='{"id": 278, "title": "The Shawshank Redemption"}',
             expires_at=datetime.utcnow() + timedelta(days=30),
         )
         db_session.add(cache)
@@ -132,7 +132,7 @@ class TestOMDBAPIIntegration:
         # Query cache
         cached = (
             db_session.query(APICache)
-            .filter(APICache.api_type == "omdb", APICache.query_key == "tt0111161")
+            .filter(APICache.api_type == "tmdb", APICache.query_key == "movie_details_tmdb_id=278")
             .first()
         )
 
@@ -148,7 +148,7 @@ class TestOMDBAPIIntegration:
 class TestTVDBAPIIntegration:
     """Tests for TVDB API integration (mocked)"""
 
-    @patch("app.services.TVDBService.get_series_details")
+    @patch("app.services_impl.TMDBService.get_series_details")
     async def test_get_series_details_success(self, mock_get_details, db_session):
         """Test successful TVDB API call"""
         mock_response = {
@@ -166,7 +166,7 @@ class TestTVDBAPIIntegration:
         assert result["data"]["name"] == "Breaking Bad"
         assert result["data"]["status"] == "Ended"
 
-    @patch("app.services.TVDBService.get_series_details")
+    @patch("app.services_impl.TMDBService.get_series_details")
     async def test_get_series_details_not_found(self, mock_get_details, db_session):
         """Test TVDB API call for non-existent series"""
         mock_get_details.return_value = None
@@ -174,32 +174,31 @@ class TestTVDBAPIIntegration:
         result = await mock_get_details(db_session, "999999")
         assert result is None
 
-    @patch("app.services.TVDBService.parse_tvdb_series_response")
-    def test_parse_tvdb_response(self, mock_parse):
-        """Test parsing TVDB response"""
-        tvdb_data = {
-            "data": {
-                "name": "Game of Thrones",
-                "overview": "An epic fantasy series",
-                "rating": 9.2,
-                "status": "Ended",
-                "genres": ["drama", "fantasy"],
-            }
+    @patch("app.services_impl.TMDBService.parse_series_response")
+    def test_parse_series_response(self, mock_parse):
+        """Test parsing TMDB series details response"""
+        tmdb_data = {
+            "id": 1399,
+            "name": "Game of Thrones",
+            "overview": "An epic fantasy series",
+            "vote_average": 9.2,
+            "status": "Ended",
+            "genres": [{"id": 18, "name": "Drama"}, {"id": 10759, "name": "Action & Adventure"}],
         }
 
         mock_parse.return_value = {
             "title": "Game of Thrones",
             "plot": "An epic fantasy series",
             "rating": 9.2,
-            "status": "Ended",
-            "genres": '["drama", "fantasy"]',
+            "status": "ended",
+            "genres": '["Drama", "Action & Adventure"]',
         }
 
-        result = mock_parse(tvdb_data)
+        result = mock_parse(tmdb_data)
         assert result["title"] == "Game of Thrones"
-        assert result["status"] == "Ended"
+        assert result["status"] == "ended"
 
-    @patch("app.services.TVDBService.get_series_details")
+    @patch("app.services_impl.TMDBService.get_series_details")
     async def test_tvdb_rate_limiting(self, mock_get_details, db_session):
         """Test TVDB API rate limiting"""
         mock_get_details.return_value = {"data": {"name": "Test"}}
@@ -212,14 +211,14 @@ class TestTVDBAPIIntegration:
         # Verify calls were made
         assert mock_get_details.call_count == 10
 
-    @patch("app.services.TVDBService.get_series_details")
+    @patch("app.services_impl.TMDBService.get_series_details")
     async def test_tvdb_cache_hit(self, mock_get_details, db_session):
         """Test TVDB API cache hit"""
         # Add cached entry
         cache = APICache(
-            api_type="tvdb",
-            query_key="81189",
-            response_data='{"data": {"name": "Breaking Bad"}}',
+            api_type="tmdb",
+            query_key="tv_details_tmdb_id=1396",
+            response_data='{"id": 1396, "name": "Breaking Bad"}',
             expires_at=datetime.utcnow() + timedelta(days=30),
         )
         db_session.add(cache)
@@ -228,7 +227,7 @@ class TestTVDBAPIIntegration:
         # Query cache
         cached = (
             db_session.query(APICache)
-            .filter(APICache.api_type == "tvdb", APICache.query_key == "81189")
+            .filter(APICache.api_type == "tmdb", APICache.query_key == "tv_details_tmdb_id=1396")
             .first()
         )
 
@@ -391,7 +390,7 @@ class TestFileSystemIntegration:
 class TestAPIErrorHandling:
     """Tests for API error handling"""
 
-    @patch("app.services.OMDBService.get_movie_details")
+    @patch("app.services_impl.TMDBService.get_movie_details")
     async def test_omdb_timeout_error(self, mock_get_details, db_session):
         """Test OMDB API timeout error"""
         mock_get_details.side_effect = TimeoutError("Request timeout")
@@ -399,7 +398,7 @@ class TestAPIErrorHandling:
         with pytest.raises(TimeoutError):
             await mock_get_details(db_session, "tt0111161")
 
-    @patch("app.services.OMDBService.get_movie_details")
+    @patch("app.services_impl.TMDBService.get_movie_details")
     async def test_omdb_connection_error(self, mock_get_details, db_session):
         """Test OMDB API connection error"""
         mock_get_details.side_effect = ConnectionError("Connection failed")
@@ -407,7 +406,7 @@ class TestAPIErrorHandling:
         with pytest.raises(ConnectionError):
             await mock_get_details(db_session, "tt0111161")
 
-    @patch("app.services.TVDBService.get_series_details")
+    @patch("app.services_impl.TMDBService.get_series_details")
     async def test_tvdb_authentication_error(self, mock_get_details, db_session):
         """Test TVDB API authentication error"""
         mock_get_details.side_effect = Exception("Authentication failed")
@@ -439,7 +438,7 @@ class TestAPIErrorHandling:
 class TestRetryLogic:
     """Tests for retry logic"""
 
-    @patch("app.services.OMDBService.get_movie_details")
+    @patch("app.services_impl.TMDBService.get_movie_details")
     async def test_omdb_retry_on_failure(self, mock_get_details, db_session):
         """Test OMDB API retry on failure"""
         # First call fails, second succeeds
@@ -456,7 +455,7 @@ class TestRetryLogic:
         result = await mock_get_details(db_session, "tt0111161")
         assert result["Title"] == "The Shawshank Redemption"
 
-    @patch("app.services.TVDBService.get_series_details")
+    @patch("app.services_impl.TMDBService.get_series_details")
     async def test_tvdb_retry_on_failure(self, mock_get_details, db_session):
         """Test TVDB API retry on failure"""
         # First call fails, second succeeds
@@ -486,7 +485,7 @@ class TestCacheExpiration:
         """Test OMDB cache expiration"""
         # Add expired cache
         expired = APICache(
-            api_type="omdb",
+            api_type="tmdb",
             query_key="tt0111161",
             response_data='{"Title": "Old"}',
             expires_at=datetime.utcnow() - timedelta(hours=1),
@@ -498,7 +497,7 @@ class TestCacheExpiration:
         result = (
             db_session.query(APICache)
             .filter(
-                APICache.api_type == "omdb",
+                APICache.api_type == "tmdb",
                 APICache.query_key == "tt0111161",
                 APICache.expires_at > datetime.utcnow(),
             )
@@ -511,7 +510,7 @@ class TestCacheExpiration:
         """Test TVDB cache expiration"""
         # Add active cache
         active = APICache(
-            api_type="tvdb",
+            api_type="tmdb",
             query_key="81189",
             response_data='{"data": {"name": "Breaking Bad"}}',
             expires_at=datetime.utcnow() + timedelta(days=30),
@@ -523,7 +522,7 @@ class TestCacheExpiration:
         result = (
             db_session.query(APICache)
             .filter(
-                APICache.api_type == "tvdb",
+                APICache.api_type == "tmdb",
                 APICache.query_key == "81189",
                 APICache.expires_at > datetime.utcnow(),
             )
@@ -541,7 +540,7 @@ class TestCacheExpiration:
 class TestMetadataEnrichment:
     """Tests for metadata enrichment"""
 
-    @patch("app.services.OMDBService.get_movie_details")
+    @patch("app.services_impl.TMDBService.get_movie_details")
     async def test_enrich_movie_metadata(self, mock_get_details, db_session):
         """Test enriching movie metadata from OMDB"""
         movie = Movie(title="The Shawshank Redemption", year=1994)
@@ -561,7 +560,7 @@ class TestMetadataEnrichment:
         result = await mock_get_details(db_session, "tt0111161")
         assert result["imdbRating"] == "9.3"
 
-    @patch("app.services.TVDBService.get_series_details")
+    @patch("app.services_impl.TMDBService.get_series_details")
     async def test_enrich_tvshow_metadata(self, mock_get_details, db_session):
         """Test enriching TV show metadata from TVDB"""
         show = TVShow(title="Breaking Bad")
