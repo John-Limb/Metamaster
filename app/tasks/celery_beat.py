@@ -39,4 +39,11 @@ beat_schedule = {
             "queue": "external_api",
         },
     },
+    "enrich_file_technical_metadata": {
+        "task": "app.tasks.enrich_file_technical_metadata",
+        "schedule": crontab(minute="*/10"),  # every 10 minutes
+        "options": {
+            "queue": "media_processing",
+        },
+    },
 }

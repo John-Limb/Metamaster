@@ -112,6 +112,7 @@ export function StoragePage() {
   const [items, setItems] = useState<StorageFileItem[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [scanning, setScanning] = useState(false)
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('size_bytes')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
@@ -146,6 +147,18 @@ export function StoragePage() {
 
   useEffect(() => { load() }, [load])
 
+  const handleAnalyseNow = async () => {
+    setScanning(true)
+    try {
+      await storageService.triggerScan()
+      // Give the worker a moment then reload so updated counts show
+      setTimeout(() => { load(); setScanning(false) }, 3000)
+    } catch (err) {
+      console.error('StoragePage: scan trigger failed', err)
+      setScanning(false)
+    }
+  }
+
   const handleSort = (field: string) => {
     if (field === sortBy) {
       setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -161,11 +174,35 @@ export function StoragePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Storage Analytics</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">
-          File efficiency analysis — MB/min, codec, and estimated re-encode savings.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Storage Analytics</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            File efficiency analysis — MB/min, codec, and estimated re-encode savings.
+          </p>
+        </div>
+        <button
+          onClick={handleAnalyseNow}
+          disabled={scanning}
+          className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-medium transition-colors"
+        >
+          {scanning ? (
+            <>
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+              </svg>
+              Analysing…
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
+              </svg>
+              Analyse Now
+            </>
+          )}
+        </button>
       </div>
 
       {/* Summary cards */}
