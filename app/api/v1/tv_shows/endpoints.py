@@ -2,6 +2,7 @@
 
 import json
 import logging
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel as PydanticBase
@@ -39,6 +40,27 @@ _ENRICHMENT_STATUS_GROUPS = {
     "pending": ["local_only", "pending_local", "pending_external"],
     "failed": ["external_failed", "not_found"],
 }
+
+
+def _resolution_to_quality(resolution: Optional[str]) -> Optional[str]:
+    """Convert a resolution string like '1920x1080' to a quality label like '1080p'."""
+    if not resolution:
+        return None
+    try:
+        height = int(resolution.split("x")[1])
+    except (IndexError, ValueError):
+        return None
+    if height >= 2160:
+        return "4K"
+    if height >= 1080:
+        return "1080p"
+    if height >= 720:
+        return "720p"
+    if height >= 576:
+        return "576p"
+    if height >= 480:
+        return "480p"
+    return f"{height}p"
 
 
 @router.get("/enrichment-stats")
@@ -266,8 +288,28 @@ async def get_season_episodes(
     if episodes is None:
         raise HTTPException(status_code=404, detail="TV show or season not found")
 
+    # Build episode dicts with quality/runtime from first associated file
+    episode_items = []
+    for ep in episodes:
+        first_file = ep.files[0] if ep.files else None
+        quality = _resolution_to_quality(first_file.resolution if first_file else None)
+        runtime_minutes = round(first_file.duration / 60) if first_file and first_file.duration else None
+        episode_items.append({
+            "id": ep.id,
+            "episode_number": ep.episode_number,
+            "title": ep.title,
+            "plot": ep.plot,
+            "air_date": ep.air_date,
+            "rating": ep.rating,
+            "tmdb_id": ep.tmdb_id,
+            "quality": quality,
+            "runtime": runtime_minutes,
+            "created_at": ep.created_at,
+            "updated_at": ep.updated_at,
+        })
+
     return {
-        "items": episodes,
+        "items": episode_items,
         "total": total,
         **pagination_metadata(total=total, limit=normalized_limit, skip=normalized_offset),
         "page": current_page,
