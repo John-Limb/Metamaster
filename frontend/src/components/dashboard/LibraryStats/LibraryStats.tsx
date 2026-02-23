@@ -33,7 +33,6 @@ interface StatItem {
 type StatConfigType = {
   movies: { icon: React.ReactNode; color: string; bg: string }
   tv: { icon: React.ReactNode; color: string; bg: string }
-  episodes: { icon: React.ReactNode; color: string; bg: string }
   files: { icon: React.ReactNode; color: string; bg: string }
   storage: { icon: React.ReactNode; color: string; bg: string }
 }
@@ -56,15 +55,6 @@ const STAT_CONFIG: StatConfigType & Record<string, { icon: React.ReactNode; colo
     ),
     color: 'text-purple-600 dark:text-purple-400',
     bg: 'bg-purple-100 dark:bg-purple-900/50',
-  },
-  episodes: {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'bg-emerald-100 dark:bg-emerald-900/50',
   },
   files: {
     icon: (
@@ -112,12 +102,6 @@ export function LibraryStats({
       onClick: onTVClick,
     },
     {
-      label: 'Episodes',
-      value: stats.totalEpisodes.toLocaleString(),
-      icon: STAT_CONFIG.episodes.icon,
-      color: STAT_CONFIG.episodes.color,
-    },
-    {
       label: 'Total Files',
       value: stats.totalFiles.toLocaleString(),
       icon: STAT_CONFIG.files.icon,
@@ -138,8 +122,8 @@ export function LibraryStats({
           <div className="h-6 w-40 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
           <div className="h-5 w-28 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {[...Array(5)].map((_, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
             <div key={i} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
               <div className="h-8 w-8 rounded-lg bg-slate-200 dark:bg-slate-700 mb-3 animate-pulse" />
               <div className="h-8 w-16 bg-slate-200 dark:bg-slate-700 rounded mb-1 animate-pulse" />
@@ -199,7 +183,7 @@ export function LibraryStats({
         </span>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6" role="list" aria-label="Library statistics">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" role="list" aria-label="Library statistics">
         {statItems.map((item) => (
           <div
             key={item.label}
