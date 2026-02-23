@@ -56,6 +56,9 @@ class Settings(BaseSettings):
     redis_cache_list_ttl: int = 1800  # 30 minutes
 
     # TMDB API (The Movie Database — covers both movies and TV shows)
+    # tmdb_read_access_token: preferred — long JWT Bearer token (v4 auth)
+    # tmdb_api_key: fallback — short v3 API key appended as ?api_key=
+    tmdb_read_access_token: Optional[str] = None
     tmdb_api_key: Optional[str] = None
     tmdb_rate_limit: int = 4  # requests per second (~40/10s)
     tmdb_cache_ttl: int = 2592000  # 30 days in seconds
