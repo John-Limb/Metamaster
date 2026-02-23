@@ -74,3 +74,5 @@ test_media/
 # OS
 .DS_Store
 Thumbs.db
+.worktrees/
+.worktrees/
