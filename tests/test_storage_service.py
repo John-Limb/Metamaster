@@ -1,6 +1,7 @@
 """Tests for StorageService pure logic helpers."""
 import pytest
-from unittest.mock import MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 from app.domain.storage.service import StorageService
 
 
@@ -115,3 +116,147 @@ def test_savings_never_negative(service):
     # Small file already below target size
     savings = service._estimate_savings_bytes(100_000, "h264", 1920, 1080, 7200)
     assert savings == 0
+
+
+# ===========================================================================
+# get_disk_stats
+# ===========================================================================
+
+def test_get_disk_stats_returns_correct_values(service):
+    mock_stat = MagicMock()
+    mock_stat.f_frsize = 4096
+    mock_stat.f_blocks = 1000000
+    mock_stat.f_bavail = 400000
+    with patch("os.statvfs", return_value=mock_stat):
+        result = service.get_disk_stats()
+    total = 4096 * 1000000
+    available = 4096 * 400000
+    assert result["total_bytes"] == total
+    assert result["available_bytes"] == available
+    assert result["used_bytes"] == total - available
+
+def test_get_disk_stats_handles_oserror(service):
+    with patch("os.statvfs", side_effect=OSError("no such file")):
+        result = service.get_disk_stats()
+    assert result == {"total_bytes": 0, "used_bytes": 0, "available_bytes": 0}
+
+
+# ===========================================================================
+# get_summary
+# ===========================================================================
+
+def test_get_summary_structure(service):
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = []
+    with patch("app.domain.storage.service.settings") as mock_settings, \
+         patch.object(service, "get_disk_stats", return_value={"total_bytes": 1000, "used_bytes": 500, "available_bytes": 500}):
+        mock_settings.watch_extensions = [".mkv", ".mp4"]
+        result = service.get_summary()
+    assert "disk" in result
+    assert "library" in result
+    assert "potential_savings_bytes" in result
+    assert "files_analyzed" in result
+    assert "files_pending_analysis" in result
+
+def test_get_summary_counts_pending(service):
+    """Files with null duration count as files_pending_analysis."""
+    mock_file = MagicMock()
+    mock_file.path = "/media/movies/test.mkv"
+    mock_file.size = 1_000_000_000
+    mock_file.duration_seconds = None
+    mock_file.video_codec = None
+    mock_file.video_width = None
+    mock_file.video_height = None
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = [mock_file]
+    with patch.object(service, "get_disk_stats", return_value={"total_bytes": 0, "used_bytes": 0, "available_bytes": 0}), \
+         patch("app.domain.storage.service.settings") as mock_settings, \
+         patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"), \
+         patch("app.domain.storage.service.TV_DIR", "/media/tv"):
+        mock_settings.watch_extensions = [".mkv", ".mp4"]
+        result = service.get_summary()
+    assert result["files_pending_analysis"] == 1
+    assert result["files_analyzed"] == 0
+
+
+# ===========================================================================
+# get_files
+# ===========================================================================
+
+def _make_mock_file(path, size, codec=None, width=None, height=None, duration=None):
+    """Helper to build a mock FileItem."""
+    f = MagicMock()
+    f.id = 1
+    f.name = Path(path).name
+    f.path = path
+    f.size = size
+    f.video_codec = codec
+    f.video_width = width
+    f.video_height = height
+    f.duration_seconds = duration
+    f.type = "file"
+    return f
+
+
+def test_get_files_pagination(service):
+    """Page 1 of 1 returns correct slice and total."""
+    files = [
+        _make_mock_file(f"/media/movies/file{i}.mkv", i * 1_000_000_000, "h264", 1920, 1080, 7200)
+        for i in range(1, 4)
+    ]
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = files
+    with patch("app.domain.storage.service.settings") as mock_settings, \
+         patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"), \
+         patch("app.domain.storage.service.TV_DIR", "/media/tv"):
+        mock_settings.watch_extensions = [".mkv", ".mp4"]
+        result = service.get_files(page=1, page_size=10)
+    assert result["total"] == 3
+    assert len(result["items"]) == 3
+
+
+def test_get_files_filter_by_media_type(service):
+    """media_type filter returns only matching files."""
+    files = [
+        _make_mock_file("/media/movies/a.mkv", 1_000_000_000, "h264", 1920, 1080, 3600),
+        _make_mock_file("/media/tv/b.mkv", 500_000_000, "h264", 1920, 1080, 1800),
+    ]
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = files
+    with patch("app.domain.storage.service.settings") as mock_settings, \
+         patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"), \
+         patch("app.domain.storage.service.TV_DIR", "/media/tv"):
+        mock_settings.watch_extensions = [".mkv", ".mp4"]
+        result = service.get_files(media_type="movie")
+    assert result["total"] == 1
+    assert result["items"][0]["media_type"] == "movie"
+
+
+def test_get_files_sort_none_last_asc(service):
+    """Ascending sort: files with null mb_per_min go to the end."""
+    files = [
+        _make_mock_file("/media/movies/a.mkv", 1_000_000_000, "h264", 1920, 1080, 3600),
+        _make_mock_file("/media/movies/b.mkv", 2_000_000_000),   # no duration -> mb_per_min None
+        _make_mock_file("/media/movies/c.mkv", 500_000_000, "h264", 1920, 1080, 1800),
+    ]
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = files
+    with patch("app.domain.storage.service.settings") as mock_settings, \
+         patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"), \
+         patch("app.domain.storage.service.TV_DIR", "/media/tv"):
+        mock_settings.watch_extensions = [".mkv", ".mp4"]
+        result = service.get_files(sort_by="mb_per_min", sort_dir="asc")
+    items = result["items"]
+    assert items[-1]["mb_per_min"] is None, "None should sort last in asc"
+
+
+def test_get_files_sort_none_last_desc(service):
+    """Descending sort: files with null mb_per_min also go to the end."""
+    files = [
+        _make_mock_file("/media/movies/a.mkv", 1_000_000_000, "h264", 1920, 1080, 3600),
+        _make_mock_file("/media/movies/b.mkv", 2_000_000_000),   # no duration -> mb_per_min None
+        _make_mock_file("/media/movies/c.mkv", 500_000_000, "h264", 1920, 1080, 1800),
+    ]
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = files
+    with patch("app.domain.storage.service.settings") as mock_settings, \
+         patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"), \
+         patch("app.domain.storage.service.TV_DIR", "/media/tv"):
+        mock_settings.watch_extensions = [".mkv", ".mp4"]
+        result = service.get_files(sort_by="mb_per_min", sort_dir="desc")
+    items = result["items"]
+    assert items[-1]["mb_per_min"] is None, "None should sort last in desc too"
