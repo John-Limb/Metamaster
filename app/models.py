@@ -8,6 +8,7 @@ The actual model definitions are in app/domain/ subdirectories.
 from app.domain.movies.models import Movie, MovieFile
 from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
 from app.domain.common.models import APICache, FileQueue, TaskError, BatchOperation
+from app.domain.files.models import FileItem
 
 __all__ = [
     "Movie",
@@ -20,4 +21,5 @@ __all__ = [
     "FileQueue",
     "TaskError",
     "BatchOperation",
+    "FileItem",
 ]

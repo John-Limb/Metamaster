@@ -20,6 +20,10 @@ class FileItem(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_indexed = Column(Boolean, default=False)
     metadata_json = Column(Text)  # JSON metadata stored as string
+    duration_seconds = Column(Integer, nullable=True)   # seconds from FFprobe
+    video_codec = Column(String(20), nullable=True)     # e.g. 'h264', 'hevc', 'av1'
+    video_width = Column(Integer, nullable=True)         # e.g. 1920
+    video_height = Column(Integer, nullable=True)        # e.g. 1080
 
     __table_args__ = (
         Index("idx_file_items_type", "type"),

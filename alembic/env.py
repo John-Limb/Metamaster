@@ -21,6 +21,7 @@ from app.models import (
     EpisodeFile,
     APICache,
     FileQueue,
+    FileItem,
 )
 
 # this is the Alembic Config object
