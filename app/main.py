@@ -86,6 +86,11 @@ async def lifespan(app: FastAPI):
         )
         for s in pending_shows:
             enrich_tv_show_external(s.id)
+
+        # Enrich any files missing technical metadata (duration, codec, resolution)
+        logger.info("Triggering technical metadata enrichment for new files...")
+        from app.tasks import enrich_file_technical_metadata as _enrich_task
+        _enrich_task.delay()
     finally:
         db.close()
 
