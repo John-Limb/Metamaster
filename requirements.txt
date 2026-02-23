@@ -1,23 +1,23 @@
 # Web Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+fastapi==0.132.0
+uvicorn[standard]==0.41.0
 pydantic==2.12.5
 pydantic-settings==2.11.0
 
 # Database
 sqlalchemy==2.0.46
-alembic==1.12.1
+alembic==1.18.4
 psycopg2-binary==2.9.11
 
 # Background Tasks
-celery==5.3.4
+celery==5.6.2
 redis==5.0.1
 
 # File Monitoring
-watchdog==3.0.0
+watchdog==6.0.0
 
 # External APIs
-httpx==0.25.2
+httpx==0.28.1
 requests-cache==1.3.0
 
 # File Analysis
@@ -28,7 +28,7 @@ croniter>=1.3.8
 
 # Utilities
 python-dotenv==1.2.1
-python-multipart==0.0.6
+python-multipart==0.0.22
 
 # Security
 argon2-cffi>=23.1.0      # Password hashing (Argon2id)
@@ -42,7 +42,7 @@ prometheus-client==0.17.1
 
 # Testing
 pytest==8.4.2
-pytest-asyncio==1.2.0
+pytest-asyncio==1.3.0
 pytest-cov==4.1.0
 pytest-benchmark==5.2.3
 memory-profiler==0.61.0
@@ -50,7 +50,7 @@ psutil==5.9.6
 locust==2.34.0
 
 # Development
-black==23.12.0
+black==26.1.0
 flake8==6.1.0
 isort==6.1.0
-mypy==1.7.1
+mypy==1.19.1
