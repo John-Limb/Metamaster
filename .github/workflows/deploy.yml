@@ -19,7 +19,7 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -45,7 +45,7 @@ jobs:
     if: github.event_name == 'release' || github.event.inputs.environment == 'staging'
     environment: staging
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Deploy to staging environment
         run: |
@@ -72,7 +72,7 @@ jobs:
     if: github.event_name == 'release' || github.event.inputs.environment == 'production'
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Deploy to production environment
         run: |
