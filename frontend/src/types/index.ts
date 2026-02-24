@@ -136,6 +136,8 @@ export interface Episode {
   air_date?: string | null
   rating?: number | null
   tmdb_id?: string | null
+  quality?: string | null
+  runtime?: number | null
   created_at: string
   updated_at: string
 }
