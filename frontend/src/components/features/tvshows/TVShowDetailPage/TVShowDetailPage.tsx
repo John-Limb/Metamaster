@@ -77,6 +77,12 @@ const TVShowDetailPage: React.FC = () => {
     }
   }
 
+  const formatRuntime = (minutes: number) => {
+    const h = Math.floor(minutes / 60)
+    const m = minutes % 60
+    return h > 0 ? `${h}h ${m}m` : `${m}m`
+  }
+
   const parseGenres = (genres?: string | string[] | null): string[] => {
     if (!genres) return []
     if (Array.isArray(genres)) return genres
@@ -253,11 +259,23 @@ const TVShowDetailPage: React.FC = () => {
                                     {String(ep.episode_number).padStart(2, '0')}
                                   </span>
 
-                                  {/* Title + plot */}
+                                  {/* Title row + synopsis */}
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                                      {ep.title ?? `Episode ${ep.episode_number}`}
-                                    </p>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                        {ep.title ?? `Episode ${ep.episode_number}`}
+                                      </p>
+                                      {ep.quality && (
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                                          {ep.quality}
+                                        </span>
+                                      )}
+                                      {ep.runtime != null && (
+                                        <span className="text-xs text-slate-400 dark:text-slate-500">
+                                          {formatRuntime(ep.runtime)}
+                                        </span>
+                                      )}
+                                    </div>
                                     {ep.plot && (
                                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
                                         {ep.plot}
@@ -265,7 +283,7 @@ const TVShowDetailPage: React.FC = () => {
                                     )}
                                   </div>
 
-                                  {/* Meta */}
+                                  {/* Meta: air date + rating */}
                                   <div className="flex-shrink-0 text-right space-y-0.5">
                                     {ep.air_date && (
                                       <p className="text-xs text-slate-400 dark:text-slate-500">

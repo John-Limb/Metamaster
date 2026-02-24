@@ -259,6 +259,33 @@ class TestEpisodeResponseSchema:
         assert response.episode_number == 1
         assert response.title == "Pilot"
 
+    def test_episode_response_with_quality_and_runtime(self):
+        """Test EpisodeResponse accepts quality and runtime fields"""
+        now = datetime.utcnow()
+        response = EpisodeResponse(
+            id=2,
+            episode_number=3,
+            title="Full Measure",
+            created_at=now,
+            updated_at=now,
+            quality="1080p",
+            runtime=47,
+        )
+        assert response.quality == "1080p"
+        assert response.runtime == 47
+
+    def test_episode_response_quality_runtime_optional(self):
+        """Test quality and runtime default to None"""
+        now = datetime.utcnow()
+        response = EpisodeResponse(
+            id=3,
+            episode_number=1,
+            created_at=now,
+            updated_at=now,
+        )
+        assert response.quality is None
+        assert response.runtime is None
+
 
 # ============================================================================
 # Pagination Schema Tests

@@ -250,6 +250,8 @@ class EpisodeResponse(BaseModel):
     air_date: Optional[str] = Field(None, description="Air date in YYYY-MM-DD format")
     rating: Optional[float] = None
     tmdb_id: Optional[str] = None
+    quality: Optional[str] = Field(None, description="Quality label derived from file resolution e.g. 1080p, 4K")
+    runtime: Optional[int] = Field(None, description="Runtime in minutes derived from file duration")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 
