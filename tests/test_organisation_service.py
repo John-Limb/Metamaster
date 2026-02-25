@@ -141,3 +141,52 @@ def test_build_movie_target_path_invalid_preset_still_works():
     """Unknown presets fall back to plex-style (non-jellyfin = plex branch)."""
     result = build_movie_target_path('/media/movies', 'Alien', 1979, '.mkv', 'unknown')
     assert result == '/media/movies/Alien (1979)/Alien (1979).mkv'
+
+
+# ---------------------------------------------------------------------------
+# get_preview — episode fields
+# ---------------------------------------------------------------------------
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.core.database import Base
+from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
+from app.domain.organisation.service import get_preview
+
+
+@pytest.fixture
+def preview_db():
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(bind=engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    yield session
+    session.close()
+    Base.metadata.drop_all(bind=engine)
+
+
+def test_get_preview_episode_includes_show_and_season(preview_db):
+    """Episode entries in get_preview include show_title and season_number."""
+    show = TVShow(title="Breaking Bad")
+    preview_db.add(show)
+    preview_db.flush()
+
+    season = Season(show_id=show.id, season_number=1)
+    preview_db.add(season)
+    preview_db.flush()
+
+    episode = Episode(season_id=season.id, episode_number=1, title="Pilot")
+    preview_db.add(episode)
+    preview_db.flush()
+
+    # Path that won't match the Plex target, so it appears in preview
+    ef = EpisodeFile(episode_id=episode.id, file_path="/downloads/bb_s01e01.mkv")
+    preview_db.add(ef)
+    preview_db.commit()
+
+    result = get_preview(preview_db, "plex")
+
+    assert len(result["episodes"]) == 1
+    ep = result["episodes"][0]
+    assert ep["show_title"] == "Breaking Bad"
+    assert ep["season_number"] == 1
