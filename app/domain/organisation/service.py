@@ -197,6 +197,8 @@ def get_preview(db: Session, preset: str) -> dict:
                             "file_type": "episode",
                             "current_path": ef.file_path,
                             "target_path": target,
+                            "show_title": show.title,
+                            "season_number": season.season_number,
                         })
 
     return {"movies": movies, "episodes": episodes}

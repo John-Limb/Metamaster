@@ -17,6 +17,8 @@ export interface RenameProposal {
   file_type: 'movie' | 'episode'
   current_path: string
   target_path: string
+  show_title?: string
+  season_number?: number
 }
 
 export interface OrganisationPreview {

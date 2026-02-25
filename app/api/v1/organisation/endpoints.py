@@ -46,6 +46,8 @@ class RenamePreviewItem(BaseModel):
     file_type: str
     current_path: str
     target_path: str
+    show_title: str | None = None
+    season_number: int | None = None
 
 class PreviewResponse(BaseModel):
     movies: list[RenamePreviewItem]

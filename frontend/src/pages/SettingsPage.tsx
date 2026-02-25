@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { FaCog, FaPalette, FaBell, FaSync, FaFolder } from 'react-icons/fa'
-import { organisationService, type OrganisationPreset, type OrganisationStats } from '@/services/organisationService'
-import { OrganisationModal } from '@/components/features/organisation/OrganisationModal'
+import { organisationService, type OrganisationPreset } from '@/services/organisationService'
 import { scanScheduleService } from '@/services/configurationService'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useTheme } from '@/context/ThemeContext'
@@ -53,9 +53,6 @@ export const SettingsPage: React.FC = () => {
   const [settingsSaved, setSettingsSaved] = useState(false)
 
   const [orgPreset, setOrgPreset] = useState<OrganisationPreset>('plex')
-  const [orgStats, setOrgStats] = useState<OrganisationStats | null>(null)
-  const [orgStatsLoading, setOrgStatsLoading] = useState(false)
-  const [orgModalOpen, setOrgModalOpen] = useState(false)
 
   useEffect(() => {
     scanScheduleService.getSchedule().then(setScanSchedule).catch(() => {})
@@ -63,11 +60,7 @@ export const SettingsPage: React.FC = () => {
 
   useEffect(() => {
     organisationService.getSettings()
-      .then(({ preset }) => {
-        setOrgPreset(preset)
-        return organisationService.getStats(preset)
-      })
-      .then(setOrgStats)
+      .then(({ preset }) => setOrgPreset(preset))
       .catch(() => {})
   }, [])
 
@@ -109,15 +102,10 @@ export const SettingsPage: React.FC = () => {
 
   const handleOrgPresetChange = async (preset: OrganisationPreset) => {
     setOrgPreset(preset)
-    setOrgStatsLoading(true)
     try {
       await organisationService.saveSettings(preset)
-      const stats = await organisationService.getStats(preset)
-      setOrgStats(stats)
     } catch {
       // non-fatal
-    } finally {
-      setOrgStatsLoading(false)
     }
   }
 
@@ -254,9 +242,9 @@ export const SettingsPage: React.FC = () => {
       <SettingsSection
         icon={<FaFolder />}
         title="File Organisation"
-        description="Rename and move media files to match your media server's naming convention"
+        description="Choose the naming convention for your media server"
       >
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Naming Preset
@@ -270,53 +258,15 @@ export const SettingsPage: React.FC = () => {
               <option value="jellyfin">Jellyfin</option>
             </select>
           </div>
-
-          {orgStats && (
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
-                <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">Movies</p>
-                <p className="text-green-600 dark:text-green-400">✓ {orgStats.movies_match} match</p>
-                {orgStats.movies_need_rename > 0 && (
-                  <p className="text-amber-600 dark:text-amber-400">⚠ {orgStats.movies_need_rename} need renaming</p>
-                )}
-                {orgStats.movies_unenriched > 0 && (
-                  <p className="text-gray-400 dark:text-gray-500">– {orgStats.movies_unenriched} unenriched</p>
-                )}
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
-                <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">TV Episodes</p>
-                <p className="text-green-600 dark:text-green-400">✓ {orgStats.episodes_match} match</p>
-                {orgStats.episodes_need_rename > 0 && (
-                  <p className="text-amber-600 dark:text-amber-400">⚠ {orgStats.episodes_need_rename} need renaming</p>
-                )}
-                {orgStats.episodes_unenriched > 0 && (
-                  <p className="text-gray-400 dark:text-gray-500">– {orgStats.episodes_unenriched} unenriched</p>
-                )}
-              </div>
-            </div>
-          )}
-          {orgStatsLoading && (
-            <p className="text-sm text-gray-400 dark:text-gray-500">Loading stats…</p>
-          )}
-
-          <button
-            onClick={() => setOrgModalOpen(true)}
-            disabled={!orgStats || (orgStats.movies_need_rename === 0 && orgStats.episodes_need_rename === 0)}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Preview & Apply Changes
-          </button>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            To rename and organise files, visit the{' '}
+            <Link to="/organisation" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+              Organisation page
+            </Link>
+            .
+          </p>
         </div>
       </SettingsSection>
-
-      <OrganisationModal
-        isOpen={orgModalOpen}
-        preset={orgPreset}
-        onClose={() => {
-          setOrgModalOpen(false)
-          organisationService.getStats(orgPreset).then(setOrgStats).catch(() => {})
-        }}
-      />
 
       {/* Action Buttons */}
       <div className="flex items-center gap-4">
