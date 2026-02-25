@@ -1,4 +1,351 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+# Organisation Page Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** Move file renaming from a modal into a dedicated `/organisation` page with a collapsible TV Show → Season → Episode accordion tree; keep only the Plex/Jellyfin preset selector in Settings.
+
+**Architecture:** New `OrganisationPage` at `/organisation`. Backend `get_preview` gains `show_title` + `season_number` on episode entries so the frontend can group them without path-parsing. `App.tsx` and `Sidebar.tsx` get the new route/nav entry. `OrganisationModal` is deleted; `SettingsPage` retains only the preset selector.
+
+**Tech Stack:** FastAPI/SQLAlchemy (Python 3.13), React 19/TypeScript/Tailwind, existing `organisationService.ts`.
+
+---
+
+### Task 1: Create feature branch
+
+**Step 1: Create and switch to the new branch**
+
+Run from the repo root (currently on `feat/file-organisation`):
+
+```bash
+git checkout -b feat/organisation-page
+```
+
+**Step 2: Verify you're on the right branch**
+
+```bash
+git branch --show-current
+# Expected: feat/organisation-page
+```
+
+**Step 3: Commit (nothing to commit yet — just the branch)**
+
+No commit needed; the branch is ready.
+
+---
+
+### Task 2: Backend — add show_title and season_number to preview
+
+**Files:**
+- Modify: `app/domain/organisation/service.py` (lines 180–200 — the episode `append` inside `get_preview`)
+- Modify: `app/api/v1/organisation/endpoints.py` (lines 44–48 — `RenamePreviewItem`)
+- Test: `tests/test_organisation_service.py`
+
+**Step 1: Write the failing test**
+
+Add to the bottom of `tests/test_organisation_service.py`:
+
+```python
+# ---------------------------------------------------------------------------
+# get_preview — episode fields
+# ---------------------------------------------------------------------------
+
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.core.database import Base
+from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
+from app.domain.organisation.service import get_preview
+
+
+@pytest.fixture
+def preview_db():
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(bind=engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    yield session
+    session.close()
+    Base.metadata.drop_all(bind=engine)
+
+
+def test_get_preview_episode_includes_show_and_season(preview_db):
+    """Episode entries in get_preview include show_title and season_number."""
+    show = TVShow(title="Breaking Bad")
+    preview_db.add(show)
+    preview_db.flush()
+
+    season = Season(show_id=show.id, season_number=1)
+    preview_db.add(season)
+    preview_db.flush()
+
+    episode = Episode(season_id=season.id, episode_number=1, title="Pilot")
+    preview_db.add(episode)
+    preview_db.flush()
+
+    # Path that won't match the Plex target, so it appears in preview
+    ef = EpisodeFile(episode_id=episode.id, file_path="/downloads/bb_s01e01.mkv")
+    preview_db.add(ef)
+    preview_db.commit()
+
+    result = get_preview(preview_db, "plex")
+
+    assert len(result["episodes"]) == 1
+    ep = result["episodes"][0]
+    assert ep["show_title"] == "Breaking Bad"
+    assert ep["season_number"] == 1
+```
+
+**Step 2: Run it to verify it fails**
+
+```bash
+pytest tests/test_organisation_service.py::test_get_preview_episode_includes_show_and_season -v
+```
+
+Expected: `FAILED` — `KeyError: 'show_title'`
+
+**Step 3: Add fields to `get_preview` in `app/domain/organisation/service.py`**
+
+Find the `episodes.append({...})` block inside the `for ef in episode.files:` loop (around line 194) and add two fields:
+
+```python
+                    if Path(ef.file_path).resolve() != Path(target).resolve():
+                        episodes.append({
+                            "file_id": ef.id,
+                            "file_type": "episode",
+                            "current_path": ef.file_path,
+                            "target_path": target,
+                            "show_title": show.title,
+                            "season_number": season.season_number,
+                        })
+```
+
+**Step 4: Add optional fields to `RenamePreviewItem` in `app/api/v1/organisation/endpoints.py`**
+
+Replace the existing `RenamePreviewItem` class (lines 44–48):
+
+```python
+class RenamePreviewItem(BaseModel):
+    file_id: int
+    file_type: str
+    current_path: str
+    target_path: str
+    show_title: str | None = None
+    season_number: int | None = None
+```
+
+**Step 5: Run the test to verify it passes**
+
+```bash
+pytest tests/test_organisation_service.py::test_get_preview_episode_includes_show_and_season -v
+```
+
+Expected: `PASSED`
+
+**Step 6: Run the full backend test suite**
+
+```bash
+pytest
+```
+
+Expected: all tests pass.
+
+**Step 7: Commit**
+
+```bash
+git add app/domain/organisation/service.py \
+        app/api/v1/organisation/endpoints.py \
+        tests/test_organisation_service.py
+git commit -m "feat: add show_title and season_number to preview episode entries"
+```
+
+---
+
+### Task 3: Frontend — update RenameProposal type
+
+**Files:**
+- Modify: `frontend/src/services/organisationService.ts` (lines 15–20 — `RenameProposal` interface)
+
+**Step 1: Update the interface**
+
+In `frontend/src/services/organisationService.ts`, replace the `RenameProposal` interface:
+
+```typescript
+export interface RenameProposal {
+  file_id: number
+  file_type: 'movie' | 'episode'
+  current_path: string
+  target_path: string
+  show_title?: string
+  season_number?: number
+}
+```
+
+**Step 2: Type-check**
+
+```bash
+cd frontend && npm run type-check
+```
+
+Expected: no errors.
+
+**Step 3: Commit**
+
+```bash
+git add frontend/src/services/organisationService.ts
+git commit -m "feat: add show_title and season_number to RenameProposal type"
+```
+
+---
+
+### Task 4: Strip the org section from SettingsPage
+
+**Files:**
+- Modify: `frontend/src/pages/SettingsPage.tsx`
+
+What to remove:
+- `OrganisationModal` import (line 4)
+- `OrganisationStats` from the organisationService import (line 3)
+- `orgStats`, `orgStatsLoading`, `orgModalOpen` state (lines 56–58)
+- The `useEffect` that fetches stats (lines 64–72) — replace with a simpler one that only fetches the preset
+- Stats fetch in `handleOrgPresetChange` — simplify to just save
+- The stats grid JSX, the "Preview & Apply" button JSX, and the `<OrganisationModal ... />` usage
+- `FaFolder` icon is still needed for the section; keep it
+
+What to keep / add:
+- `orgPreset` state and the preset `<select>`
+- A link to `/organisation` (add `Link` import from `react-router-dom`)
+
+**Step 1: Update imports**
+
+Change line 1–7 of `SettingsPage.tsx` to:
+
+```typescript
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { FaCog, FaPalette, FaBell, FaSync, FaFolder } from 'react-icons/fa'
+import { organisationService, type OrganisationPreset } from '@/services/organisationService'
+import { scanScheduleService } from '@/services/configurationService'
+import { useSettingsStore } from '@/stores/settingsStore'
+import { useTheme } from '@/context/ThemeContext'
+```
+
+**Step 2: Replace the three org state lines (56–58)**
+
+Remove:
+```typescript
+  const [orgStats, setOrgStats] = useState<OrganisationStats | null>(null)
+  const [orgStatsLoading, setOrgStatsLoading] = useState(false)
+  const [orgModalOpen, setOrgModalOpen] = useState(false)
+```
+
+Keep only:
+```typescript
+  const [orgPreset, setOrgPreset] = useState<OrganisationPreset>('plex')
+```
+
+**Step 3: Replace the org useEffect (lines 64–72)**
+
+Remove the effect that chained `getSettings` → `getStats`. Replace with:
+
+```typescript
+  useEffect(() => {
+    organisationService.getSettings()
+      .then(({ preset }) => setOrgPreset(preset))
+      .catch(() => {})
+  }, [])
+```
+
+**Step 4: Simplify handleOrgPresetChange (lines 110–122)**
+
+Replace with:
+
+```typescript
+  const handleOrgPresetChange = async (preset: OrganisationPreset) => {
+    setOrgPreset(preset)
+    try {
+      await organisationService.saveSettings(preset)
+    } catch {
+      // non-fatal
+    }
+  }
+```
+
+**Step 5: Replace the File Organisation SettingsSection JSX (lines 253–310)**
+
+Remove the entire `{/* File Organisation */}` section and replace with:
+
+```tsx
+      {/* File Organisation */}
+      <SettingsSection
+        icon={<FaFolder />}
+        title="File Organisation"
+        description="Choose the naming convention for your media server"
+      >
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Naming Preset
+            </label>
+            <select
+              value={orgPreset}
+              onChange={(e) => handleOrgPresetChange(e.target.value as OrganisationPreset)}
+              className="w-full sm:w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="plex">Plex</option>
+              <option value="jellyfin">Jellyfin</option>
+            </select>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            To rename and organise files, visit the{' '}
+            <Link to="/organisation" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+              Organisation page
+            </Link>
+            .
+          </p>
+        </div>
+      </SettingsSection>
+```
+
+**Step 6: Remove the OrganisationModal usage (lines 312–319)**
+
+Delete:
+```tsx
+      <OrganisationModal
+        isOpen={orgModalOpen}
+        preset={orgPreset}
+        onClose={() => {
+          setOrgModalOpen(false)
+          organisationService.getStats(orgPreset).then(setOrgStats).catch(() => {})
+        }}
+      />
+```
+
+**Step 7: Type-check and build**
+
+```bash
+cd frontend && npm run type-check
+```
+
+Expected: no errors.
+
+**Step 8: Commit**
+
+```bash
+git add frontend/src/pages/SettingsPage.tsx
+git commit -m "refactor: move org rename UI to dedicated page, keep preset in settings"
+```
+
+---
+
+### Task 5: Create OrganisationPage
+
+**Files:**
+- Create: `frontend/src/pages/OrganisationPage.tsx`
+
+**Step 1: Create the file with this complete content**
+
+```tsx
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaChevronDown, FaChevronRight, FaSync } from 'react-icons/fa'
 import {
@@ -51,11 +398,10 @@ interface IndeterminateCheckboxProps {
   keys: string[]
   selected: Set<string>
   onChange: () => void
-  onClick?: (e: React.MouseEvent<HTMLInputElement>) => void
   className?: string
 }
 
-function IndeterminateCheckbox({ keys, selected, onChange, onClick, className }: IndeterminateCheckboxProps) {
+function IndeterminateCheckbox({ keys, selected, onChange, className }: IndeterminateCheckboxProps) {
   const count = keys.filter((k) => selected.has(k)).length
   const checked = keys.length > 0 && count === keys.length
   const indeterminate = count > 0 && count < keys.length
@@ -71,7 +417,6 @@ function IndeterminateCheckbox({ keys, selected, onChange, onClick, className }:
       type="checkbox"
       checked={checked}
       onChange={onChange}
-      onClick={onClick}
       className={className ?? 'w-3.5 h-3.5 text-indigo-600 rounded'}
     />
   )
@@ -105,7 +450,7 @@ export function OrganisationPage() {
     [preview?.episodes],
   )
 
-  const loadPreview = useCallback((p: OrganisationPreset) => {
+  const loadPreview = (p: OrganisationPreset) => {
     setLoading(true)
     setError(null)
     setResult(null)
@@ -122,7 +467,7 @@ export function OrganisationPage() {
       })
       .catch(() => setError('Failed to load preview. Please try again.'))
       .finally(() => setLoading(false))
-  }, [])
+  }
 
   useEffect(() => {
     organisationService
@@ -132,7 +477,7 @@ export function OrganisationPage() {
         loadPreview(p)
       })
       .catch(() => loadPreview('plex'))
-  }, [loadPreview])
+  }, [])
 
   // ---- Collapse helpers ----
 
@@ -184,6 +529,7 @@ export function OrganisationPage() {
     })
 
   const movieKeys = (preview?.movies ?? []).map((m) => `movie-${m.file_id}`)
+  const allEpisodeKeys = (preview?.episodes ?? []).map((e) => `episode-${e.file_id}`)
 
   const showKeys = (group: ShowGroup) =>
     group.seasons.flatMap((s) => s.episodes.map((e) => `episode-${e.file_id}`))
@@ -435,7 +781,6 @@ export function OrganisationPage() {
                             keys={allShowKeys}
                             selected={selected}
                             onChange={() => toggleKeys(allShowKeys)}
-                            onClick={(e) => e.stopPropagation()}
                           />
                           <span className="text-sm font-medium text-slate-700 dark:text-slate-200 ml-1 truncate">
                             {group.show_title}
@@ -476,7 +821,6 @@ export function OrganisationPage() {
                                     keys={sKeys}
                                     selected={selected}
                                     onChange={() => toggleKeys(sKeys)}
-                                    onClick={(e) => e.stopPropagation()}
                                   />
                                   <span className="text-xs font-medium text-slate-600 dark:text-slate-300 ml-1">
                                     Season {String(season.season_number).padStart(2, '0')}
@@ -566,3 +910,129 @@ export function OrganisationPage() {
     </div>
   )
 }
+```
+
+**Step 2: Type-check**
+
+```bash
+cd frontend && npm run type-check
+```
+
+Expected: no errors.
+
+**Step 3: Commit**
+
+```bash
+git add frontend/src/pages/OrganisationPage.tsx
+git commit -m "feat: add OrganisationPage with collapsible TV show/season accordion"
+```
+
+---
+
+### Task 6: Wire up route, sidebar entry, delete OrganisationModal
+
+**Files:**
+- Modify: `frontend/src/App.tsx`
+- Modify: `frontend/src/components/layout/Sidebar/Sidebar.tsx`
+- Delete: `frontend/src/components/features/organisation/OrganisationModal.tsx`
+
+**Step 1: Add route to App.tsx**
+
+In `App.tsx`, add a lazy import after the `StoragePage` import (line 23):
+
+```typescript
+const OrganisationPage = lazy(() =>
+  import('./pages/OrganisationPage').then(m => ({ default: m.OrganisationPage }))
+)
+```
+
+Then add the route before the `{/* Redirects */}` comment (after the `/storage` route):
+
+```tsx
+        <Route
+          path="/organisation"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <OrganisationPage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+```
+
+**Step 2: Add sidebar entry**
+
+In `frontend/src/components/layout/Sidebar/Sidebar.tsx`:
+
+Add `FaFolderOpen` to the react-icons import at the top (line 3):
+
+```typescript
+import {
+  FaHome,
+  FaFolder,
+  FaFolderOpen,
+  FaSearch,
+  FaFilm,
+  FaTv,
+  FaCog,
+  FaChevronLeft,
+  FaChevronRight,
+  FaInfoCircle,
+  FaDatabase,
+} from 'react-icons/fa'
+```
+
+Add the Organisation entry to `navItems` between TV Shows and Storage:
+
+```typescript
+const navItems: NavItem[] = [
+  { label: 'Home', path: '/', icon: <FaHome className="w-5 h-5" /> },
+  { label: 'Files', path: '/files', icon: <FaFolder className="w-5 h-5" /> },
+  { label: 'Search', path: '/search', icon: <FaSearch className="w-5 h-5" /> },
+  { label: 'Movies', path: '/movies', icon: <FaFilm className="w-5 h-5" />, badge: 'New' },
+  { label: 'TV Shows', path: '/tv-shows', icon: <FaTv className="w-5 h-5" /> },
+  { label: 'Organisation', path: '/organisation', icon: <FaFolderOpen className="w-5 h-5" /> },
+  { label: 'Storage', path: '/storage', icon: <FaDatabase className="w-5 h-5" /> },
+  { label: 'Settings', path: '/settings', icon: <FaCog className="w-5 h-5" /> },
+]
+```
+
+**Step 3: Delete OrganisationModal**
+
+```bash
+rm frontend/src/components/features/organisation/OrganisationModal.tsx
+```
+
+**Step 4: Type-check and build**
+
+```bash
+cd frontend && npm run type-check && npm run build
+```
+
+Expected: clean build, no errors.
+
+**Step 5: Commit**
+
+```bash
+git add frontend/src/App.tsx frontend/src/components/layout/Sidebar/Sidebar.tsx
+git rm frontend/src/components/features/organisation/OrganisationModal.tsx
+git commit -m "feat: wire /organisation route, sidebar entry; remove OrganisationModal"
+```
+
+---
+
+## Done
+
+Backend tests: `pytest` — all pass.
+Frontend: `npm run type-check && npm run build` — clean.
+
+The Organisation page is at `/organisation` with:
+- Plex/Jellyfin format displayed (read from saved settings)
+- Collapsible Movies section (flat table)
+- Collapsible TV Shows section → shows → seasons → episode rows
+- Indeterminate checkboxes at show and season level
+- Sticky Apply footer with rename count
+- Settings page retains only the preset selector with a link to the Organisation page

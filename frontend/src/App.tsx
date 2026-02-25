@@ -21,6 +21,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ defa
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })))
 const EnrichmentPage = lazy(() => import('./pages/EnrichmentPage').then(m => ({ default: m.EnrichmentPage })))
 const StoragePage = lazy(() => import('./pages/StoragePage').then(m => ({ default: m.StoragePage })))
+const OrganisationPage = lazy(() => import('./pages/OrganisationPage').then(m => ({ default: m.OrganisationPage })))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -160,6 +161,19 @@ function App() {
               <MainLayout>
                 <Suspense fallback={<LoadingFallback />}>
                   <StoragePage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/organisation"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <OrganisationPage />
                 </Suspense>
               </MainLayout>
             </ProtectedRoute>

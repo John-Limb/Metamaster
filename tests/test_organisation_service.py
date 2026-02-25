@@ -1,8 +1,13 @@
 """Unit tests for OrganisationService path builders"""
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.core.database import Base
+from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
 from app.domain.organisation.service import (
     build_movie_target_path,
     build_tv_target_path,
+    get_preview,
     sanitize_filename,
 )
 
@@ -146,12 +151,6 @@ def test_build_movie_target_path_invalid_preset_still_works():
 # ---------------------------------------------------------------------------
 # get_preview — episode fields
 # ---------------------------------------------------------------------------
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.core.database import Base
-from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
-from app.domain.organisation.service import get_preview
 
 
 @pytest.fixture

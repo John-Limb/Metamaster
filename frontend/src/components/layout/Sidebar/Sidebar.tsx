@@ -6,6 +6,7 @@ import {
   FaSearch,
   FaFilm,
   FaTv,
+  FaFolderOpen,
   FaCog,
   FaChevronLeft,
   FaChevronRight,
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
   { label: 'Search', path: '/search', icon: <FaSearch className="w-5 h-5" /> },
   { label: 'Movies', path: '/movies', icon: <FaFilm className="w-5 h-5" />, badge: 'New' },
   { label: 'TV Shows', path: '/tv-shows', icon: <FaTv className="w-5 h-5" /> },
+  { label: 'Organisation', path: '/organisation', icon: <FaFolderOpen className="w-5 h-5" /> },
   { label: 'Storage', path: '/storage', icon: <FaDatabase className="w-5 h-5" /> },
   { label: 'Settings', path: '/settings', icon: <FaCog className="w-5 h-5" /> },
 ]
