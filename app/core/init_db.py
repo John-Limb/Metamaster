@@ -13,6 +13,7 @@ from app.domain.movies.models import Movie, MovieFile
 from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
 from app.domain.common.models import APICache, FileQueue
 from app.domain.auth.models import User
+from app.domain.settings.models import AppSetting  # noqa: F401
 from app.infrastructure.security.password import hash_password
 
 logger = logging.getLogger(__name__)
