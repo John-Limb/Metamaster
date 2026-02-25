@@ -302,16 +302,15 @@ export function Dashboard({ className = '' }: DashboardProps) {
       variant: 'primary',
     },
     {
-      id: 'settings',
-      label: 'Settings',
-      description: 'Configure options',
+      id: 'organisation',
+      label: 'Organise Files',
+      description: 'Rename & organise',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
         </svg>
       ),
-      onClick: () => console.log('Open settings action triggered'),
+      onClick: () => navigate('/organisation'),
       group: 'settings',
     },
   ]
@@ -559,24 +558,9 @@ export function Dashboard({ className = '' }: DashboardProps) {
                 { label: 'TV Shows', value: storageSummary.library.tv_bytes, color: '#8b5cf6' },
               ]}
               total={storageSummary.library.movies_bytes + storageSummary.library.tv_bytes}
+              diskUsedBytes={storageSummary.disk.used_bytes}
+              diskTotalBytes={storageSummary.disk.total_bytes}
             />
-            {storageSummary.disk.total_bytes > 0 && (() => {
-              const pct = Math.round(storageSummary.disk.used_bytes / storageSummary.disk.total_bytes * 100)
-              return (
-                <div className="px-6 pb-4 -mt-2">
-                  <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-                    <span>{formatFileSize(storageSummary.disk.used_bytes)} used</span>
-                    <span>{formatFileSize(storageSummary.disk.total_bytes)} total</span>
-                  </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
-                    <div
-                      className={`h-1.5 rounded-full transition-all ${pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-amber-400' : 'bg-emerald-500'}`}
-                      style={{ width: `${Math.min(pct, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              )
-            })()}
           </div>
         ) : (
           <Card variant="elevated">

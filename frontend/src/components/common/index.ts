@@ -32,8 +32,11 @@ export type { TextInputProps } from './TextInput'
 export { Select } from './Select'
 export type { SelectProps, SelectOption } from './Select'
 
-export { Checkbox } from './Checkbox'
-export type { CheckboxProps } from './Checkbox'
+export { Checkbox, CheckboxInput } from './Checkbox'
+export type { CheckboxProps, CheckboxInputProps } from './Checkbox'
+
+export { Radio, RadioInput } from './Radio'
+export type { RadioProps, RadioInputProps } from './Radio'
 
 export { Toggle } from './Toggle'
 export type { ToggleProps } from './Toggle'

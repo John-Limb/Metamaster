@@ -13,6 +13,8 @@ export interface StorageChartProps {
   total: number
   className?: string
   showLegend?: boolean
+  diskUsedBytes?: number
+  diskTotalBytes?: number
 }
 
 // Design system aligned colors - matches CSS variables in design-tokens.css
@@ -36,6 +38,8 @@ export function StorageChart({
   total,
   className = '',
   showLegend = true,
+  diskUsedBytes,
+  diskTotalBytes,
 }: StorageChartProps) {
   const [activeSegment, setActiveSegment] = useState<string | null>(null)
 
@@ -183,25 +187,24 @@ export function StorageChart({
         )}
       </div>
 
-      {/* Storage type breakdown hint */}
-      <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: STORAGE_COLORS.movies }} />
-              <span>Movies</span>
+      {/* Disk usage bar */}
+      {diskUsedBytes !== undefined && diskTotalBytes !== undefined && diskTotalBytes > 0 && (() => {
+        const pct = Math.round((diskUsedBytes / diskTotalBytes) * 100)
+        return (
+          <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+              <span>{formatFileSize(diskUsedBytes)} used</span>
+              <span>{formatFileSize(diskTotalBytes)} total</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: STORAGE_COLORS.tv }} />
-              <span>TV Shows</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: STORAGE_COLORS.other }} />
-              <span>Other</span>
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+              <div
+                className={`h-1.5 rounded-full transition-all ${pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                style={{ width: `${Math.min(pct, 100)}%` }}
+              />
             </div>
           </div>
-        </div>
-      </div>
+        )
+      })()}
     </Card>
   )
 }

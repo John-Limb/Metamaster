@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaChevronDown, FaChevronRight, FaSync } from 'react-icons/fa'
+import { CheckboxInput } from '@/components/common'
 import {
   organisationService,
   type ApplyResult,
@@ -44,7 +45,7 @@ function groupEpisodes(episodes: RenameProposal[]): ShowGroup[] {
 }
 
 // ---------------------------------------------------------------------------
-// Indeterminate checkbox
+// Indeterminate checkbox — derives checked/indeterminate from a set of keys
 // ---------------------------------------------------------------------------
 
 interface IndeterminateCheckboxProps {
@@ -52,27 +53,19 @@ interface IndeterminateCheckboxProps {
   selected: Set<string>
   onChange: () => void
   onClick?: (e: React.MouseEvent<HTMLInputElement>) => void
-  className?: string
 }
 
-function IndeterminateCheckbox({ keys, selected, onChange, onClick, className }: IndeterminateCheckboxProps) {
+function IndeterminateCheckbox({ keys, selected, onChange, onClick }: IndeterminateCheckboxProps) {
   const count = keys.filter((k) => selected.has(k)).length
   const checked = keys.length > 0 && count === keys.length
   const indeterminate = count > 0 && count < keys.length
-  const ref = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (ref.current) ref.current.indeterminate = indeterminate
-  }, [indeterminate])
 
   return (
-    <input
-      ref={ref}
-      type="checkbox"
+    <CheckboxInput
       checked={checked}
+      indeterminate={indeterminate}
       onChange={onChange}
       onClick={onClick}
-      className={className ?? 'w-3.5 h-3.5 text-indigo-600 rounded'}
     />
   )
 }
@@ -350,11 +343,9 @@ export function OrganisationPage() {
                       return (
                         <tr key={key} className="hover:bg-slate-50 dark:hover:bg-slate-700/20">
                           <td className="px-5 py-2">
-                            <input
-                              type="checkbox"
+                            <CheckboxInput
                               checked={selected.has(key)}
                               onChange={() => toggleItem(key)}
-                              className="w-3.5 h-3.5 text-indigo-600 rounded"
                             />
                           </td>
                           <td className="py-2 pr-4 font-mono text-slate-500 dark:text-slate-400">
@@ -505,11 +496,9 @@ export function OrganisationPage() {
                                           className="hover:bg-slate-50 dark:hover:bg-slate-700/20"
                                         >
                                           <td className="pl-16 pr-3 py-1.5 w-16">
-                                            <input
-                                              type="checkbox"
+                                            <CheckboxInput
                                               checked={selected.has(key)}
                                               onChange={() => toggleItem(key)}
-                                              className="w-3.5 h-3.5 text-indigo-600 rounded"
                                             />
                                           </td>
                                           <td className="py-1.5 pr-4 font-mono text-slate-500 dark:text-slate-400">

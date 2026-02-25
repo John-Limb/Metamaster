@@ -1,5 +1,6 @@
 import React from 'react'
 import { SkeletonDataTableHeader, Skeleton } from '../Skeleton/Skeleton'
+import { CheckboxInput } from '../Checkbox'
 
 export interface Column<T> {
   key: string
@@ -97,14 +98,10 @@ export function DataTable<T>({
             <tr>
               {rowSelection && (
                 <th scope="col" className="px-6 py-3 w-12">
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    ref={(input) => {
-                      if (input) input.indeterminate = isIndeterminate ?? false
-                    }}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                  <CheckboxInput
+                    checked={isAllSelected ?? false}
+                    indeterminate={isIndeterminate ?? false}
+                    onChange={(checked) => handleSelectAll(checked)}
                     aria-label="Select all rows"
                   />
                 </th>
@@ -158,11 +155,11 @@ export function DataTable<T>({
                   <tr key={rowIndex} className="table-row-hover">
                     {rowSelection && (
                       <td className="px-6 py-4 w-12">
-                        <input
-                          type="checkbox"
+                        <CheckboxInput
+                          checked={false}
+                          onChange={() => {}}
                           disabled
-                          className="w-4 h-4 rounded border-secondary-300 text-primary-600 cursor-pointer"
-                          aria-hidden="true"
+                          aria-label="Loading"
                         />
                       </td>
                     )}
@@ -238,12 +235,10 @@ export function DataTable<T>({
                   >
                     {rowSelection && (
                       <td className="px-6 py-4 w-12">
-                        <input
-                          type="checkbox"
+                        <CheckboxInput
                           checked={isSelected ?? false}
-                          onChange={(e) => handleSelectRow(key, e.target.checked)}
+                          onChange={(checked) => handleSelectRow(key, checked)}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                           aria-label={`Select row ${key}`}
                         />
                       </td>

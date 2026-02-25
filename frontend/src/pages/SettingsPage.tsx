@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FaCog, FaPalette, FaBell, FaSync, FaFolder } from 'react-icons/fa'
+import { CheckboxInput, RadioInput } from '@/components/common'
 import { organisationService, type OrganisationPreset } from '@/services/organisationService'
 import { scanScheduleService } from '@/services/configurationService'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -137,11 +138,9 @@ export const SettingsPage: React.FC = () => {
           </div>
           <div>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
+              <CheckboxInput
                 checked={autoRefresh}
-                onChange={(e) => setAutoRefresh(e.target.checked)}
-                className="w-4 h-4 text-primary-600 rounded"
+                onChange={(checked) => setAutoRefresh(checked)}
               />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Auto-refresh queue</span>
             </label>
@@ -194,15 +193,13 @@ export const SettingsPage: React.FC = () => {
         description="Customize the appearance of the application"
       >
         <div className="space-y-3">
-          {['light', 'dark', 'auto'].map((option) => (
+          {(['light', 'dark', 'auto'] as const).map((option) => (
             <label key={option} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
+              <RadioInput
                 name="theme"
                 value={option}
                 checked={theme === option}
-                onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'auto')}
-                className="w-4 h-4 text-primary-600"
+                onChange={(val) => setTheme(val as 'light' | 'dark' | 'auto')}
               />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{option}</span>
             </label>
@@ -218,20 +215,16 @@ export const SettingsPage: React.FC = () => {
       >
         <div className="space-y-3">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
+            <CheckboxInput
               checked={notifications}
-              onChange={(e) => setNotifications(e.target.checked)}
-              className="w-4 h-4 text-primary-600 rounded"
+              onChange={(checked) => setNotifications(checked)}
             />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable notifications</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
+            <CheckboxInput
               checked={soundEnabled}
-              onChange={(e) => setSoundEnabled(e.target.checked)}
-              className="w-4 h-4 text-primary-600 rounded"
+              onChange={(checked) => setSoundEnabled(checked)}
             />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sound enabled</span>
           </label>

@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useMemo } from 'react'
 import { useQueueStore } from '@/stores/queueStore'
 import { QueueStats } from './QueueStats'
 import { QueueItem } from './QueueItem'
-import { LoadingSpinner } from '@/components/common'
+import { LoadingSpinner, CheckboxInput } from '@/components/common'
 
 interface QueuePanelProps {
   className?: string
@@ -84,11 +84,9 @@ export function QueuePanel({
         <h2 className="text-xl font-semibold text-gray-900">Task Queue</h2>
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-2 text-sm text-gray-600">
-            <input
-              type="checkbox"
+            <CheckboxInput
               checked={pollingEnabled}
-              onChange={(e) => setPollingEnabled(e.target.checked)}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              onChange={(checked) => setPollingEnabled(checked)}
             />
             Auto-refresh
           </label>

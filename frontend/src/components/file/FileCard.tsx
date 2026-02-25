@@ -1,5 +1,6 @@
 import React from 'react'
 import { FaFile, FaFolder, FaImage, FaVideo, FaMusic, FaFileArchive } from 'react-icons/fa'
+import { CheckboxInput } from '@/components/common'
 import type { FileItem } from '@/types'
 
 interface FileCardProps {
@@ -93,11 +94,9 @@ export const FileCard: React.FC<FileCardProps> = ({
         onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
       >
-        <input
-          type="checkbox"
-          checked={isSelected}
+        <CheckboxInput
+          checked={isSelected ?? false}
           onChange={() => onSelect?.(file.id)}
-          className="w-4 h-4 rounded border-slate-300 dark:border-slate-600"
           onClick={(e) => e.stopPropagation()}
         />
         <div className="flex-shrink-0">{getFileIcon(file)}</div>
@@ -134,11 +133,9 @@ export const FileCard: React.FC<FileCardProps> = ({
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{formatFileSize(file.size)}</p>
           <p className="text-xs text-slate-400 dark:text-slate-500">{formatDate(file.updatedAt)}</p>
         </div>
-        <input
-          type="checkbox"
-          checked={isSelected}
+        <CheckboxInput
+          checked={isSelected ?? false}
           onChange={() => onSelect?.(file.id)}
-          className="w-4 h-4 rounded border-slate-300 dark:border-slate-600"
           onClick={(e) => e.stopPropagation()}
         />
       </div>

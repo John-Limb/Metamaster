@@ -1,5 +1,6 @@
 import React from 'react'
 import { FileCard } from './FileCard'
+import { CheckboxInput } from '@/components/common'
 import type { FileItem } from '@/types'
 
 interface FileListProps {
@@ -42,17 +43,16 @@ export const FileList: React.FC<FileListProps> = ({
       {/* Header */}
       <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 font-semibold text-sm text-slate-700 dark:text-slate-300">
         <div className="col-span-1">
-          <input
-            type="checkbox"
+          <CheckboxInput
             checked={selectedFiles.length === files.length && files.length > 0}
-            onChange={(e) => {
-              if (e.target.checked) {
+            indeterminate={selectedFiles.length > 0 && selectedFiles.length < files.length}
+            onChange={(checked) => {
+              if (checked) {
                 // Select all
               } else {
                 // Deselect all
               }
             }}
-            className="w-4 h-4 rounded border-slate-300 dark:border-slate-600"
           />
         </div>
         <div className="col-span-6">Name</div>
