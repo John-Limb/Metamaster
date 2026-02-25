@@ -32,6 +32,7 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.queue.endpoints import router as queue_router
 from app.api.v1.enrichment.endpoints import router as enrichment_router
 from app.api.v1.storage.endpoints import router as storage_router
+from app.api.v1.organisation.endpoints import router as organisation_router
 
 # Configure structured logging with daily rotation
 setup_logging()
@@ -215,6 +216,7 @@ app.include_router(auth_router, prefix="/api/v1")
 app.include_router(queue_router, prefix="/api/v1")
 app.include_router(enrichment_router, prefix="/api/v1")
 app.include_router(storage_router, prefix="/api/v1")
+app.include_router(organisation_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Root"])
