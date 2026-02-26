@@ -25,24 +25,29 @@ RUN test -d dist && ls -la dist/ && echo "Build completed successfully"
 FROM alpine:latest
 
 # Install nginx and curl for healthchecks
+# apk add nginx creates the nginx user/group automatically on Alpine
 RUN apk add --no-cache nginx curl
 
 # Copy nginx configuration from builder
 COPY --from=builder /app/nginx.conf /etc/nginx/nginx.conf
 
-# Create necessary directories
+# Create necessary directories, set up log symlinks, and hand everything to nginx user
 RUN mkdir -p /var/cache/nginx /var/run/nginx /var/www/html && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
-    ln -sf /dev/stderr /var/log/nginx/error.log
+    ln -sf /dev/stderr /var/log/nginx/error.log && \
+    chown -R nginx:nginx /var/cache/nginx /var/run/nginx /var/log/nginx /var/www/html
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist /var/www/html
 
-# Verify files were copied
-RUN test -f /var/www/html/index.html && ls -la /var/www/html/ && echo "Frontend artifacts deployed successfully" || (echo "ERROR: index.html not found" && exit 1)
+# Fix ownership of web content after copy, then verify
+RUN chown -R nginx:nginx /var/www/html && \
+    test -f /var/www/html/index.html && ls -la /var/www/html/ && echo "Frontend artifacts deployed successfully" || (echo "ERROR: index.html not found" && exit 1)
 
-# Expose port 80
-EXPOSE 80
+USER nginx
+
+# Expose port 8080 (non-privileged — compose maps 80:8080 externally)
+EXPOSE 8080
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]

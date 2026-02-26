@@ -86,36 +86,11 @@ def log_startup_credentials(db: Session) -> dict:
     Returns dict with all generated credentials.
     """
     credentials = {}
-    
-    # Create admin user if needed
+
     admin_password = create_admin_user(db)
     if admin_password:
         credentials["admin_password"] = admin_password
-    
-    # Get auto-generated secrets from settings
-    from app.core.config import settings
-    
-    # Only log these on first run (when admin was created)
-    if credentials:
-        credentials["jwt_secret_key"] = settings.jwt_secret_key
-        credentials["internal_api_key"] = settings.internal_api_key
-        
-        logger.info("=" * 60)
-        logger.info("AUTO-GENERATED CREDENTIALS")
-        logger.info("=" * 60)
-        logger.info("These credentials are auto-generated on first startup.")
-        logger.info("Save them securely - they won't be shown again!")
-        logger.info("-" * 60)
-        logger.info(f"Admin Username: admin")
-        logger.info(f"Admin Password: {admin_password}")
-        logger.info("-" * 60)
-        logger.info(f"JWT Secret Key: {settings.jwt_secret_key}")
-        logger.info("-" * 60)
-        logger.info(f"Internal API Key: {settings.internal_api_key}")
-        logger.info("=" * 60)
-        logger.info("IMPORTANT: Save these credentials securely!")
-        logger.info("=" * 60)
-    
+
     return credentials
 
 

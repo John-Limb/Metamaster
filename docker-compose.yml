@@ -21,14 +21,14 @@ services:
       dockerfile: Dockerfile
     container_name: MetaMaster_frontend
     ports:
-      - "80:80"
+      - "80:8080"
     # Note: VITE_API_BASE_URL is baked at build time in the Dockerfile (=/api/v1),
     # not at runtime. Nginx proxies /api/ to the backend.
     depends_on:
       app:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

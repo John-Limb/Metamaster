@@ -4,124 +4,119 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MetaMaster is a full-stack media metadata management system. FastAPI backend with PostgreSQL/Redis, React frontend with TypeScript/Vite. It monitors directories for media files, enriches metadata from OMDB (movies) and TVDB (TV shows), and analyzes files with FFprobe.
+MetaMaster is a full-stack media metadata management system. It scans local directories for movies and TV shows, enriches them with metadata from **TMDB** (The Movie Database), and provides a web UI to browse and manage your library.
 
-## Common Commands
-
-### Frontend (run from `frontend/`)
-
-| Task | Command |
-|------|---------|
-| Dev server | `npm run dev` (port 5173) |
-| Build | `npm run build` |
-| Lint | `npm run lint` |
-| Lint fix | `npm run lint:fix` |
-| Format | `npm run format` |
-| Type check | `npm run type-check` |
-| Run all tests | `npm test` |
-| Run single test | `npx vitest run path/to/file.test.ts` |
-| Watch mode | `npm run test:watch` |
-| Coverage | `npm run test:coverage` |
-| E2E tests | `npm run test:e2e` |
-| Regenerate API types | `npm run typegen` |
-
-### Backend (run from project root)
-
-| Task | Command |
-|------|---------|
-| Dev server | `uvicorn app.main:app --reload` |
-| Run all tests | `pytest` |
-| Run single test | `pytest tests/path/to/test_file.py::test_name` |
-| Run by marker | `pytest -m unit` / `pytest -m integration` |
-| Format | `black .` |
-| Sort imports | `isort .` |
-| Lint | `flake8` |
-| Type check | `mypy app/` |
-| DB migrations | `alembic upgrade head` |
-
-### Docker
-
-- Full stack: `docker-compose up -d`
-- Dev with debug ports: `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
+> Note: The README mentions OMDB/TVDB but the active enrichment code (`app/tasks/enrichment.py`, `app/services_impl.py`) uses TMDB. Legacy client stubs remain in `app/infrastructure/external_apis/omdb/` and `app/infrastructure/external_apis/tvdb/`.
 
 ## Architecture
 
-### Backend (`app/`)
+### Backend (Python / FastAPI)
 
-Clean architecture with four layers:
+Layered architecture under `app/`:
 
-- **`api/v1/`** — FastAPI route handlers organized by domain (auth, movies, tv_shows, files, cache, health, tasks, config)
-- **`domain/`** — Business logic and models (common, files, movies, tv_shows, auth)
-- **`application/`** — Application services (batch_operations, db_optimization, pattern_recognition, search)
-- **`infrastructure/`** — External integrations (cache via Redis, external_apis for OMDB/TVDB, file_system via Watchdog, monitoring via Prometheus)
-- **`core/`** — Config (Pydantic settings), database setup (SQLAlchemy 2.0), logging (structlog)
-- **`tasks/`** — Celery task definitions with Redis as broker
+- **`api/v1/`** — FastAPI routers organized by domain (`movies/`, `tv_shows/`, `files/`, `auth/`, `queue/`, `enrichment/`, `storage/`, `organisation/`)
+- **`domain/`** — Core business logic. Each domain (`movies/`, `tv_shows/`, `files/`) has `models.py` (SQLAlchemy ORM), `schemas.py` (Pydantic), `service.py`, and `scanner.py`
+- **`infrastructure/`** — External concerns: `cache/` (Redis), `external_apis/` (TMDB/OMDB/TVDB clients), `file_system/` (file monitoring, FFPROBE wrapper), `monitoring/` (Prometheus)
+- **`application/`** — Cross-cutting services: `search/`, `batch_operations/`, `pattern_recognition/`, `db_optimization/`
+- **`tasks/`** — Celery: `celery_app.py` (config), `enrichment.py` (TMDB enrichment tasks), `celery_beat.py` (scheduled tasks)
+- **`core/`** — App bootstrap: `config.py` (pydantic-settings), `database.py`, `init_db.py`, `logging_config.py`
 
-Auth: JWT access tokens (15 min) + refresh tokens (7 day) in httpOnly cookies. Argon2 password hashing. Rate limiting on auth endpoints.
+**Data model:** `Movie` → `MovieFile` (1:many); `TVShow` → `Season` → `Episode` → `EpisodeFile` (nested 1:many). Both movies and TV shows have an `enrichment_status` enum: `pending_local → local_only → pending_external → fully_enriched / not_found / external_failed`.
 
-### Frontend (`frontend/src/`)
+**Startup flow** (`app/main.py` lifespan): init DB → sync media directories → run scanners → dispatch enrichment for pending items → init Celery.
 
-- **`pages/`** — Route-level page components
-- **`components/`** — Organized by feature area (auth, file, settings, layout, features)
-- **`services/`** — API service layer (authService, fileService, movieService, tvShowService)
-- **`stores/`** — Zustand stores for client state (fileStore, movieStore, tvShowStore, uiStore)
-- **`context/`** — React Context providers (AuthContext, ThemeContext, ConfigurationContext)
-- **`hooks/`** — Custom React hooks
-- **`types/`** — TypeScript type definitions; `api-schema.ts` is auto-generated from OpenAPI spec
-- **`utils/api.ts`** — Axios client singleton with interceptors for auth headers, retry logic, and request ID tracking
+**Media paths** are fixed container paths (`/media/movies`, `/media/tv`) bound via Docker volume mounts. Configured in `app/core/config.py` as constants, not env vars.
 
-State management pattern: Zustand for client/UI state, TanStack Query for server state caching. React Router v7 with lazy-loaded routes.
+**Auth:** JWT (access 15 min / refresh 7 days). `jwt_secret_key` and `internal_api_key` are auto-generated at startup — they are not persisted and reset on restart.
 
-### Key Integration Points
+### Frontend (React / TypeScript)
 
-- Frontend API base URL configured via `VITE_API_BASE_URL` (defaults to `http://localhost:8000/api/v1`)
-- Backend settings driven by environment variables via Pydantic `Settings` in `app/core/config.py`
-- Path alias `@/` maps to `frontend/src/` (configured in vite.config.ts and tsconfig)
+Under `frontend/src/`:
 
-## Code Style
+- **`App.tsx`** — Route definitions. All routes except `/login` and `/register` are wrapped in `ProtectedRoute` + `MainLayout`. Pages are lazy-loaded.
+- **`pages/`** — Top-level page components (one per route)
+- **`components/features/`** — `movies/` and `tvshows/` feature modules (handle sub-routing internally with `/*`)
+- **`components/common/`**, **`components/layout/`** — Shared UI
+- **`services/`** — API client functions (axios-based, one file per domain)
+- **`stores/`** — Zustand global state stores (`movieStore`, `tvShowStore`, `fileStore`, `queueStore`, `uiStore`, `searchStore`, `settingsStore`/`authStore`)
+- **`context/`** — React contexts: `ThemeContext`, `AuthContext`
+- **`types/`** — TypeScript types; `api-schema.ts` is generated from `openapi.json` via `npm run typegen`
 
-- **Backend**: Black formatter (line length 100), isort with black profile, Python 3.9+
-- **Frontend**: ESLint 9 flat config + Prettier, TypeScript strict mode, Husky pre-commit hooks with lint-staged
-- **Commits**: Conventional Commits format (`feat:`, `fix:`, `chore:`, etc.)
-- **Coverage threshold**: 80% minimum (frontend via Vitest config)
+TanStack Query handles server-state caching on top of the Zustand client state.
 
-## Testing
+## Development Commands
 
-- **Backend markers**: `unit`, `integration`, `e2e`, `slow`, `performance`, `database`, `redis`, `external_api`, `docker`
-- **Frontend**: Vitest + Testing Library (unit/component), Playwright (E2E)
-- **Backend**: pytest + pytest-asyncio (async tests auto mode)
+### Backend
 
-<!-- WEDNESDAY_SKILLS_START -->
-## Wednesday Agent Skills
+```bash
+# Run dev server
+uvicorn app.main:app --reload
 
-This project uses Wednesday Solutions agent skills for consistent code quality and design standards.
+# Run all tests
+pytest
 
-### Available Skills
+# Run a single test file
+pytest tests/test_models_unit.py
 
-<available_skills>
-  <skill>
-    <name>wednesday-design</name>
-    <description>Design and UX guidelines for Wednesday Solutions projects. Covers visual design tokens, animation patterns, component standards, accessibility, and user experience best practices for React/Next.js applications. ENFORCES use of approved component libraries only.</description>
-    <location>.wednesday/skills/wednesday-design/SKILL.md</location>
-  </skill>
-  <skill>
-    <name>wednesday-dev</name>
-    <description>Technical development guidelines for Wednesday Solutions projects. Enforces import ordering, complexity limits, naming conventions, TypeScript best practices, and code quality standards for React/Next.js applications.</description>
-    <location>.wednesday/skills/wednesday-dev/SKILL.md</location>
-  </skill>
-</available_skills>
+# Run tests by marker
+pytest -m unit
+pytest -m "not slow"
 
-### How to Use Skills
+# With coverage
+pytest --cov=app
 
-When working on tasks, check if a relevant skill is available above. To activate a skill, read its SKILL.md file to load the full instructions.
+# Database migrations
+alembic upgrade head
+alembic revision --autogenerate -m "Description"
+alembic downgrade -1
 
-For example:
-- For code quality and development guidelines, read: .wednesday/skills/wednesday-dev/SKILL.md
-- For design and UI component guidelines, read: .wednesday/skills/wednesday-design/SKILL.md
+# Code quality (run before committing)
+black app/ && isort app/ && flake8 app/ && mypy app/
 
-### Important
+# Celery worker (required for enrichment tasks)
+celery -A app.tasks.celery_app worker --loglevel=info
+```
 
-- The wednesday-design skill contains 492+ approved UI components. Always check the component library before creating custom components.
-- The wednesday-dev skill enforces import ordering, complexity limits (max 8), and naming conventions.
+### Frontend
 
-<!-- WEDNESDAY_SKILLS_END -->
+```bash
+cd frontend
+
+npm run dev             # Dev server at http://localhost:5173
+npm run build           # Production build
+npm run type-check      # TypeScript check
+
+npm run test            # Run unit tests (Vitest)
+npm run test:watch      # Watch mode
+npm run test:coverage   # With coverage
+
+npm run lint            # ESLint
+npm run lint:fix        # Auto-fix lint issues
+npm run format          # Prettier
+
+npm run typegen         # Regenerate API types from openapi.json
+```
+
+### Docker
+
+```bash
+docker-compose up -d           # Start all services
+docker-compose up -d --build   # Rebuild and start
+docker-compose logs -f app     # Backend logs
+docker-compose down            # Stop
+```
+
+## Key Configuration
+
+- Config is loaded via `pydantic-settings` from `.env` (see `app/core/config.py`)
+- **TMDB:** Set `TMDB_READ_ACCESS_TOKEN` (preferred, Bearer JWT) or `TMDB_API_KEY` (v3 fallback)
+- **Database:** `DATABASE_URL` defaults to PostgreSQL; test suite uses SQLite (`media.db`, `test_cache.db` visible in repo root)
+- **CORS/Trusted Hosts:** Extend `allowed_origins` and `trusted_hosts` in `.env` for non-local deployments (comma-separated strings)
+
+## Commit Convention
+
+All changes are to have a new branch created. 
+
+Follows Conventional Commits: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+
+Example: `feat(api): add batch movie import endpoint`

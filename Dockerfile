@@ -22,8 +22,13 @@ ENV PYTHONUNBUFFERED=1 \
 # Copy application code
 COPY . .
 
-# Create media directories
-RUN mkdir -p /media/movies /media/tv
+# Create non-root user, set up media directories, and transfer ownership
+RUN groupadd --gid 1000 appgroup && \
+    useradd --uid 1000 --gid appgroup --shell /bin/sh --no-create-home appuser && \
+    mkdir -p /media/movies /media/tv && \
+    chown -R appuser:appgroup /app /media
+
+USER appuser
 
 # Expose port
 EXPOSE 8000

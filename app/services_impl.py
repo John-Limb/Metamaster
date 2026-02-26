@@ -291,11 +291,12 @@ class TMDBService:
             return None
 
     @classmethod
-    def _get_auth(cls) -> Optional[tuple]:
+    def _get_auth(cls) -> tuple:
         """Return (headers, query_params) for TMDB authentication.
 
         Priority: TMDB_READ_ACCESS_TOKEN (Bearer) > TMDB_API_KEY (?api_key=).
-        Returns None if neither is configured.
+        Raises RuntimeError if neither is configured so callers surface this as
+        external_failed (retryable) rather than silently marking items not_found.
         """
         if settings.tmdb_read_access_token:
             return (
@@ -307,8 +308,7 @@ class TMDBService:
                 {"accept": "application/json"},
                 {"api_key": settings.tmdb_api_key},
             )
-        logger.error("No TMDB credentials configured — set TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY")
-        return None
+        raise RuntimeError("No TMDB credentials configured — set TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY")
 
     @staticmethod
     def _normalize_tv_status(status: str) -> str:
@@ -336,10 +336,7 @@ class TMDBService:
         cls, db: Session, title: str, year: Optional[int] = None
     ) -> Optional[Dict[str, Any]]:
         """Search TMDB for a movie by title and optional year."""
-        auth = cls._get_auth()
-        if not auth:
-            return None
-        headers, params = auth
+        headers, params = cls._get_auth()
 
         cache_params: Dict[str, Any] = {"title": title}
         if year:
@@ -367,10 +364,7 @@ class TMDBService:
     @classmethod
     async def get_movie_details(cls, db: Session, tmdb_id: str) -> Optional[Dict[str, Any]]:
         """Fetch full movie details from TMDB by TMDB ID."""
-        auth = cls._get_auth()
-        if not auth:
-            return None
-        headers, params = auth
+        headers, params = cls._get_auth()
 
         cache_key = cls._get_cache_key("movie_details", {"tmdb_id": tmdb_id})
         cached = cls._get_cache(db, cache_key)
@@ -451,10 +445,7 @@ class TMDBService:
     @classmethod
     async def search_show(cls, db: Session, title: str) -> Optional[Dict[str, Any]]:
         """Search TMDB for a TV show by title."""
-        auth = cls._get_auth()
-        if not auth:
-            return None
-        headers, params = auth
+        headers, params = cls._get_auth()
 
         cache_key = cls._get_cache_key("tv_search", {"title": title})
         cached = cls._get_cache(db, cache_key)
@@ -474,10 +465,7 @@ class TMDBService:
     @classmethod
     async def get_series_details(cls, db: Session, tmdb_id: str) -> Optional[Dict[str, Any]]:
         """Fetch full TV series details from TMDB by TMDB ID."""
-        auth = cls._get_auth()
-        if not auth:
-            return None
-        headers, params = auth
+        headers, params = cls._get_auth()
 
         cache_key = cls._get_cache_key("tv_details", {"tmdb_id": tmdb_id})
         cached = cls._get_cache(db, cache_key)
@@ -499,10 +487,7 @@ class TMDBService:
         cls, db: Session, tmdb_id: str, season_number: int
     ) -> Optional[Dict[str, Any]]:
         """Fetch season details (including episode list) from TMDB."""
-        auth = cls._get_auth()
-        if not auth:
-            return None
-        headers, params = auth
+        headers, params = cls._get_auth()
 
         cache_key = cls._get_cache_key("tv_season", {"tmdb_id": tmdb_id, "season": season_number})
         cached = cls._get_cache(db, cache_key)
