@@ -59,7 +59,6 @@ frontend/
 │   ├── utils/               # Utility functions
 │   ├── App.tsx              # Main application component
 │   └── main.tsx             # Application entry point
-├── .storybook/              # Storybook configuration
 ├── .github/                 # GitHub workflows
 └── docs/                   # Documentation files
 ```
@@ -251,54 +250,6 @@ Coverage reports are generated in `coverage/` directory. Key metrics:
 - **Functions**: 80% minimum
 - **Lines**: 80% minimum
 
-## 📚 Storybook
-
-### Running Storybook
-
-```bash
-# Start Storybook development server
-npm run storybook
-
-# Build static Storybook
-npm run build-storybook
-
-# Preview built Storybook
-npm run storybook:preview
-```
-
-### Component Stories
-
-Stories are located alongside components with `.stories.tsx` extension:
-
-```
-src/components/
-└── common/
-    ├── LoadingSpinner.tsx
-    ├── LoadingSpinner.stories.tsx  # Story definition
-    └── LoadingSpinner.stories.mdx # MDX documentation
-```
-
-### Writing Stories
-
-```typescript
-import type { Meta, StoryObj } from '@storybook/react';
-import { LoadingSpinner } from './LoadingSpinner';
-
-const meta = {
-  title: 'Common/LoadingSpinner',
-  component: LoadingSpinner,
-  parameters: { layout: 'centered' },
-  tags: ['autodocs'],
-} satisfies Meta<typeof LoadingSpinner>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Default: Story = {
-  args: { size: 'md', message: 'Loading...' },
-};
-```
-
 ## 🛠️ Development
 
 ### Code Style
@@ -365,10 +316,6 @@ docker build -t metamaster-frontend:latest .
 docker run -e VITE_API_URL=http://api:8000 metamaster-frontend
 ```
 
-### GitHub Pages
-
-Storybook is automatically deployed to GitHub Pages on push to main branch.
-
 ## 🧩 Troubleshooting
 
 ### Common Issues
@@ -416,17 +363,6 @@ Error: Test failed
 - Check if backend services are running (for integration tests)
 - Verify test environment variables
 - Run `npm run test:ui` for visual debugging
-
-#### 5. **Storybook not loading styles**
-
-```
-Error: Styles not applied
-```
-
-**Solution:**
-- Check CSS imports in `.storybook/preview.js`
-- Verify tailwind.config.js is correct
-- Run `npm run build-storybook` to check build issues
 
 ### Getting Help
 

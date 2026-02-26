@@ -4,7 +4,7 @@
 [![Docker Build](https://github.com/John-Limb/metamaster/actions/workflows/docker.yml/badge.svg)](https://github.com/John-Limb/metamaster/actions/workflows/docker.yml)
 [![Code Quality](https://github.com/John-Limb/metamaster/actions/workflows/code-quality.yml/badge.svg)](https://github.com/John-Limb/metamaster/actions/workflows/code-quality.yml)
 [![codecov](https://codecov.io/gh/John-Limb/metamaster/branch/main/graph/badge.svg)](https://codecov.io/gh/John-Limb/metamaster)
-
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/aa284990b5e0484a91dcfdf720b4a658)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 A comprehensive web-based media metadata management system for organizing and managing your movie and TV show library with automatic metadata enrichment from OMDB and TVDB APIs.
 
 ## Features
@@ -142,7 +142,6 @@ A comprehensive web-based media metadata management system for organizing and ma
 | `ci.yml` | `frontend/.github/workflows/` | Frontend CI pipeline |
 | `lighthouse.yml` | `frontend/.github/workflows/` | Performance monitoring |
 | `security.yml` | `frontend/.github/workflows/` | Security scanning |
-| `storybook.yml` | `frontend/.github/workflows/` | Storybook deployment |
 
 ---
 
@@ -348,10 +347,6 @@ npm run lint                       # Run ESLint
 npm run lint:fix                   # Fix linting issues
 npm run format                     # Format with Prettier
 npm run type-check                 # TypeScript check
-
-# Documentation
-npm run storybook                  # Start Storybook
-npm run build-storybook            # Build Storybook
 ```
 
 ### Docker Commands
