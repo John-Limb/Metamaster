@@ -5,7 +5,7 @@ import json
 import subprocess
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
-from app.services.ffprobe_wrapper import FFProbeWrapper
+from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
 
 
 class TestFFProbeWrapperInitialization:
