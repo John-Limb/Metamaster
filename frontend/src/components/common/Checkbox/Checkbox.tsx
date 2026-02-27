@@ -84,7 +84,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   error,
   className = '',
 }) => {
-  const checkboxId = id || `checkbox-${Math.random().toString(36).substring(2, 9)}`
+  const checkboxId = id || `checkbox-${crypto.randomUUID()}`
 
   return (
     <div className={`flex items-start gap-3 ${className}`}>

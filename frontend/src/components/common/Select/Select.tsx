@@ -29,7 +29,7 @@ export const Select: React.FC<SelectProps> = ({
   required = false,
   className = '',
 }) => {
-  const selectId = `select-${Math.random().toString(36).substring(2, 9)}`
+  const selectId = `select-${crypto.randomUUID()}`
 
   return (
     <div className={`w-full ${className}`}>

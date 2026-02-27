@@ -123,7 +123,7 @@ export const camelCaseToTitleCase = (text: string): string => {
 
 // Generate unique ID
 export const generateId = (): string => {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  return crypto.randomUUID()
 }
 
 // Clone object
