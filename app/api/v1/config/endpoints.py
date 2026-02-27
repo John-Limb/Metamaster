@@ -58,8 +58,7 @@ async def check_configuration():
     Check all configuration items and return their status.
     
     This endpoint checks:
-    - OMDB API Key
-    - TVDB API Key
+    - TMDB API credentials
     - Database Connection
     - File System Paths (MOVIE_DIR, TV_DIR)
     """

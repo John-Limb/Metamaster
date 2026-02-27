@@ -119,6 +119,26 @@ class BatchOperationService:
 
         return operations, total
 
+    def _calculate_eta(
+        self, batch_op: BatchOperation, total_processed: int
+    ) -> Optional[datetime]:
+        """Calculate estimated time of completion for a batch operation."""
+        if not batch_op.started_at or total_processed == 0:
+            return None
+        elapsed = datetime.utcnow() - batch_op.started_at
+        rate = total_processed / elapsed.total_seconds()
+        if rate <= 0:
+            return None
+        remaining_seconds = (batch_op.total_items - total_processed) / rate
+        return datetime.utcnow() + timedelta(seconds=remaining_seconds)
+
+    def _update_progress_if_due(
+        self, batch_id: int, index: int, total: int, completed: int, failed: int
+    ) -> None:
+        """Update progress every 5 items or on the final item."""
+        if (index + 1) % 5 == 0 or (index + 1) == total:
+            self.update_batch_progress(batch_id, completed, failed)
+
     def update_batch_progress(
         self,
         batch_id: int,
@@ -144,19 +164,11 @@ class BatchOperationService:
         batch_op.completed_items = completed_items
         batch_op.failed_items = failed_items
 
-        # Calculate progress percentage
         total_processed = completed_items + failed_items
         if batch_op.total_items > 0:
             batch_op.progress_percentage = (total_processed / batch_op.total_items) * 100.0
 
-        # Calculate ETA
-        if batch_op.started_at and total_processed > 0:
-            elapsed = datetime.utcnow() - batch_op.started_at
-            items_per_second = total_processed / elapsed.total_seconds()
-            remaining_items = batch_op.total_items - total_processed
-            if items_per_second > 0:
-                remaining_seconds = remaining_items / items_per_second
-                batch_op.eta = datetime.utcnow() + timedelta(seconds=remaining_seconds)
+        batch_op.eta = self._calculate_eta(batch_op, total_processed)
 
         if error_message:
             batch_op.error_message = error_message
@@ -264,6 +276,14 @@ class BatchOperationService:
         logger.info(f"Cancelled batch operation {batch_id}")
         return batch_op
 
+    async def _dispatch_media_sync(self, media_id: int, media_type: str) -> Dict[str, Any]:
+        """Dispatch metadata sync to the correct handler for the given media type."""
+        if media_type == "movie":
+            return await self._sync_movie_metadata(media_id)
+        if media_type == "tv_show":
+            return await self._sync_tvshow_metadata(media_id)
+        raise ValueError(f"Invalid media_type: {media_type}")
+
     async def bulk_metadata_sync(
         self,
         batch_id: int,
@@ -291,30 +311,20 @@ class BatchOperationService:
         try:
             for i, media_id in enumerate(media_ids):
                 try:
-                    if media_type == "movie":
-                        result = await self._sync_movie_metadata(media_id)
-                    elif media_type == "tv_show":
-                        result = await self._sync_tvshow_metadata(media_id)
-                    else:
-                        raise ValueError(f"Invalid media_type: {media_type}")
-
+                    result = await self._dispatch_media_sync(media_id, media_type)
                     if result.get("success"):
                         completed += 1
                     else:
                         failed += 1
                         errors.append(f"Item {media_id}: {result.get('error', 'Unknown error')}")
-
                 except Exception as e:
                     failed += 1
                     error_msg = f"Item {media_id}: {str(e)}"
                     errors.append(error_msg)
                     logger.error(error_msg)
 
-                # Update progress every 5 items or at the end
-                if (i + 1) % 5 == 0 or (i + 1) == len(media_ids):
-                    self.update_batch_progress(batch_id, completed, failed)
+                self._update_progress_if_due(batch_id, i, len(media_ids), completed, failed)
 
-            # Mark as completed
             self.complete_batch_operation(batch_id)
 
             return {
@@ -353,9 +363,9 @@ class BatchOperationService:
             if not movie.tmdb_id:
                 return {"success": True, "message": "No TMDB ID available"}
 
-            omdb_data = await TMDBService.get_movie_details(self.db, movie.tmdb_id)
-            if omdb_data:
-                parsed = TMDBService.parse_movie_details_response(omdb_data)
+            tmdb_data = await TMDBService.get_movie_details(self.db, movie.tmdb_id)
+            if tmdb_data:
+                parsed = TMDBService.parse_movie_details_response(tmdb_data)
                 if parsed:
                     movie.plot = parsed.get("plot", movie.plot)
                     movie.rating = parsed.get("rating", movie.rating)
@@ -406,6 +416,25 @@ class BatchOperationService:
             logger.error(f"Error syncing TV show {show_id}: {str(e)}")
             return {"success": False, "error": str(e)}
 
+    def _analyze_file(self, file_path: str) -> Dict[str, Any]:
+        """Analyze a single file with ffprobe, returning file info or an error dict."""
+        if not os.path.exists(file_path):
+            return {"success": False, "error": f"File not found: {file_path}"}
+        metadata = self.ffprobe.get_metadata(file_path)
+        if "error" in metadata:
+            return {"success": False, "error": f"Failed to analyze {file_path}: {metadata['error']}"}
+        resolution = metadata.get("resolution", {})
+        return {
+            "success": True,
+            "path": file_path,
+            "size": os.path.getsize(file_path),
+            "resolution": f"{resolution.get('width', 0)}x{resolution.get('height', 0)}",
+            "codec_video": metadata.get("codecs", {}).get("video", "Unknown"),
+            "codec_audio": metadata.get("codecs", {}).get("audio", "Unknown"),
+            "duration": metadata.get("duration", -1),
+            "bitrate": metadata.get("bitrate", {}).get("total", "Unknown"),
+        }
+
     async def bulk_file_import(
         self,
         batch_id: int,
@@ -434,44 +463,21 @@ class BatchOperationService:
         try:
             for i, file_path in enumerate(file_paths):
                 try:
-                    # Check if file exists
-                    if not os.path.exists(file_path):
+                    result = self._analyze_file(file_path)
+                    if result["success"]:
+                        imported_files.append(result)
+                        completed += 1
+                    else:
                         failed += 1
-                        errors.append(f"File not found: {file_path}")
-                        continue
-
-                    # Analyze file
-                    metadata = self.ffprobe.get_metadata(file_path)
-                    if "error" in metadata:
-                        failed += 1
-                        errors.append(f"Failed to analyze {file_path}: {metadata['error']}")
-                        continue
-
-                    # Store file metadata (implementation depends on your file storage strategy)
-                    file_info = {
-                        "path": file_path,
-                        "size": os.path.getsize(file_path),
-                        "resolution": f"{metadata.get('resolution', {}).get('width', 0)}x{metadata.get('resolution', {}).get('height', 0)}",
-                        "codec_video": metadata.get("codecs", {}).get("video", "Unknown"),
-                        "codec_audio": metadata.get("codecs", {}).get("audio", "Unknown"),
-                        "duration": metadata.get("duration", -1),
-                        "bitrate": metadata.get("bitrate", {}).get("total", "Unknown"),
-                    }
-
-                    imported_files.append(file_info)
-                    completed += 1
-
+                        errors.append(result["error"])
                 except Exception as e:
                     failed += 1
                     error_msg = f"File {file_path}: {str(e)}"
                     errors.append(error_msg)
                     logger.error(error_msg)
 
-                # Update progress every 5 files or at the end
-                if (i + 1) % 5 == 0 or (i + 1) == len(file_paths):
-                    self.update_batch_progress(batch_id, completed, failed)
+                self._update_progress_if_due(batch_id, i, len(file_paths), completed, failed)
 
-            # Mark as completed
             self.complete_batch_operation(batch_id)
 
             return {

@@ -151,7 +151,7 @@ def setup_logging() -> None:
     api_logger = logging.getLogger("api")
     api_logger.addHandler(_daily_handler("api.log", logging.INFO))
 
-    # External API log (OMDB, TVDB outbound calls)
+    # External API log (TMDB outbound calls)
     external_api_logger = logging.getLogger("external_api")
     external_api_logger.addHandler(_daily_handler("external_api.log", logging.DEBUG))
 

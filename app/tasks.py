@@ -134,9 +134,9 @@ def enrich_metadata(self, media_id: int, media_type: str):
 
                 # Fetch from TMDB if we have a tmdb_id
                 if media.tmdb_id:
-                    omdb_data = run_async(TMDBService.get_movie_details(db, media.tmdb_id))
-                    if omdb_data:
-                        parsed = TMDBService.parse_movie_details_response(omdb_data)
+                    tmdb_data = run_async(TMDBService.get_movie_details(db, media.tmdb_id))
+                    if tmdb_data:
+                        parsed = TMDBService.parse_movie_details_response(tmdb_data)
                         if parsed:
                             # Update movie with enriched data
                             media.plot = parsed.get("plot", media.plot)
@@ -167,9 +167,9 @@ def enrich_metadata(self, media_id: int, media_type: str):
 
                 # Fetch from TMDB if we have a tmdb_id
                 if media.tmdb_id:
-                    tvdb_data = run_async(TMDBService.get_series_details(db, media.tmdb_id))
-                    if tvdb_data:
-                        parsed = TMDBService.parse_series_response(tvdb_data)
+                    tmdb_data = run_async(TMDBService.get_series_details(db, media.tmdb_id))
+                    if tmdb_data:
+                        parsed = TMDBService.parse_series_response(tmdb_data)
                         if parsed:
                             # Update TV show with enriched data
                             media.plot = parsed.get("plot", media.plot)
