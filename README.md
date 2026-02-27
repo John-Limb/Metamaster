@@ -5,19 +5,25 @@
 [![Code Quality](https://github.com/John-Limb/metamaster/actions/workflows/code-quality.yml/badge.svg)](https://github.com/John-Limb/metamaster/actions/workflows/code-quality.yml)
 [![codecov](https://codecov.io/gh/John-Limb/metamaster/branch/main/graph/badge.svg)](https://codecov.io/gh/John-Limb/metamaster)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/aa284990b5e0484a91dcfdf720b4a658)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-A comprehensive web-based media metadata management system for organizing and managing your movie and TV show library with automatic metadata enrichment from OMDB and TVDB APIs.
+A comprehensive web-based media metadata management system for organizing and managing your movie and TV show library with automatic metadata enrichment from OMDB and TMDB APIs.
 
 ## Features
 
 - **Media Library Management**: Organize movies and TV shows with detailed metadata
 - **Automatic File Detection**: Monitor directories for new media files
-- **Metadata Enrichment**: Automatic metadata lookup from OMDB (movies) and TVDB (TV shows)
+- **Metadata Enrichment**: Automatic metadata lookup from OMDB (movies) and TMDB (TV shows)
 - **File Analysis**: Extract technical details (resolution, bitrate, codec) using FFPROBE
 - **Caching System**: Multi-level Redis caching to reduce API calls
 - **Background Processing**: Celery-based task queue for long-running operations
 - **REST API**: Comprehensive REST API with automatic documentation
 - **Web Interface**: Modern React-based frontend with file navigation and management
 - **Docker Support**: Full Docker and Docker Compose setup with multi-service orchestration
+- **Authentication**: JWT-based authentication with role management
+- **Organisation Management**: Multi-tenant organisation support
+- **Storage Analytics**: Comprehensive storage usage tracking and visualization
+- **Batch Operations**: Process multiple files concurrently with batch operations
+- **Pattern Recognition**: Intelligent media file pattern detection
+- **Advanced Search**: Full-text search across media library
 
 ---
 
@@ -135,13 +141,8 @@ A comprehensive web-based media metadata management system for organizing and ma
 |----------|----------|---------|
 | `ci.yml` | `.github/workflows/` | Backend CI pipeline |
 | `docker.yml` | `.github/workflows/` | Docker build & push |
-| `code-quality.yml` | `.github/workflows/` | SonarQube analysis |
-| `deploy.yml` | `.github/workflows/` | Deployment pipeline |
-| `lint.yml` | `.github/workflows/` | Linting checks |
-| `scheduled-tests.yml` | `.github/workflows/` | Nightly/weekly tests |
-| `ci.yml` | `frontend/.github/workflows/` | Frontend CI pipeline |
-| `lighthouse.yml` | `frontend/.github/workflows/` | Performance monitoring |
-| `security.yml` | `frontend/.github/workflows/` | Security scanning |
+| `FrontEndTest-Lint.yml` | `frontend/.github/workflows/` | Frontend CI pipeline ||
+| `FrontEndsecurity.yml` | `frontend/.github/workflows/` | FrontEnd Security scanning |
 
 ---
 
@@ -164,7 +165,7 @@ A comprehensive web-based media metadata management system for organizing and ma
 | API | Purpose | Get Key |
 |-----|---------|---------|
 | OMDB API | Movie metadata | [omdbapi.com](http://www.omdbapi.com/apikey.aspx) |
-| TVDB API | TV show metadata | [thetvdb.com](https://thetvdb.com/api-information) |
+| TMDB API | Movie & TV show metadata | [themoviedb.org](https://www.themoviedb.org/settings/api) |
 
 ---
 
@@ -283,10 +284,9 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 OMDB_API_KEY=your_omdb_api_key_here
 OMDB_RATE_LIMIT=1
 
-# TVDB API (for TV show metadata)
-TVDB_API_KEY=your_tvdb_api_key_here
-TVDB_PIN=your_tvdb_pin_here
-TVDB_RATE_LIMIT=3
+# TMDB API (for movie & TV show metadata)
+TMDB_API_KEY=your_tmdb_api_key_here
+TMDB_RATE_LIMIT=3
 
 # File Monitoring
 MOVIE_DIR=/path/to/your/movies
@@ -393,11 +393,16 @@ docker-compose exec app pytest     # Run tests in container
 │   ├── api/                          # API endpoints
 │   │   ├── middleware/               # Request middleware
 │   │   └── v1/                       # API version 1
-│   │       ├── cache/                # Cache endpoints
+│   │       ├── auth/                 # Authentication endpoints (JWT)
+│   │       ├── cache/                # Cache management endpoints
 │   │       ├── config/               # Configuration endpoints
+│   │       ├── enrichment/           # Metadata enrichment endpoints
 │   │       ├── files/                # File management
 │   │       ├── health/               # Health checks
 │   │       ├── movies/               # Movie endpoints
+│   │       ├── organisation/         # Organisation management
+│   │       ├── queue/                # Queue management endpoints
+│   │       ├── storage/              # Storage analytics endpoints
 │   │       ├── tasks/                # Task management
 │   │       └── tv_shows/             # TV show endpoints
 │   ├── core/                         # Core utilities
@@ -406,15 +411,20 @@ docker-compose exec app pytest     # Run tests in container
 │   │   ├── init_db.py                # Database initialization
 │   │   └── logging_config.py         # Logging configuration
 │   ├── domain/                       # Domain models
+│   │   ├── auth/                    # Authentication domain
 │   │   ├── common/                   # Shared domain models
 │   │   ├── files/                    # File domain
 │   │   ├── movies/                   # Movie domain
+│   │   ├── organisation/             # Organisation domain
+│   │   ├── settings/                # Settings domain
+│   │   ├── storage/                 # Storage domain
 │   │   └── tv_shows/                 # TV show domain
 │   ├── infrastructure/               # Infrastructure layer
 │   │   ├── cache/                    # Redis caching
-│   │   ├── external_apis/            # OMDB & TVDB clients
-│   │   ├── file_system/              # File monitoring & FFPROBE
-│   │   └── monitoring/               # Prometheus & error handling
+│   │   ├── external_apis/            # OMDB & TMDB clients
+│   │   ├── file_system/              # File monitoring, FFPROBE & queue management
+│   │   ├── monitoring/               # Prometheus metrics & error handling
+│   │   └── security/                # JWT authentication, password hashing, rate limiting
 │   ├── application/                  # Application services
 │   │   ├── batch_operations/         # Batch processing
 │   │   ├── db_optimization/          # Query optimization
@@ -427,18 +437,20 @@ docker-compose exec app pytest     # Run tests in container
 ├── frontend/                         # Frontend application
 │   ├── src/
 │   │   ├── components/               # React components
-│   │   │   ├── common/               # Reusable components
-│   │   │   ├── file/                 # File management
-│   │   │   ├── layout/               # Layout components
-│   │   │   ├── dashboard/            # Dashboard widgets
-│   │   │   ├── queue/                # Queue management
+│   │   │   ├── common/               # Reusable components (Button, Card, DataTable, etc.)
+│   │   │   ├── dashboard/            # Dashboard widgets (LibraryStats, StorageChart, etc.)
+│   │   │   ├── features/             # Feature modules (movies, tvshows, filter, sort)
+│   │   │   ├── file/                 # File management components
+│   │   │   ├── layout/               # Layout components (Header, Sidebar, Footer)
+│   │   │   ├── queue/                # Queue management components
 │   │   │   ├── search/               # Search components
 │   │   │   └── settings/             # Settings components
-│   │   ├── pages/                    # Page components
+│   │   ├── pages/                    # Page components (Movies, TVShows, Files, etc.)
 │   │   ├── hooks/                    # Custom React hooks
 │   │   ├── services/                 # API service layer
 │   │   ├── stores/                   # Zustand state stores
 │   │   ├── types/                    # TypeScript types
+│   │   ├── context/                  # React context providers
 │   │   └── utils/                    # Utility functions
 │   ├── .storybook/                   # Storybook configuration
 │   ├── .github/workflows/            # Frontend CI/CD
@@ -521,6 +533,51 @@ Once the application is running, access the interactive API documentation:
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
+### Available API Endpoints
+
+| Category | Endpoint | Purpose |
+|----------|----------|---------|
+| **Authentication** | `POST /api/v1/auth/register` | Register new user |
+| | `POST /api/v1/auth/login` | User login (JWT) |
+| | `POST /api/v1/auth/refresh` | Refresh access token |
+| | `POST /api/v1/auth/logout` | User logout |
+| | `GET /api/v1/auth/me` | Get current user |
+| | `PUT /api/v1/auth/password` | Change password |
+| **Movies** | `GET /api/v1/movies` | List movies |
+| | `POST /api/v1/movies` | Create movie |
+| | `GET /api/v1/movies/{id}` | Get movie details |
+| | `PUT /api/v1/movies/{id}` | Update movie |
+| | `DELETE /api/v1/movies/{id}` | Delete movie |
+| | `POST /api/v1/movies/{id}/enrich` | Enrich movie metadata |
+| **TV Shows** | `GET /api/v1/tv-shows` | List TV shows |
+| | `POST /api/v1/tv-shows` | Create TV show |
+| | `GET /api/v1/tv-shows/{id}` | Get TV show details |
+| | `PUT /api/v1/tv-shows/{id}` | Update TV show |
+| | `DELETE /api/v1/tv-shows/{id}` | Delete TV show |
+| | `POST /api/v1/tv-shows/{id}/enrich` | Enrich TV show metadata |
+| **Files** | `GET /api/v1/files` | List files |
+| | `GET /api/v1/files/{id}` | Get file details |
+| | `POST /api/v1/files/scan` | Scan directories |
+| **Storage** | `GET /api/v1/storage/analytics` | Storage analytics |
+| | `GET /api/v1/storage/usage` | Storage usage by type |
+| **Organisation** | `GET /api/v1/organisation` | Get organisation |
+| | `PUT /api/v1/organisation` | Update organisation |
+| **Cache** | `GET /api/v1/cache` | Get cache info |
+| | `DELETE /api/v1/cache` | Clear cache |
+| | `GET /api/v1/cache/{key}` | Get cache value |
+| | `DELETE /api/v1/cache/{key}` | Delete cache key |
+| **Config** | `GET /api/v1/config` | Get configuration |
+| | `PUT /api/v1/config` | Update configuration |
+| **Enrichment** | `GET /api/v1/enrichment/status` | Enrichment status |
+| | `POST /api/v1/enrichment/retry` | Retry failed enrichment |
+| **Queue** | `GET /api/v1/queue` | List queue tasks |
+| | `GET /api/v1/queue/{id}` | Get task details |
+| | `DELETE /api/v1/queue/{id}` | Cancel task |
+| **Tasks** | `GET /api/v1/tasks` | List tasks |
+| | `GET /api/v1/tasks/{id}` | Get task details |
+| | `DELETE /api/v1/tasks/{id}` | Delete task |
+| | `POST /api/v1/tasks/{id}/retry` | Retry failed task |
+
 ### Health Check Endpoints
 
 | Endpoint | Purpose |
@@ -598,7 +655,7 @@ Frontend uses Husky and lint-staged for pre-commit checks:
 
 ## License
 
-[Add your license here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
