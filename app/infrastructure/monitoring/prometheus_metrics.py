@@ -10,7 +10,7 @@ from prometheus_client import (
 )
 import time
 import asyncio
-from typing import Optional, Callable
+from typing import Callable
 from functools import wraps
 import logging
 

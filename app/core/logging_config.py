@@ -7,8 +7,6 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any
-import structlog
-
 from app.core.config import settings
 
 

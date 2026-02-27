@@ -1,12 +1,7 @@
 """Files API endpoints"""
 
-import json
 import os
 import shutil
-import uuid
-from datetime import datetime
-from pathlib import Path
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
@@ -24,13 +19,11 @@ from app.domain.files.schemas import (
     FileBatchDeleteRequest,
     FileBatchMoveRequest,
     FileSearchResponse,
-    FileOperationResponse,
     FileClassifyRequest,
     FileClassificationResult,
     FileClassifyResponse,
 )
 from app.application.pattern_recognition.service import PatternRecognitionService
-from app.api.utils import pagination_metadata, resolve_pagination
 import logging
 
 logger = logging.getLogger(__name__)

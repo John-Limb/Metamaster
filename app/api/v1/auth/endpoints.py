@@ -5,8 +5,6 @@ registration, login, token refresh, logout, and password management.
 """
 
 from datetime import datetime, timedelta
-import hashlib
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -27,7 +25,6 @@ from app.domain.auth.schemas import (
 )
 from app.domain.auth.service import AuthService, hash_token
 from app.infrastructure.security.jwt import get_jwt_handler
-from app.infrastructure.security.password import verify_password
 from app.infrastructure.security.rate_limiter import RATE_LIMITS, rate_limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

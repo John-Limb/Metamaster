@@ -3,12 +3,11 @@
 import json
 import os
 import shutil
-import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from sqlalchemy import and_, or_, func
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.core.config import settings, MEDIA_DIRECTORIES, MOVIE_DIR, TV_DIR

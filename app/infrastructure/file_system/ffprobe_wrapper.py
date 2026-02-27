@@ -22,7 +22,7 @@ class ResolutionInfo:
 class FFProbeWrapper:
     """Wrapper around FFProbe for extracting media metadata"""
 
-    # Standard resolution labels mapping
+    # Standard resolution labels mapping (exact matches)
     RESOLUTION_LABELS = {
         (7680, 4320): "8K",
         (4096, 2160): "4K DCI",
@@ -34,6 +34,16 @@ class FFProbeWrapper:
         (640, 360): "360p",
         (426, 240): "240p",
     }
+
+    # Height thresholds for fallback label matching (descending order)
+    RESOLUTION_THRESHOLDS = [
+        (2160, "4K"),
+        (1440, "1440p"),
+        (1080, "1080p"),
+        (720, "720p"),
+        (480, "480p"),
+        (360, "360p"),
+    ]
 
     def __init__(self):
         """Initialize FFProbeWrapper and verify ffprobe is available"""
@@ -180,45 +190,14 @@ class FFProbeWrapper:
         Returns:
             Resolution label (e.g., "1080p", "720p")
         """
-        # Check for exact matches first
         if (width, height) in self.RESOLUTION_LABELS:
             return self.RESOLUTION_LABELS[(width, height)]
 
-        # Check for common aspect ratios with height-based matching
-        aspect_ratio = width / height if height > 0 else 0
+        for min_height, label in self.RESOLUTION_THRESHOLDS:
+            if height >= min_height:
+                return label
 
-        # Standard aspect ratios (16:9, 4:3, etc.)
-        if 1.7 < aspect_ratio < 1.9:  # 16:9
-            if height >= 2160:
-                return "4K"
-            elif height >= 1440:
-                return "1440p"
-            elif height >= 1080:
-                return "1080p"
-            elif height >= 720:
-                return "720p"
-            elif height >= 480:
-                return "480p"
-            elif height >= 360:
-                return "360p"
-            else:
-                return "240p"
-
-        # For other aspect ratios, use height as fallback
-        if height >= 2160:
-            return "4K"
-        elif height >= 1440:
-            return "1440p"
-        elif height >= 1080:
-            return "1080p"
-        elif height >= 720:
-            return "720p"
-        elif height >= 480:
-            return "480p"
-        elif height >= 360:
-            return "360p"
-        else:
-            return f"{height}p"
+        return f"{height}p"
 
     def get_bitrate(self, file_path: str) -> Dict[str, Any]:
         """
@@ -235,40 +214,27 @@ class FFProbeWrapper:
             streams = data.get("streams", [])
             format_info = data.get("format", {})
 
-            result = {}
-
-            # Get total bitrate
             total_bitrate = format_info.get("bit_rate")
-            if total_bitrate:
-                result["total"] = self._format_bitrate(int(total_bitrate))
-            else:
-                result["total"] = "Unknown"
-
-            # Get video bitrate
             video_stream = next(
                 (s for s in streams if s.get("codec_type") == "video"), None
             )
-            if video_stream and video_stream.get("bit_rate"):
-                result["video"] = self._format_bitrate(
-                    int(video_stream.get("bit_rate"))
-                )
-            else:
-                result["video"] = "Unknown"
-
-            # Get audio bitrate
             audio_stream = next(
                 (s for s in streams if s.get("codec_type") == "audio"), None
             )
-            if audio_stream and audio_stream.get("bit_rate"):
-                result["audio"] = self._format_bitrate(
-                    int(audio_stream.get("bit_rate"))
-                )
-            else:
-                result["audio"] = "Unknown"
 
-            return result
+            return {
+                "total": self._format_bitrate(int(total_bitrate)) if total_bitrate else "Unknown",
+                "video": self._get_stream_bitrate(video_stream),
+                "audio": self._get_stream_bitrate(audio_stream),
+            }
         except (FileNotFoundError, RuntimeError) as e:
             return {"error": str(e)}
+
+    def _get_stream_bitrate(self, stream: Optional[Dict[str, Any]]) -> str:
+        """Return formatted bitrate for a stream, or 'Unknown' if unavailable."""
+        if stream and stream.get("bit_rate"):
+            return self._format_bitrate(int(stream["bit_rate"]))
+        return "Unknown"
 
     @staticmethod
     def _format_bitrate(bitrate_bps: int) -> str:
@@ -354,6 +320,19 @@ class FFProbeWrapper:
             logger.error(f"Failed to extract duration from {file_path}: {e}")
             return -1.0
 
+    @staticmethod
+    def _parse_frame_rate(rate_str: Optional[str]) -> Optional[float]:
+        """Parse a 'num/den' frame rate string, returning float or None."""
+        if not rate_str:
+            return None
+        parts = rate_str.split("/")
+        if len(parts) != 2:
+            return None
+        try:
+            return float(parts[0]) / float(parts[1])
+        except (ValueError, ZeroDivisionError):
+            return None
+
     def get_frame_rate(self, file_path: str) -> float:
         """
         Extract video frame rate (fps)
@@ -366,40 +345,23 @@ class FFProbeWrapper:
         """
         try:
             data = self._run_ffprobe(file_path)
-            streams = data.get("streams", [])
-
-            # Find video stream
             video_stream = next(
-                (s for s in streams if s.get("codec_type") == "video"), None
+                (s for s in data.get("streams", []) if s.get("codec_type") == "video"),
+                None,
             )
-
             if not video_stream:
                 logger.warning(f"No video stream found in file: {file_path}")
                 return -1.0
 
-            # Try to get r_frame_rate first (more accurate)
-            r_frame_rate = video_stream.get("r_frame_rate")
-            if r_frame_rate:
-                try:
-                    # r_frame_rate is in format "num/den"
-                    parts = r_frame_rate.split("/")
-                    if len(parts) == 2:
-                        return float(parts[0]) / float(parts[1])
-                except (ValueError, ZeroDivisionError):
-                    pass
-
-            # Fallback to avg_frame_rate
-            avg_frame_rate = video_stream.get("avg_frame_rate")
-            if avg_frame_rate:
-                try:
-                    parts = avg_frame_rate.split("/")
-                    if len(parts) == 2:
-                        return float(parts[0]) / float(parts[1])
-                except (ValueError, ZeroDivisionError):
-                    pass
-
-            logger.warning(f"Frame rate not available for file: {file_path}")
-            return -1.0
+            fps = self._parse_frame_rate(
+                video_stream.get("r_frame_rate")
+            ) or self._parse_frame_rate(
+                video_stream.get("avg_frame_rate")
+            )
+            if fps is None:
+                logger.warning(f"Frame rate not available for file: {file_path}")
+                return -1.0
+            return fps
         except (FileNotFoundError, RuntimeError) as e:
             logger.error(f"Failed to extract frame rate from {file_path}: {e}")
             return -1.0

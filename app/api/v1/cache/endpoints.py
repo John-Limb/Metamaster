@@ -7,7 +7,6 @@ from app.schemas import (
     CacheStatsResponse,
     PaginatedCacheResponse,
     CacheOperationResponse,
-    CacheEntryResponse,
 )
 from app.services_impl import CacheService
 from app.infrastructure.cache.redis_cache import get_cache_service

@@ -2,11 +2,10 @@
 
 import logging
 import json
-import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List, Tuple
 from sqlalchemy.orm import Session
-from app.models import BatchOperation, Movie, TVShow, MovieFile, EpisodeFile
+from app.models import BatchOperation, Movie, TVShow
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
 from app.services_impl import TMDBService
 import os

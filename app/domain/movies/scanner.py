@@ -76,6 +76,71 @@ def get_ffprobe() -> FFProbeWrapper | None:
         return None
 
 
+def _extract_codec_fields(codecs: dict) -> dict:
+    """Return video/audio codec fields, omitting 'Unknown' values."""
+    result = {}
+    video = codecs.get("video")
+    if video and video != "Unknown":
+        result["codec_video"] = video
+    audio = codecs.get("audio")
+    if audio and audio != "Unknown":
+        result["codec_audio"] = audio
+    return result
+
+
+def _parse_bitrate_str(total_br: str) -> int | None:
+    """Parse a formatted bitrate string ('5.5 Mbps', '256 kbps') to a kbps int."""
+    if not isinstance(total_br, str) or total_br == "Unknown":
+        return None
+    try:
+        if "Mbps" in total_br:
+            return int(float(total_br.replace(" Mbps", "")) * 1000)
+        if "kbps" in total_br:
+            return int(float(total_br.replace(" kbps", "")))
+    except (ValueError, TypeError):
+        pass
+    return None
+
+
+def _extract_audio_channels(streams: list) -> int | None:
+    """Find the first audio stream and return its channel count, or None."""
+    audio = next(
+        (s for s in streams if isinstance(s, dict) and s.get("codec_type") == "audio"),
+        None,
+    )
+    if not audio or not audio.get("channels"):
+        return None
+    try:
+        return int(audio["channels"])
+    except (ValueError, TypeError):
+        return None
+
+
+def _build_probe_result(metadata: dict) -> dict:
+    """Assemble the MovieFile-compatible dict from raw ffprobe metadata."""
+    result = {}
+    resolution = metadata.get("resolution", {})
+    w, h = resolution.get("width"), resolution.get("height")
+    if w and h:
+        result["resolution"] = f"{w}x{h}"
+
+    result.update(_extract_codec_fields(metadata.get("codecs", {})))
+
+    bitrate = _parse_bitrate_str(metadata.get("bitrate", {}).get("total", ""))
+    if bitrate is not None:
+        result["bitrate"] = bitrate
+
+    duration = metadata.get("duration", -1)
+    if isinstance(duration, (int, float)) and duration > 0:
+        result["duration"] = int(duration)
+
+    channels = _extract_audio_channels(metadata.get("streams", []))
+    if channels is not None:
+        result["audio_channels"] = channels
+
+    return result
+
+
 def probe_file(ffprobe: FFProbeWrapper, file_path: str) -> dict:
     """Run FFprobe on a single file and return MovieFile-compatible fields.
 
@@ -86,53 +151,7 @@ def probe_file(ffprobe: FFProbeWrapper, file_path: str) -> dict:
         if "error" in metadata:
             logger.warning(f"FFprobe error for {file_path}: {metadata['error']}")
             return {}
-
-        resolution = metadata.get("resolution", {})
-        codecs = metadata.get("codecs", {})
-        bitrate = metadata.get("bitrate", {})
-        duration = metadata.get("duration", -1)
-
-        result = {}
-
-        w = resolution.get("width")
-        h = resolution.get("height")
-        if w and h:
-            result["resolution"] = f"{w}x{h}"
-
-        if codecs.get("video") and codecs["video"] != "Unknown":
-            result["codec_video"] = codecs["video"]
-        if codecs.get("audio") and codecs["audio"] != "Unknown":
-            result["codec_audio"] = codecs["audio"]
-
-        total_br = bitrate.get("total", "")
-        if isinstance(total_br, str) and total_br != "Unknown":
-            try:
-                if "Mbps" in total_br:
-                    result["bitrate"] = int(float(total_br.replace(" Mbps", "")) * 1000)
-                elif "kbps" in total_br:
-                    result["bitrate"] = int(float(total_br.replace(" kbps", "")))
-            except (ValueError, TypeError):
-                pass
-
-        if isinstance(duration, (int, float)) and duration > 0:
-            result["duration"] = int(duration)
-
-        # Extract audio channel count
-        audio_stream = next(
-            (
-                s
-                for s in metadata.get("streams", {})
-                if isinstance(s, dict) and s.get("codec_type") == "audio"
-            ),
-            None,
-        )
-        if audio_stream and audio_stream.get("channels"):
-            try:
-                result["audio_channels"] = int(audio_stream["channels"])
-            except (ValueError, TypeError):
-                pass
-
-        return result
+        return _build_probe_result(metadata)
     except Exception as e:
         logger.warning(f"FFprobe failed for {file_path}: {e}")
         return {}

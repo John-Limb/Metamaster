@@ -53,7 +53,7 @@ export const useUIStore = create<UIState>()(
       // Toast notifications
       toasts: [],
       addToast: (toast) => {
-        const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        const id = `toast-${crypto.randomUUID()}`
         set((state) => ({
           toasts: [...state.toasts, { ...toast, id }],
         }))
@@ -74,7 +74,7 @@ export const useUIStore = create<UIState>()(
       // Modals
       modals: [],
       openModal: (modal) => {
-        const id = `modal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        const id = `modal-${crypto.randomUUID()}`
         set((state) => ({
           modals: [...state.modals, { ...modal, id }],
         }))

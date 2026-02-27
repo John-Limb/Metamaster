@@ -1,9 +1,8 @@
 """Celery task configuration and definitions"""
 
-import logging
 import traceback
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
+from typing import Optional, List
 from sqlalchemy.orm import Session
 from croniter import croniter
 from app.core.config import settings, MEDIA_DIRECTORIES
@@ -14,9 +13,6 @@ from app.models import (
     TVShow,
     APICache,
     FileQueue,
-    MovieFile,
-    EpisodeFile,
-    BatchOperation,
 )
 from app.services_impl import TMDBService
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper

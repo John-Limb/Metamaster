@@ -4,7 +4,7 @@ import redis
 import json
 import logging
 from typing import Optional, Any, Dict
-from datetime import datetime, date, timedelta, timezone
+from datetime import datetime, date, timezone
 from decimal import Decimal
 from app.core.config import settings
 

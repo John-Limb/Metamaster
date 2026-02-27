@@ -8,6 +8,10 @@ MetaMaster is a full-stack media metadata management system. It scans local dire
 
 > Note: The README mentions OMDB/TVDB but the active enrichment code (`app/tasks/enrichment.py`, `app/services_impl.py`) uses TMDB. Legacy client stubs remain in `app/infrastructure/external_apis/omdb/` and `app/infrastructure/external_apis/tvdb/`.
 
+## Hard limits
+1. ≤80 lines/function, cyclomatic complexity ≤8
+2. ≤5 positional params, ≤12 branches, ≤6 returns
+
 ## Architecture
 
 ### Backend (Python / FastAPI)
@@ -113,9 +117,11 @@ docker-compose down            # Stop
 - **Database:** `DATABASE_URL` defaults to PostgreSQL; test suite uses SQLite (`media.db`, `test_cache.db` visible in repo root)
 - **CORS/Trusted Hosts:** Extend `allowed_origins` and `trusted_hosts` in `.env` for non-local deployments (comma-separated strings)
 
-## Commit Convention
+## Git Workflow
 
-All changes are to have a new branch created. 
+**Always stage changes (`git add`), never commit.** Commits require a GPG password that only the user can provide — stage the files and let the user commit.
+
+## Commit Convention
 
 Follows Conventional Commits: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
