@@ -67,7 +67,7 @@ export class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, Api
   }
 
   addToast = (toast: Omit<ToastType, 'id'>) => {
-    const id = Math.random().toString(36).substr(2, 9)
+    const id = crypto.randomUUID()
     this.setState((prev) => ({
       toasts: [...prev.toasts, { ...toast, id }],
     }))
