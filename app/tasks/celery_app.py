@@ -10,7 +10,6 @@ from celery.signals import (
 )
 from kombu import Exchange, Queue
 import logging
-import traceback
 
 from app.core.config import settings
 from app.tasks.celery_beat import beat_schedule

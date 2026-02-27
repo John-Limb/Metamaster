@@ -9,7 +9,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 from app.models import FileQueue
 from app.core.database import SessionLocal
 from app.application.pattern_recognition.service import PatternRecognitionService

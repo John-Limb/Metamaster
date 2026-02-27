@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from celery.result import AsyncResult
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 import logging
 
 from app.tasks.celery_app import celery_app
@@ -19,7 +19,6 @@ from app.schemas import (
     BatchOperationCreate,
     BatchOperationResponse,
     PaginatedBatchOperationResponse,
-    BatchProgressUpdate,
 )
 from app.infrastructure.monitoring.error_handler import TaskErrorHandler
 from app.application.batch_operations.service import BatchOperationService

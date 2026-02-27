@@ -145,24 +145,22 @@ __all__ = [
     "enrich_tv_show_external",
 ]
 
-# Celery task aliases — only register Celery task objects (not plain helper functions)
-_celery_task_aliases = [
-    "analyze_file",
-    "enrich_metadata",
-    "cleanup_cache",
-    "cleanup_queue",
-    "sync_metadata",
-    "bulk_metadata_sync_task",
-    "bulk_file_import_task",
-    "process_batch_item",
-    "update_batch_progress",
-    "scan_new_media",
-    "check_and_run_scan",
-    "retry_failed_enrichment",
-]
+# Explicit mapping of alias → task object — avoids globals() lookup
+_task_registry = {
+    "analyze_file": analyze_file,
+    "enrich_metadata": enrich_metadata,
+    "cleanup_cache": cleanup_cache,
+    "cleanup_queue": cleanup_queue,
+    "sync_metadata": sync_metadata,
+    "bulk_metadata_sync_task": bulk_metadata_sync_task,
+    "bulk_file_import_task": bulk_file_import_task,
+    "process_batch_item": process_batch_item,
+    "update_batch_progress": update_batch_progress,
+    "scan_new_media": scan_new_media,
+    "check_and_run_scan": check_and_run_scan,
+    "retry_failed_enrichment": retry_failed_enrichment,
+}
 
 # Restore the original Celery task names so existing beat schedules and callers keep working
-for _alias in _celery_task_aliases:
-    _register_task_alias(globals()[_alias], _alias)
-
-del _alias
+for _alias, _task in _task_registry.items():
+    _register_task_alias(_task, _alias)

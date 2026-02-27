@@ -5,7 +5,6 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import StaticPool, QueuePool
 from app.core.config import settings
 import logging
-import time
 
 logger = logging.getLogger(__name__)
 

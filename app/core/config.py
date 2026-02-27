@@ -1,10 +1,9 @@
 """Application configuration settings"""
 
-import os
 import secrets
 from typing import Annotated, Any, List, Optional, Union
 
-from pydantic import BeforeValidator, computed_field, Field
+from pydantic import BeforeValidator, computed_field
 from pydantic_settings import BaseSettings
 
 # Generated once at import time. Module-level constants are never read from the

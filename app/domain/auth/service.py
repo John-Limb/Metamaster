@@ -15,11 +15,9 @@ from app.domain.auth.schemas import UserRegisterRequest
 from app.domain.auth.validators import validate_password_strength
 from app.infrastructure.security.password import (
     hash_password as _hash_password,
-    needs_rehash,
     verify_password as _verify_password,
 )
 from app.infrastructure.security.jwt import jwt_handler
-from app.infrastructure.security.rate_limiter import RATE_LIMITS, rate_limiter
 
 
 def hash_password(password: str) -> str:
