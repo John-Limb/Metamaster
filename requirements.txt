@@ -18,10 +18,6 @@ watchdog==6.0.0
 
 # External APIs
 httpx==0.28.1
-requests-cache==1.3.0
-
-# File Analysis
-ffmpeg-python==0.2.0
 
 # Scheduling
 croniter>=1.3.8
@@ -34,9 +30,6 @@ python-multipart==0.0.22
 argon2-cffi>=23.1.0      # Password hashing (Argon2id)
 PyJWT>=2.8.0             # JWT token handling
 
-# Logging
-structlog==25.5.0
-
 # Monitoring
 prometheus-client==0.17.1
 
@@ -44,10 +37,7 @@ prometheus-client==0.17.1
 pytest==8.4.2
 pytest-asyncio==1.3.0
 pytest-cov==4.1.0
-pytest-benchmark==5.2.3
-memory-profiler==0.61.0
 psutil==5.9.6
-locust==2.34.0
 
 # Development
 black==26.1.0
