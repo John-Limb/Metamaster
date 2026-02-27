@@ -30,6 +30,40 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
+def _parse_iso_timestamp(value) -> Optional[datetime]:
+    """Parse an ISO-format timestamp string to datetime, returning None on failure."""
+    if not value or not isinstance(value, str):
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return None
+
+
+def _collect_celery_tasks(inspect) -> dict:
+    """Collect active, scheduled, and reserved tasks from Celery inspect into one dict."""
+    active = inspect.active() or {}
+    scheduled = inspect.scheduled() or {}
+    reserved = inspect.reserved() or {}
+    tasks = {}
+    for _, worker_tasks in active.items():
+        for task in worker_tasks:
+            task_id = task.get("id")
+            if task_id:
+                tasks[task_id] = {"status": "started", "created_at": task.get("time_start")}
+    for _, worker_tasks in scheduled.items():
+        for task in worker_tasks:
+            task_id = task.get("request", {}).get("id")
+            if task_id:
+                tasks[task_id] = {"status": "pending", "created_at": None}
+    for _, worker_tasks in reserved.items():
+        for task in worker_tasks:
+            task_id = task.get("id")
+            if task_id and task_id not in tasks:
+                tasks[task_id] = {"status": "pending", "created_at": None}
+    return tasks
+
+
 @router.get("/{task_id}", response_model=TaskStatusResponse)
 async def get_task_status(task_id: str):
     """
@@ -47,27 +81,11 @@ async def get_task_status(task_id: str):
         # Get task info
         task_info = result.info
 
-        # Determine timestamps
         created_at = None
         updated_at = None
-
-        # Try to get timestamps from task info if available
         if isinstance(task_info, dict):
-            created_at = task_info.get("created_at")
-            updated_at = task_info.get("updated_at")
-
-        # If timestamps are strings, parse them
-        if created_at and isinstance(created_at, str):
-            try:
-                created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-            except (ValueError, AttributeError):
-                created_at = None
-
-        if updated_at and isinstance(updated_at, str):
-            try:
-                updated_at = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
-            except (ValueError, AttributeError):
-                updated_at = None
+            created_at = _parse_iso_timestamp(task_info.get("created_at"))
+            updated_at = _parse_iso_timestamp(task_info.get("updated_at"))
 
         # Build response based on task state
         response_data = {
@@ -184,86 +202,28 @@ async def list_tasks(
                 detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}",
             )
 
-        # Get active tasks from celery
-        inspect = celery_app.control.inspect()
+        all_tasks_dict = _collect_celery_tasks(celery_app.control.inspect())
 
-        # Get all active tasks
-        active_tasks = inspect.active() or {}
-        scheduled_tasks = inspect.scheduled() or {}
-        reserved_tasks = inspect.reserved() or {}
-
-        # Combine all tasks
-        all_tasks_dict = {}
-
-        # Process active tasks
-        for worker, tasks in active_tasks.items():
-            for task in tasks:
-                task_id = task.get("id")
-                if task_id:
-                    all_tasks_dict[task_id] = {
-                        "status": "started",
-                        "created_at": task.get("time_start"),
-                    }
-
-        # Process scheduled tasks
-        for worker, tasks in scheduled_tasks.items():
-            for task in tasks:
-                task_id = task.get("request", {}).get("id")
-                if task_id:
-                    all_tasks_dict[task_id] = {
-                        "status": "pending",
-                        "created_at": None,
-                    }
-
-        # Process reserved tasks
-        for worker, tasks in reserved_tasks.items():
-            for task in tasks:
-                task_id = task.get("id")
-                if task_id and task_id not in all_tasks_dict:
-                    all_tasks_dict[task_id] = {
-                        "status": "pending",
-                        "created_at": None,
-                    }
-
-        # Filter by status if provided
         if status:
             status_lower = status.lower()
             all_tasks_dict = {
-                task_id: task_info
-                for task_id, task_info in all_tasks_dict.items()
-                if task_info["status"] == status_lower
+                tid: info
+                for tid, info in all_tasks_dict.items()
+                if info["status"] == status_lower
             }
 
-        # Get total count
         total = len(all_tasks_dict)
-
-        # Apply pagination
         task_ids = list(all_tasks_dict.keys())[offset : offset + limit]
 
-        # Build response items
-        items = []
-        for task_id in task_ids:
-            task_info = all_tasks_dict[task_id]
-
-            # Get detailed result for timestamp info
-            result = AsyncResult(task_id, app=celery_app)
-
-            # Parse created_at if available
-            created_at = task_info.get("created_at")
-            if created_at and isinstance(created_at, str):
-                try:
-                    created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-                except (ValueError, AttributeError):
-                    created_at = None
-
-            items.append(
-                TaskListItemResponse(
-                    task_id=task_id,
-                    status=task_info["status"],
-                    created_at=created_at,
-                    updated_at=None,
-                )
+        items = [
+            TaskListItemResponse(
+                task_id=tid,
+                status=all_tasks_dict[tid]["status"],
+                created_at=_parse_iso_timestamp(all_tasks_dict[tid].get("created_at")),
+                updated_at=None,
             )
+            for tid in task_ids
+        ]
 
         logger.info(f"Retrieved {len(items)} tasks (total: {total})")
 
