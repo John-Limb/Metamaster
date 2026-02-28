@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { TextInput } from '@/components/common/TextInput'
 import { Button } from '@/components/common/Button'
@@ -176,17 +176,6 @@ export const LoginForm: React.FC = () => {
           </div>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-secondary-600 dark:text-secondary-400">
-            Don't have an account?{' '}
-            <Link
-              to="/register"
-              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 focus:outline-none focus:underline"
-            >
-              Create one
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   )

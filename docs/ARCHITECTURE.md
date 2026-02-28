@@ -33,6 +33,8 @@ Both `Movie` and `TVShow` have an `enrichment_status` enum:
 
 JWT-based. Access tokens expire after 15 minutes; refresh tokens after 7 days. `jwt_secret_key` and `internal_api_key` are **auto-generated at startup** and are not persisted — they reset on every restart.
 
+MetaMaster is a **single-admin application**. Self-registration is disabled — the `POST /auth/register` endpoint is not exposed. The admin account is bootstrapped automatically on first run (see [Admin Guide](ADMIN.md)).
+
 ### Media Paths
 
 Fixed container paths: `/media/movies` and `/media/tv`. These are Docker volume mount points configured as constants in `app/core/config.py`, not environment variables.

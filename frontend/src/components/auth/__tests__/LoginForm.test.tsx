@@ -64,13 +64,6 @@ describe('LoginForm', () => {
       expect(screen.getByText(/sign in to your account/i)).toBeInTheDocument()
     })
 
-    it('should render link to registration page', () => {
-      renderWithRouter(<LoginForm />)
-
-      expect(screen.getByText(/don't have an account/i)).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /create one/i })).toHaveAttribute('href', '/register')
-    })
-
     it('should have required attribute on form fields', () => {
       renderWithRouter(<LoginForm />)
 

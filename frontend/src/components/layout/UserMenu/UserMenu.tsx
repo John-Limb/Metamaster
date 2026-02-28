@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FaUser, FaCog, FaSignOutAlt, FaChevronDown, FaUserCircle, FaSignInAlt, FaUserPlus } from 'react-icons/fa'
+import { FaUser, FaCog, FaSignOutAlt, FaChevronDown, FaUserCircle, FaSignInAlt } from 'react-icons/fa'
 import { useAuth } from '@/context/AuthContext'
 import type { User } from '@/types/auth'
 
@@ -76,7 +76,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     )
   }
 
-  // Show login/register buttons when not authenticated
+  // Show login button when not authenticated
   if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center gap-2">
@@ -86,13 +86,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         >
           <FaSignInAlt className="w-4 h-4" />
           <span className="hidden sm:inline">Sign in</span>
-        </Link>
-        <Link
-          to="/register"
-          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <FaUserPlus className="w-4 h-4" />
-          <span className="hidden sm:inline">Sign up</span>
         </Link>
       </div>
     )

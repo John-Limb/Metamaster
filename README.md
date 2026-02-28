@@ -399,6 +399,7 @@ See [docs/API_REFERENCE.md](docs/API_REFERENCE.md) for the full endpoint referen
 
 | Document | Description |
 |----------|-------------|
+| [Admin Guide](docs/ADMIN.md) | Admin account, password reset |
 | [Architecture](docs/ARCHITECTURE.md) | Backend/frontend architecture, data models, startup flow |
 | [API Reference](docs/API_REFERENCE.md) | All REST endpoints |
 | [CI/CD](docs/CICD.md) | GitHub Actions workflows, secrets, Dependabot |
