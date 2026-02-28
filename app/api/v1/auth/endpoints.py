@@ -20,7 +20,6 @@ from app.domain.auth.schemas import (
     TokenResponse,
     UpdateProfileRequest,
     UserLoginRequest,
-    UserRegisterRequest,
     UserResponse,
 )
 from app.domain.auth.service import AuthService, hash_token
@@ -88,75 +87,6 @@ async def get_current_user(
 
     return user
 
-
-@router.post(
-    "/register",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Register a new user",
-    description="Create a new user account with username, email, and password.",
-)
-async def register(
-    request: Request,
-    data: UserRegisterRequest,
-    db: Session = Depends(get_db),
-) -> UserResponse:
-    """Register a new user account.
-
-    Creates a new user with the provided credentials. Rate limited to prevent
-    abuse. Validates username and email uniqueness.
-
-    Args:
-        request: The FastAPI request object.
-        data: The registration request data.
-        db: The database session.
-
-    Returns:
-        UserResponse with the created user's information.
-
-    Raises:
-        HTTPException: 429 if rate limited, 409 if username/email exists.
-    """
-    # Rate limiting
-    client_ip = get_client_ip(request)
-    allowed, remaining, retry_after = rate_limiter.is_allowed(
-        f"register:{client_ip}",
-        RATE_LIMITS["register"]["max_requests"],
-        RATE_LIMITS["register"]["window_seconds"],
-    )
-    if not allowed:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Too many registration attempts. Retry after {retry_after} seconds.",
-            headers={"Retry-After": str(retry_after)},
-        )
-
-    auth_service = AuthService(db)
-
-    # Check if username exists
-    if auth_service.get_user_by_username(data.username):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Username already registered",
-        )
-
-    # Check if email exists
-    if auth_service.get_user_by_email(data.email):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email already registered",
-        )
-
-    # Create user
-    user = auth_service.create_user(data)
-
-    return UserResponse(
-        id=user.id,
-        username=user.username,
-        email=user.email,
-        avatar_url=user.avatar_url,
-        created_at=user.created_at,
-    )
 
 
 @router.post(

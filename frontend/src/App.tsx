@@ -10,7 +10,6 @@ const NotFound = lazy(() => import('./components/common/NotFound'))
 
 // Auth pages
 const LoginPage = lazy(() => import('./pages/LoginPage'))
-const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const ChangePasswordPage = lazy(() => import('./pages/ChangePasswordPage'))
 
 // Feature modules
@@ -43,15 +42,6 @@ function App() {
             </Suspense>
           }
         />
-        <Route
-          path="/register"
-          element={
-            <Suspense fallback={<LoadingFallback />}>
-              <RegisterPage />
-            </Suspense>
-          }
-        />
-
         {/* Protected Route for Password Change (no layout) */}
         <Route
           path="/change-password"

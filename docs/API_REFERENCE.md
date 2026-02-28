@@ -13,7 +13,6 @@ Interactive documentation is available when the application is running:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/auth/register` | Register new user |
 | `POST` | `/api/v1/auth/login` | Login (returns JWT access + refresh tokens) |
 | `POST` | `/api/v1/auth/refresh` | Refresh access token |
 | `POST` | `/api/v1/auth/logout` | Logout |
