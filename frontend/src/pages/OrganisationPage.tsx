@@ -204,15 +204,17 @@ export function OrganisationPage() {
     try {
       const res = await organisationService.applyRenames(items)
       setResult(res)
-      setPreview((prev) =>
-        prev
-          ? {
-              movies: prev.movies.filter((m) => !snapshot.has(`movie-${m.file_id}`)),
-              episodes: prev.episodes.filter((e) => !snapshot.has(`episode-${e.file_id}`)),
-            }
-          : null,
-      )
-      setSelected(new Set())
+      if (res.failed === 0) {
+        setPreview((prev) =>
+          prev
+            ? {
+                movies: prev.movies.filter((m) => !snapshot.has(`movie-${m.file_id}`)),
+                episodes: prev.episodes.filter((e) => !snapshot.has(`episode-${e.file_id}`)),
+              }
+            : null,
+        )
+        setSelected(new Set())
+      }
     } catch {
       setResult({ success: 0, failed: items.length, errors: ['Request failed'] })
     } finally {
@@ -283,6 +285,22 @@ export function OrganisationPage() {
       {/* Error */}
       {!loading && error && (
         <p className="text-center py-8 text-red-500 dark:text-red-400 text-sm">{error}</p>
+      )}
+
+      {/* Apply errors */}
+      {result && result.errors.length > 0 && (
+        <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
+          <p className="text-sm font-medium text-red-700 dark:text-red-400 mb-2">
+            {result.failed} file{result.failed !== 1 ? 's' : ''} could not be renamed:
+          </p>
+          <ul className="space-y-1">
+            {result.errors.map((err, i) => (
+              <li key={i} className="text-xs font-mono text-red-600 dark:text-red-300">
+                {err}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* Content */}
