@@ -266,7 +266,7 @@ npm run lint
 npm run lint:fix
 
 # Format code
-npm format
+npm run format
 ```
 
 ### Build
@@ -368,7 +368,7 @@ Error: Test failed
 
 - Check existing [issues](../.github/ISSUE_TEMPLATE/)
 - Review [API documentation](../docs/API_REFERENCE.md)
-- Consult the [troubleshooting section in the main docs](../docs/USER_TROUBLESHOOTING.md)
+- Consult the [troubleshooting guide](../docs/USER_TROUBLESHOOTING.md)
 
 ## 📄 License
 

@@ -5,13 +5,15 @@
 [![Code Quality](https://github.com/John-Limb/metamaster/actions/workflows/code-quality.yml/badge.svg)](https://github.com/John-Limb/metamaster/actions/workflows/code-quality.yml)
 [![codecov](https://codecov.io/gh/John-Limb/metamaster/branch/main/graph/badge.svg)](https://codecov.io/gh/John-Limb/metamaster)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/aa284990b5e0484a91dcfdf720b4a658)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-A comprehensive web-based media metadata management system for organizing and managing your movie and TV show library with automatic metadata enrichment from OMDB and TMDB APIs.
+A comprehensive web-based media metadata management system for organizing and managing your movie and TV show library with automatic metadata enrichment from TMDB (The Movie Database).
+
+![MetaMaster Dashboard](docs/images/dashboard.png)
 
 ## Features
 
 - **Media Library Management**: Organize movies and TV shows with detailed metadata
 - **Automatic File Detection**: Monitor directories for new media files
-- **Metadata Enrichment**: Automatic metadata lookup from OMDB (movies) and TMDB (TV shows)
+- **Metadata Enrichment**: Automatic metadata lookup from TMDB for movies and TV shows
 - **File Analysis**: Extract technical details (resolution, bitrate, codec) using FFPROBE
 - **Caching System**: Multi-level Redis caching to reduce API calls
 - **Background Processing**: Celery-based task queue for long-running operations
@@ -33,17 +35,16 @@ A comprehensive web-based media metadata management system for organizing and ma
 
 | Category | Technology | Version | Purpose |
 |----------|------------|---------|---------|
-| **Framework** | FastAPI | 0.104.1 | ASGI web framework |
-| **ASGI Server** | Uvicorn | 0.24.0 | Production server |
+| **Framework** | FastAPI | 0.132.0 | ASGI web framework |
+| **ASGI Server** | Uvicorn | 0.41.0 | Production server |
 | **Database** | PostgreSQL | 15 | Primary data store |
-| **ORM** | SQLAlchemy | 2.0.23 | Database abstraction |
-| **Migrations** | Alembic | 1.12.1 | Schema migrations |
-| **Task Queue** | Celery | 5.3.4 | Background job processing |
+| **ORM** | SQLAlchemy | 2.0.46 | Database abstraction |
+| **Migrations** | Alembic | 1.18.4 | Schema migrations |
+| **Task Queue** | Celery | 5.6.2 | Background job processing |
 | **Message Broker** | Redis | 7 | Celery broker & caching |
-| **HTTP Client** | HTTPX | 0.25.2 | Async HTTP requests |
-| **File Monitoring** | Watchdog | 3.0.0 | Directory monitoring |
-| **Media Analysis** | FFmpeg-Python | 0.2.0 | FFPROBE wrapper |
-| **Logging** | structlog | 23.2.0 | Structured logging |
+| **HTTP Client** | HTTPX | 0.28.1 | Async HTTP requests |
+| **File Monitoring** | Watchdog | 6.0.0 | Directory monitoring |
+| **Media Analysis** | FFprobe | system | File metadata extraction |
 | **Monitoring** | Prometheus Client | 0.17.1 | Metrics collection |
 
 ### Frontend
@@ -95,9 +96,9 @@ A comprehensive web-based media metadata management system for organizing and ma
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| Black | 23.12.0 | Code formatter |
-| isort | 5.13.2 | Import sorter |
-| mypy | 1.7.1 | Static type checker |
+| Black | 26.1.0 | Code formatter |
+| isort | 6.1.0 | Import sorter |
+| mypy | 1.19.1 | Static type checker |
 | flake8 | 6.1.0 | Linter |
 
 #### Frontend
@@ -114,11 +115,9 @@ A comprehensive web-based media metadata management system for organizing and ma
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| pytest | 7.4.3 | Test framework |
-| pytest-asyncio | 0.21.1 | Async test support |
+| pytest | 8.4.2 | Test framework |
+| pytest-asyncio | 1.3.0 | Async test support |
 | pytest-cov | 4.1.0 | Coverage reporting |
-| pytest-benchmark | 4.0.0 | Performance benchmarks |
-| locust | 2.17.0 | Load testing |
 
 #### Frontend
 
@@ -164,7 +163,6 @@ A comprehensive web-based media metadata management system for organizing and ma
 
 | API | Purpose | Get Key |
 |-----|---------|---------|
-| OMDB API | Movie metadata | [omdbapi.com](http://www.omdbapi.com/apikey.aspx) |
 | TMDB API | Movie & TV show metadata | [themoviedb.org](https://www.themoviedb.org/settings/api) |
 
 ---
@@ -280,12 +278,9 @@ REDIS_URL=redis://localhost:6379/0
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
 
-# OMDB API (for movie metadata)
-OMDB_API_KEY=your_omdb_api_key_here
-OMDB_RATE_LIMIT=1
-
-# TMDB API (for movie & TV show metadata)
-TMDB_API_KEY=your_tmdb_api_key_here
+# TMDB API (preferred: Bearer JWT token)
+TMDB_READ_ACCESS_TOKEN=your_tmdb_read_access_token_here
+# TMDB_API_KEY=your_tmdb_v3_api_key_here  # fallback if READ_ACCESS_TOKEN not set
 TMDB_RATE_LIMIT=3
 
 # File Monitoring
@@ -298,7 +293,7 @@ WATCH_EXTENSIONS=.mp4,.mkv,.avi,.mov,.flv,.wmv,.webm,.m4v
 
 ## Available Commands
 
-ß### Backend Commands
+### Backend Commands
 
 ```bash
 # Development server
@@ -318,7 +313,7 @@ pytest -m "integration"           # Run only integration tests
 
 # Code quality
 black app/                        # Format code
-isort app/                        # Sort importså
+isort app/                        # Sort imports
 flake8 app/                       # Lint code
 mypy app/                         # Type checking
 
@@ -379,211 +374,35 @@ docker-compose exec app pytest     # Run tests in container
 
 ## Project Structure
 
-```
-.
-├── app/                              # Backend application
-│   ├── __init__.py
-│   ├── main.py                       # FastAPI application entry point
-│   ├── config.py                     # Legacy configuration
-│   ├── database.py                   # Legacy database setup
-│   ├── models.py                     # Legacy ORM models
-│   ├── schemas.py                    # Pydantic schemas
-│   ├── services_impl.py              # Service implementations
-│   ├── tasks.py                      # Legacy Celery tasks
-│   ├── api/                          # API endpoints
-│   │   ├── middleware/               # Request middleware
-│   │   └── v1/                       # API version 1
-│   │       ├── auth/                 # Authentication endpoints (JWT)
-│   │       ├── cache/                # Cache management endpoints
-│   │       ├── config/               # Configuration endpoints
-│   │       ├── enrichment/           # Metadata enrichment endpoints
-│   │       ├── files/                # File management
-│   │       ├── health/               # Health checks
-│   │       ├── movies/               # Movie endpoints
-│   │       ├── organisation/         # Organisation management
-│   │       ├── queue/                # Queue management endpoints
-│   │       ├── storage/              # Storage analytics endpoints
-│   │       ├── tasks/                # Task management
-│   │       └── tv_shows/             # TV show endpoints
-│   ├── core/                         # Core utilities
-│   │   ├── config.py                 # Configuration settings
-│   │   ├── database.py               # Database setup
-│   │   ├── init_db.py                # Database initialization
-│   │   └── logging_config.py         # Logging configuration
-│   ├── domain/                       # Domain models
-│   │   ├── auth/                    # Authentication domain
-│   │   ├── common/                   # Shared domain models
-│   │   ├── files/                    # File domain
-│   │   ├── movies/                   # Movie domain
-│   │   ├── organisation/             # Organisation domain
-│   │   ├── settings/                # Settings domain
-│   │   ├── storage/                 # Storage domain
-│   │   └── tv_shows/                 # TV show domain
-│   ├── infrastructure/               # Infrastructure layer
-│   │   ├── cache/                    # Redis caching
-│   │   ├── external_apis/            # OMDB & TMDB clients
-│   │   ├── file_system/              # File monitoring, FFPROBE & queue management
-│   │   ├── monitoring/               # Prometheus metrics & error handling
-│   │   └── security/                # JWT authentication, password hashing, rate limiting
-│   ├── application/                  # Application services
-│   │   ├── batch_operations/         # Batch processing
-│   │   ├── db_optimization/          # Query optimization
-│   │   ├── pattern_recognition/      # Media pattern detection
-│   │   └── search/                   # Search functionality
-│   └── tasks/                        # Celery task definitions
-│       ├── celery_app.py             # Celery configuration
-│       ├── celery_beat.py            # Scheduled tasks
-│       └── async_helpers.py          # Async utilities
-├── frontend/                         # Frontend application
-│   ├── src/
-│   │   ├── components/               # React components
-│   │   │   ├── common/               # Reusable components (Button, Card, DataTable, etc.)
-│   │   │   ├── dashboard/            # Dashboard widgets (LibraryStats, StorageChart, etc.)
-│   │   │   ├── features/             # Feature modules (movies, tvshows, filter, sort)
-│   │   │   ├── file/                 # File management components
-│   │   │   ├── layout/               # Layout components (Header, Sidebar, Footer)
-│   │   │   ├── queue/                # Queue management components
-│   │   │   ├── search/               # Search components
-│   │   │   └── settings/             # Settings components
-│   │   ├── pages/                    # Page components (Movies, TVShows, Files, etc.)
-│   │   ├── hooks/                    # Custom React hooks
-│   │   ├── services/                 # API service layer
-│   │   ├── stores/                   # Zustand state stores
-│   │   ├── types/                    # TypeScript types
-│   │   ├── context/                  # React context providers
-│   │   └── utils/                    # Utility functions
-│   ├── .storybook/                   # Storybook configuration
-│   ├── .github/workflows/            # Frontend CI/CD
-│   ├── Dockerfile                    # Frontend container
-│   ├── package.json                  # Dependencies
-│   ├── vite.config.ts                # Vite configuration
-│   ├── vitest.config.ts              # Test configuration
-│   ├── playwright.config.ts          # E2E test configuration
-│   ├── eslint.config.js              # ESLint flat config
-│   ├── tailwind.config.js            # Tailwind configuration
-│   └── tsconfig.json                 # TypeScript configuration
-├── alembic/                          # Database migrations
-│   ├── env.py                        # Alembic environment
-│   ├── script.py.mako                # Migration template
-│   └── versions/                     # Migration files
-├── .github/workflows/                # Backend CI/CD pipelines
-├── docs/                             # Documentation
-├── requirements.txt                  # Python dependencies
-├── pyproject.toml                    # Project configuration
-├── docker-compose.yml                # Multi-service orchestration
-├── Dockerfile                        # Backend container
-├── alembic.ini                       # Alembic configuration
-├── .env.example                      # Environment template
-└── README.md                         # This file
-```
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full project structure and architecture details.
 
 ---
 
 ## CI/CD Pipeline
 
-### Overview
-
-MetaMaster uses GitHub Actions for continuous integration and deployment with 10 workflow files across backend and frontend.
-
-### Backend Workflows
-
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| [`ci.yml`](.github/workflows/ci.yml) | Push to main, PRs | Run tests, linting, type checking |
-| [`docker.yml`](.github/workflows/docker.yml) | Push to main, tags | Build & push Docker images to GHCR |
-| [`code-quality.yml`](.github/workflows/code-quality.yml) | Push to main, PRs | SonarQube code analysis |
-| [`deploy.yml`](.github/workflows/deploy.yml) | Push to main | Deploy to production |
-| [`lint.yml`](.github/workflows/lint.yml) | Push, PRs | Fast linting feedback |
-| [`scheduled-tests.yml`](.github/workflows/scheduled-tests.yml) | Cron schedule | Nightly tests, weekly benchmarks |
-
-### Frontend Workflows
-
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| [`ci.yml`](frontend/.github/workflows/ci.yml) | Push to main, PRs | Build, test, lint |
-| [`lighthouse.yml`](frontend/.github/workflows/lighthouse.yml) | Push to main | Performance auditing |
-| [`security.yml`](frontend/.github/workflows/security.yml) | Push, schedule | npm audit, CodeQL |
-| [`storybook.yml`](frontend/.github/workflows/storybook.yml) | Push to main | Deploy Storybook to GitHub Pages |
-
-### Required Secrets
-
-Configure these secrets in your GitHub repository settings:
-
-| Secret | Purpose |
-|--------|---------|
-| `SONAR_TOKEN` | SonarQube analysis |
-| `DOCKER_USERNAME` | Container registry login |
-| `DOCKER_PASSWORD` | Container registry password |
-| `CODECOV_TOKEN` | Coverage reporting |
-
-### Dependabot
-
-Automated dependency updates are configured via Dependabot for:
-- Python dependencies (pip)
-- Node.js dependencies (npm)
-- Docker base images
-- GitHub Actions
+See [docs/CICD.md](docs/CICD.md) for workflow details, required secrets, and Dependabot configuration.
 
 ---
 
 ## API Documentation
 
-Once the application is running, access the interactive API documentation:
+Once the application is running:
 
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
-### Available API Endpoints
+See [docs/API_REFERENCE.md](docs/API_REFERENCE.md) for the full endpoint reference.
 
-| Category | Endpoint | Purpose |
-|----------|----------|---------|
-| **Authentication** | `POST /api/v1/auth/register` | Register new user |
-| | `POST /api/v1/auth/login` | User login (JWT) |
-| | `POST /api/v1/auth/refresh` | Refresh access token |
-| | `POST /api/v1/auth/logout` | User logout |
-| | `GET /api/v1/auth/me` | Get current user |
-| | `PUT /api/v1/auth/password` | Change password |
-| **Movies** | `GET /api/v1/movies` | List movies |
-| | `POST /api/v1/movies` | Create movie |
-| | `GET /api/v1/movies/{id}` | Get movie details |
-| | `PUT /api/v1/movies/{id}` | Update movie |
-| | `DELETE /api/v1/movies/{id}` | Delete movie |
-| | `POST /api/v1/movies/{id}/enrich` | Enrich movie metadata |
-| **TV Shows** | `GET /api/v1/tv-shows` | List TV shows |
-| | `POST /api/v1/tv-shows` | Create TV show |
-| | `GET /api/v1/tv-shows/{id}` | Get TV show details |
-| | `PUT /api/v1/tv-shows/{id}` | Update TV show |
-| | `DELETE /api/v1/tv-shows/{id}` | Delete TV show |
-| | `POST /api/v1/tv-shows/{id}/enrich` | Enrich TV show metadata |
-| **Files** | `GET /api/v1/files` | List files |
-| | `GET /api/v1/files/{id}` | Get file details |
-| | `POST /api/v1/files/scan` | Scan directories |
-| **Storage** | `GET /api/v1/storage/analytics` | Storage analytics |
-| | `GET /api/v1/storage/usage` | Storage usage by type |
-| **Organisation** | `GET /api/v1/organisation` | Get organisation |
-| | `PUT /api/v1/organisation` | Update organisation |
-| **Cache** | `GET /api/v1/cache` | Get cache info |
-| | `DELETE /api/v1/cache` | Clear cache |
-| | `GET /api/v1/cache/{key}` | Get cache value |
-| | `DELETE /api/v1/cache/{key}` | Delete cache key |
-| **Config** | `GET /api/v1/config` | Get configuration |
-| | `PUT /api/v1/config` | Update configuration |
-| **Enrichment** | `GET /api/v1/enrichment/status` | Enrichment status |
-| | `POST /api/v1/enrichment/retry` | Retry failed enrichment |
-| **Queue** | `GET /api/v1/queue` | List queue tasks |
-| | `GET /api/v1/queue/{id}` | Get task details |
-| | `DELETE /api/v1/queue/{id}` | Cancel task |
-| **Tasks** | `GET /api/v1/tasks` | List tasks |
-| | `GET /api/v1/tasks/{id}` | Get task details |
-| | `DELETE /api/v1/tasks/{id}` | Delete task |
-| | `POST /api/v1/tasks/{id}/retry` | Retry failed task |
+---
 
-### Health Check Endpoints
+## Documentation
 
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /health/` | Basic health check |
-| `GET /health/db` | Database connectivity check |
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/ARCHITECTURE.md) | Backend/frontend architecture, data models, startup flow |
+| [API Reference](docs/API_REFERENCE.md) | All REST endpoints |
+| [CI/CD](docs/CICD.md) | GitHub Actions workflows, secrets, Dependabot |
+| [Troubleshooting](docs/USER_TROUBLESHOOTING.md) | Common issues and fixes |
 
 ---
 
