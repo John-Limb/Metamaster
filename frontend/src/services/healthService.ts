@@ -20,6 +20,20 @@ export interface MetricsPayload {
   tasks: Record<string, unknown>
 }
 
+export interface LogEntry {
+  timestamp: string
+  level: string
+  message: string
+}
+
+export interface ComponentLogs {
+  database: LogEntry[]
+  cache: LogEntry[]
+  tasks: LogEntry[]
+  api: LogEntry[]
+  external_api: LogEntry[]
+}
+
 export const healthService = {
   // Get overall health status
   getHealth: async () => {
@@ -69,6 +83,16 @@ export const healthService = {
     } catch (error: any) {
       errorHandler.handleError(error, 'isAlive')
       return false
+    }
+  },
+
+  getComponentLogs: async (lines = 10): Promise<ComponentLogs> => {
+    try {
+      const response = await apiClient.get<ComponentLogs>(`/health/logs?lines=${lines}`)
+      return response.data
+    } catch (error: any) {
+      errorHandler.handleError(error, 'getComponentLogs')
+      throw error
     }
   },
 }

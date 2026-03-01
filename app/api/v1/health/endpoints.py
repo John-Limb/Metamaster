@@ -1,6 +1,11 @@
 """Health check endpoints"""
 
-from fastapi import APIRouter, Depends
+import collections
+import json
+from pathlib import Path
+from typing import Any
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.core.database import get_db
@@ -12,6 +17,53 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/health", tags=["Health"])
+
+_LOG_DIR = Path(__file__).resolve().parents[4] / "logs"
+
+_COMPONENT_LOG_FILES: dict[str, str] = {
+    "database": str(_LOG_DIR / "database.log"),
+    "cache": str(_LOG_DIR / "cache.log"),
+    "tasks": str(_LOG_DIR / "tasks.log"),
+    "api": str(_LOG_DIR / "api.log"),
+    "external_api": str(_LOG_DIR / "external_api.log"),
+}
+
+
+def _tail_log(filepath: str, n: int) -> list[dict[str, Any]]:
+    """Return the last n parsed log entries from a JSON-per-line log file."""
+    path = Path(filepath)
+    if not path.exists():
+        return []
+    try:
+        with path.open(encoding="utf-8") as fh:
+            tail = collections.deque(fh, maxlen=n)
+        result: list[dict[str, Any]] = []
+        for raw in tail:
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                entry = json.loads(raw)
+                result.append({
+                    "timestamp": entry.get("timestamp", ""),
+                    "level": entry.get("level", ""),
+                    "message": entry.get("message", ""),
+                })
+            except json.JSONDecodeError:
+                result.append({"timestamp": "", "level": "RAW", "message": raw})
+        return result
+    except Exception as exc:
+        logger.warning("Failed to read log file %s: %s", filepath, exc)
+        return []
+
+
+@router.get("/logs")
+async def component_logs(lines: int = Query(10, ge=1, le=500, description="Number of log lines per component")) -> dict[str, list[dict[str, Any]]]:
+    """Return the last N log lines per component."""
+    return {
+        component: _tail_log(filepath, lines)
+        for component, filepath in _COMPONENT_LOG_FILES.items()
+    }
 
 
 @router.get("/")
