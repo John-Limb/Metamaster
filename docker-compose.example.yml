@@ -1,20 +1,18 @@
-# MetaMaster — Local Development Docker Compose
+# MetaMaster — Docker Compose Template
 #
-# Usage:
-#   1. Copy .env.example to .env and fill in your values
-#   2. Run: docker compose up -d
+# Quick start:
+#   1. Copy this file:  cp docker-compose.example.yml docker-compose.yml
+#   2. Copy the env:    cp .env.example .env
+#   3. Fill in .env with your TMDB token and media paths
+#   4. Run:             docker compose up -d
 #
-# Differences from docker-compose.example.yml:
-#   - Images are built locally instead of pulled from GHCR
-#   - App source is mounted for hot-reload (./app:/app/app)
-#   - Log level defaults to DEBUG
+# Images are pulled automatically from GitHub Container Registry.
+# Postgres data is stored in a named Docker volume (persists across restarts).
 
 services:
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/john-limb/metamaster-frontend:latest
     ports:
       - "80:8080"
     depends_on:
@@ -32,7 +30,7 @@ services:
     restart: unless-stopped
 
   app:
-    build: .
+    image: ghcr.io/john-limb/metamaster:latest
     environment:
       - DATABASE_URL=postgresql+psycopg2://metamaster:${POSTGRES_PASSWORD:-metamaster}@postgres:5432/metamaster
       - REDIS_URL=redis://redis:6379/0
@@ -40,12 +38,11 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
       - TMDB_READ_ACCESS_TOKEN=${TMDB_READ_ACCESS_TOKEN}
       - TMDB_API_KEY=${TMDB_API_KEY:-}
-      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - MEDIA_SCAN_SCHEDULE=${MEDIA_SCAN_SCHEDULE:-0 2 * * *}
     volumes:
-      - ./app:/app/app
-      - ${MOVIE_DIR:-./_media/movies}:/media/movies:ro
-      - ${TV_DIR:-./_media/tv}:/media/tv:ro
+      - ${MOVIE_DIR}:/media/movies:ro
+      - ${TV_DIR}:/media/tv:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -62,7 +59,7 @@ services:
     restart: unless-stopped
 
   celery_worker:
-    build: .
+    image: ghcr.io/john-limb/metamaster:latest
     command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
     environment:
       - DATABASE_URL=postgresql+psycopg2://metamaster:${POSTGRES_PASSWORD:-metamaster}@postgres:5432/metamaster
@@ -71,11 +68,10 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
       - TMDB_READ_ACCESS_TOKEN=${TMDB_READ_ACCESS_TOKEN}
       - TMDB_API_KEY=${TMDB_API_KEY:-}
-      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
-      - ./app:/app/app
-      - ${MOVIE_DIR:-./_media/movies}:/media/movies:ro
-      - ${TV_DIR:-./_media/tv}:/media/tv:ro
+      - ${MOVIE_DIR}:/media/movies:ro
+      - ${TV_DIR}:/media/tv:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -88,14 +84,14 @@ services:
     restart: unless-stopped
 
   celery_beat:
-    build: .
+    image: ghcr.io/john-limb/metamaster:latest
     command: celery -A app.tasks.celery_app beat --loglevel=info
     environment:
       - DATABASE_URL=postgresql+psycopg2://metamaster:${POSTGRES_PASSWORD:-metamaster}@postgres:5432/metamaster
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
-      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - MEDIA_SCAN_SCHEDULE=${MEDIA_SCAN_SCHEDULE:-0 2 * * *}
     depends_on:
       redis:

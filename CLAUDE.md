@@ -114,7 +114,7 @@ docker-compose down            # Stop
 
 - Config is loaded via `pydantic-settings` from `.env` (see `app/core/config.py`)
 - **TMDB:** Set `TMDB_READ_ACCESS_TOKEN` (preferred, Bearer JWT) or `TMDB_API_KEY` (v3 fallback)
-- **Database:** `DATABASE_URL` defaults to PostgreSQL; test suite uses SQLite (`media.db`, `test_cache.db` visible in repo root)
+- **Database:** `DATABASE_URL` defaults to PostgreSQL. Tests also use PostgreSQL via `TEST_DATABASE_URL` env var (defaults to `postgresql+psycopg2://test:test@localhost:5432/metamaster_test`; set automatically in CI)
 - **CORS/Trusted Hosts:** Extend `allowed_origins` and `trusted_hosts` in `.env` for non-local deployments (comma-separated strings)
 
 ## Git Workflow

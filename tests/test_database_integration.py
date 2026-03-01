@@ -1,9 +1,8 @@
 """Comprehensive integration tests for database operations"""
 
 import pytest
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
 from datetime import datetime, timedelta
 
 from app.database import Base
@@ -19,6 +18,7 @@ from app.models import (
     TaskError,
     BatchOperation,
 )
+from tests.db_utils import TEST_DATABASE_URL
 
 
 # ============================================================================
@@ -28,26 +28,16 @@ from app.models import (
 
 @pytest.fixture(scope="function")
 def db_session():
-    """Create an in-memory SQLite database for testing"""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-
-    # Enable foreign keys for SQLite
-    @event.listens_for(engine, "connect")
-    def set_sqlite_pragma(dbapi_conn, connection_record):
-        cursor = dbapi_conn.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
-
+    """Create a PostgreSQL database session for testing"""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     session = TestingSessionLocal()
     yield session
     session.close()
+    Base.metadata.drop_all(bind=engine)
+    engine.dispose()
 
 
 # ============================================================================

@@ -1,16 +1,12 @@
 """Tests for file API endpoints and config check logic"""
 
-import os
-
-# Override database URL before any app imports to avoid psycopg2 dependency
-os.environ["DATABASE_URL"] = "sqlite:///test_file_endpoints.db"
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 from unittest.mock import patch
+
+from tests.db_utils import TEST_DATABASE_URL
 
 from app.main import app
 from app.core.database import Base, get_db
@@ -19,12 +15,8 @@ from app.domain.files.models import FileItem
 
 @pytest.fixture(scope="function")
 def test_db():
-    """Create an in-memory SQLite database for testing"""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    """Create a PostgreSQL database session for testing"""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -36,8 +28,12 @@ def test_db():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    yield TestingSessionLocal()
+    session = TestingSessionLocal()
+    yield session
+    session.close()
     app.dependency_overrides.clear()
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 @pytest.fixture

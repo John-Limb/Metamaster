@@ -20,6 +20,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
 from app.database import Base
+from tests.db_utils import TEST_DATABASE_URL
 from app.models import TaskError, APICache, FileQueue, Movie, TVShow
 from app.services.task_error_handler import TaskErrorHandler
 from app.config import settings
@@ -32,13 +33,15 @@ from app.config import settings
 
 @pytest.fixture
 def test_db():
-    """Create an in-memory SQLite database for testing."""
-    engine = create_engine("sqlite:///:memory:")
+    """Create a PostgreSQL database for testing."""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     SessionLocal = sessionmaker(bind=engine)
     session = SessionLocal()
     yield session
     session.close()
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 @pytest.fixture

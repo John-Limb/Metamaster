@@ -5,7 +5,6 @@ import json
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
@@ -24,6 +23,7 @@ from app.models import (
     BatchOperation,
 )
 from app.schemas import MovieCreate, TVShowCreate
+from tests.db_utils import TEST_DATABASE_URL
 
 
 # ============================================================================
@@ -33,12 +33,8 @@ from app.schemas import MovieCreate, TVShowCreate
 
 @pytest.fixture(scope="function")
 def test_db():
-    """Create an in-memory SQLite database for testing"""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    """Create a PostgreSQL database session for testing"""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -50,8 +46,12 @@ def test_db():
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    yield TestingSessionLocal()
+    session = TestingSessionLocal()
+    yield session
+    session.close()
     app.dependency_overrides.clear()
+    Base.metadata.drop_all(bind=engine)
+    engine.dispose()
 
 
 @pytest.fixture

@@ -40,7 +40,7 @@ def mock_settings():
     """Provide mock settings for testing"""
     with patch("app.config.settings") as mock_settings_obj:
         mock_settings_obj.redis_url = "redis://localhost:6379/0"
-        mock_settings_obj.database_url = "sqlite:///:memory:"
+        mock_settings_obj.database_url = "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"
         mock_settings_obj.debug = True
         yield mock_settings_obj
 

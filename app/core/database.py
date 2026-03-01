@@ -1,43 +1,24 @@
 """Database configuration and session management"""
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.pool import StaticPool, QueuePool
+from sqlalchemy.pool import QueuePool
 from app.core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Create database engine with connection pooling
-if settings.database_url.startswith("sqlite"):
-    # SQLite specific configuration
-    # SQLite doesn't benefit from connection pooling, use StaticPool
-    engine = create_engine(
-        settings.database_url,
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-        echo=settings.database_echo,
-    )
-
-    # Enable foreign keys for SQLite
-    @event.listens_for(engine, "connect")
-    def set_sqlite_pragma(dbapi_conn, connection_record):
-        cursor = dbapi_conn.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
-
-else:
-    # PostgreSQL or other databases with connection pooling
-    engine = create_engine(
-        settings.database_url,
-        echo=settings.database_echo,
-        pool_pre_ping=settings.db_pool_pre_ping,
-        poolclass=QueuePool,
-        pool_size=settings.db_pool_size,
-        max_overflow=settings.db_max_overflow,
-        pool_recycle=settings.db_pool_recycle,
-        pool_timeout=settings.db_pool_timeout,
-    )
+# Create PostgreSQL engine with connection pooling
+engine = create_engine(
+    settings.database_url,
+    echo=settings.database_echo,
+    pool_pre_ping=settings.db_pool_pre_ping,
+    poolclass=QueuePool,
+    pool_size=settings.db_pool_size,
+    max_overflow=settings.db_max_overflow,
+    pool_recycle=settings.db_pool_recycle,
+    pool_timeout=settings.db_pool_timeout,
+)
 
 
 # Setup query logging and pool monitoring if enabled

@@ -5,17 +5,20 @@ from sqlalchemy.orm import sessionmaker
 
 from app.models import Movie, TVShow
 from app.database import Base
+from tests.db_utils import TEST_DATABASE_URL
 
 
 @pytest.fixture(scope="module")
 def db_session():
-    """Create an in-memory SQLite database for testing."""
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    """Create a PostgreSQL database for testing."""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
     yield session
     session.close()
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 def test_movie_default_enrichment_status(db_session):

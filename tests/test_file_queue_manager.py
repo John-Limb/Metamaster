@@ -18,17 +18,20 @@ from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from app.models import FileQueue
 from app.services.file_queue_manager import FileQueueManager
+from tests.db_utils import TEST_DATABASE_URL
 
 
 @pytest.fixture
 def test_db():
-    """Create an in-memory SQLite database for testing."""
-    engine = create_engine("sqlite:///:memory:")
+    """Create a PostgreSQL database for testing."""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     SessionLocal = sessionmaker(bind=engine)
     session = SessionLocal()
     yield session
     session.close()
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 @pytest.fixture

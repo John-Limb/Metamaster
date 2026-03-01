@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import QueuePool, StaticPool
+from sqlalchemy.pool import QueuePool
 
 from app.database import Base, get_db
 from app.models import Movie, TVShow, Season, Episode
@@ -17,35 +17,32 @@ from app.services.db_optimization import (
     DatabaseOptimizationService,
 )
 from app.config import settings
+from tests.db_utils import TEST_DATABASE_URL
 
 
 # Test fixtures
 @pytest.fixture
 def test_db():
     """Create a test database"""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     db = SessionLocal()
     yield db
     db.close()
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 @pytest.fixture
 def test_engine():
     """Create a test engine"""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
-    return engine
+    yield engine
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 @pytest.fixture
@@ -281,14 +278,6 @@ class TestIndexAnalyzer:
 class TestQueryExecutionPlanAnalyzer:
     """Test query execution plan analysis"""
 
-    def test_explain_query_sqlite(self, test_db):
-        """Test explaining a query on SQLite"""
-        query = "SELECT * FROM movies WHERE title = 'Test'"
-        plan = QueryExecutionPlanAnalyzer.explain_query(test_db, query)
-
-        assert "dialect" in plan
-        assert plan["dialect"] == "sqlite"
-
     def test_analyze_slow_query(self, test_db):
         """Test analyzing a slow query"""
         query = "SELECT * FROM movies WHERE title LIKE '%test%'"
@@ -310,6 +299,14 @@ class TestQueryExecutionPlanAnalyzer:
         query = "SELECT title FROM movies WHERE title LIKE '%test%'"
         analysis = QueryExecutionPlanAnalyzer.analyze_slow_query(test_db, query)
         assert any("LIKE" in s for s in analysis["suggestions"])
+
+    def test_explain_query_postgresql(self, test_db):
+        """Test explaining a query on PostgreSQL"""
+        query = "SELECT * FROM movies WHERE title = 'Test'"
+        plan = QueryExecutionPlanAnalyzer.explain_query(test_db, query)
+
+        assert "dialect" in plan
+        assert plan["dialect"] == "postgresql"
 
 
 # Tests for DatabaseOptimizationService

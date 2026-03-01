@@ -10,7 +10,7 @@ ENV VITE_API_BASE_URL=/api/v1
 
 # Install dependencies
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .

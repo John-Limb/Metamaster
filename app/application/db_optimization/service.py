@@ -351,26 +351,11 @@ class QueryExecutionPlanAnalyzer:
             Execution plan information
         """
         try:
-            # For SQLite
-            if db.bind.dialect.name == "sqlite":
-                result = db.execute(text(f"EXPLAIN QUERY PLAN {query}")).fetchall()
-                return {
-                    "dialect": "sqlite",
-                    "plan": [dict(row._mapping) for row in result],
-                }
-
-            # For PostgreSQL
-            elif db.bind.dialect.name == "postgresql":
-                result = db.execute(text(f"EXPLAIN {query}")).fetchall()
-                return {
-                    "dialect": "postgresql",
-                    "plan": [row[0] for row in result],
-                }
-
-            else:
-                return {
-                    "error": f"Execution plan analysis not supported for {db.bind.dialect.name}"
-                }
+            result = db.execute(text(f"EXPLAIN {query}")).fetchall()
+            return {
+                "dialect": "postgresql",
+                "plan": [row[0] for row in result],
+            }
         except Exception as e:
             logger.error(f"Error analyzing query execution plan: {e}")
             return {"error": str(e)}

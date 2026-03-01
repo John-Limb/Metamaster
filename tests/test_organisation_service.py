@@ -3,6 +3,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.core.database import Base
+from tests.db_utils import TEST_DATABASE_URL
 from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
 from app.domain.organisation.service import (
     build_movie_target_path,
@@ -155,13 +156,14 @@ def test_build_movie_target_path_invalid_preset_still_works():
 
 @pytest.fixture
 def preview_db():
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     Session = sessionmaker(bind=engine)
     session = Session()
     yield session
     session.close()
     Base.metadata.drop_all(bind=engine)
+    engine.dispose()
 
 
 def test_get_preview_episode_includes_show_and_season(preview_db):

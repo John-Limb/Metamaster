@@ -5,11 +5,11 @@ import json
 from unittest.mock import patch, MagicMock, AsyncMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 from datetime import datetime, timedelta
 
 from app.database import Base
 from app.models import Movie, TVShow, APICache
+from tests.db_utils import TEST_DATABASE_URL
 
 
 # ============================================================================
@@ -19,18 +19,16 @@ from app.models import Movie, TVShow, APICache
 
 @pytest.fixture(scope="function")
 def db_session():
-    """Create an in-memory SQLite database for testing"""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    """Create a PostgreSQL database session for testing"""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     session = TestingSessionLocal()
     yield session
     session.close()
+    Base.metadata.drop_all(bind=engine)
+    engine.dispose()
 
 
 # ============================================================================

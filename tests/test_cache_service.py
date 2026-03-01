@@ -8,25 +8,20 @@ from sqlalchemy.orm import sessionmaker
 from app.core.database import Base
 from app.models import APICache
 from app.services_impl import CacheService
-
-
-# Create test database
-TEST_DATABASE_URL = "sqlite:///./test_cache.db"
-engine = create_engine(
-    TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from db_utils import TEST_DATABASE_URL
 
 
 @pytest.fixture(scope="function")
 def db():
-    """Create a fresh database for each test"""
+    """Create a fresh PostgreSQL database session for each test"""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = TestingSessionLocal()
     yield db
     db.close()
     Base.metadata.drop_all(bind=engine)
+    engine.dispose()
 
 
 class TestCacheServiceKeyGeneration:

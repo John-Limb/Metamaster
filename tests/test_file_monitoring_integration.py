@@ -7,13 +7,13 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock, Mock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 from datetime import datetime
 
 from app.database import Base
 from app.models import FileQueue, Movie, TVShow
 from app.services.pattern_recognition import PatternRecognitionService
 from app.services.file_queue_manager import FileQueueManager
+from tests.db_utils import TEST_DATABASE_URL
 
 
 # ============================================================================
@@ -23,18 +23,16 @@ from app.services.file_queue_manager import FileQueueManager
 
 @pytest.fixture(scope="function")
 def db_session():
-    """Create an in-memory SQLite database for testing"""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    """Create a PostgreSQL database for testing"""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     session = TestingSessionLocal()
     yield session
     session.close()
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 @pytest.fixture

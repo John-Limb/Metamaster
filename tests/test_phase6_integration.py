@@ -18,9 +18,9 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, MagicMock, AsyncMock
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
 
 from app.database import Base
+from tests.db_utils import TEST_DATABASE_URL
 from app.models import (
     Movie,
     TVShow,
@@ -56,17 +56,15 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def test_db():
-    """Create an in-memory SQLite database for testing."""
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    """Create a PostgreSQL database for testing."""
+    engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     SessionLocal = sessionmaker(bind=engine)
     session = SessionLocal()
     yield session
     session.close()
+    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 @pytest.fixture

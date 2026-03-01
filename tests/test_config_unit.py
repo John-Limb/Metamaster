@@ -6,6 +6,7 @@ from unittest.mock import patch, MagicMock
 from pydantic import ValidationError
 
 from app.config import Settings, settings
+from tests.db_utils import TEST_DATABASE_URL
 
 
 # ============================================================================
@@ -24,11 +25,11 @@ class TestSettingsLoading:
         assert test_settings.app_version == "0.1.0"
         assert test_settings.debug is False
 
-    @patch.dict(os.environ, {"DATABASE_URL": "sqlite:///./media.db"})
+    @patch.dict(os.environ, {"DATABASE_URL": "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"})
     def test_database_url_default(self):
         """Test default database URL"""
         test_settings = Settings()
-        assert test_settings.database_url == "sqlite:///./media.db"
+        assert test_settings.database_url == "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"
 
     def test_redis_url_default(self):
         """Test default Redis URL"""
@@ -396,7 +397,7 @@ class TestMultipleEnvironmentVariables:
         {
             "APP_NAME": "Test App",
             "DEBUG": "true",
-            "DATABASE_URL": "sqlite:///test.db",
+            "DATABASE_URL": "postgresql+psycopg2://test:test@localhost:5432/metamaster_test",
             "LOG_LEVEL": "DEBUG",
         },
     )
@@ -405,7 +406,7 @@ class TestMultipleEnvironmentVariables:
         test_settings = Settings()
         assert test_settings.app_name == "Test App"
         assert test_settings.debug is True
-        assert test_settings.database_url == "sqlite:///test.db"
+        assert test_settings.database_url == "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"
         assert test_settings.log_level == "DEBUG"
 
     @patch.dict(
