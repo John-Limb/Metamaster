@@ -51,7 +51,7 @@ function LogTail({ entries }: { entries: LogEntry[] }) {
           }`}>
             {entry.level || '—'}
           </span>
-          <span className="text-slate-300 truncate">{entry.message}</span>
+          <span className="text-slate-300 flex-shrink-0">{entry.message}</span>
         </div>
       ))}
     </div>
