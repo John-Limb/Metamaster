@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,7 +37,7 @@ jobs:
         run: pytest tests/ -v --cov=app --cov-report=term-missing --tb=short -k "unit"
 
   frontend:
-    name: Frontend (type-check + test)
+    name: Frontend (lint + test)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -52,8 +54,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Type check
-        run: npm run type-check
+      - name: Lint
+        run: npm run lint
 
       - name: Test
         run: npm test
