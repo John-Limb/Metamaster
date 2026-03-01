@@ -9,11 +9,7 @@ from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
 from app.core.database import engine, Base, SessionLocal
-from app.domain.movies.models import Movie, MovieFile
-from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
-from app.domain.common.models import APICache, FileQueue
 from app.domain.auth.models import User
-from app.domain.settings.models import AppSetting  # noqa: F401
 from app.infrastructure.security.password import hash_password
 
 logger = logging.getLogger(__name__)
@@ -120,6 +116,13 @@ def _migrate_file_size_columns(engine, inspector_obj):
 
 def init_database():
     """Initialize database tables and create default data if needed"""
+    # Import models here to register them with Base.metadata and avoid
+    # a circular import: domain.movies.models → core.database → core →
+    # core.init_db → domain.movies.models.
+    from app.domain.movies.models import Movie, MovieFile  # noqa: F401
+    from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile  # noqa: F401
+    from app.domain.common.models import APICache, FileQueue  # noqa: F401
+    from app.domain.settings.models import AppSetting  # noqa: F401
     try:
         logger.info("Creating database tables...")
         Base.metadata.create_all(bind=engine)

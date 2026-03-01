@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useQueueStore } from '@/stores/queueStore'
 import { QueueStats } from './QueueStats'
 import { QueueItem } from './QueueItem'
@@ -30,6 +30,8 @@ export function QueuePanel({
     clearCompletedTasks,
   } = useQueueStore()
 
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+
   // Fetch initial data
   useEffect(() => {
     fetchTasks()
@@ -57,7 +59,7 @@ export function QueuePanel({
   }, [])
 
   const handleViewDetails = useCallback((taskId: string) => {
-    console.log('Viewing details for task:', taskId)
+    setSelectedTaskId((prev) => (prev === taskId ? null : taskId))
   }, [])
 
   const handleClearCompleted = useCallback(async () => {
@@ -187,13 +189,30 @@ export function QueuePanel({
         ) : (
           <div className="divide-y divide-gray-200">
             {filteredTasks.map((task) => (
-              <QueueItem
-                key={task.id}
-                task={task}
-                onRetry={handleRetryTask}
-                onCancel={handleCancelTask}
-                onViewDetails={handleViewDetails}
-              />
+              <React.Fragment key={task.id}>
+                <QueueItem
+                  task={task}
+                  onRetry={handleRetryTask}
+                  onCancel={handleCancelTask}
+                  onViewDetails={handleViewDetails}
+                />
+                {selectedTaskId === task.id && (
+                  <div className="border border-t-0 border-gray-200 rounded-b-lg bg-gray-50 dark:bg-gray-800 p-4 text-sm font-mono space-y-1">
+                    <div><span className="text-gray-500">ID:</span> <span className="text-gray-900 dark:text-gray-100">{task.id}</span></div>
+                    <div><span className="text-gray-500">Type:</span> <span className="text-gray-900 dark:text-gray-100">{task.type}</span></div>
+                    <div><span className="text-gray-500">Status:</span> <span className="text-gray-900 dark:text-gray-100">{task.status}</span></div>
+                    <div><span className="text-gray-500">Created:</span> <span className="text-gray-900 dark:text-gray-100">{new Date(task.createdAt).toISOString()}</span></div>
+                    {task.updatedAt && (
+                      <div><span className="text-gray-500">Updated:</span> <span className="text-gray-900 dark:text-gray-100">{new Date(task.updatedAt).toISOString()}</span></div>
+                    )}
+                    {task.error && (
+                      <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+                        <span className="text-red-600 dark:text-red-400">{task.error}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
         )}

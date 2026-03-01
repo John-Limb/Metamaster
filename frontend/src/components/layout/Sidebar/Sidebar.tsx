@@ -12,6 +12,8 @@ import {
   FaChevronRight,
   FaInfoCircle,
   FaDatabase,
+  FaList,
+  FaServer,
 } from 'react-icons/fa'
 import { useUIStore } from '@/stores/uiStore'
 
@@ -35,6 +37,8 @@ const navItems: NavItem[] = [
   { label: 'TV Shows', path: '/tv-shows', icon: <FaTv className="w-5 h-5" /> },
   { label: 'Organisation', path: '/organisation', icon: <FaFolderOpen className="w-5 h-5" /> },
   { label: 'Storage', path: '/storage', icon: <FaDatabase className="w-5 h-5" /> },
+  { label: 'Queue', path: '/queue', icon: <FaList className="w-5 h-5" /> },
+  { label: 'System Health', path: '/system-health', icon: <FaServer className="w-5 h-5" /> },
   { label: 'Settings', path: '/settings', icon: <FaCog className="w-5 h-5" /> },
 ]
 

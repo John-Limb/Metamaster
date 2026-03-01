@@ -21,6 +21,8 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ defaul
 const EnrichmentPage = lazy(() => import('./pages/EnrichmentPage').then(m => ({ default: m.EnrichmentPage })))
 const StoragePage = lazy(() => import('./pages/StoragePage').then(m => ({ default: m.StoragePage })))
 const OrganisationPage = lazy(() => import('./pages/OrganisationPage').then(m => ({ default: m.OrganisationPage })))
+const QueuePage = lazy(() => import('./pages/QueuePage').then(m => ({ default: m.QueuePage })))
+const SystemHealthPage = lazy(() => import('./pages/SystemHealthPage').then(m => ({ default: m.SystemHealthPage })))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -164,6 +166,32 @@ function App() {
               <MainLayout>
                 <Suspense fallback={<LoadingFallback />}>
                   <OrganisationPage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/queue"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <QueuePage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/system-health"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <SystemHealthPage />
                 </Suspense>
               </MainLayout>
             </ProtectedRoute>
