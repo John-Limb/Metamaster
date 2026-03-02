@@ -1,4 +1,5 @@
 """Tests for external enrichment Celery tasks."""
+
 from unittest.mock import MagicMock, patch
 import httpx
 

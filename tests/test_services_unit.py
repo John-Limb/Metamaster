@@ -19,7 +19,6 @@ from app.infrastructure.file_system.monitor import FileMonitorService, MediaFile
 from app.models import FileQueue, TaskError
 from app.database import SessionLocal
 
-
 # ============================================================================
 # Pattern Recognition Service Tests
 # ============================================================================

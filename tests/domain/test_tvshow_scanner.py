@@ -1,4 +1,5 @@
 """Tests for decoupled TV show scanner Stage 1 (ffprobe only, no TVDB)."""
+
 from unittest.mock import MagicMock, patch
 from app.domain.tv_shows.scanner import create_tv_shows_from_files
 
@@ -29,8 +30,9 @@ def test_create_tv_shows_sets_local_only_status():
     db.query.return_value.filter.return_value.first.return_value = None
     db.query.return_value.all.return_value = []
 
-    with patch("app.domain.tv_shows.scanner.TVShow") as MockTVShow, patch(
-        "app.domain.tv_shows.scanner.get_ffprobe", return_value=None
+    with (
+        patch("app.domain.tv_shows.scanner.TVShow") as MockTVShow,
+        patch("app.domain.tv_shows.scanner.get_ffprobe", return_value=None),
     ):
         show_instance = MagicMock()
         MockTVShow.return_value = show_instance

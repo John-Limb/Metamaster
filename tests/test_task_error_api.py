@@ -8,7 +8,6 @@ from app.infrastructure.monitoring.error_handler import TaskErrorHandler
 from app.database import SessionLocal
 from app.models import TaskError
 
-
 client = TestClient(app)
 
 

@@ -1,4 +1,5 @@
 """Tests for decoupled movie scanner Stage 1 (ffprobe only, no OMDB)."""
+
 from unittest.mock import MagicMock, patch
 
 from app.domain.movies.scanner import create_movies_from_files
@@ -47,8 +48,9 @@ def test_create_movies_sets_local_only_status(mock_ffprobe):
     fi = _make_fi()
     db = _make_db(fi)
 
-    with patch("app.domain.movies.scanner.Movie") as MockMovie, patch(
-        "app.domain.movies.scanner.MovieFile"
+    with (
+        patch("app.domain.movies.scanner.Movie") as MockMovie,
+        patch("app.domain.movies.scanner.MovieFile"),
     ):
         movie_instance = MagicMock()
         MockMovie.return_value = movie_instance
@@ -69,18 +71,19 @@ def test_create_movies_does_not_call_tmdb():
     fi = _make_fi()
     db = _make_db(fi)
 
-    with patch("app.domain.movies.scanner.get_ffprobe", return_value=None), patch(
-        "app.domain.movies.scanner.Movie"
-    ), patch("app.domain.movies.scanner.MovieFile"):
+    with (
+        patch("app.domain.movies.scanner.get_ffprobe", return_value=None),
+        patch("app.domain.movies.scanner.Movie"),
+        patch("app.domain.movies.scanner.MovieFile"),
+    ):
         import app.domain.movies.scanner as scanner_module
 
         # Patch TMDBService if it exists so we can assert it was never called
         if hasattr(scanner_module, "TMDBService"):
-            with patch.object(
-                scanner_module.TMDBService, "search_movie"
-            ) as mock_search, patch.object(
-                scanner_module.TMDBService, "get_movie_details"
-            ) as mock_details:
+            with (
+                patch.object(scanner_module.TMDBService, "search_movie") as mock_search,
+                patch.object(scanner_module.TMDBService, "get_movie_details") as mock_details,
+            ):
                 create_movies_from_files(db)
                 mock_search.assert_not_called()
                 mock_details.assert_not_called()
@@ -98,8 +101,9 @@ def test_create_movies_stores_detected_external_id_from_filename(mock_ffprobe):
     )
     db = _make_db(fi)
 
-    with patch("app.domain.movies.scanner.Movie") as MockMovie, patch(
-        "app.domain.movies.scanner.MovieFile"
+    with (
+        patch("app.domain.movies.scanner.Movie") as MockMovie,
+        patch("app.domain.movies.scanner.MovieFile"),
     ):
         MockMovie.return_value = MagicMock()
 

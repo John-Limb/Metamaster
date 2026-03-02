@@ -1,4 +1,5 @@
 """Storage analytics service."""
+
 import math
 import os
 from pathlib import Path

@@ -1,4 +1,5 @@
 """Tests for StorageService pure logic helpers."""
+
 import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -176,10 +177,13 @@ def test_get_disk_stats_handles_oserror(service):
 
 def test_get_summary_structure(service):
     service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = []
-    with patch("app.domain.storage.service.settings") as mock_settings, patch.object(
-        service,
-        "get_disk_stats",
-        return_value={"total_bytes": 1000, "used_bytes": 500, "available_bytes": 500},
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch.object(
+            service,
+            "get_disk_stats",
+            return_value={"total_bytes": 1000, "used_bytes": 500, "available_bytes": 500},
+        ),
     ):
         mock_settings.watch_extensions = [".mkv", ".mp4"]
         result = service.get_summary()
@@ -202,14 +206,15 @@ def test_get_summary_counts_pending(service):
     service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = [
         mock_file
     ]
-    with patch.object(
-        service,
-        "get_disk_stats",
-        return_value={"total_bytes": 0, "used_bytes": 0, "available_bytes": 0},
-    ), patch("app.domain.storage.service.settings") as mock_settings, patch(
-        "app.domain.storage.service.MOVIE_DIR", "/media/movies"
-    ), patch(
-        "app.domain.storage.service.TV_DIR", "/media/tv"
+    with (
+        patch.object(
+            service,
+            "get_disk_stats",
+            return_value={"total_bytes": 0, "used_bytes": 0, "available_bytes": 0},
+        ),
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
     ):
         mock_settings.watch_extensions = [".mkv", ".mp4"]
         result = service.get_summary()
@@ -244,9 +249,11 @@ def test_get_files_pagination(service):
         for i in range(1, 4)
     ]
     service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = files
-    with patch("app.domain.storage.service.settings") as mock_settings, patch(
-        "app.domain.storage.service.MOVIE_DIR", "/media/movies"
-    ), patch("app.domain.storage.service.TV_DIR", "/media/tv"):
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+    ):
         mock_settings.watch_extensions = [".mkv", ".mp4"]
         result = service.get_files(page=1, page_size=10)
     assert result["total"] == 3
@@ -260,9 +267,11 @@ def test_get_files_filter_by_media_type(service):
         _make_mock_file("/media/tv/b.mkv", 500_000_000, "h264", 1920, 1080, 1800),
     ]
     service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = files
-    with patch("app.domain.storage.service.settings") as mock_settings, patch(
-        "app.domain.storage.service.MOVIE_DIR", "/media/movies"
-    ), patch("app.domain.storage.service.TV_DIR", "/media/tv"):
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+    ):
         mock_settings.watch_extensions = [".mkv", ".mp4"]
         result = service.get_files(media_type="movie")
     assert result["total"] == 1
@@ -277,9 +286,11 @@ def test_get_files_sort_none_last_asc(service):
         _make_mock_file("/media/movies/c.mkv", 500_000_000, "h264", 1920, 1080, 1800),
     ]
     service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = files
-    with patch("app.domain.storage.service.settings") as mock_settings, patch(
-        "app.domain.storage.service.MOVIE_DIR", "/media/movies"
-    ), patch("app.domain.storage.service.TV_DIR", "/media/tv"):
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+    ):
         mock_settings.watch_extensions = [".mkv", ".mp4"]
         result = service.get_files(sort_by="mb_per_min", sort_dir="asc")
     items = result["items"]
@@ -294,9 +305,11 @@ def test_get_files_sort_none_last_desc(service):
         _make_mock_file("/media/movies/c.mkv", 500_000_000, "h264", 1920, 1080, 1800),
     ]
     service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = files
-    with patch("app.domain.storage.service.settings") as mock_settings, patch(
-        "app.domain.storage.service.MOVIE_DIR", "/media/movies"
-    ), patch("app.domain.storage.service.TV_DIR", "/media/tv"):
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+    ):
         mock_settings.watch_extensions = [".mkv", ".mp4"]
         result = service.get_files(sort_by="mb_per_min", sort_dir="desc")
     items = result["items"]

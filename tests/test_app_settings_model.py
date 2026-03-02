@@ -1,4 +1,5 @@
 """Unit tests for AppSetting model"""
+
 import pytest
 from datetime import datetime
 from sqlalchemy import create_engine

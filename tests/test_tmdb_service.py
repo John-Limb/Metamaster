@@ -538,8 +538,9 @@ def test_get_cache_key_deterministic():
 
 def test_get_auth_prefers_read_access_token():
     """_get_auth returns Bearer header when TMDB_READ_ACCESS_TOKEN is set."""
-    with patch.object(settings, "tmdb_read_access_token", "my.jwt.token"), patch.object(
-        settings, "tmdb_api_key", "myapikey"
+    with (
+        patch.object(settings, "tmdb_read_access_token", "my.jwt.token"),
+        patch.object(settings, "tmdb_api_key", "myapikey"),
     ):
         result = TMDBService._get_auth()
     assert result is not None
@@ -550,8 +551,9 @@ def test_get_auth_prefers_read_access_token():
 
 def test_get_auth_falls_back_to_api_key():
     """_get_auth returns ?api_key= params when only TMDB_API_KEY is set."""
-    with patch.object(settings, "tmdb_read_access_token", None), patch.object(
-        settings, "tmdb_api_key", "myapikey"
+    with (
+        patch.object(settings, "tmdb_read_access_token", None),
+        patch.object(settings, "tmdb_api_key", "myapikey"),
     ):
         result = TMDBService._get_auth()
     assert result is not None
@@ -562,8 +564,9 @@ def test_get_auth_falls_back_to_api_key():
 
 def test_get_auth_raises_when_neither_set():
     """_get_auth raises RuntimeError when no credentials are configured."""
-    with patch.object(settings, "tmdb_read_access_token", None), patch.object(
-        settings, "tmdb_api_key", None
+    with (
+        patch.object(settings, "tmdb_read_access_token", None),
+        patch.object(settings, "tmdb_api_key", None),
     ):
         with pytest.raises(RuntimeError):
             TMDBService._get_auth()

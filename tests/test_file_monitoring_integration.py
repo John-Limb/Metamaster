@@ -15,7 +15,6 @@ from app.application.pattern_recognition.service import PatternRecognitionServic
 from app.infrastructure.file_system.queue_manager import FileQueueManager
 from tests.db_utils import TEST_DATABASE_URL
 
-
 # ============================================================================
 # Test Database Setup
 # ============================================================================
