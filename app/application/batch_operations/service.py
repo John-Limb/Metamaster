@@ -118,9 +118,7 @@ class BatchOperationService:
 
         return operations, total
 
-    def _calculate_eta(
-        self, batch_op: BatchOperation, total_processed: int
-    ) -> Optional[datetime]:
+    def _calculate_eta(self, batch_op: BatchOperation, total_processed: int) -> Optional[datetime]:
         """Calculate estimated time of completion for a batch operation."""
         if not batch_op.started_at or total_processed == 0:
             return None
@@ -421,7 +419,10 @@ class BatchOperationService:
             return {"success": False, "error": f"File not found: {file_path}"}
         metadata = self.ffprobe.get_metadata(file_path)
         if "error" in metadata:
-            return {"success": False, "error": f"Failed to analyze {file_path}: {metadata['error']}"}
+            return {
+                "success": False,
+                "error": f"Failed to analyze {file_path}: {metadata['error']}",
+            }
         resolution = metadata.get("resolution", {})
         return {
             "success": True,

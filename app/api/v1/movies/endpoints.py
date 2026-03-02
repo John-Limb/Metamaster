@@ -98,7 +98,9 @@ async def list_movies(
 
     # Validate enrichment status group
     if status and status not in _ENRICHMENT_STATUS_GROUPS:
-        raise HTTPException(status_code=400, detail="status must be one of: indexed, pending, failed")
+        raise HTTPException(
+            status_code=400, detail="status must be one of: indexed, pending, failed"
+        )
     enrichment_statuses = _ENRICHMENT_STATUS_GROUPS.get(status) if status else None
 
     # Build cache key including all filter parameters

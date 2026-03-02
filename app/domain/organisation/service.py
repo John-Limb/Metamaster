@@ -19,12 +19,13 @@ VALID_PRESETS = ("plex", "jellyfin")
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def sanitize_filename(name: str) -> str:
     """Remove filesystem-unsafe characters and normalise whitespace."""
-    sanitized = re.sub(r'[/\\:*?"<>|\x00]', ' ', name)
-    sanitized = re.sub(r'\s+', ' ', sanitized)
+    sanitized = re.sub(r'[/\\:*?"<>|\x00]', " ", name)
+    sanitized = re.sub(r"\s+", " ", sanitized)
     sanitized = sanitized.strip()
-    return sanitized.rstrip('. ')
+    return sanitized.rstrip(". ")
 
 
 def build_movie_target_path(
@@ -80,6 +81,7 @@ def build_tv_target_path(
 # Stats
 # ---------------------------------------------------------------------------
 
+
 def get_conformance_stats(db: Session, preset: str) -> dict:
     """Return counts of how many files match/need-rename/unenriched per media type.
 
@@ -106,11 +108,13 @@ def get_conformance_stats(db: Session, preset: str) -> dict:
             else:
                 movie_rename += 1
 
-    for show in db.query(TVShow).options(
-        selectinload(TVShow.seasons)
-        .selectinload(Season.episodes)
-        .selectinload(Episode.files)
-    ).all():
+    for show in (
+        db.query(TVShow)
+        .options(
+            selectinload(TVShow.seasons).selectinload(Season.episodes).selectinload(Episode.files)
+        )
+        .all()
+    ):
         for season in show.seasons:
             for episode in season.episodes:
                 if not episode.files:
@@ -146,6 +150,7 @@ def get_conformance_stats(db: Session, preset: str) -> dict:
 # Preview
 # ---------------------------------------------------------------------------
 
+
 def get_preview(db: Session, preset: str) -> dict:
     """Return lists of proposed renames for movies and episodes.
 
@@ -164,18 +169,22 @@ def get_preview(db: Session, preset: str) -> dict:
             ext = Path(mf.file_path).suffix.lower()
             target = build_movie_target_path(MOVIE_DIR, movie.title, movie.year, ext, preset)
             if Path(mf.file_path).resolve() != Path(target).resolve():
-                movies.append({
-                    "file_id": mf.id,
-                    "file_type": "movie",
-                    "current_path": mf.file_path,
-                    "target_path": target,
-                })
+                movies.append(
+                    {
+                        "file_id": mf.id,
+                        "file_type": "movie",
+                        "current_path": mf.file_path,
+                        "target_path": target,
+                    }
+                )
 
-    for show in db.query(TVShow).options(
-        selectinload(TVShow.seasons)
-        .selectinload(Season.episodes)
-        .selectinload(Episode.files)
-    ).all():
+    for show in (
+        db.query(TVShow)
+        .options(
+            selectinload(TVShow.seasons).selectinload(Season.episodes).selectinload(Episode.files)
+        )
+        .all()
+    ):
         for season in show.seasons:
             for episode in season.episodes:
                 if not episode.files:
@@ -192,14 +201,16 @@ def get_preview(db: Session, preset: str) -> dict:
                         preset,
                     )
                     if Path(ef.file_path).resolve() != Path(target).resolve():
-                        episodes.append({
-                            "file_id": ef.id,
-                            "file_type": "episode",
-                            "current_path": ef.file_path,
-                            "target_path": target,
-                            "show_title": show.title,
-                            "season_number": season.season_number,
-                        })
+                        episodes.append(
+                            {
+                                "file_id": ef.id,
+                                "file_type": "episode",
+                                "current_path": ef.file_path,
+                                "target_path": target,
+                                "show_title": show.title,
+                                "season_number": season.season_number,
+                            }
+                        )
 
     return {"movies": movies, "episodes": episodes}
 
@@ -208,9 +219,11 @@ def get_preview(db: Session, preset: str) -> dict:
 # Settings persistence
 # ---------------------------------------------------------------------------
 
+
 def get_saved_preset(db: Session) -> str:
     """Return the saved organisation preset, defaulting to 'plex'."""
     from app.domain.settings.models import AppSetting
+
     setting = db.query(AppSetting).filter(AppSetting.key == "organisation_preset").first()
     return setting.value if setting else "plex"
 
@@ -218,6 +231,7 @@ def get_saved_preset(db: Session) -> str:
 def save_preset(db: Session, preset: str) -> None:
     """Persist the organisation preset to the app_settings table."""
     from app.domain.settings.models import AppSetting
+
     setting = db.query(AppSetting).filter(AppSetting.key == "organisation_preset").first()
     if setting:
         setting.value = preset
@@ -229,6 +243,7 @@ def save_preset(db: Session, preset: str) -> None:
 # ---------------------------------------------------------------------------
 # Apply
 # ---------------------------------------------------------------------------
+
 
 def apply_renames(db: Session, items: list[dict]) -> dict:
     """Execute a list of rename operations.

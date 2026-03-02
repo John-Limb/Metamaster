@@ -45,7 +45,9 @@ def check_path_exists(path: str) -> bool:
             contents = os.listdir(path)
             logger.info(f"Path '{path}': exists=True, readable=True, items={len(contents)}")
         except PermissionError:
-            logger.warning(f"Path '{path}': exists=True, readable=False (PermissionError on listdir)")
+            logger.warning(
+                f"Path '{path}': exists=True, readable=False (PermissionError on listdir)"
+            )
             return False
     else:
         logger.warning(f"Path '{path}': exists={exists}, is_dir={is_dir}, readable={readable}")
@@ -56,7 +58,7 @@ def check_path_exists(path: str) -> bool:
 async def check_configuration():
     """
     Check all configuration items and return their status.
-    
+
     This endpoint checks:
     - TMDB API credentials
     - Database Connection
@@ -68,19 +70,23 @@ async def check_configuration():
     token_set = bool(settings.tmdb_read_access_token)
     key_set = bool(settings.tmdb_api_key and settings.tmdb_api_key != "your_tmdb_api_key_here")
 
-    token_desc = "Long JWT for Bearer auth — get from TMDB Settings → API Read Access Token (v4 auth)"
+    token_desc = (
+        "Long JWT for Bearer auth — get from TMDB Settings → API Read Access Token (v4 auth)"
+    )
     if token_set:
         token_desc += " — active"
 
-    items.append(ConfigurationItem(
-        id="api-keys-tmdb-token",
-        name="TMDB Access Token",
-        description=token_desc,
-        severity="important",
-        status="valid" if token_set else "invalid",
-        actionLabel="Configure Token",
-        actionPath="/settings?section=api-keys",
-    ))
+    items.append(
+        ConfigurationItem(
+            id="api-keys-tmdb-token",
+            name="TMDB Access Token",
+            description=token_desc,
+            severity="important",
+            status="valid" if token_set else "invalid",
+            actionLabel="Configure Token",
+            actionPath="/settings?section=api-keys",
+        )
+    )
 
     if key_set and token_set:
         key_desc = "v3 API Key — present but not active (Access Token takes priority)"
@@ -89,83 +95,97 @@ async def check_configuration():
     else:
         key_desc = "v3 API Key — not set"
 
-    items.append(ConfigurationItem(
-        id="api-keys-tmdb-key",
-        name="TMDB API Key",
-        description=key_desc,
-        severity="optional" if token_set else "important",
-        status="valid" if key_set else "invalid",
-        actionLabel="Configure API Key",
-        actionPath="/settings?section=api-keys",
-    ))
-    
+    items.append(
+        ConfigurationItem(
+            id="api-keys-tmdb-key",
+            name="TMDB API Key",
+            description=key_desc,
+            severity="optional" if token_set else "important",
+            status="valid" if key_set else "invalid",
+            actionLabel="Configure API Key",
+            actionPath="/settings?section=api-keys",
+        )
+    )
+
     # Check Database Connection (we'll verify it's configured in settings)
     db_configured = bool(settings.database_url)
-    items.append(ConfigurationItem(
-        id="database-connection",
-        name="Database Connection",
-        description="Connection to the PostgreSQL database",
-        severity="critical",
-        status="valid" if db_configured else "invalid",
-        actionLabel="Check Database",
-        actionPath="/settings?section=database",
-    ))
-    
+    items.append(
+        ConfigurationItem(
+            id="database-connection",
+            name="Database Connection",
+            description="Connection to the PostgreSQL database",
+            severity="critical",
+            status="valid" if db_configured else "invalid",
+            actionLabel="Check Database",
+            actionPath="/settings?section=database",
+        )
+    )
+
     # Check File System Paths
     movie_dir_exists = check_path_exists(MOVIE_DIR)
     tv_dir_exists = check_path_exists(TV_DIR)
     paths_configured = movie_dir_exists or tv_dir_exists
 
-    logger.info(f"File system paths check: movie_dir={MOVIE_DIR} (exists={movie_dir_exists}), tv_dir={TV_DIR} (exists={tv_dir_exists})")
-    
-    items.append(ConfigurationItem(
-        id="file-system-paths",
-        name="File System Paths",
-        description="Base paths for media library and downloads",
-        severity="critical",
-        status="valid" if paths_configured else "invalid",
-        actionLabel="Configure Paths",
-        actionPath="/settings?section=paths",
-    ))
-    
+    logger.info(
+        f"File system paths check: movie_dir={MOVIE_DIR} (exists={movie_dir_exists}), tv_dir={TV_DIR} (exists={tv_dir_exists})"
+    )
+
+    items.append(
+        ConfigurationItem(
+            id="file-system-paths",
+            name="File System Paths",
+            description="Base paths for media library and downloads",
+            severity="critical",
+            status="valid" if paths_configured else "invalid",
+            actionLabel="Configure Paths",
+            actionPath="/settings?section=paths",
+        )
+    )
+
     # File Monitoring (optional, depends on paths)
-    items.append(ConfigurationItem(
-        id="file-monitoring",
-        name="File Monitoring",
-        description="Watch configured directories for new media files",
-        severity="important",
-        status="valid" if paths_configured else "invalid",
-        actionLabel="Enable Monitoring",
-        actionPath="/settings?section=monitoring",
-    ))
-    
+    items.append(
+        ConfigurationItem(
+            id="file-monitoring",
+            name="File Monitoring",
+            description="Watch configured directories for new media files",
+            severity="important",
+            status="valid" if paths_configured else "invalid",
+            actionLabel="Enable Monitoring",
+            actionPath="/settings?section=monitoring",
+        )
+    )
+
     # Metadata Sources
     metadata_configured = token_set or key_set
-    items.append(ConfigurationItem(
-        id="metadata-sources",
-        name="Metadata Sources",
-        description="Configured sources for fetching movie and TV show metadata",
-        severity="important",
-        status="valid" if metadata_configured else "invalid",
-        actionLabel="Configure Sources",
-        actionPath="/settings?section=metadata",
-    ))
-    
+    items.append(
+        ConfigurationItem(
+            id="metadata-sources",
+            name="Metadata Sources",
+            description="Configured sources for fetching movie and TV show metadata",
+            severity="important",
+            status="valid" if metadata_configured else "invalid",
+            actionLabel="Configure Sources",
+            actionPath="/settings?section=metadata",
+        )
+    )
+
     # Storage Location
-    items.append(ConfigurationItem(
-        id="storage-location",
-        name="Storage Location",
-        description="Accessible storage location for media files",
-        severity="important",
-        status="valid" if paths_configured else "invalid",
-        actionLabel="Check Storage",
-        actionPath="/settings?section=storage",
-    ))
-    
+    items.append(
+        ConfigurationItem(
+            id="storage-location",
+            name="Storage Location",
+            description="Accessible storage location for media files",
+            severity="important",
+            status="valid" if paths_configured else "invalid",
+            actionLabel="Check Storage",
+            actionPath="/settings?section=storage",
+        )
+    )
+
     # Calculate isComplete - only critical items must be valid
     critical_items = [item for item in items if item.severity == "critical"]
     is_complete = all(item.status == "valid" for item in critical_items)
-    
+
     return ConfigurationState(
         items=items,
         isComplete=is_complete,
@@ -177,7 +197,7 @@ async def check_configuration():
 async def check_configuration_item(item_id: str):
     """
     Check a specific configuration item by ID.
-    
+
     Valid item IDs:
     - api-keys-tmdb
     - database-connection
@@ -188,12 +208,12 @@ async def check_configuration_item(item_id: str):
     """
     # Get full configuration state
     config_state = await check_configuration()
-    
+
     # Find the requested item
     for item in config_state.items:
         if item.id == item_id:
             return item
-    
+
     raise HTTPException(status_code=404, detail=f"Configuration item '{item_id}' not found")
 
 

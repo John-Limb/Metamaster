@@ -42,9 +42,7 @@ class RateLimiter:
             self.redis = get_cache_service()
         return self.redis
 
-    def is_allowed(
-        self, key: str, max_requests: int, window_seconds: int
-    ) -> Tuple[bool, int, int]:
+    def is_allowed(self, key: str, max_requests: int, window_seconds: int) -> Tuple[bool, int, int]:
         """Check if a request is allowed based on rate limit.
 
         Uses a sliding window algorithm with Redis sorted sets for accurate

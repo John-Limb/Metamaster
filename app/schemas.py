@@ -128,15 +128,9 @@ class MovieResponse(BaseModel):
     enrichment_status: Optional[EnrichmentStatus] = Field(
         None, description="Current enrichment status"
     )
-    detected_external_id: Optional[str] = Field(
-        None, description="Auto-detected external ID"
-    )
-    manual_external_id: Optional[str] = Field(
-        None, description="Manually set external ID"
-    )
-    enrichment_error: Optional[str] = Field(
-        None, description="Last enrichment error message"
-    )
+    detected_external_id: Optional[str] = Field(None, description="Auto-detected external ID")
+    manual_external_id: Optional[str] = Field(None, description="Manually set external ID")
+    enrichment_error: Optional[str] = Field(None, description="Last enrichment error message")
 
     # Technical metadata derived from associated MovieFile
     quality: Optional[str] = Field(None, description="Resolution label e.g. 1080p, 4K")
@@ -210,15 +204,9 @@ class TVShowResponse(BaseModel):
     enrichment_status: Optional[EnrichmentStatus] = Field(
         None, description="Current enrichment status"
     )
-    detected_external_id: Optional[str] = Field(
-        None, description="Auto-detected external ID"
-    )
-    manual_external_id: Optional[str] = Field(
-        None, description="Manually set external ID"
-    )
-    enrichment_error: Optional[str] = Field(
-        None, description="Last enrichment error message"
-    )
+    detected_external_id: Optional[str] = Field(None, description="Auto-detected external ID")
+    manual_external_id: Optional[str] = Field(None, description="Manually set external ID")
+    enrichment_error: Optional[str] = Field(None, description="Last enrichment error message")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -250,8 +238,12 @@ class EpisodeResponse(BaseModel):
     air_date: Optional[str] = Field(None, description="Air date in YYYY-MM-DD format")
     rating: Optional[float] = None
     tmdb_id: Optional[str] = None
-    quality: Optional[str] = Field(None, description="Quality label derived from file resolution e.g. 1080p, 4K")
-    runtime: Optional[int] = Field(None, description="Runtime in minutes derived from file duration")
+    quality: Optional[str] = Field(
+        None, description="Quality label derived from file resolution e.g. 1080p, 4K"
+    )
+    runtime: Optional[int] = Field(
+        None, description="Runtime in minutes derived from file duration"
+    )
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
 

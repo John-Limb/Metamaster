@@ -24,10 +24,7 @@ class _CacheEncoder(json.JSONEncoder):
         # Handle SQLAlchemy model instances by extracting column values + @property attrs
         mapper = getattr(obj.__class__, "__mapper__", None)
         if mapper is not None:
-            data = {
-                col.key: getattr(obj, col.key)
-                for col in mapper.column_attrs
-            }
+            data = {col.key: getattr(obj, col.key) for col in mapper.column_attrs}
             # Include @property descriptors (e.g. quality, resolution, codec_video, etc.)
             for attr_name in dir(obj.__class__):
                 if isinstance(getattr(obj.__class__, attr_name, None), property):

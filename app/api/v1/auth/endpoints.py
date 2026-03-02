@@ -88,7 +88,6 @@ async def get_current_user(
     return user
 
 
-
 @router.post(
     "/login",
     response_model=LoginResponse,
@@ -358,9 +357,7 @@ async def change_password(
     auth_service = AuthService(db)
 
     # Change password (verifies current password internally)
-    success = auth_service.change_password(
-        current_user, data.current_password, data.new_password
-    )
+    success = auth_service.change_password(current_user, data.current_password, data.new_password)
 
     if not success:
         raise HTTPException(

@@ -27,11 +27,14 @@ router = APIRouter(prefix="/organisation", tags=["Organisation"])
 # Response / request models
 # ---------------------------------------------------------------------------
 
+
 class PresetPayload(BaseModel):
     preset: str
 
+
 class PresetResponse(BaseModel):
     preset: str
+
 
 class ConformanceStatsResponse(BaseModel):
     movies_match: int
@@ -41,6 +44,7 @@ class ConformanceStatsResponse(BaseModel):
     episodes_need_rename: int
     episodes_unenriched: int
 
+
 class RenamePreviewItem(BaseModel):
     file_id: int
     file_type: str
@@ -49,17 +53,21 @@ class RenamePreviewItem(BaseModel):
     show_title: str | None = None
     season_number: int | None = None
 
+
 class PreviewResponse(BaseModel):
     movies: list[RenamePreviewItem]
     episodes: list[RenamePreviewItem]
+
 
 class RenameItem(BaseModel):
     file_id: int
     file_type: Literal["movie", "episode"]
     target_path: str
 
+
 class ApplyPayload(BaseModel):
     items: list[RenameItem]
+
 
 class ApplyResult(BaseModel):
     success: int
@@ -70,6 +78,7 @@ class ApplyResult(BaseModel):
 # ---------------------------------------------------------------------------
 # Settings
 # ---------------------------------------------------------------------------
+
 
 @router.get("/settings", response_model=PresetResponse)
 def get_organisation_settings(db: Session = Depends(get_db)):
@@ -88,6 +97,7 @@ def update_organisation_settings(payload: PresetPayload, db: Session = Depends(g
 # Stats
 # ---------------------------------------------------------------------------
 
+
 @router.get("/stats", response_model=ConformanceStatsResponse)
 def get_stats(preset: str | None = None, db: Session = Depends(get_db)):
     active_preset = preset or get_saved_preset(db)
@@ -100,6 +110,7 @@ def get_stats(preset: str | None = None, db: Session = Depends(get_db)):
 # Preview
 # ---------------------------------------------------------------------------
 
+
 @router.get("/preview", response_model=PreviewResponse)
 def preview_renames(preset: str | None = None, db: Session = Depends(get_db)):
     active_preset = preset or get_saved_preset(db)
@@ -111,6 +122,7 @@ def preview_renames(preset: str | None = None, db: Session = Depends(get_db)):
 # ---------------------------------------------------------------------------
 # Apply
 # ---------------------------------------------------------------------------
+
 
 @router.post("/apply", response_model=ApplyResult)
 def apply_organisation(payload: ApplyPayload, db: Session = Depends(get_db)):

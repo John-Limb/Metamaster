@@ -75,9 +75,7 @@ class QueryPerformanceTracker:
             if len(self.slow_queries) > 100:
                 self.slow_queries = self.slow_queries[-100:]
 
-            logger.warning(
-                f"Slow query detected ({execution_time:.3f}s): {query[:100]}..."
-            )
+            logger.warning(f"Slow query detected ({execution_time:.3f}s): {query[:100]}...")
 
     def get_slow_queries(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get the most recent slow queries"""
@@ -88,9 +86,7 @@ class QueryPerformanceTracker:
         return {
             "total_queries": self.total_queries,
             "total_time": self.total_time,
-            "avg_time": (
-                self.total_time / self.total_queries if self.total_queries > 0 else 0
-            ),
+            "avg_time": (self.total_time / self.total_queries if self.total_queries > 0 else 0),
             "query_stats": self.query_stats,
             "slow_query_count": len(self.slow_queries),
         }
@@ -132,9 +128,7 @@ class ConnectionPoolMonitor:
             stats = {
                 "timestamp": datetime.utcnow(),
                 "pool_size": pool.size() if hasattr(pool, "size") else None,
-                "checked_out": (
-                    pool.checkedout() if hasattr(pool, "checkedout") else None
-                ),
+                "checked_out": (pool.checkedout() if hasattr(pool, "checkedout") else None),
                 "overflow": pool.overflow() if hasattr(pool, "overflow") else None,
                 "total_connections": (
                     pool.size() + pool.overflow()
@@ -170,21 +164,13 @@ class ConnectionPoolMonitor:
                     if s["checked_out"] is not None
                 ]
                 overflow_values = [
-                    s["overflow"]
-                    for s in self.pool_stats_history
-                    if s["overflow"] is not None
+                    s["overflow"] for s in self.pool_stats_history if s["overflow"] is not None
                 ]
 
                 avg_checked_out = (
-                    sum(checked_out_values) / len(checked_out_values)
-                    if checked_out_values
-                    else 0
+                    sum(checked_out_values) / len(checked_out_values) if checked_out_values else 0
                 )
-                avg_overflow = (
-                    sum(overflow_values) / len(overflow_values)
-                    if overflow_values
-                    else 0
-                )
+                avg_overflow = sum(overflow_values) / len(overflow_values) if overflow_values else 0
             else:
                 avg_checked_out = 0
                 avg_overflow = 0
@@ -459,9 +445,7 @@ class DatabaseOptimizationService:
             conn.info.setdefault("query_start_time", []).append(time.time())
 
         @event.listens_for(engine, "after_cursor_execute")
-        def receive_after_cursor_execute(
-            conn, cursor, statement, parameters, context, executemany
-        ):
+        def receive_after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
             total_time = time.time() - conn.info["query_start_time"].pop(-1)
             # Get fresh tracker reference in case it was reinitialized
             current_tracker = DatabaseOptimizationService.get_query_tracker()

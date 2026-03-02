@@ -48,6 +48,7 @@ class FileService:
     def _get_mime_type(self, path: str) -> Optional[str]:
         """Get MIME type for a file"""
         import mimetypes
+
         mime_type, _ = mimetypes.guess_type(path)
         return mime_type
 
@@ -113,8 +114,7 @@ class FileService:
 
         # Get paginated results
         files = (
-            files_query
-            .order_by(FileItem.type.desc(), FileItem.name)
+            files_query.order_by(FileItem.type.desc(), FileItem.name)
             .offset(offset)
             .limit(page_size)
             .all()
@@ -185,7 +185,9 @@ class FileService:
             file_item.is_indexed = update_data["is_indexed"]
 
         if "metadata" in update_data:
-            file_item.metadata_json = json.dumps(update_data["metadata"]) if update_data["metadata"] else None
+            file_item.metadata_json = (
+                json.dumps(update_data["metadata"]) if update_data["metadata"] else None
+            )
 
         file_item.updated_at = datetime.utcnow()
 
@@ -257,9 +259,7 @@ class FileService:
 
         return True
 
-    def batch_delete_files(
-        self, file_ids: List[int], delete_from_disk: bool = False
-    ) -> int:
+    def batch_delete_files(self, file_ids: List[int], delete_from_disk: bool = False) -> int:
         """Delete multiple files"""
         deleted_count = 0
         for file_id in file_ids:
@@ -267,9 +267,7 @@ class FileService:
                 deleted_count += 1
         return deleted_count
 
-    def batch_move_files(
-        self, file_ids: List[int], new_path: str
-    ) -> int:
+    def batch_move_files(self, file_ids: List[int], new_path: str) -> int:
         """Move multiple files to a new path"""
         moved_count = 0
         for file_id in file_ids:
@@ -296,13 +294,7 @@ class FileService:
 
         total = files_query.count()
 
-        files = (
-            files_query
-            .order_by(FileItem.name)
-            .offset(offset)
-            .limit(page_size)
-            .all()
-        )
+        files = files_query.order_by(FileItem.name).offset(offset).limit(page_size).all()
 
         return files, total
 
@@ -313,9 +305,7 @@ class FileService:
         tv_dir_resolved = str(Path(TV_DIR).resolve())
 
         # Get all file paths and sizes in one query
-        files = self.db.query(FileItem.path, FileItem.size).filter(
-            FileItem.type == "file"
-        ).all()
+        files = self.db.query(FileItem.path, FileItem.size).filter(FileItem.type == "file").all()
 
         # Filter to video files and categorize
         total_files = 0
@@ -339,11 +329,7 @@ class FileService:
                 tv_show_count += 1
 
         # Get last updated
-        last_updated = (
-            self.db.query(FileItem)
-            .order_by(FileItem.updated_at.desc())
-            .first()
-        )
+        last_updated = self.db.query(FileItem).order_by(FileItem.updated_at.desc()).first()
         last_updated_time = last_updated.updated_at if last_updated else datetime.utcnow()
 
         return FileStatsResponse(

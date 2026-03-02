@@ -44,11 +44,13 @@ def _tail_log(filepath: str, n: int) -> list[dict[str, Any]]:
                 continue
             try:
                 entry = json.loads(raw)
-                result.append({
-                    "timestamp": entry.get("timestamp", ""),
-                    "level": entry.get("level", ""),
-                    "message": entry.get("message", ""),
-                })
+                result.append(
+                    {
+                        "timestamp": entry.get("timestamp", ""),
+                        "level": entry.get("level", ""),
+                        "message": entry.get("message", ""),
+                    }
+                )
             except json.JSONDecodeError:
                 result.append({"timestamp": "", "level": "RAW", "message": raw})
         return result
@@ -58,7 +60,9 @@ def _tail_log(filepath: str, n: int) -> list[dict[str, Any]]:
 
 
 @router.get("/logs")
-async def component_logs(lines: int = Query(10, ge=1, le=500, description="Number of log lines per component")) -> dict[str, list[dict[str, Any]]]:
+async def component_logs(
+    lines: int = Query(10, ge=1, le=500, description="Number of log lines per component")
+) -> dict[str, list[dict[str, Any]]]:
     """Return the last N log lines per component."""
     return {
         component: _tail_log(filepath, lines)

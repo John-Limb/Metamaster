@@ -15,11 +15,11 @@ from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatc
 # OWASP recommended Argon2id parameters
 # See: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 ph = PasswordHasher(
-    time_cost=3,           # Number of iterations (passes over memory)
-    memory_cost=65536,     # 64MB memory usage (in KiB)
-    parallelism=4,         # Number of parallel threads
-    hash_len=32,           # Hash length in bytes
-    salt_len=16,           # Salt length in bytes
+    time_cost=3,  # Number of iterations (passes over memory)
+    memory_cost=65536,  # 64MB memory usage (in KiB)
+    parallelism=4,  # Number of parallel threads
+    hash_len=32,  # Hash length in bytes
+    salt_len=16,  # Salt length in bytes
 )
 
 

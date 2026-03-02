@@ -234,21 +234,17 @@ def track_http_request(method: str, endpoint: str):
                 result = await func(*args, **kwargs)
                 duration = time.time() - start_time
                 status = getattr(result, "status_code", 200)
-                http_requests_total.labels(
-                    method=method, endpoint=endpoint, status=status
-                ).inc()
-                http_request_duration_seconds.labels(
-                    method=method, endpoint=endpoint
-                ).observe(duration)
+                http_requests_total.labels(method=method, endpoint=endpoint, status=status).inc()
+                http_request_duration_seconds.labels(method=method, endpoint=endpoint).observe(
+                    duration
+                )
                 return result
             except Exception as e:
                 duration = time.time() - start_time
-                http_requests_total.labels(
-                    method=method, endpoint=endpoint, status=500
-                ).inc()
-                http_request_duration_seconds.labels(
-                    method=method, endpoint=endpoint
-                ).observe(duration)
+                http_requests_total.labels(method=method, endpoint=endpoint, status=500).inc()
+                http_request_duration_seconds.labels(method=method, endpoint=endpoint).observe(
+                    duration
+                )
                 app_errors_total.labels(error_type=type(e).__name__).inc()
                 raise
 
@@ -259,21 +255,17 @@ def track_http_request(method: str, endpoint: str):
                 result = func(*args, **kwargs)
                 duration = time.time() - start_time
                 status = getattr(result, "status_code", 200)
-                http_requests_total.labels(
-                    method=method, endpoint=endpoint, status=status
-                ).inc()
-                http_request_duration_seconds.labels(
-                    method=method, endpoint=endpoint
-                ).observe(duration)
+                http_requests_total.labels(method=method, endpoint=endpoint, status=status).inc()
+                http_request_duration_seconds.labels(method=method, endpoint=endpoint).observe(
+                    duration
+                )
                 return result
             except Exception as e:
                 duration = time.time() - start_time
-                http_requests_total.labels(
-                    method=method, endpoint=endpoint, status=500
-                ).inc()
-                http_request_duration_seconds.labels(
-                    method=method, endpoint=endpoint
-                ).observe(duration)
+                http_requests_total.labels(method=method, endpoint=endpoint, status=500).inc()
+                http_request_duration_seconds.labels(method=method, endpoint=endpoint).observe(
+                    duration
+                )
                 app_errors_total.labels(error_type=type(e).__name__).inc()
                 raise
 
@@ -325,9 +317,7 @@ def track_cache_operation(operation: str, cache_name: str = "redis"):
             try:
                 result = func(*args, **kwargs)
                 duration = time.time() - start_time
-                cache_operation_duration_seconds.labels(operation=operation).observe(
-                    duration
-                )
+                cache_operation_duration_seconds.labels(operation=operation).observe(duration)
 
                 # Track hits/misses if applicable
                 if operation == "get" and result is not None:
@@ -338,9 +328,7 @@ def track_cache_operation(operation: str, cache_name: str = "redis"):
                 return result
             except Exception as e:
                 duration = time.time() - start_time
-                cache_operation_duration_seconds.labels(operation=operation).observe(
-                    duration
-                )
+                cache_operation_duration_seconds.labels(operation=operation).observe(duration)
                 app_errors_total.labels(error_type="cache_error").inc()
                 raise
 
@@ -360,16 +348,12 @@ def track_task_execution(task_name: str):
                 result = func(*args, **kwargs)
                 duration = time.time() - start_time
                 celery_tasks_total.labels(task_name=task_name, status="success").inc()
-                celery_task_duration_seconds.labels(task_name=task_name).observe(
-                    duration
-                )
+                celery_task_duration_seconds.labels(task_name=task_name).observe(duration)
                 return result
             except Exception as e:
                 duration = time.time() - start_time
                 celery_tasks_total.labels(task_name=task_name, status="error").inc()
-                celery_task_duration_seconds.labels(task_name=task_name).observe(
-                    duration
-                )
+                celery_task_duration_seconds.labels(task_name=task_name).observe(duration)
                 app_errors_total.labels(error_type="task_error").inc()
                 raise
 

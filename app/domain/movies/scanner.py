@@ -285,7 +285,9 @@ def enrich_new_movies(db: Session) -> int:
 
             tmdb_id = search_parsed["search_results"][0].get("tmdb_id")
             if not tmdb_id or tmdb_id in existing_tmdb_ids:
-                logger.debug(f"[Movie] TMDB: duplicate or missing ID for '{movie.title}' — skipping")
+                logger.debug(
+                    f"[Movie] TMDB: duplicate or missing ID for '{movie.title}' — skipping"
+                )
                 continue
 
             logger.info(f"[Movie] TMDB match: '{movie.title}' → {tmdb_id}")
@@ -319,11 +321,17 @@ def enrich_new_movies(db: Session) -> int:
             enriched += 1
 
             rating_str = f"★{movie.rating}" if movie.rating else "no rating"
-            genres_str = ", ".join(movie.genres) if isinstance(movie.genres, list) else str(movie.genres or "")
+            genres_str = (
+                ", ".join(movie.genres)
+                if isinstance(movie.genres, list)
+                else str(movie.genres or "")
+            )
             logger.info(f"[Movie] Enriched: '{movie.title}' — {rating_str}, {genres_str}")
 
         except Exception:
-            logger.warning(f"[Movie] Failed to enrich '{movie.title}' (ID: {movie.id})", exc_info=True)
+            logger.warning(
+                f"[Movie] Failed to enrich '{movie.title}' (ID: {movie.id})", exc_info=True
+            )
 
     if enriched:
         db.commit()
