@@ -8,14 +8,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from sqlalchemy.orm import Session
 
-from app.services.pattern_recognition import (
+from app.application.pattern_recognition.service import (
     PatternRecognitionService,
     ClassificationResult,
 )
-from app.services.ffprobe_wrapper import FFProbeWrapper
-from app.services.file_queue_manager import FileQueueManager
-from app.services.task_error_handler import TaskErrorHandler
-from app.services.file_monitor import FileMonitorService, MediaFileEventHandler
+from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
+from app.infrastructure.file_system.queue_manager import FileQueueManager
+from app.infrastructure.monitoring.error_handler import TaskErrorHandler
+from app.infrastructure.file_system.monitor import FileMonitorService, MediaFileEventHandler
 from app.models import FileQueue, TaskError
 from app.database import SessionLocal
 
@@ -550,7 +550,7 @@ class TestTaskErrorHandler:
         mock_store.assert_called_once()
         mock_notify.assert_called_once()
 
-    @patch("app.services.task_error_handler.logger")
+    @patch("app.infrastructure.monitoring.error_handler.logger")
     def test_notify_failure_critical(self, mock_logger):
         """Test notification for critical error"""
         TaskErrorHandler.notify_failure(
@@ -562,7 +562,7 @@ class TestTaskErrorHandler:
 
         mock_logger.log.assert_called_once()
 
-    @patch("app.services.task_error_handler.logger")
+    @patch("app.infrastructure.monitoring.error_handler.logger")
     def test_log_task_error(self, mock_logger):
         """Test error logging"""
         TaskErrorHandler.log_task_error(
@@ -577,7 +577,7 @@ class TestTaskErrorHandler:
 
         mock_logger.error.assert_called_once()
 
-    @patch("app.services.task_error_handler.SessionLocal")
+    @patch("app.infrastructure.monitoring.error_handler.SessionLocal")
     def test_store_error_in_db_new(self, mock_session_local):
         """Test storing new error in database"""
         mock_session = MagicMock()
@@ -596,7 +596,7 @@ class TestTaskErrorHandler:
         mock_session.add.assert_called_once()
         mock_session.commit.assert_called_once()
 
-    @patch("app.services.task_error_handler.SessionLocal")
+    @patch("app.infrastructure.monitoring.error_handler.SessionLocal")
     def test_mark_error_resolved(self, mock_session_local):
         """Test marking error as resolved"""
         mock_session = MagicMock()
@@ -609,7 +609,7 @@ class TestTaskErrorHandler:
         assert mock_error.resolved_at is not None
         mock_session.commit.assert_called_once()
 
-    @patch("app.services.task_error_handler.SessionLocal")
+    @patch("app.infrastructure.monitoring.error_handler.SessionLocal")
     def test_get_recent_errors(self, mock_session_local):
         """Test retrieving recent errors"""
         mock_session = MagicMock()
@@ -646,7 +646,7 @@ class TestFileMonitorService:
     @pytest.fixture
     def monitor(self):
         """Create FileMonitorService instance"""
-        with patch("app.services.file_monitor.settings"):
+        with patch("app.infrastructure.file_system.monitor.settings"):
             return FileMonitorService(watch_path="/tmp/test_media")
 
     def test_media_file_event_handler_is_media_file(self):

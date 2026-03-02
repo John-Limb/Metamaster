@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 from datetime import datetime
 from app.main import app
-from app.services.task_error_handler import TaskErrorHandler
+from app.infrastructure.monitoring.error_handler import TaskErrorHandler
 from app.database import SessionLocal
 from app.models import TaskError
 

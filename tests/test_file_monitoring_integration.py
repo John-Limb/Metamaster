@@ -11,8 +11,8 @@ from datetime import datetime
 
 from app.database import Base
 from app.models import FileQueue, Movie, TVShow
-from app.services.pattern_recognition import PatternRecognitionService
-from app.services.file_queue_manager import FileQueueManager
+from app.application.pattern_recognition.service import PatternRecognitionService
+from app.infrastructure.file_system.queue_manager import FileQueueManager
 from tests.db_utils import TEST_DATABASE_URL
 
 

@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.models import Movie, TVShow
-from app.services.search_service import (
+from app.application.search.service import (
     SearchFilters,
     MovieSearchService,
     TVShowSearchService,

@@ -3,7 +3,7 @@
 import pytest
 import json
 from unittest.mock import Mock, patch, MagicMock
-from app.services.redis_cache import RedisCacheService, get_cache_service
+from app.infrastructure.cache.redis_cache import RedisCacheService, get_cache_service
 from app.models import Movie, TVShow
 
 
@@ -13,7 +13,7 @@ class TestRedisCacheService:
     @pytest.fixture
     def mock_redis(self):
         """Create a mock Redis client"""
-        with patch("app.services.redis_cache.redis.from_url") as mock:
+        with patch("app.infrastructure.cache.redis_cache.redis.from_url") as mock:
             mock_client = MagicMock()
             mock_client.ping.return_value = True
             mock.return_value = mock_client
@@ -337,7 +337,7 @@ class TestCacheServiceGlobal:
 
     def test_get_cache_service_singleton(self):
         """Test get_cache_service returns singleton instance"""
-        with patch("app.services.redis_cache.redis.from_url"):
+        with patch("app.infrastructure.cache.redis_cache.redis.from_url"):
             service1 = get_cache_service()
             service2 = get_cache_service()
 
@@ -345,7 +345,7 @@ class TestCacheServiceGlobal:
 
     def test_get_cache_service_creates_instance(self):
         """Test get_cache_service creates instance on first call"""
-        with patch("app.services.redis_cache.redis.from_url"):
+        with patch("app.infrastructure.cache.redis_cache.redis.from_url"):
             service = get_cache_service()
 
             assert service is not None
@@ -358,7 +358,7 @@ class TestCacheIntegration:
     @pytest.fixture
     def mock_redis(self):
         """Create a mock Redis client"""
-        with patch("app.services.redis_cache.redis.from_url") as mock:
+        with patch("app.infrastructure.cache.redis_cache.redis.from_url") as mock:
             mock_client = MagicMock()
             mock_client.ping.return_value = True
             mock.return_value = mock_client

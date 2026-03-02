@@ -17,7 +17,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from app.models import FileQueue
-from app.services.file_queue_manager import FileQueueManager
+from app.infrastructure.file_system.queue_manager import FileQueueManager
 from tests.db_utils import TEST_DATABASE_URL
 
 
