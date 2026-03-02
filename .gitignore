@@ -68,8 +68,8 @@ dump.rdb
 .dockerignore
 
 # Media files (for testing)
-media/
-test_media/
+/media/
+/test_media/
 
 # OS
 .DS_Store
