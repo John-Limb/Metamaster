@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch, MagicMock
 from sqlalchemy.orm import Session
 
 from app.models import BatchOperation, Movie, TVShow
-from app.services.batch_operations import BatchOperationService
+from app.application.batch_operations.service import BatchOperationService
 from app.database import SessionLocal, Base, engine
 
 
@@ -302,7 +302,9 @@ class TestBulkMetadataSync:
 
         media_ids = [m.id for m in sample_movies]
 
-        with patch("app.application.batch_operations.service.TMDBService.get_movie_details") as mock_omdb:
+        with patch(
+            "app.application.batch_operations.service.TMDBService.get_movie_details"
+        ) as mock_omdb:
             mock_omdb.return_value = {
                 "Title": "Test Movie",
                 "imdbRating": "8.5",
@@ -326,7 +328,9 @@ class TestBulkMetadataSync:
 
         media_ids = [s.id for s in sample_tv_shows]
 
-        with patch("app.application.batch_operations.service.TMDBService.get_series_details") as mock_tvdb:
+        with patch(
+            "app.application.batch_operations.service.TMDBService.get_series_details"
+        ) as mock_tvdb:
             mock_tvdb.return_value = {
                 "seriesName": "Test Show",
                 "siteRating": "8.0",
@@ -348,7 +352,9 @@ class TestBulkMetadataSync:
 
         media_ids = [m.id for m in sample_movies]
 
-        with patch("app.application.batch_operations.service.TMDBService.get_movie_details") as mock_omdb:
+        with patch(
+            "app.application.batch_operations.service.TMDBService.get_movie_details"
+        ) as mock_omdb:
             # Simulate some failures
             mock_omdb.side_effect = [
                 {"Title": "Movie 1", "imdbRating": "8.0"},
@@ -383,7 +389,9 @@ class TestBulkFileImport:
             metadata={"media_type": "movie"},
         )
 
-        with patch("app.services.batch_operations.FFProbeWrapper.get_metadata") as mock_ffprobe:
+        with patch(
+            "app.application.batch_operations.service.FFProbeWrapper.get_metadata"
+        ) as mock_ffprobe:
             mock_ffprobe.return_value = {
                 "resolution": {"width": 1920, "height": 1080},
                 "codecs": {"video": "h264", "audio": "aac"},
