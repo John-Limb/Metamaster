@@ -156,7 +156,9 @@ async def test_search_movie_cache_hit(mock_db, tmdb_movie_search_response):
     """search_movie returns a cached result without hitting the network."""
     make_cache_hit(mock_db, tmdb_movie_search_response)
 
-    with patch.object(TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})):
+    with patch.object(
+        TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})
+    ):
         result = await TMDBService.search_movie(mock_db, "The Shawshank Redemption", 1994)
 
     assert result is not None
@@ -166,10 +168,10 @@ async def test_search_movie_cache_hit(mock_db, tmdb_movie_search_response):
 
 @pytest.mark.asyncio
 async def test_search_movie_no_api_key(mock_db):
-    """search_movie returns None when TMDB_API_KEY is not configured."""
-    with patch.object(TMDBService, "_get_auth", return_value=None):
-        result = await TMDBService.search_movie(mock_db, "Test Movie")
-    assert result is None
+    """search_movie raises RuntimeError when TMDB credentials are not configured."""
+    with patch.object(TMDBService, "_get_auth", side_effect=RuntimeError("No TMDB credentials")):
+        with pytest.raises(RuntimeError):
+            await TMDBService.search_movie(mock_db, "Test Movie")
 
 
 @pytest.mark.asyncio
@@ -203,7 +205,9 @@ async def test_get_movie_details_cache_hit(mock_db, tmdb_movie_details_response)
     """get_movie_details returns a cached result."""
     make_cache_hit(mock_db, tmdb_movie_details_response)
 
-    with patch.object(TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})):
+    with patch.object(
+        TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})
+    ):
         result = await TMDBService.get_movie_details(mock_db, "278")
 
     assert result is not None
@@ -213,10 +217,10 @@ async def test_get_movie_details_cache_hit(mock_db, tmdb_movie_details_response)
 
 @pytest.mark.asyncio
 async def test_get_movie_details_no_api_key(mock_db):
-    """get_movie_details returns None without an API key."""
-    with patch.object(TMDBService, "_get_auth", return_value=None):
-        result = await TMDBService.get_movie_details(mock_db, "278")
-    assert result is None
+    """get_movie_details raises RuntimeError without an API key."""
+    with patch.object(TMDBService, "_get_auth", side_effect=RuntimeError("No TMDB credentials")):
+        with pytest.raises(RuntimeError):
+            await TMDBService.get_movie_details(mock_db, "278")
 
 
 # ===========================================================================
@@ -229,7 +233,9 @@ async def test_search_show_cache_hit(mock_db, tmdb_tv_search_response):
     """search_show returns a cached result."""
     make_cache_hit(mock_db, tmdb_tv_search_response)
 
-    with patch.object(TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})):
+    with patch.object(
+        TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})
+    ):
         result = await TMDBService.search_show(mock_db, "Breaking Bad")
 
     assert result is not None
@@ -238,10 +244,10 @@ async def test_search_show_cache_hit(mock_db, tmdb_tv_search_response):
 
 @pytest.mark.asyncio
 async def test_search_show_no_api_key(mock_db):
-    """search_show returns None without an API key."""
-    with patch.object(TMDBService, "_get_auth", return_value=None):
-        result = await TMDBService.search_show(mock_db, "Breaking Bad")
-    assert result is None
+    """search_show raises RuntimeError without an API key."""
+    with patch.object(TMDBService, "_get_auth", side_effect=RuntimeError("No TMDB credentials")):
+        with pytest.raises(RuntimeError):
+            await TMDBService.search_show(mock_db, "Breaking Bad")
 
 
 # ===========================================================================
@@ -254,7 +260,9 @@ async def test_get_series_details_cache_hit(mock_db, tmdb_series_details_respons
     """get_series_details returns a cached result."""
     make_cache_hit(mock_db, tmdb_series_details_response)
 
-    with patch.object(TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})):
+    with patch.object(
+        TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})
+    ):
         result = await TMDBService.get_series_details(mock_db, "1396")
 
     assert result is not None
@@ -264,10 +272,10 @@ async def test_get_series_details_cache_hit(mock_db, tmdb_series_details_respons
 
 @pytest.mark.asyncio
 async def test_get_series_details_no_api_key(mock_db):
-    """get_series_details returns None without an API key."""
-    with patch.object(TMDBService, "_get_auth", return_value=None):
-        result = await TMDBService.get_series_details(mock_db, "1396")
-    assert result is None
+    """get_series_details raises RuntimeError without an API key."""
+    with patch.object(TMDBService, "_get_auth", side_effect=RuntimeError("No TMDB credentials")):
+        with pytest.raises(RuntimeError):
+            await TMDBService.get_series_details(mock_db, "1396")
 
 
 # ===========================================================================
@@ -280,7 +288,9 @@ async def test_get_season_details_cache_hit(mock_db, tmdb_season_response):
     """get_season_details returns a cached result."""
     make_cache_hit(mock_db, tmdb_season_response)
 
-    with patch.object(TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})):
+    with patch.object(
+        TMDBService, "_get_auth", return_value=({"Authorization": "Bearer test"}, {})
+    ):
         result = await TMDBService.get_season_details(mock_db, "1396", 1)
 
     assert result is not None
@@ -290,10 +300,10 @@ async def test_get_season_details_cache_hit(mock_db, tmdb_season_response):
 
 @pytest.mark.asyncio
 async def test_get_season_details_no_api_key(mock_db):
-    """get_season_details returns None without an API key."""
-    with patch.object(TMDBService, "_get_auth", return_value=None):
-        result = await TMDBService.get_season_details(mock_db, "1396", 1)
-    assert result is None
+    """get_season_details raises RuntimeError without an API key."""
+    with patch.object(TMDBService, "_get_auth", side_effect=RuntimeError("No TMDB credentials")):
+        with pytest.raises(RuntimeError):
+            await TMDBService.get_season_details(mock_db, "1396", 1)
 
 
 # ===========================================================================
@@ -528,8 +538,9 @@ def test_get_cache_key_deterministic():
 
 def test_get_auth_prefers_read_access_token():
     """_get_auth returns Bearer header when TMDB_READ_ACCESS_TOKEN is set."""
-    with patch.object(settings, "tmdb_read_access_token", "my.jwt.token"), \
-         patch.object(settings, "tmdb_api_key", "myapikey"):
+    with patch.object(settings, "tmdb_read_access_token", "my.jwt.token"), patch.object(
+        settings, "tmdb_api_key", "myapikey"
+    ):
         result = TMDBService._get_auth()
     assert result is not None
     headers, params = result
@@ -539,8 +550,9 @@ def test_get_auth_prefers_read_access_token():
 
 def test_get_auth_falls_back_to_api_key():
     """_get_auth returns ?api_key= params when only TMDB_API_KEY is set."""
-    with patch.object(settings, "tmdb_read_access_token", None), \
-         patch.object(settings, "tmdb_api_key", "myapikey"):
+    with patch.object(settings, "tmdb_read_access_token", None), patch.object(
+        settings, "tmdb_api_key", "myapikey"
+    ):
         result = TMDBService._get_auth()
     assert result is not None
     headers, params = result
@@ -548,12 +560,13 @@ def test_get_auth_falls_back_to_api_key():
     assert params == {"api_key": "myapikey"}
 
 
-def test_get_auth_returns_none_when_neither_set():
-    """_get_auth returns None when no credentials are configured."""
-    with patch.object(settings, "tmdb_read_access_token", None), \
-         patch.object(settings, "tmdb_api_key", None):
-        result = TMDBService._get_auth()
-    assert result is None
+def test_get_auth_raises_when_neither_set():
+    """_get_auth raises RuntimeError when no credentials are configured."""
+    with patch.object(settings, "tmdb_read_access_token", None), patch.object(
+        settings, "tmdb_api_key", None
+    ):
+        with pytest.raises(RuntimeError):
+            TMDBService._get_auth()
 
 
 # ===========================================================================

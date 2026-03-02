@@ -11,7 +11,7 @@ from tests.db_utils import TEST_DATABASE_URL
 
 from app.database import Base
 from app.models import Movie, TVShow, TaskError, BatchOperation, FileQueue
-from app.celery_app import celery_app
+from app.tasks.celery_app import celery_app
 
 
 # ============================================================================
@@ -423,7 +423,7 @@ class TestBatchTaskProcessing:
 class TestTaskCancellation:
     """Tests for task cancellation"""
 
-    @patch("app.celery_app.control.revoke")
+    @patch("app.tasks.celery_app.control.revoke")
     def test_cancel_task(self, mock_revoke):
         """Test cancelling a task"""
         mock_revoke.return_value = None
@@ -501,7 +501,7 @@ class TestPeriodicTasks:
 class TestTaskStateManagement:
     """Tests for task state management"""
 
-    @patch("app.celery_app.AsyncResult")
+    @patch("app.tasks.celery_app.AsyncResult")
     def test_task_pending_state(self, mock_async_result):
         """Test task pending state"""
         mock_result = MagicMock()
@@ -512,7 +512,7 @@ class TestTaskStateManagement:
 
         assert result.state == "PENDING"
 
-    @patch("app.celery_app.AsyncResult")
+    @patch("app.tasks.celery_app.AsyncResult")
     def test_task_started_state(self, mock_async_result):
         """Test task started state"""
         mock_result = MagicMock()
@@ -524,7 +524,7 @@ class TestTaskStateManagement:
 
         assert result.state == "STARTED"
 
-    @patch("app.celery_app.AsyncResult")
+    @patch("app.tasks.celery_app.AsyncResult")
     def test_task_success_state(self, mock_async_result):
         """Test task success state"""
         mock_result = MagicMock()
@@ -536,7 +536,7 @@ class TestTaskStateManagement:
 
         assert result.state == "SUCCESS"
 
-    @patch("app.celery_app.AsyncResult")
+    @patch("app.tasks.celery_app.AsyncResult")
     def test_task_failure_state(self, mock_async_result):
         """Test task failure state"""
         mock_result = MagicMock()
@@ -548,7 +548,7 @@ class TestTaskStateManagement:
 
         assert result.state == "FAILURE"
 
-    @patch("app.celery_app.AsyncResult")
+    @patch("app.tasks.celery_app.AsyncResult")
     def test_task_retry_state(self, mock_async_result):
         """Test task retry state"""
         mock_result = MagicMock()

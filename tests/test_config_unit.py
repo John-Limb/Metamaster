@@ -25,11 +25,17 @@ class TestSettingsLoading:
         assert test_settings.app_version == "0.1.0"
         assert test_settings.debug is False
 
-    @patch.dict(os.environ, {"DATABASE_URL": "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"})
+    @patch.dict(
+        os.environ,
+        {"DATABASE_URL": "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"},
+    )
     def test_database_url_default(self):
         """Test default database URL"""
         test_settings = Settings()
-        assert test_settings.database_url == "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"
+        assert (
+            test_settings.database_url
+            == "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"
+        )
 
     def test_redis_url_default(self):
         """Test default Redis URL"""
@@ -302,9 +308,11 @@ class TestCeleryConfiguration:
 class TestLoggingConfiguration:
     """Tests for logging configuration"""
 
+    @patch.dict(os.environ, {}, clear=False)
     def test_log_level_default(self):
-        """Test default log level"""
-        test_settings = Settings()
+        """Test default log level when LOG_LEVEL env var is not set"""
+        os.environ.pop("LOG_LEVEL", None)
+        test_settings = Settings(_env_file=None)
         assert test_settings.log_level == "INFO"
 
     @patch.dict(os.environ, {"LOG_LEVEL": "DEBUG"})
@@ -406,7 +414,10 @@ class TestMultipleEnvironmentVariables:
         test_settings = Settings()
         assert test_settings.app_name == "Test App"
         assert test_settings.debug is True
-        assert test_settings.database_url == "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"
+        assert (
+            test_settings.database_url
+            == "postgresql+psycopg2://test:test@localhost:5432/metamaster_test"
+        )
         assert test_settings.log_level == "DEBUG"
 
     @patch.dict(

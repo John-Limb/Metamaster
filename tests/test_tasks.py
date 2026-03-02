@@ -18,8 +18,9 @@ def test_enrich_technical_metadata_updates_file_fields():
     mock_ffprobe.get_codecs.return_value = {"video": "h264", "audio": "aac"}
     mock_ffprobe.get_resolution.return_value = {"width": 1920, "height": 1080, "label": "1080p"}
 
-    with patch("app.tasks.SessionLocal") as MockSession, \
-         patch("app.tasks.FFProbeWrapper", return_value=mock_ffprobe):
+    with patch("app.tasks.SessionLocal") as MockSession, patch(
+        "app.tasks.FFProbeWrapper", return_value=mock_ffprobe
+    ):
         MockSession.return_value = mock_db
         result = enrich_file_technical_metadata.apply(args=[], kwargs={"batch_size": 50}).get()
 
@@ -43,8 +44,9 @@ def test_enrich_technical_metadata_skips_failed_files():
     mock_ffprobe = MagicMock()
     mock_ffprobe.get_duration.side_effect = RuntimeError("ffprobe failed")
 
-    with patch("app.tasks.SessionLocal") as MockSession, \
-         patch("app.tasks.FFProbeWrapper", return_value=mock_ffprobe):
+    with patch("app.tasks.SessionLocal") as MockSession, patch(
+        "app.tasks.FFProbeWrapper", return_value=mock_ffprobe
+    ):
         MockSession.return_value = mock_db
         result = enrich_file_technical_metadata.apply(args=[], kwargs={"batch_size": 50}).get()
 

@@ -6,12 +6,14 @@ from pathlib import Path
 
 def test_tail_log_returns_empty_for_missing_file():
     from app.api.v1.health.endpoints import _tail_log
+
     result = _tail_log("nonexistent_file_xyz.log", 10)
     assert result == []
 
 
 def test_tail_log_returns_last_n_lines(tmp_path):
     from app.api.v1.health.endpoints import _tail_log
+
     log_file = tmp_path / "test.log"
     entries = [
         json.dumps({"timestamp": f"2026-03-01T00:00:0{i}", "level": "INFO", "message": f"msg {i}"})
@@ -26,6 +28,7 @@ def test_tail_log_returns_last_n_lines(tmp_path):
 
 def test_tail_log_returns_all_lines_when_fewer_than_n(tmp_path):
     from app.api.v1.health.endpoints import _tail_log
+
     log_file = tmp_path / "test.log"
     entries = [
         json.dumps({"timestamp": "2026-03-01T00:00:00", "level": "INFO", "message": "only line"})
@@ -38,6 +41,7 @@ def test_tail_log_returns_all_lines_when_fewer_than_n(tmp_path):
 
 def test_tail_log_skips_invalid_json_gracefully(tmp_path):
     from app.api.v1.health.endpoints import _tail_log
+
     log_file = tmp_path / "test.log"
     log_file.write_text(
         '{"timestamp": "t", "level": "INFO", "message": "ok"}\nnot json at all\n',
@@ -52,6 +56,7 @@ def test_tail_log_skips_invalid_json_gracefully(tmp_path):
 
 def test_tail_log_skips_blank_lines(tmp_path):
     from app.api.v1.health.endpoints import _tail_log
+
     log_file = tmp_path / "test.log"
     log_file.write_text(
         '{"timestamp": "t", "level": "INFO", "message": "line1"}\n\n\n',

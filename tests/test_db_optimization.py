@@ -9,7 +9,7 @@ from sqlalchemy.pool import QueuePool
 
 from app.database import Base, get_db
 from app.models import Movie, TVShow, Season, Episode
-from app.services.db_optimization import (
+from app.application.db_optimization.service import (
     QueryPerformanceTracker,
     ConnectionPoolMonitor,
     IndexAnalyzer,

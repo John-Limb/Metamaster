@@ -29,8 +29,9 @@ def test_create_tv_shows_sets_local_only_status():
     db.query.return_value.filter.return_value.first.return_value = None
     db.query.return_value.all.return_value = []
 
-    with patch("app.domain.tv_shows.scanner.TVShow") as MockTVShow, \
-         patch("app.domain.tv_shows.scanner.get_ffprobe", return_value=None):
+    with patch("app.domain.tv_shows.scanner.TVShow") as MockTVShow, patch(
+        "app.domain.tv_shows.scanner.get_ffprobe", return_value=None
+    ):
         show_instance = MagicMock()
         MockTVShow.return_value = show_instance
         try:
@@ -41,5 +42,5 @@ def test_create_tv_shows_sets_local_only_status():
         if MockTVShow.called:
             has_kwargs = hasattr(MockTVShow.call_args, "kwargs")
             all_kwargs = MockTVShow.call_args.kwargs if has_kwargs else {}
-            if 'enrichment_status' in all_kwargs:
-                assert all_kwargs['enrichment_status'] == 'local_only'
+            if "enrichment_status" in all_kwargs:
+                assert all_kwargs["enrichment_status"] == "local_only"

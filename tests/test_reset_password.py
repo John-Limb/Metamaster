@@ -61,9 +61,7 @@ def test_reset_admin_password_exits_when_no_admin(capsys):
 def test_reset_admin_password_closes_db_on_exception(capsys):
     """DB session is always closed, even if an exception occurs mid-reset."""
     mock_db = MagicMock()
-    mock_db.query.return_value.filter.return_value.first.side_effect = RuntimeError(
-        "DB exploded"
-    )
+    mock_db.query.return_value.filter.return_value.first.side_effect = RuntimeError("DB exploded")
 
     with (
         patch("app.core.reset_password.SessionLocal", return_value=mock_db),

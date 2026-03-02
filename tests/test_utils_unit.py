@@ -17,7 +17,7 @@ class TestStringFormattingUtilities:
 
     def test_clean_filename_with_dots(self):
         """Test cleaning filename with dots"""
-        from app.services.pattern_recognition import PatternRecognitionService
+        from app.application.pattern_recognition.service import PatternRecognitionService
 
         service = PatternRecognitionService()
 
@@ -26,7 +26,7 @@ class TestStringFormattingUtilities:
 
     def test_clean_filename_with_underscores(self):
         """Test cleaning filename with underscores"""
-        from app.services.pattern_recognition import PatternRecognitionService
+        from app.application.pattern_recognition.service import PatternRecognitionService
 
         service = PatternRecognitionService()
 
@@ -35,7 +35,7 @@ class TestStringFormattingUtilities:
 
     def test_clean_filename_with_hyphens(self):
         """Test cleaning filename with hyphens"""
-        from app.services.pattern_recognition import PatternRecognitionService
+        from app.application.pattern_recognition.service import PatternRecognitionService
 
         service = PatternRecognitionService()
 
@@ -44,7 +44,7 @@ class TestStringFormattingUtilities:
 
     def test_clean_filename_mixed_separators(self):
         """Test cleaning filename with mixed separators"""
-        from app.services.pattern_recognition import PatternRecognitionService
+        from app.application.pattern_recognition.service import PatternRecognitionService
 
         service = PatternRecognitionService()
 
@@ -53,7 +53,7 @@ class TestStringFormattingUtilities:
 
     def test_clean_filename_extra_spaces(self):
         """Test cleaning filename with extra spaces"""
-        from app.services.pattern_recognition import PatternRecognitionService
+        from app.application.pattern_recognition.service import PatternRecognitionService
 
         service = PatternRecognitionService()
 
@@ -62,7 +62,7 @@ class TestStringFormattingUtilities:
 
     def test_clean_title_basic(self):
         """Test cleaning title"""
-        from app.services.pattern_recognition import PatternRecognitionService
+        from app.application.pattern_recognition.service import PatternRecognitionService
 
         service = PatternRecognitionService()
 
@@ -71,7 +71,7 @@ class TestStringFormattingUtilities:
 
     def test_clean_title_with_spaces(self):
         """Test cleaning title with spaces"""
-        from app.services.pattern_recognition import PatternRecognitionService
+        from app.application.pattern_recognition.service import PatternRecognitionService
 
         service = PatternRecognitionService()
 
@@ -80,7 +80,7 @@ class TestStringFormattingUtilities:
 
     def test_format_bitrate_mbps(self):
         """Test bitrate formatting in Mbps"""
-        from app.services.ffprobe_wrapper import FFProbeWrapper
+        from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
 
         formatted = FFProbeWrapper._format_bitrate(5500000)
         assert "Mbps" in formatted
@@ -88,7 +88,7 @@ class TestStringFormattingUtilities:
 
     def test_format_bitrate_kbps(self):
         """Test bitrate formatting in kbps"""
-        from app.services.ffprobe_wrapper import FFProbeWrapper
+        from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
 
         formatted = FFProbeWrapper._format_bitrate(256000)
         assert "kbps" in formatted
@@ -96,14 +96,14 @@ class TestStringFormattingUtilities:
 
     def test_format_bitrate_bps(self):
         """Test bitrate formatting in bps"""
-        from app.services.ffprobe_wrapper import FFProbeWrapper
+        from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
 
         formatted = FFProbeWrapper._format_bitrate(500)
         assert "bps" in formatted
 
     def test_format_bitrate_large_value(self):
         """Test bitrate formatting with large value"""
-        from app.services.ffprobe_wrapper import FFProbeWrapper
+        from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
 
         formatted = FFProbeWrapper._format_bitrate(50000000)
         assert "Mbps" in formatted

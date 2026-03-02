@@ -7,7 +7,11 @@ from app.main import app
 client = TestClient(app, raise_server_exceptions=False)
 
 SUMMARY_PAYLOAD = {
-    "disk": {"total_bytes": 4_000_000_000_000, "used_bytes": 2_000_000_000_000, "available_bytes": 2_000_000_000_000},
+    "disk": {
+        "total_bytes": 4_000_000_000_000,
+        "used_bytes": 2_000_000_000_000,
+        "available_bytes": 2_000_000_000_000,
+    },
     "library": {"movies_bytes": 1_400_000_000_000, "tv_bytes": 600_000_000_000, "other_bytes": 0},
     "potential_savings_bytes": 800_000_000_000,
     "files_analyzed": 100,
@@ -16,20 +20,22 @@ SUMMARY_PAYLOAD = {
 
 FILES_PAYLOAD = {
     "total": 1,
-    "items": [{
-        "id": 1,
-        "name": "test.mkv",
-        "media_type": "movie",
-        "size_bytes": 30_000_000_000,
-        "duration_seconds": 7200,
-        "video_codec": "h264",
-        "video_width": 1920,
-        "video_height": 1080,
-        "mb_per_min": 254.0,
-        "resolution_tier": "1080p",
-        "efficiency_tier": "large",
-        "estimated_savings_bytes": 26_000_000_000,
-    }],
+    "items": [
+        {
+            "id": 1,
+            "name": "test.mkv",
+            "media_type": "movie",
+            "size_bytes": 30_000_000_000,
+            "duration_seconds": 7200,
+            "video_codec": "h264",
+            "video_width": 1920,
+            "video_height": 1080,
+            "mb_per_min": 254.0,
+            "resolution_tier": "1080p",
+            "efficiency_tier": "large",
+            "estimated_savings_bytes": 26_000_000_000,
+        }
+    ],
 }
 
 
@@ -57,10 +63,18 @@ def test_get_files_returns_200():
 def test_get_files_passes_query_params():
     with patch("app.api.v1.storage.endpoints.StorageService") as MockService:
         MockService.return_value.get_files.return_value = {"total": 0, "items": []}
-        client.get("/api/v1/storage/files?page=2&pageSize=25&sortBy=mb_per_min&sortDir=asc&mediaType=movie")
+        client.get(
+            "/api/v1/storage/files?page=2&pageSize=25&sortBy=mb_per_min&sortDir=asc&mediaType=movie"
+        )
         MockService.return_value.get_files.assert_called_once_with(
-            page=2, page_size=25, sort_by="mb_per_min", sort_dir="asc",
-            media_type="movie", codec=None, resolution_tier=None, efficiency_tier=None,
+            page=2,
+            page_size=25,
+            sort_by="mb_per_min",
+            sort_dir="asc",
+            media_type="movie",
+            codec=None,
+            resolution_tier=None,
+            efficiency_tier=None,
         )
 
 

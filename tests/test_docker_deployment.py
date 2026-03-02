@@ -172,10 +172,10 @@ class TestContainerStartupAndHealth:
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        # Check app port mapping
-        assert "8000:8000" in content, "App port mapping not configured"
-        # Check Redis port mapping
-        assert "6379:6379" in content, "Redis port mapping not configured"
+        # App is exposed via the frontend proxy; Redis and app use internal network only.
+        # Verify ports section is present in the file (frontend uses port 80:8080).
+        assert "ports:" in content, "Port mappings not configured"
+        assert "80:8080" in content, "Frontend port mapping not configured"
 
 
 # ============================================================================
@@ -206,7 +206,7 @@ class TestMultiContainerOrchestration:
             content = f.read()
 
         assert "volumes:" in content, "Volumes not defined"
-        assert "redis_data:" in content, "Redis data volume not defined"
+        assert "postgres_data:" in content, "PostgreSQL data volume not defined"
 
     def test_docker_compose_networks_defined(self):
         """Test networks are properly defined"""
@@ -214,7 +214,7 @@ class TestMultiContainerOrchestration:
             content = f.read()
 
         assert "networks:" in content, "Networks not defined"
-        assert "media_tool_network" in content, "Network name not defined"
+        assert "internal:" in content, "Internal network not defined"
 
     def test_service_dependencies_configured(self):
         """Test service dependencies are properly configured"""
@@ -245,11 +245,10 @@ class TestEnvironmentVariableConfiguration:
             content = f.read()
 
         required_vars = [
-            "DATABASE_URL",
-            "REDIS_URL",
-            "CELERY_BROKER_URL",
-            "CELERY_RESULT_BACKEND",
-            "DEBUG",
+            "TMDB_READ_ACCESS_TOKEN",
+            "TMDB_API_KEY",
+            "MOVIE_DIR",
+            "TV_DIR",
             "LOG_LEVEL",
         ]
 
@@ -257,18 +256,12 @@ class TestEnvironmentVariableConfiguration:
             assert var in content, f"Variable {var} not in .env.example"
 
     def test_docker_compose_test_env_variables(self):
-        """Test docker-compose.test.yml has test environment variables"""
-        with open("docker-compose.test.yml", "r") as f:
+        """Test docker-compose.yml has environment variable configuration"""
+        with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        # Test environment should have DEBUG=True
-        assert (
-            "DEBUG=True" in content or 'DEBUG: "True"' in content
-        ), "Debug mode not enabled for tests"
-        # Test environment should have LOG_LEVEL=DEBUG
-        assert (
-            "LOG_LEVEL=DEBUG" in content or 'LOG_LEVEL: "DEBUG"' in content
-        ), "Debug log level not set for tests"
+        # Log level is configurable via env var substitution
+        assert "LOG_LEVEL" in content, "LOG_LEVEL not configured in docker-compose"
 
     def test_environment_variable_substitution(self):
         """Test environment variables are properly substituted"""
@@ -294,8 +287,9 @@ class TestVolumeMountingAndPersistence:
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        assert "redis_data:" in content, "Redis data volume not defined"
-        assert "/data" in content, "Redis data mount point not configured"
+        # Redis uses ephemeral storage; PostgreSQL uses a named volume for persistence
+        assert "postgres_data:" in content, "PostgreSQL data volume not defined"
+        assert "/var/lib/postgresql/data" in content, "PostgreSQL data mount point not configured"
 
     def test_app_volume_mounted(self):
         """Test app volumes are properly mounted"""
@@ -304,25 +298,27 @@ class TestVolumeMountingAndPersistence:
 
         # Check for app directory mount
         assert "./app:/app/app" in content, "App directory not mounted"
-        # Check for media directory mount
-        assert "./media:/app/media" in content, "Media directory not mounted"
+        # Check for media directory mounts (via env var substitution)
+        assert "/media/movies" in content, "Movies media directory not mounted"
+        assert "/media/tv" in content, "TV media directory not mounted"
 
     def test_database_file_persistence(self):
-        """Test database file is persisted"""
+        """Test database persistence is configured"""
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        # Check for database file mount
-        assert "media.db" in content, "Database file not mounted"
+        # Project uses PostgreSQL with a named volume for persistence
+        assert "postgres_data:" in content, "PostgreSQL data volume not defined"
+        assert "DATABASE_URL" in content, "DATABASE_URL not configured"
 
     def test_volume_mount_paths_consistent(self):
         """Test volume mount paths are consistent across services"""
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        # All services should mount to same paths
+        # App source is mounted to app and celery_worker services
         app_mounts = content.count("./app:/app/app")
-        assert app_mounts >= 3, "App directory not mounted to all services"
+        assert app_mounts >= 2, "App directory not mounted to expected services"
 
 
 # ============================================================================
@@ -339,15 +335,15 @@ class TestNetworkConnectivity:
             content = f.read()
 
         assert "networks:" in content, "Networks not defined"
-        assert "media_tool_network" in content, "Network name not defined"
+        assert "internal:" in content, "Internal network not defined"
 
     def test_services_on_same_network(self):
         """Test all services are on the same network"""
         with open("docker-compose.yml", "r") as f:
             content = f.read()
 
-        # Services should reference the network
-        assert "media_tool_network" in content, "Services not on defined network"
+        # Services should reference the internal network
+        assert "internal" in content, "Services not on defined internal network"
 
     def test_service_discovery_hostnames(self):
         """Test service discovery hostnames are configured"""
@@ -456,8 +452,11 @@ class TestContainerShutdownAndCleanup:
 # ============================================================================
 
 
+@pytest.mark.skip(
+    reason="docker-compose.test.yml no longer exists; project uses a single docker-compose.yml with PostgreSQL"
+)
 class TestDockerComposeTestConfiguration:
-    """Tests for docker-compose.test.yml configuration"""
+    """Tests for docker-compose.test.yml configuration — skipped, file removed"""
 
     def test_test_compose_file_exists(self):
         """Test docker-compose.test.yml exists"""
@@ -472,13 +471,9 @@ class TestDockerComposeTestConfiguration:
 
     def test_test_compose_uses_different_ports(self):
         """Test test compose uses different ports than production"""
-        with open("docker-compose.yml", "r") as f:
-            prod_content = f.read()
-
         with open("docker-compose.test.yml", "r") as f:
             test_content = f.read()
 
-        # Test should use different ports
         assert "8001:8000" in test_content, "Test app port not configured"
         assert "6380:6379" in test_content, "Test Redis port not configured"
 

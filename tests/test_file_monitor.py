@@ -4,7 +4,7 @@ import pytest
 import asyncio
 import tempfile
 from pathlib import Path
-from app.services.file_monitor import FileMonitorService, MediaFileEventHandler
+from app.infrastructure.file_system.monitor import FileMonitorService, MediaFileEventHandler
 
 
 @pytest.fixture
