@@ -25,7 +25,7 @@ def generate_random_password(length: int = 16) -> str:
         A secure random password containing letters, digits, and special characters.
     """
     alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
-    return ''.join(secrets.choice(alphabet) for _ in range(length))
+    return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 def create_admin_user(db: Session) -> str | None:
@@ -108,9 +108,7 @@ def _migrate_file_size_columns(engine, inspector_obj):
             if "BIGINT" in col_type.upper():
                 continue
             logger.info(f"Migrating {table}.{column} from {col_type} to BIGINT")
-            conn.execute(text(
-                f"ALTER TABLE {table} ALTER COLUMN {column} TYPE BIGINT"
-            ))
+            conn.execute(text(f"ALTER TABLE {table} ALTER COLUMN {column} TYPE BIGINT"))
             conn.commit()
 
 
@@ -123,6 +121,7 @@ def init_database():
     from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile  # noqa: F401
     from app.domain.common.models import APICache, FileQueue  # noqa: F401
     from app.domain.settings.models import AppSetting  # noqa: F401
+
     try:
         logger.info("Creating database tables...")
         Base.metadata.create_all(bind=engine)

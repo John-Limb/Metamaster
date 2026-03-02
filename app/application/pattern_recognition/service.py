@@ -249,9 +249,7 @@ class PatternRecognitionService:
             ClassificationResult with fallback classification
         """
         # Check for any season/episode indicators
-        if re.search(
-            r"[Ss]eason|[Ee]pisode|[Ss]\d{1,2}[Ee]\d{1,2}|\d{1,2}x\d{1,2}", filename
-        ):
+        if re.search(r"[Ss]eason|[Ee]pisode|[Ss]\d{1,2}[Ee]\d{1,2}|\d{1,2}x\d{1,2}", filename):
             return ClassificationResult(
                 type="tv_show",
                 show_name=self._clean_filename(filename),
@@ -287,9 +285,7 @@ class PatternRecognitionService:
         except (IndexError, ValueError):
             return None, None
 
-    def _extract_title_year(
-        self, match, pattern_idx: int
-    ) -> Tuple[Optional[str], Optional[int]]:
+    def _extract_title_year(self, match, pattern_idx: int) -> Tuple[Optional[str], Optional[int]]:
         """
         Extract title and year from regex match.
 

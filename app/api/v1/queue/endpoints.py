@@ -238,11 +238,7 @@ async def clear_completed_tasks():
         try:
             from app.models import FileQueue
 
-            deleted_count = (
-                db.query(FileQueue)
-                .filter(FileQueue.status == "completed")
-                .delete()
-            )
+            deleted_count = db.query(FileQueue).filter(FileQueue.status == "completed").delete()
             db.commit()
             return QueueOperationResponse(
                 success=True,

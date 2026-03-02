@@ -117,7 +117,9 @@ async def list_tv_shows(
 
     # Validate enrichment status group
     if status and status not in _ENRICHMENT_STATUS_GROUPS:
-        raise HTTPException(status_code=400, detail="status must be one of: indexed, pending, failed")
+        raise HTTPException(
+            status_code=400, detail="status must be one of: indexed, pending, failed"
+        )
     enrichment_statuses = _ENRICHMENT_STATUS_GROUPS.get(status) if status else None
 
     # Build cache key including all filter parameters
@@ -293,20 +295,24 @@ async def get_season_episodes(
     for ep in episodes:
         first_file = ep.files[0] if ep.files else None
         quality = _resolution_to_quality(first_file.resolution if first_file else None)
-        runtime_minutes = round(first_file.duration / 60) if first_file and first_file.duration else None
-        episode_items.append({
-            "id": ep.id,
-            "episode_number": ep.episode_number,
-            "title": ep.title,
-            "plot": ep.plot,
-            "air_date": ep.air_date,
-            "rating": ep.rating,
-            "tmdb_id": ep.tmdb_id,
-            "quality": quality,
-            "runtime": runtime_minutes,
-            "created_at": ep.created_at,
-            "updated_at": ep.updated_at,
-        })
+        runtime_minutes = (
+            round(first_file.duration / 60) if first_file and first_file.duration else None
+        )
+        episode_items.append(
+            {
+                "id": ep.id,
+                "episode_number": ep.episode_number,
+                "title": ep.title,
+                "plot": ep.plot,
+                "air_date": ep.air_date,
+                "rating": ep.rating,
+                "tmdb_id": ep.tmdb_id,
+                "quality": quality,
+                "runtime": runtime_minutes,
+                "created_at": ep.created_at,
+                "updated_at": ep.updated_at,
+            }
+        )
 
     return {
         "items": episode_items,

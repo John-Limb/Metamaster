@@ -58,8 +58,12 @@ async def list_files(
         path = "/"
 
     # Get files and total count
-    files, total = file_service.list_files(path=path, page=page, page_size=page_size, video_only=video_only)
-    logger.info(f"list_files(path={path!r}, page={page}, page_size={page_size}) returned {total} total, {len(files)} on this page")
+    files, total = file_service.list_files(
+        path=path, page=page, page_size=page_size, video_only=video_only
+    )
+    logger.info(
+        f"list_files(path={path!r}, page={page}, page_size={page_size}) returned {total} total, {len(files)} on this page"
+    )
 
     # Convert to response format
     items = [file_service.file_to_response(f) for f in files]
@@ -163,9 +167,7 @@ async def classify_files(
         for file_id in request.file_ids:
             file_item = file_service.get_file_by_id(file_id)
             if not file_item:
-                raise HTTPException(
-                    status_code=404, detail=f"File not found: {file_id}"
-                )
+                raise HTTPException(status_code=404, detail=f"File not found: {file_id}")
             classification = classifier.classify_file(file_item.name)
             results.append(
                 FileClassificationResult(

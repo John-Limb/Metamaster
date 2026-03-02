@@ -134,14 +134,16 @@ class MovieSearchService:
             # Get all movies and filter in Python (since genres are JSON strings)
             all_movies = query.all()
             filtered_movies = [
-                m
-                for m in all_movies
-                if MovieSearchService._genre_matches(m.genres, filters.genre)
+                m for m in all_movies if MovieSearchService._genre_matches(m.genres, filters.genre)
             ]
             # Convert back to query for further filtering
             if filtered_movies:
                 movie_ids = [m.id for m in filtered_movies]
-                query = db.query(Movie).options(selectinload(Movie.files)).filter(Movie.id.in_(movie_ids))
+                query = (
+                    db.query(Movie)
+                    .options(selectinload(Movie.files))
+                    .filter(Movie.id.in_(movie_ids))
+                )
             else:
                 return [], 0
 
@@ -234,9 +236,7 @@ class TVShowSearchService:
             # Get all shows and filter in Python (since genres are JSON strings)
             all_shows = query.all()
             filtered_shows = [
-                s
-                for s in all_shows
-                if TVShowSearchService._genre_matches(s.genres, filters.genre)
+                s for s in all_shows if TVShowSearchService._genre_matches(s.genres, filters.genre)
             ]
             # Convert back to query for further filtering
             if filtered_shows:

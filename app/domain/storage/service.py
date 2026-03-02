@@ -15,10 +15,10 @@ logger = get_logger(__name__)
 
 # Target MB/min per resolution tier, assuming H.265 re-encode
 TARGET_MB_PER_MIN: Dict[str, float] = {
-    "4k": 90.0,    # ~12 Mbps
+    "4k": 90.0,  # ~12 Mbps
     "1080p": 30.0,  # ~4 Mbps
-    "720p": 15.0,   # ~2 Mbps
-    "sd": 7.5,      # ~1 Mbps
+    "720p": 15.0,  # ~2 Mbps
+    "sd": 7.5,  # ~1 Mbps
 }
 
 # Codecs already efficient — no savings estimate made
@@ -55,9 +55,7 @@ class StorageService:
             return "720p"
         return "sd"
 
-    def _get_efficiency_tier(
-        self, codec: Optional[str], mb_per_min: Optional[float]
-    ) -> str:
+    def _get_efficiency_tier(self, codec: Optional[str], mb_per_min: Optional[float]) -> str:
         """Classify file efficiency as efficient / moderate / large / unknown."""
         if codec is None or mb_per_min is None:
             return "unknown"
@@ -132,15 +130,9 @@ class StorageService:
         video_extensions = {ext.lower() for ext in settings.watch_extensions}
         if not video_extensions:
             return
-        ext_filters = [
-            func.lower(FileItem.path).like(f"%{ext}")
-            for ext in video_extensions
-        ]
+        ext_filters = [func.lower(FileItem.path).like(f"%{ext}") for ext in video_extensions]
         files = (
-            self.db.query(FileItem)
-            .filter(FileItem.type == "file")
-            .filter(or_(*ext_filters))
-            .all()
+            self.db.query(FileItem).filter(FileItem.type == "file").filter(or_(*ext_filters)).all()
         )
         yield from files
 
@@ -215,20 +207,22 @@ class StorageService:
                 size, f.video_codec, f.video_width, f.video_height, f.duration_seconds
             )
 
-            results.append({
-                "id": f.id,
-                "name": f.name,
-                "media_type": self._media_type_for_path(f.path),
-                "size_bytes": size,
-                "duration_seconds": f.duration_seconds,
-                "video_codec": f.video_codec,
-                "video_width": f.video_width,
-                "video_height": f.video_height,
-                "mb_per_min": mb_per_min,
-                "resolution_tier": res_tier,
-                "efficiency_tier": eff_tier,
-                "estimated_savings_bytes": savings,
-            })
+            results.append(
+                {
+                    "id": f.id,
+                    "name": f.name,
+                    "media_type": self._media_type_for_path(f.path),
+                    "size_bytes": size,
+                    "duration_seconds": f.duration_seconds,
+                    "video_codec": f.video_codec,
+                    "video_width": f.video_width,
+                    "video_height": f.video_height,
+                    "mb_per_min": mb_per_min,
+                    "resolution_tier": res_tier,
+                    "efficiency_tier": eff_tier,
+                    "estimated_savings_bytes": savings,
+                }
+            )
 
         # Filter
         if media_type:
@@ -241,7 +235,13 @@ class StorageService:
             results = [r for r in results if r["efficiency_tier"] == efficiency_tier]
 
         # Sort — None values sort to the end
-        valid_sort_keys = {"size_bytes", "mb_per_min", "estimated_savings_bytes", "duration_seconds", "name"}
+        valid_sort_keys = {
+            "size_bytes",
+            "mb_per_min",
+            "estimated_savings_bytes",
+            "duration_seconds",
+            "name",
+        }
         key = sort_by if sort_by in valid_sort_keys else "size_bytes"
         reverse = sort_dir != "asc"
         results.sort(
@@ -252,4 +252,4 @@ class StorageService:
         # Paginate
         total = len(results)
         offset = (page - 1) * page_size
-        return {"total": total, "items": results[offset: offset + page_size]}
+        return {"total": total, "items": results[offset : offset + page_size]}

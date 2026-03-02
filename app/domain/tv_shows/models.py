@@ -1,7 +1,18 @@
 """SQLAlchemy ORM models for TV Show entities"""
 
 from datetime import datetime
-from sqlalchemy import BigInteger, Column, Integer, String, Text, Float, DateTime, ForeignKey, Index, Enum as SAEnum
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    Integer,
+    String,
+    Text,
+    Float,
+    DateTime,
+    ForeignKey,
+    Index,
+    Enum as SAEnum,
+)
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -20,10 +31,18 @@ class TVShow(Base):
     status = Column(String(50))  # "continuing" or "ended"
     poster_url = Column(String(500))  # URL to TV show poster image
     enrichment_status = Column(
-        SAEnum('pending_local', 'local_only', 'pending_external', 'fully_enriched', 'external_failed', 'not_found', name='enrichmentstatus'),
+        SAEnum(
+            "pending_local",
+            "local_only",
+            "pending_external",
+            "fully_enriched",
+            "external_failed",
+            "not_found",
+            name="enrichmentstatus",
+        ),
         nullable=False,
-        default='pending_local',
-        server_default='pending_local',
+        default="pending_local",
+        server_default="pending_local",
     )
     detected_external_id = Column(String(50), nullable=True)
     manual_external_id = Column(String(50), nullable=True)

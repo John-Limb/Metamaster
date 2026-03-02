@@ -771,9 +771,13 @@ def check_and_run_scan(self):
         next_run = cron.get_next(datetime)
 
         # Match if the next fire time falls within the current minute
-        if next_run.year == now.year and next_run.month == now.month \
-                and next_run.day == now.day and next_run.hour == now.hour \
-                and next_run.minute == now.minute:
+        if (
+            next_run.year == now.year
+            and next_run.month == now.month
+            and next_run.day == now.day
+            and next_run.hour == now.hour
+            and next_run.minute == now.minute
+        ):
             logger.info(f"Cron schedule '{schedule}' matched — dispatching scan_new_media")
             scan_new_media.delay()
         else:

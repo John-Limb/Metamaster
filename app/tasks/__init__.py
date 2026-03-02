@@ -104,9 +104,7 @@ def enrich_file_technical_metadata(self, batch_size: int = 50):
                 )
                 processed += 1
             except Exception as exc:
-                _logger.warning(
-                    f"enrich_file_technical_metadata: skipping {file_item.path}: {exc}"
-                )
+                _logger.warning(f"enrich_file_technical_metadata: skipping {file_item.path}: {exc}")
 
         db.commit()
 
@@ -126,6 +124,7 @@ def enrich_file_technical_metadata(self, batch_size: int = 50):
         return {"status": "success", "processed": processed, "remaining": remaining}
     finally:
         db.close()
+
 
 __all__ = [
     "analyze_file",

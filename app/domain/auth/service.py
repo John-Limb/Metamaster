@@ -112,9 +112,7 @@ class AuthService:
         """
         self.db = db
 
-    def authenticate_user(
-        self, username: str, password: str
-    ) -> Optional[User]:
+    def authenticate_user(self, username: str, password: str) -> Optional[User]:
         """Authenticate a user by username/email and password.
 
         Args:
@@ -222,9 +220,7 @@ class AuthService:
         user.last_login = datetime.utcnow()
         self.db.commit()
 
-    def change_password(
-        self, user: User, current_password: str, new_password: str
-    ) -> bool:
+    def change_password(self, user: User, current_password: str, new_password: str) -> bool:
         """Change a user's password.
 
         Args:
@@ -275,9 +271,7 @@ class AuthService:
         self.db.refresh(user)
         return user
 
-    def store_refresh_token(
-        self, user_id: int, token: str, expires_at: datetime
-    ) -> RefreshToken:
+    def store_refresh_token(self, user_id: int, token: str, expires_at: datetime) -> RefreshToken:
         """Store a refresh token for a user.
 
         Args:
@@ -312,9 +306,7 @@ class AuthService:
             True if token was revoked, False if not found.
         """
         refresh_token = (
-            self.db.query(RefreshToken)
-            .filter(RefreshToken.token_hash == token_hash)
-            .first()
+            self.db.query(RefreshToken).filter(RefreshToken.token_hash == token_hash).first()
         )
 
         if refresh_token is None:

@@ -272,7 +272,9 @@ def enrich_new_tv_shows(db: Session) -> int:
             enriched += 1
 
             rating_str = f"★{show.rating}" if show.rating else "no rating"
-            genres_str = ", ".join(show.genres) if isinstance(show.genres, list) else str(show.genres or "")
+            genres_str = (
+                ", ".join(show.genres) if isinstance(show.genres, list) else str(show.genres or "")
+            )
             logger.info(f"[TV] Enriched: '{show.title}' — {rating_str}, {genres_str}")
 
         except Exception:

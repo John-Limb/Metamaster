@@ -206,9 +206,7 @@ async def list_tasks(
         if status:
             status_lower = status.lower()
             all_tasks_dict = {
-                tid: info
-                for tid, info in all_tasks_dict.items()
-                if info["status"] == status_lower
+                tid: info for tid, info in all_tasks_dict.items() if info["status"] == status_lower
             }
 
         total = len(all_tasks_dict)

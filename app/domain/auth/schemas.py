@@ -78,9 +78,7 @@ class UserLoginRequest(BaseModel):
     password: str = Field(..., description="User password")
 
     model_config = ConfigDict(
-        json_schema_extra={
-            "example": {"username": "johndoe", "password": "SecureP@ss123"}
-        }
+        json_schema_extra={"example": {"username": "johndoe", "password": "SecureP@ss123"}}
     )
 
 
@@ -130,9 +128,7 @@ class UpdateProfileRequest(BaseModel):
             raise ValueError(error_msg)
         return v.lower()
 
-    model_config = ConfigDict(
-        json_schema_extra={"example": {"email": "newemail@example.com"}}
-    )
+    model_config = ConfigDict(json_schema_extra={"example": {"email": "newemail@example.com"}})
 
 
 class TokenRefreshRequest(BaseModel):

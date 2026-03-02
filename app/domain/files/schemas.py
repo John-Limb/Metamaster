@@ -127,7 +127,9 @@ class FileBatchMoveRequest(BaseModel):
     ids: List[int] = Field(..., description="List of file IDs to move")
     path: str = Field(..., description="New path for the files")
 
-    model_config = ConfigDict(json_schema_extra={"ids": [1, 2, 3], "path": "/media/movies/new_folder/"})
+    model_config = ConfigDict(
+        json_schema_extra={"ids": [1, 2, 3], "path": "/media/movies/new_folder/"}
+    )
 
 
 class FileSearchResponse(BaseModel):
@@ -162,7 +164,9 @@ class FileClassificationResult(BaseModel):
 
     filename: str = Field(..., description="The filename that was classified")
     type: str = Field(..., description="Classified type: 'movie' or 'tv_show'")
-    confidence: str = Field(..., description="Classification confidence: 'high', 'medium', or 'low'")
+    confidence: str = Field(
+        ..., description="Classification confidence: 'high', 'medium', or 'low'"
+    )
     pattern_matched: str = Field(..., description="Which pattern was matched")
     title: Optional[str] = Field(None, description="Extracted movie title")
     show_name: Optional[str] = Field(None, description="Extracted TV show name")

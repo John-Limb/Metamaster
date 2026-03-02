@@ -27,9 +27,7 @@ class User(Base):
     last_login = Column(DateTime, nullable=True)
     requires_password_change = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationship to refresh tokens
     refresh_tokens = relationship(

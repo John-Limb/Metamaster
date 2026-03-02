@@ -121,6 +121,13 @@ docker-compose down            # Stop
 
 **Always stage changes (`git add`), never commit.** Commits require a GPG password that only the user can provide — stage the files and let the user commit.
 
+**All changes must pass linting locally before being staged, regardless of branch.**
+
+- Backend: `black app/ && isort app/ && flake8 app/ && mypy app/`
+- Frontend: `cd frontend && npm run lint`
+
+Do not stage files that introduce new lint errors. If existing lint debt is present in a file you haven't touched, it does not need to be fixed as part of an unrelated change — but any code you write or modify must be clean.
+
 ## Commit Convention
 
 Follows Conventional Commits: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`

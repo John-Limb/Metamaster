@@ -20,7 +20,8 @@ external_api_logger = logging.getLogger("external_api")
 def _mask_url(url: str) -> str:
     """Mask API keys in URLs for safe logging."""
     import re
-    return re.sub(r'(apikey=)[^&]+', r'\1***', url)
+
+    return re.sub(r"(apikey=)[^&]+", r"\1***", url)
 
 
 class MovieService:
@@ -37,7 +38,11 @@ class MovieService:
     @staticmethod
     def get_popular_movies(db: Session, limit: int = 10, offset: int = 0):
         """Return movies ordered by descending rating then recency."""
-        query = db.query(Movie).options(selectinload(Movie.files)).order_by(Movie.rating.desc().nullslast(), Movie.created_at.desc())
+        query = (
+            db.query(Movie)
+            .options(selectinload(Movie.files))
+            .order_by(Movie.rating.desc().nullslast(), Movie.created_at.desc())
+        )
         total = query.count()
         movies = query.offset(offset).limit(limit).all()
         return movies, total
@@ -45,8 +50,10 @@ class MovieService:
     @staticmethod
     def get_top_rated_movies(db: Session, limit: int = 10, offset: int = 0):
         """Return top-rated movies prioritizing highest rating and longest runtime."""
-        query = db.query(Movie).options(selectinload(Movie.files)).order_by(
-            Movie.rating.desc().nullslast(), Movie.runtime.desc().nullslast()
+        query = (
+            db.query(Movie)
+            .options(selectinload(Movie.files))
+            .order_by(Movie.rating.desc().nullslast(), Movie.runtime.desc().nullslast())
         )
         total = query.count()
         movies = query.offset(offset).limit(limit).all()
@@ -55,7 +62,9 @@ class MovieService:
     @staticmethod
     def get_movie_by_id(db: Session, movie_id: int):
         """Get a specific movie by ID"""
-        movie = db.query(Movie).options(selectinload(Movie.files)).filter(Movie.id == movie_id).first()
+        movie = (
+            db.query(Movie).options(selectinload(Movie.files)).filter(Movie.id == movie_id).first()
+        )
         return movie
 
     @staticmethod
@@ -107,7 +116,11 @@ class MovieService:
     @staticmethod
     def search_movies(db: Session, query: str, limit: int = 10, offset: int = 0):
         """Search movies by title"""
-        search_query = db.query(Movie).options(selectinload(Movie.files)).filter(Movie.title.ilike(f"%{query}%"))
+        search_query = (
+            db.query(Movie)
+            .options(selectinload(Movie.files))
+            .filter(Movie.title.ilike(f"%{query}%"))
+        )
         total = search_query.count()
         movies = search_query.offset(offset).limit(limit).all()
         logger.info(f"Searched movies with query: {query}, found: {total}")
@@ -236,41 +249,66 @@ class TMDBService:
                 except httpx.HTTPStatusError as e:
                     elapsed_ms = (time.time() - start_time) * 1000
                     if e.response.status_code == 429:
-                        delay = base_delay * (2 ** attempt)
+                        delay = base_delay * (2**attempt)
                         external_api_logger.warning(
                             f"TMDB rate limited (429). Retrying in {delay}s",
-                            extra={"api_service": "tmdb", "api_url": url, "response_status": 429, "duration": elapsed_ms},
+                            extra={
+                                "api_service": "tmdb",
+                                "api_url": url,
+                                "response_status": 429,
+                                "duration": elapsed_ms,
+                            },
                         )
                         await asyncio.sleep(delay)
                     elif e.response.status_code == 401:
                         external_api_logger.error(
                             "TMDB authentication failed (401) — check TMDB_API_KEY",
-                            extra={"api_service": "tmdb", "api_url": url, "response_status": 401, "duration": elapsed_ms},
+                            extra={
+                                "api_service": "tmdb",
+                                "api_url": url,
+                                "response_status": 401,
+                                "duration": elapsed_ms,
+                            },
                         )
                         return None
                     elif e.response.status_code == 404:
                         external_api_logger.warning(
                             f"TMDB resource not found (404): {url}",
-                            extra={"api_service": "tmdb", "api_url": url, "response_status": 404, "duration": elapsed_ms},
+                            extra={
+                                "api_service": "tmdb",
+                                "api_url": url,
+                                "response_status": 404,
+                                "duration": elapsed_ms,
+                            },
                         )
                         return None
                     elif e.response.status_code >= 500:
-                        delay = base_delay * (2 ** attempt)
+                        delay = base_delay * (2**attempt)
                         external_api_logger.warning(
                             f"TMDB server error ({e.response.status_code}). Retrying in {delay}s",
-                            extra={"api_service": "tmdb", "api_url": url, "response_status": e.response.status_code, "duration": elapsed_ms},
+                            extra={
+                                "api_service": "tmdb",
+                                "api_url": url,
+                                "response_status": e.response.status_code,
+                                "duration": elapsed_ms,
+                            },
                         )
                         await asyncio.sleep(delay)
                     else:
                         external_api_logger.error(
                             f"TMDB HTTP error {e.response.status_code}: {url}",
-                            extra={"api_service": "tmdb", "api_url": url, "response_status": e.response.status_code, "duration": elapsed_ms},
+                            extra={
+                                "api_service": "tmdb",
+                                "api_url": url,
+                                "response_status": e.response.status_code,
+                                "duration": elapsed_ms,
+                            },
                         )
                         return None
 
                 except httpx.RequestError as e:
                     elapsed_ms = (time.time() - start_time) * 1000
-                    delay = base_delay * (2 ** attempt)
+                    delay = base_delay * (2**attempt)
                     external_api_logger.warning(
                         f"TMDB request error: {e}. Retrying in {delay}s",
                         extra={"api_service": "tmdb", "api_url": url, "duration": elapsed_ms},
@@ -300,7 +338,10 @@ class TMDBService:
         """
         if settings.tmdb_read_access_token:
             return (
-                {"Authorization": f"Bearer {settings.tmdb_read_access_token}", "accept": "application/json"},
+                {
+                    "Authorization": f"Bearer {settings.tmdb_read_access_token}",
+                    "accept": "application/json",
+                },
                 {},
             )
         if settings.tmdb_api_key:
@@ -308,7 +349,9 @@ class TMDBService:
                 {"accept": "application/json"},
                 {"api_key": settings.tmdb_api_key},
             )
-        raise RuntimeError("No TMDB credentials configured — set TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY")
+        raise RuntimeError(
+            "No TMDB credentials configured — set TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY"
+        )
 
     @staticmethod
     def _normalize_tv_status(status: str) -> str:
@@ -396,12 +439,14 @@ class TMDBService:
                         release_year = int(release_date[:4])
                     except ValueError:
                         pass
-                results.append({
-                    "tmdb_id": str(item.get("id")),
-                    "title": item.get("title"),
-                    "year": release_year,
-                    "poster": TMDBService._poster_url(item.get("poster_path")),
-                })
+                results.append(
+                    {
+                        "tmdb_id": str(item.get("id")),
+                        "title": item.get("title"),
+                        "year": release_year,
+                        "poster": TMDBService._poster_url(item.get("poster_path")),
+                    }
+                )
             return {"search_results": results, "total_results": data.get("total_results", 0)}
         except (ValueError, KeyError, AttributeError) as e:
             logger.error(f"Error parsing TMDB movie search response: {e}")
@@ -512,14 +557,16 @@ class TMDBService:
         try:
             results = []
             for item in data.get("results", []):
-                results.append({
-                    "tmdb_id": str(item.get("id")),
-                    "title": item.get("name"),
-                    "plot": item.get("overview"),
-                    "status": item.get("status"),
-                    "first_air_date": item.get("first_air_date"),
-                    "poster": TMDBService._poster_url(item.get("poster_path")),
-                })
+                results.append(
+                    {
+                        "tmdb_id": str(item.get("id")),
+                        "title": item.get("name"),
+                        "plot": item.get("overview"),
+                        "status": item.get("status"),
+                        "first_air_date": item.get("first_air_date"),
+                        "poster": TMDBService._poster_url(item.get("poster_path")),
+                    }
+                )
             return {"search_results": results, "total_results": data.get("total_results", 0)}
         except (ValueError, KeyError, AttributeError) as e:
             logger.error(f"Error parsing TMDB series search response: {e}")
@@ -562,15 +609,17 @@ class TMDBService:
                 rating = ep.get("vote_average")
                 if rating is not None:
                     rating = round(float(rating), 1)
-                episodes.append({
-                    "tmdb_id": str(ep.get("id")),
-                    "episode_number": ep.get("episode_number"),
-                    "title": ep.get("name"),
-                    "plot": ep.get("overview"),
-                    "air_date": ep.get("air_date"),
-                    "rating": rating,
-                    "runtime": ep.get("runtime"),
-                })
+                episodes.append(
+                    {
+                        "tmdb_id": str(ep.get("id")),
+                        "episode_number": ep.get("episode_number"),
+                        "title": ep.get("name"),
+                        "plot": ep.get("overview"),
+                        "air_date": ep.get("air_date"),
+                        "rating": rating,
+                        "runtime": ep.get("runtime"),
+                    }
+                )
             return {
                 "tmdb_id": str(data.get("id")),
                 "season_number": data.get("season_number"),
@@ -579,7 +628,6 @@ class TMDBService:
         except (ValueError, KeyError, AttributeError) as e:
             logger.error(f"Error parsing TMDB season response: {e}")
             return None
-
 
 
 class CacheService:
