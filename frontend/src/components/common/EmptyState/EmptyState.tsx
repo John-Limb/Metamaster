@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 import { Button, type ButtonProps } from '../Button/Button'
 import { EmptyStateIcon, type EmptyStateVariant } from './EmptyStateIcon'
@@ -78,7 +79,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  icon,
+  icon: _icon, // eslint-disable-line @typescript-eslint/no-unused-vars
   iconVariant = 'noData',
   title,
   description,

@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Card, Badge, Button } from '@/components/common'
-import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
+import { EnrichmentBadge, type EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import { formatFileSize } from '@/utils/helpers'
 import './MovieCard.css'
 
@@ -27,7 +27,6 @@ export interface MovieCardProps {
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({
-  id,
   title,
   poster_url,
   year,
@@ -47,7 +46,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const [showActions, setShowActions] = useState(false)
   const hasFileStats = resolution || codec_video || codec_audio || audio_channels || file_size || file_duration
 
   const formatDuration = (seconds: number) => {
@@ -114,11 +112,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         )}
 
         <div className="absolute top-2 right-2">
-          <EnrichmentBadge status={enrichment_status as any} />
+          <EnrichmentBadge status={enrichment_status as EnrichmentStatus} />
         </div>
 
         <div
-          className={`movie-card__overlay ${showActions ? 'movie-card__overlay--visible' : ''}`}
+          className="movie-card__overlay"
         >
           <div className="movie-card__actions">
             {onAddToQueue && (

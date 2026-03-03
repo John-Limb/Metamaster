@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FaList, FaThLarge, FaTree, FaArrowLeft } from 'react-icons/fa'
 import { useFileStore } from '@/stores/fileStore'
-import { useUIStore } from '@/stores/uiStore'
 import { FileGrid } from './FileGrid'
 import { FileList } from './FileList'
 import { FileTree } from './FileTree'
@@ -38,8 +37,6 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     navigateToPath,
     fetchFiles,
   } = useFileStore()
-
-  const { addToast } = useUIStore()
 
   // Fetch files when currentPath changes or on initial mount
   useEffect(() => {

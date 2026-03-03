@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import React from 'react'
 
 // Test groupEpisodes in isolation by extracting/reimplementing it
 // (avoids mocking the full service)
@@ -51,8 +50,9 @@ describe('groupEpisodes logic', () => {
     ]
     const showMap = new Map<string, Map<number, typeof episodes>>()
     for (const ep of episodes) {
-      const show = (ep as any).show_title ?? 'Unknown Show'
-      const season = (ep as any).season_number ?? 0
+      const epRecord = ep as Record<string, unknown>
+      const show = (typeof epRecord.show_title === 'string' ? epRecord.show_title : undefined) ?? 'Unknown Show'
+      const season = (typeof epRecord.season_number === 'number' ? epRecord.season_number : undefined) ?? 0
       if (!showMap.has(show)) showMap.set(show, new Map())
       const seasonMap = showMap.get(show)!
       if (!seasonMap.has(season)) seasonMap.set(season, [])

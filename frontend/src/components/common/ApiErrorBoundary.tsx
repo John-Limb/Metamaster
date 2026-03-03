@@ -1,7 +1,7 @@
 import React from 'react'
 import type { ReactNode } from 'react'
 import { Button } from './Button/Button'
-import { Toast, ToastContainer } from './Toast'
+import { ToastContainer } from './Toast'
 import type { ApiError, Toast as ToastType } from '@/types'
 
 interface ApiErrorBoundaryProps {

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 import { configurationService, type ConfigurationState, type ConfigurationItem } from '@/services/configurationService'
 
@@ -137,7 +138,7 @@ export function useConfigurationCheck(itemId: string): {
   error: Error | null
   refresh: () => Promise<void>
 } {
-  const { state, isLoading, error, checkItem } = useConfiguration()
+  const { state, error, checkItem } = useConfiguration()
 
   const item = state.items.find(i => i.id === itemId)
   const isConfigured = item?.status === 'valid'

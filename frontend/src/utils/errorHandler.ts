@@ -4,7 +4,7 @@ export interface ErrorLog {
   timestamp: string
   code: string
   message: string
-  details?: Record<string, any>
+  details?: Record<string, unknown>
   stack?: string
 }
 

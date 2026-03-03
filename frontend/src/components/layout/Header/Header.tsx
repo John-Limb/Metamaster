@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
-  FaBars,
   FaSearch,
   FaSun,
   FaMoon,
@@ -14,7 +13,6 @@ import {
 } from 'react-icons/fa'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
-import { useUIStore } from '@/stores/uiStore'
 import { NotificationDropdown, type Notification } from '../NotificationDropdown'
 import { UserMenu } from '../UserMenu'
 
@@ -28,13 +26,12 @@ interface SearchResult {
   type: string
 }
 
-export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
-  const { theme, setTheme, resolvedTheme } = useTheme()
-  const { user, isAuthenticated, isLoading, logout } = useAuth()
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => {
+  const { setTheme, resolvedTheme } = useTheme()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const toggleSidebar = useUIStore((state) => state.toggleSidebar)
-
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
@@ -84,11 +81,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     }
   }
 
-  const handleMenuClick = () => {
-    toggleSidebar()
-    onMenuClick?.()
-  }
-
   const toggleTheme = () => {
     const newTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
     setTheme(newTheme)
@@ -108,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     setNotifications([])
   }
 
-  const handleNotificationClick = (_notification: Notification) => {
+  const handleNotificationClick = () => {
     console.log('Notification clicked')
   }
 

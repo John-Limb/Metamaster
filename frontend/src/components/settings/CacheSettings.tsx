@@ -45,7 +45,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
   })
 
   const handleCacheSettingChange = useCallback(
-    (key: keyof typeof cacheSettings, value: any) => {
+    (key: keyof typeof cacheSettings, value: boolean | number) => {
       setCacheSettings((prev) => ({ ...prev, [key]: value }))
     },
     []

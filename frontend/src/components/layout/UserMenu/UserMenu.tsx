@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FaUser, FaCog, FaSignOutAlt, FaChevronDown, FaUserCircle, FaSignInAlt } from 'react-icons/fa'
+import { FaUser, FaCog, FaSignOutAlt, FaChevronDown, FaSignInAlt } from 'react-icons/fa'
 import { useAuth } from '@/context/AuthContext'
 import type { User } from '@/types/auth'
 

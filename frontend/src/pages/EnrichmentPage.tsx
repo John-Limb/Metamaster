@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { movieService, type EnrichmentStatusGroup, type EnrichmentStats } from '@/services/movieService'
 import { tvShowService } from '@/services/tvShowService'
-import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
+import { EnrichmentBadge, type EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import type { Movie, TVShow } from '@/types'
 
 type MediaType = 'movies' | 'tv-shows'
@@ -205,7 +205,7 @@ export const EnrichmentPage: React.FC = () => {
                     {item.year ?? '—'}
                   </td>
                   <td className="px-4 py-3">
-                    <EnrichmentBadge status={item.enrichment_status as any} />
+                    <EnrichmentBadge status={item.enrichment_status as EnrichmentStatus} />
                   </td>
                   <td className="px-4 py-3 text-slate-400 dark:text-slate-500 text-xs truncate max-w-xs">
                     {item.enrichment_error ?? '—'}

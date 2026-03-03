@@ -132,21 +132,21 @@ export function OrganisationPage() {
   const toggleSection = (key: string) =>
     setCollapsedSections((prev) => {
       const next = new Set(prev)
-      next.has(key) ? next.delete(key) : next.add(key)
+      if (next.has(key)) { next.delete(key) } else { next.add(key) }
       return next
     })
 
   const toggleShow = (key: string) =>
     setCollapsedShows((prev) => {
       const next = new Set(prev)
-      next.has(key) ? next.delete(key) : next.add(key)
+      if (next.has(key)) { next.delete(key) } else { next.add(key) }
       return next
     })
 
   const toggleSeason = (key: string) =>
     setCollapsedSeasons((prev) => {
       const next = new Set(prev)
-      next.has(key) ? next.delete(key) : next.add(key)
+      if (next.has(key)) { next.delete(key) } else { next.add(key) }
       return next
     })
 
@@ -163,7 +163,7 @@ export function OrganisationPage() {
   const toggleItem = (key: string) =>
     setSelected((prev) => {
       const next = new Set(prev)
-      next.has(key) ? next.delete(key) : next.add(key)
+      if (next.has(key)) { next.delete(key) } else { next.add(key) }
       return next
     })
 

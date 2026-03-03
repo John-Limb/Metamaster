@@ -139,7 +139,7 @@ export function RecentActivity({
         <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-700" />
 
         <div className="space-y-6" role="list" aria-label="Recent activity">
-          {activities.map((activity, index) => {
+          {activities.map((activity) => {
             const statusBadge = STATUS_BADGES[activity.status || 'none']
             const colors = ACTIVITY_COLORS[activity.type]
 

@@ -154,7 +154,10 @@ export function SystemHealthPage() {
   }
 
   useEffect(() => {
-    Promise.all([fetchHealth(), fetchLogs()]).finally(() => setIsLoading(false))
+    void (async () => {
+      await Promise.all([fetchHealth(), fetchLogs()])
+      setIsLoading(false)
+    })()
 
     logIntervalRef.current = setInterval(fetchLogs, 2000)
     return () => {

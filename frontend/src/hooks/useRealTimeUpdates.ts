@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useQueueStore } from '@/stores/queueStore'
 import { useFileStore } from '@/stores/fileStore'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -56,10 +56,13 @@ export function useQueuePolling(options: UseRealTimeOptions = {}) {
     }
   }, [enabled, pollingEnabled, startPolling, stopPolling])
 
+  // Derive polling status from stable inputs instead of reading ref during render
+  const isPolling = enabled && pollingEnabled
+
   return {
     startPolling,
     stopPolling,
-    isPolling: isActiveRef.current,
+    isPolling,
     setPollingEnabled,
   }
 }
@@ -99,7 +102,7 @@ export function useFileAutoRefresh(options: UseRealTimeOptions = {}) {
 export function useWebSocket(
   url: string,
   options: {
-    onMessage?: (data: any) => void
+    onMessage?: (data: unknown) => void
     onOpen?: () => void
     onClose?: () => void
     onError?: (error: Event) => void
@@ -119,6 +122,11 @@ export function useWebSocket(
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isConnectedRef = useRef(false)
+  const [isConnected, setIsConnected] = useState(false)
+
+  // Use a ref to hold connect so the onclose handler can call it without
+  // creating a circular useCallback dependency.
+  const connectRef = useRef<() => void>(() => undefined)
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -130,25 +138,27 @@ export function useWebSocket(
 
       wsRef.current.onopen = () => {
         isConnectedRef.current = true
+        setIsConnected(true)
         onOpen?.()
       }
 
-      wsRef.current.onmessage = (event) => {
+      wsRef.current.onmessage = (event: MessageEvent) => {
         try {
-          const data = JSON.parse(event.data)
+          const data: unknown = JSON.parse(event.data as string)
           onMessage?.(data)
         } catch {
-          onMessage?.(event.data)
+          onMessage?.(event.data as unknown)
         }
       }
 
       wsRef.current.onclose = () => {
         isConnectedRef.current = false
+        setIsConnected(false)
         onClose?.()
 
         if (reconnect) {
           reconnectTimeoutRef.current = setTimeout(() => {
-            connect()
+            connectRef.current()
           }, reconnectInterval)
         }
       }
@@ -160,6 +170,11 @@ export function useWebSocket(
       console.error('WebSocket connection error:', error)
     }
   }, [url, onMessage, onOpen, onClose, onError, reconnect, reconnectInterval])
+
+  // Keep the ref in sync with the latest connect callback
+  useEffect(() => {
+    connectRef.current = connect
+  }, [connect])
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -173,9 +188,10 @@ export function useWebSocket(
     }
 
     isConnectedRef.current = false
-  }, [reconnect])
+    setIsConnected(false)
+  }, [])
 
-  const send = useCallback((data: any) => {
+  const send = useCallback((data: unknown) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(typeof data === 'string' ? data : JSON.stringify(data))
     }
@@ -193,7 +209,7 @@ export function useWebSocket(
     connect,
     disconnect,
     send,
-    isConnected: isConnectedRef.current,
+    isConnected,
   }
 }
 

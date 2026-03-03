@@ -13,11 +13,9 @@ interface QueuePanelProps {
 export function QueuePanel({
   className = '',
   autoRefresh = true,
-  refreshInterval = 5000,
 }: QueuePanelProps) {
   const {
     tasks,
-    stats,
     isLoading,
     error,
     statusFilter,

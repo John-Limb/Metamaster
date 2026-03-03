@@ -47,7 +47,7 @@ export function useKeyboardNavigation(options: {
           onEscape?.()
           break
 
-        case 'ArrowUp':
+        case 'ArrowUp': {
           event.preventDefault()
           let newIndex = currentIndex - 1
           if (newIndex < 0) {
@@ -58,8 +58,9 @@ export function useKeyboardNavigation(options: {
             document.getElementById(getItemId(newIndex))?.focus()
           }
           break
+        }
 
-        case 'ArrowDown':
+        case 'ArrowDown': {
           event.preventDefault()
           let nextIndex = currentIndex + 1
           if (nextIndex >= itemCount) {
@@ -70,6 +71,7 @@ export function useKeyboardNavigation(options: {
             document.getElementById(getItemId(nextIndex))?.focus()
           }
           break
+        }
 
         case 'Home':
           event.preventDefault()

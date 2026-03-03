@@ -23,7 +23,7 @@ export const searchService = {
         `/search?${params.toString()}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `search: ${filters.query}`)
       throw error
     }
@@ -36,7 +36,7 @@ export const searchService = {
         `/search/files?query=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `searchFiles: ${query}`)
       throw error
     }
@@ -49,7 +49,7 @@ export const searchService = {
         `/search/movies?query=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `searchMovies: ${query}`)
       throw error
     }
@@ -62,7 +62,7 @@ export const searchService = {
         `/search/tv-shows?query=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `searchTVShows: ${query}`)
       throw error
     }
@@ -75,7 +75,7 @@ export const searchService = {
         `/search/suggestions?query=${encodeURIComponent(query)}&limit=${limit}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getSuggestions: ${query}`)
       throw error
     }
@@ -84,9 +84,9 @@ export const searchService = {
   // Get search filters/facets
   getFilters: async () => {
     try {
-      const response = await apiClient.get<Record<string, any>>('/search/filters')
+      const response = await apiClient.get<Record<string, unknown>>('/search/filters')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getFilters')
       throw error
     }
@@ -97,7 +97,7 @@ export const searchService = {
     try {
       const response = await apiClient.get<string[]>(`/search/recent?limit=${limit}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getRecentSearches')
       throw error
     }
@@ -108,7 +108,7 @@ export const searchService = {
     try {
       const response = await apiClient.post('/search/clear-history')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'clearSearchHistory')
       throw error
     }

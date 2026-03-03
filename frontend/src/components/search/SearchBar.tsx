@@ -33,7 +33,7 @@ export function SearchBar({
     addRecentSearch,
   } = useSearchStore()
 
-  const debouncedFetchSuggestions = useRef(
+  const debouncedFetchSuggestionsRef = useRef(
     debounce((q: string) => {
       if (q.length >= 2) {
         fetchSuggestions(q)
@@ -41,17 +41,17 @@ export function SearchBar({
         clearSuggestions()
       }
     }, 300)
-  ).current
+  )
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
       setQuery(value)
       if (showSuggestions) {
-        debouncedFetchSuggestions(value)
+        debouncedFetchSuggestionsRef.current(value)
       }
     },
-    [setQuery, showSuggestions, debouncedFetchSuggestions]
+    [setQuery, showSuggestions]
   )
 
   const handleSubmit = useCallback(
@@ -118,10 +118,11 @@ export function SearchBar({
 
   // Cleanup debounced function
   useEffect(() => {
+    const fn = debouncedFetchSuggestionsRef.current
     return () => {
-      debouncedFetchSuggestions.cancel()
+      fn.cancel()
     }
-  }, [debouncedFetchSuggestions])
+  }, [])
 
   return (
     <div className={`relative ${className}`}>

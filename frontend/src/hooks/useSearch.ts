@@ -55,7 +55,7 @@ export const useSearchSuggestions = (query: string, limit = 10) => {
 }
 
 export const useSearchFilters = () => {
-  return useQuery<Record<string, any>>({
+  return useQuery<Record<string, unknown>>({
     queryKey: [...SEARCH_QUERY_KEY, 'filters'],
     queryFn: () => searchService.getFilters(),
     staleTime: 30 * 60 * 1000, // 30 minutes

@@ -15,7 +15,7 @@ export interface LogEntry {
   timestamp: string
   level: LogLevel
   message: string
-  data?: any
+  data?: unknown
   context?: string
 }
 
@@ -27,35 +27,35 @@ class Logger {
   /**
    * Log debug message
    */
-  public debug(message: string, data?: any, context?: string): void {
+  public debug(message: string, data?: unknown, context?: string): void {
     this.log(LogLevelValues.DEBUG, message, data, context)
   }
 
   /**
    * Log info message
    */
-  public info(message: string, data?: any, context?: string): void {
+  public info(message: string, data?: unknown, context?: string): void {
     this.log(LogLevelValues.INFO, message, data, context)
   }
 
   /**
    * Log warning message
    */
-  public warn(message: string, data?: any, context?: string): void {
+  public warn(message: string, data?: unknown, context?: string): void {
     this.log(LogLevelValues.WARN, message, data, context)
   }
 
   /**
    * Log error message
    */
-  public error(message: string, data?: any, context?: string): void {
+  public error(message: string, data?: unknown, context?: string): void {
     this.log(LogLevelValues.ERROR, message, data, context)
   }
 
   /**
    * Internal log method
    */
-  private log(level: LogLevel, message: string, data?: any, context?: string): void {
+  private log(level: LogLevel, message: string, data?: unknown, context?: string): void {
     // Check if log level should be logged
     if (!this.shouldLog(level)) {
       return
@@ -177,21 +177,21 @@ class Logger {
   /**
    * Log API request
    */
-  public logApiRequest(method: string, url: string, data?: any): void {
+  public logApiRequest(method: string, url: string, data?: unknown): void {
     this.info(`API Request: ${method} ${url}`, data, 'API')
   }
 
   /**
    * Log API response
    */
-  public logApiResponse(method: string, url: string, status: number, data?: any): void {
+  public logApiResponse(method: string, url: string, status: number, data?: unknown): void {
     this.info(`API Response: ${method} ${url} (${status})`, data, 'API')
   }
 
   /**
    * Log API error
    */
-  public logApiError(method: string, url: string, error: any): void {
+  public logApiError(method: string, url: string, error: unknown): void {
     this.error(`API Error: ${method} ${url}`, error, 'API')
   }
 

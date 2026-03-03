@@ -5,7 +5,7 @@ import { FilterPanel } from './FilterPanel'
 import { SavedSearches } from './SavedSearches'
 
 interface AdvancedSearchProps {
-  onSearch?: (query: string, filters: Record<string, any>) => void
+  onSearch?: (query: string, filters: Record<string, unknown>) => void
   showSavedSearches?: boolean
   className?: string
 }

@@ -159,10 +159,11 @@ class ApiClient {
 
   private handleError(error: AxiosError): ApiError {
     if (error.response) {
+      const data = error.response.data as Record<string, unknown>
       return {
         code: String(error.response.status),
-        message: (error.response.data as any)?.message || error.message,
-        details: (error.response.data as Record<string, any>) || undefined,
+        message: (typeof data?.message === 'string' ? data.message : null) || error.message,
+        details: data || undefined,
       }
     } else if (error.request) {
       return {
@@ -185,15 +186,15 @@ class ApiClient {
     return this.client.defaults
   }
 
-  public post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  public post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.client.post<T>(url, data, config)
   }
 
-  public put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  public put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.client.put<T>(url, data, config)
   }
 
-  public patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  public patch<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     return this.client.patch<T>(url, data, config)
   }
 

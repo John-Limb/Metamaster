@@ -18,7 +18,7 @@ export function useVirtualScroll<T extends HTMLElement>(
 ): VirtualScrollResult {
   const { itemHeight, overscan = 3, useWindow = false } = options
   const containerRef = useRef<T>(null)
-  const scrollTopRef = useRef(0)
+  const [scrollTop, setScrollTop] = useState(0)
   const [viewportHeight, setViewportHeight] = useState(0)
 
   // Update viewport height
@@ -37,29 +37,24 @@ export function useVirtualScroll<T extends HTMLElement>(
   }, [useWindow])
 
   // Calculate visible range
-  const { startIndex, endIndex } = useMemo(() => {
+  const { startIndex } = useMemo(() => {
     if (viewportHeight === 0 || itemCount === 0) {
-      return { startIndex: 0, endIndex: 0 }
+      return { startIndex: 0 }
     }
 
-    const scrollTop = useWindow ? window.scrollY : scrollTopRef.current
-    const startNode = scrollTop - itemHeight * overscan
-    const endNode = scrollTop + viewportHeight + itemHeight * overscan
+    const currentScrollTop = useWindow ? window.scrollY : scrollTop
+    const startNode = currentScrollTop - itemHeight * overscan
 
-    const startIndex = Math.max(0, Math.floor(startNode / itemHeight))
-    const endIndex = Math.min(
-      itemCount - 1,
-      Math.floor(endNode / itemHeight)
-    )
+    const startIdx = Math.max(0, Math.floor(startNode / itemHeight))
 
-    return { startIndex, endIndex }
-  }, [viewportHeight, itemCount, itemHeight, overscan, useWindow])
+    return { startIndex: startIdx }
+  }, [viewportHeight, itemCount, itemHeight, overscan, useWindow, scrollTop])
 
   // Track scroll position
   useEffect(() => {
     const handleScroll = () => {
       if (useWindow) {
-        scrollTopRef.current = window.scrollY
+        setScrollTop(window.scrollY)
       }
     }
 
@@ -110,13 +105,6 @@ export function useVirtualScroll<T extends HTMLElement>(
   const containerStyle: React.CSSProperties = {
     position: 'relative',
     height: itemCount * itemHeight,
-    width: '100%',
-  }
-
-  const innerStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
     width: '100%',
     transform: `translateY(${startIndex * itemHeight}px)`,
   }

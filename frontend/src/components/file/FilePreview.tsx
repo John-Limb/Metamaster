@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaFile, FaImage, FaVideo, FaMusic } from 'react-icons/fa'
+import { FaFile, FaMusic } from 'react-icons/fa'
 import type { FileItem } from '@/types'
 
 interface FilePreviewProps {

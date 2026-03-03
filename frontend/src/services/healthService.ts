@@ -40,7 +40,7 @@ export const healthService = {
     try {
       const response = await apiClient.get<HealthStatus>('/health/')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getHealth')
       throw error
     }
@@ -50,7 +50,7 @@ export const healthService = {
     try {
       const response = await apiClient.get<DetailedHealthCheck>('/health/detailed')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getDetailedHealth')
       throw error
     }
@@ -60,7 +60,7 @@ export const healthService = {
     try {
       const response = await apiClient.get<MetricsPayload>('/health/metrics')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getMetrics')
       throw error
     }
@@ -70,7 +70,7 @@ export const healthService = {
     try {
       const response = await apiClient.get<HealthStatus>('/health/ready')
       return response.data.status === 'ready'
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'isReady')
       return false
     }
@@ -80,7 +80,7 @@ export const healthService = {
     try {
       const response = await apiClient.get<HealthStatus>('/health/live')
       return response.data.status === 'alive'
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'isAlive')
       return false
     }
@@ -90,7 +90,7 @@ export const healthService = {
     try {
       const response = await apiClient.get<ComponentLogs>(`/health/logs?lines=${lines}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getComponentLogs')
       throw error
     }

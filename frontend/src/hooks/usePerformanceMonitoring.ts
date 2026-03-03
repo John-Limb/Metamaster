@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 
 interface PerformanceMetrics {
   fcp: number | null // First Contentful Paint
@@ -13,6 +13,11 @@ interface UsePerformanceMonitoringOptions {
   onReport?: (metrics: PerformanceMetrics) => void
 }
 
+interface LayoutShiftEntry extends PerformanceEntry {
+  hadRecentInput: boolean
+  value: number
+}
+
 export function usePerformanceMonitoring(options: UsePerformanceMonitoringOptions = {}) {
   const { enabled = true, onReport } = options
   const metricsRef = useRef<PerformanceMetrics>({
@@ -22,8 +27,16 @@ export function usePerformanceMonitoring(options: UsePerformanceMonitoringOption
     cls: null,
     ttfb: null,
   })
+  const [metrics, setMetrics] = useState<PerformanceMetrics>({
+    fcp: null,
+    lcp: null,
+    fid: null,
+    cls: null,
+    ttfb: null,
+  })
 
   const reportMetrics = useCallback(() => {
+    setMetrics({ ...metricsRef.current })
     if (onReport) {
       onReport(metricsRef.current)
     }
@@ -79,9 +92,10 @@ export function usePerformanceMonitoring(options: UsePerformanceMonitoringOption
     let clsValue = 0
     const clsObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries()
-      entries.forEach((entry: any) => {
-        if (!entry.hadRecentInput) {
-          clsValue += entry.value
+      entries.forEach((entry) => {
+        const layoutEntry = entry as LayoutShiftEntry
+        if (!layoutEntry.hadRecentInput) {
+          clsValue += layoutEntry.value
         }
       })
       metricsRef.current.cls = clsValue
@@ -114,7 +128,7 @@ export function usePerformanceMonitoring(options: UsePerformanceMonitoringOption
     }
   }, [enabled, reportMetrics])
 
-  return metricsRef.current
+  return metrics
 }
 
 export default usePerformanceMonitoring

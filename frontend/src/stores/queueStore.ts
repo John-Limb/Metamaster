@@ -80,8 +80,8 @@ export const useQueueStore = create<QueueState>()(
           set((state) => ({
             tasks: state.tasks.filter((t) => t.status !== 'completed'),
           }))
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to clear completed tasks' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to clear completed tasks' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -94,8 +94,8 @@ export const useQueueStore = create<QueueState>()(
           set((state) => ({
             tasks: state.tasks.map((t) => (t.id === id ? task : t)),
           }))
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to retry task' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to retry task' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -108,8 +108,8 @@ export const useQueueStore = create<QueueState>()(
           set((state) => ({
             tasks: state.tasks.filter((t) => t.id !== id),
           }))
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to cancel task' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to cancel task' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -123,8 +123,8 @@ export const useQueueStore = create<QueueState>()(
           set({ isLoading: true, error: null })
           const stats = await queueService.getStats()
           set({ stats })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch queue stats' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch queue stats' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -150,8 +150,8 @@ export const useQueueStore = create<QueueState>()(
           set({ isLoading: true, error: null })
           const response = await queueService.getTasks(page, pageSize, status)
           set({ tasks: response.items })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch tasks' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch tasks' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -165,8 +165,8 @@ export const useQueueStore = create<QueueState>()(
             tasks: state.tasks.map((t) => (t.id === id ? task : t)),
           }))
           return task
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch task details' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch task details' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -183,8 +183,8 @@ export const useQueueStore = create<QueueState>()(
             ),
           }))
           return progress
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch task progress' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch task progress' })
           throw error
         }
       },

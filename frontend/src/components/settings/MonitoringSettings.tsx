@@ -16,7 +16,7 @@ export function MonitoringSettings({ className = '' }: MonitoringSettingsProps) 
   })
 
   const handleSettingChange = useCallback(
-    (key: keyof typeof settings, value: any) => {
+    (key: keyof typeof settings, value: boolean | string | number) => {
       setSettings((prev) => ({ ...prev, [key]: value }))
     },
     []

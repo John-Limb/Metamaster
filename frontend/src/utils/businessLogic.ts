@@ -227,7 +227,8 @@ export const fileManagement = {
 export const validation = {
   // Validate file name
   isValidFileName: (name: string): boolean => {
-    const invalidChars = /[<>:"/\\|?*\x00-\x1F]/
+    // eslint-disable-next-line no-control-regex
+    const invalidChars = /[<>:"/\\|?*\u0000-\u001f]/
     return name.trim().length > 0 && !invalidChars.test(name)
   },
 
@@ -254,7 +255,8 @@ export const validation = {
 
   // Sanitize file name
   sanitizeFileName: (name: string): string => {
-    return name.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim()
+    // eslint-disable-next-line no-control-regex
+    return name.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '_').trim()
   },
 }
 
@@ -339,6 +341,7 @@ export const searchHelpers = {
   highlightMatch: (text: string, query: string): string => {
     if (!query.trim()) return text
 
+    // eslint-disable-next-line security/detect-non-literal-regexp
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
     return text.replace(regex, '<mark>$1</mark>')
   },

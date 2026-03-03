@@ -27,7 +27,7 @@ export const tvShowService = {
       const suffix = params.toString() ? `?${params.toString()}` : ''
       const response = await apiClient.get<PaginatedResponse<TVShow>>(`/tv-shows${suffix}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getTVShows: page=${page}`)
       throw error
     }
@@ -41,7 +41,7 @@ export const tvShowService = {
         `/tv-shows/${showId}/seasons?${params}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getSeasons: showId=${showId}`)
       throw error
     }
@@ -55,7 +55,7 @@ export const tvShowService = {
         `/tv-shows/${showId}/seasons/${seasonId}/episodes?${params}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getEpisodes: showId=${showId}, seasonId=${seasonId}`)
       throw error
     }
@@ -66,7 +66,7 @@ export const tvShowService = {
     try {
       const response = await apiClient.get<EnrichmentStats>('/tv-shows/enrichment-stats')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getEnrichmentStats (tv-shows)')
       throw error
     }
@@ -77,7 +77,7 @@ export const tvShowService = {
     try {
       const response = await apiClient.get<TVShow>(`/tv-shows/${id}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getTVShowDetails: ${id}`)
       throw error
     }
@@ -92,7 +92,7 @@ export const tvShowService = {
         `/tv-shows/search?q=${encodeURIComponent(query)}${separator}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `searchTVShows: ${query}`)
       throw error
     }
@@ -107,7 +107,7 @@ export const tvShowService = {
         `/genres/${encodeURIComponent(genre)}/tv-shows${suffix}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getTVShowsByGenre: ${genre}`)
       throw error
     }
@@ -118,7 +118,7 @@ export const tvShowService = {
     try {
       const response = await apiClient.post<TVShow>('/tv-shows', tvShow)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `createTVShow: ${tvShow.title}`)
       throw error
     }
@@ -129,7 +129,7 @@ export const tvShowService = {
     try {
       const response = await apiClient.put<TVShow>(`/tv-shows/${id}`, updates)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `updateTVShow: ${id}`)
       throw error
     }
@@ -140,7 +140,7 @@ export const tvShowService = {
     try {
       const response = await apiClient.delete<ApiResponse<void>>(`/tv-shows/${id}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `deleteTVShow: ${id}`)
       throw error
     }
@@ -151,7 +151,7 @@ export const tvShowService = {
     try {
       const response = await apiClient.post<TVShow>(`/tv-shows/${id}/sync-metadata`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `syncMetadata: ${id}`)
       throw error
     }
@@ -166,7 +166,7 @@ export const tvShowService = {
         `/tv-shows/popular${suffix}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getPopularTVShows')
       throw error
     }
@@ -179,7 +179,7 @@ export const tvShowService = {
         '/tv-shows/scan-directory'
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'scanDirectory')
       throw error
     }
@@ -194,7 +194,7 @@ export const tvShowService = {
         `/tv-shows/top-rated${suffix}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getTopRatedTVShows')
       throw error
     }

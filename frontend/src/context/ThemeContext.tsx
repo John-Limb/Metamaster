@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useEffect, useState, useMemo, type ReactNode } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -23,40 +24,36 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     return 'system';
   });
 
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  const [systemIsDark, setSystemIsDark] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  // Derive resolvedTheme without a separate setState call
+  const resolvedTheme = useMemo<'light' | 'dark'>(() => {
+    if (theme === 'system') {
+      return systemIsDark ? 'dark' : 'light';
+    }
+    return theme;
+  }, [theme, systemIsDark]);
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
-    // Remove previous theme class
     root.classList.remove('light', 'dark');
-
-    const getResolvedTheme = (): 'light' | 'dark' => {
-      if (theme === 'system') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light';
-      }
-      return theme;
-    };
-
-    const resolved = getResolvedTheme();
-    setResolvedTheme(resolved);
-    root.classList.add(resolved);
+    root.classList.add(resolvedTheme);
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [theme, resolvedTheme]);
 
   // Listen for system theme changes when in system mode
   useEffect(() => {
     if (theme !== 'system') return;
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     const handleChange = () => {
-      const resolved = mediaQuery.matches ? 'dark' : 'light';
-      setResolvedTheme(resolved);
-      document.documentElement.classList.remove('light', 'dark');
-      document.documentElement.classList.add(resolved);
+      setSystemIsDark(mediaQuery.matches);
     };
 
     mediaQuery.addEventListener('change', handleChange);

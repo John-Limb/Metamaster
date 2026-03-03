@@ -77,8 +77,8 @@ export const useFileStore = create<FileState>()(
           set({ isLoading: true, error: null })
           await fileService.deleteFile(id)
           get().removeFile(id)
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to delete file' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to delete file' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -92,8 +92,8 @@ export const useFileStore = create<FileState>()(
             files: state.files.filter((f) => !ids.includes(f.id)),
             selectedFiles: state.selectedFiles.filter((id) => !ids.includes(id)),
           }))
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to delete files' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to delete files' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -107,8 +107,8 @@ export const useFileStore = create<FileState>()(
             files: state.files.filter((f) => !ids.includes(f.id)),
             selectedFiles: [],
           }))
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to move files' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to move files' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -157,8 +157,8 @@ export const useFileStore = create<FileState>()(
           set({ isLoading: true, error: null })
           const stats = await fileService.getFileStats()
           set({ stats })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch stats' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch stats' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -172,8 +172,8 @@ export const useFileStore = create<FileState>()(
           const response = await fileService.getFiles(path, page, pageSize)
           set({ files: response.items, currentPath: path })
           get().addRecentPath(path)
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch files' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch files' })
           throw error
         } finally {
           set({ isLoading: false })

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { TVShow, PaginatedResponse } from '@/types'
+import type { TVShow } from '@/types'
 import { tvShowService } from '@/services/tvShowService'
 
 interface TVShowState {
@@ -79,8 +79,8 @@ export const useTVShowStore = create<TVShowState>()(
             currentPage: page,
             pageSize,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch TV shows' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch TV shows' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -92,8 +92,8 @@ export const useTVShowStore = create<TVShowState>()(
           const tvShow = await tvShowService.getTVShowDetails(id)
           set({ selectedTVShow: tvShow })
           return tvShow
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch TV show details' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch TV show details' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -109,8 +109,8 @@ export const useTVShowStore = create<TVShowState>()(
             currentPage: page,
             pageSize,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Search failed' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Search failed' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -127,8 +127,8 @@ export const useTVShowStore = create<TVShowState>()(
             pageSize,
             genreFilter: genre,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch TV shows by genre' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch TV shows by genre' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -144,8 +144,8 @@ export const useTVShowStore = create<TVShowState>()(
             currentPage: page,
             pageSize,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch popular TV shows' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch popular TV shows' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -161,8 +161,8 @@ export const useTVShowStore = create<TVShowState>()(
             currentPage: page,
             pageSize,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch top rated TV shows' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch top rated TV shows' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -179,8 +179,8 @@ export const useTVShowStore = create<TVShowState>()(
             totalTVShows: state.totalTVShows + 1,
           }))
           return created
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to create TV show' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to create TV show' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -196,8 +196,8 @@ export const useTVShowStore = create<TVShowState>()(
               state.selectedTVShow?.id === id ? updated : state.selectedTVShow,
           }))
           return updated
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to update TV show' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to update TV show' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -213,8 +213,8 @@ export const useTVShowStore = create<TVShowState>()(
             selectedTVShow:
               state.selectedTVShow?.id === id ? null : state.selectedTVShow,
           }))
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to delete TV show' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to delete TV show' })
           throw error
         } finally {
           set({ isLoading: false })

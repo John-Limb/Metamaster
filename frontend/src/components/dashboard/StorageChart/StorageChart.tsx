@@ -17,14 +17,6 @@ export interface StorageChartProps {
   diskTotalBytes?: number
 }
 
-// Design system aligned colors - matches CSS variables in design-tokens.css
-// Note: CSS variables cannot be used directly in SVG stroke/fill without getComputedStyle()
-const STORAGE_COLORS = {
-  movies: '#6366f1', // var(--color-primary-500) - indigo
-  tv: '#8b5cf6', // violet-500 (accent color, not in design system)
-  other: '#64748b', // var(--color-secondary-500) - slate
-}
-
 const DEFAULT_COLORS = [
   '#6366f1', // var(--color-primary-500) - indigo
   '#8b5cf6', // violet-500 (accent color)
@@ -61,7 +53,7 @@ export function StorageChart({
         aria-label="Storage usage chart"
       >
         <svg viewBox="0 0 100 100" className="transform -rotate-90 w-full h-full">
-          {chartData.map((item, index) => {
+          {chartData.map((item) => {
             const percentage = (item.value / total) * 100
             const segmentLength = (percentage / 100) * circumference
             const offset = circumference * (currentOffset / 100)

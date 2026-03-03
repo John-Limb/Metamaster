@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { SearchFilters, SearchResult, PaginatedResponse } from '@/types'
+import type { SearchFilters, SearchResult } from '@/types'
 import { searchService } from '@/services/searchService'
 
 interface SavedSearch {
@@ -98,8 +98,8 @@ export const useSearchStore = create<SearchState>()(
           if (page === 1) {
             get().addRecentSearch(get().query)
           }
-        } catch (error: any) {
-          set({ error: error.message || 'Search failed' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Search failed' })
           throw error
         } finally {
           set({ isSearching: false })
@@ -117,8 +117,8 @@ export const useSearchStore = create<SearchState>()(
             results: [...get().results, ...response.items],
             currentPage: nextPage,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to load more results' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to load more results' })
           throw error
         } finally {
           set({ isSearching: false })
@@ -131,7 +131,7 @@ export const useSearchStore = create<SearchState>()(
           set({ isLoadingSuggestions: true })
           const suggestions = await searchService.getSuggestions(query)
           set({ suggestions })
-        } catch (error: any) {
+        } catch {
           set({ suggestions: [] })
         } finally {
           set({ isLoadingSuggestions: false })

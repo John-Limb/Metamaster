@@ -190,7 +190,7 @@ export const scanScheduleService = {
     try {
       const response = await apiClient.get<{ schedule: string }>('/config/scan-schedule')
       return response.data.schedule
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getScanSchedule')
       throw error
     }
@@ -202,7 +202,7 @@ export const scanScheduleService = {
         schedule,
       })
       return response.data.schedule
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'setScanSchedule')
       throw error
     }
@@ -214,7 +214,7 @@ export const configurationService: ConfigurationServiceInterface = {
     try {
       const response = await apiClient.get<ConfigurationState>('/config/check')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       // Fall back to local check if API is not available
       errorHandler.handleError(error, 'configurationCheck')
       return checkAllConfigurations()
@@ -225,7 +225,7 @@ export const configurationService: ConfigurationServiceInterface = {
     try {
       const response = await apiClient.get<ConfigurationItem>(`/config/check/${id}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'checkConfigurationItem')
       const item = CONFIGURATION_ITEMS.find(i => i.id === id)
       if (!item) {

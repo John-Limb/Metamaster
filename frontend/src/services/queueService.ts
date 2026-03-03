@@ -15,7 +15,7 @@ export const queueService = {
         `/queue/tasks?${params.toString()}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getTasks: page=${page}, status=${status}`)
       throw error
     }
@@ -26,7 +26,7 @@ export const queueService = {
     try {
       const response = await apiClient.get<QueueStats>('/queue/stats')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getStats')
       throw error
     }
@@ -37,7 +37,7 @@ export const queueService = {
     try {
       const response = await apiClient.get<QueueTask>(`/queue/tasks/${id}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getTaskDetails: ${id}`)
       throw error
     }
@@ -48,7 +48,7 @@ export const queueService = {
     try {
       const response = await apiClient.post<QueueTask>(`/queue/tasks/${id}/retry`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `retryTask: ${id}`)
       throw error
     }
@@ -59,7 +59,7 @@ export const queueService = {
     try {
       const response = await apiClient.post<ApiResponse<void>>(`/queue/tasks/${id}/cancel`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `cancelTask: ${id}`)
       throw error
     }
@@ -70,7 +70,7 @@ export const queueService = {
     try {
       const response = await apiClient.post<ApiResponse<void>>('/queue/clear-completed')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'clearCompletedTasks')
       throw error
     }
@@ -83,7 +83,7 @@ export const queueService = {
         `/queue/tasks/${id}/progress`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getTaskProgress: ${id}`)
       throw error
     }

@@ -1,16 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { TextInput, Button, Pagination, EmptyState, Skeleton, SkeletonCard } from '@/components/common'
+import { TextInput, Button, Pagination, EmptyState, SkeletonCard } from '@/components/common'
 import { FilterPanel, type FilterSection } from '@/components/features/filter'
 import { SortDropdown, type SortOption } from '@/components/features/sort'
-import { TVShowCard, type TVShowCardProps } from '../TVShowCard'
+import { TVShowCard } from '../TVShowCard'
 import { MediaDetailModal } from '@/components/features/media'
 import { useTVShowStore } from '@/stores/tvShowStore'
 import { tvShowService } from '@/services/tvShowService'
 import './TVShowsPage.css'
 
 const TVShowsPage: React.FC = () => {
-  const navigate = useNavigate()
   const {
     tvShows,
     totalTVShows,
@@ -22,7 +20,6 @@ const TVShowsPage: React.FC = () => {
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({})
   const [sortValue, setSortValue] = useState('name-asc')
@@ -35,14 +32,6 @@ const TVShowsPage: React.FC = () => {
   useEffect(() => {
     fetchTVShows(1, itemsPerPage)
   }, [fetchTVShows])
-
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchQuery])
 
   const totalPages = Math.ceil(totalTVShows / itemsPerPage)
 

@@ -22,7 +22,7 @@ export const cacheService = {
     try {
       const response = await apiClient.get<CacheStats>('/cache/stats')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getStats')
       throw error
     }
@@ -35,7 +35,7 @@ export const cacheService = {
         `/cache/items?page=${page}&pageSize=${pageSize}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getItems: page=${page}`)
       throw error
     }
@@ -46,7 +46,7 @@ export const cacheService = {
     try {
       const response = await apiClient.get<CacheItem>(`/cache/items/${encodeURIComponent(key)}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getItem: ${key}`)
       throw error
     }
@@ -59,7 +59,7 @@ export const cacheService = {
         `/cache/items/${encodeURIComponent(key)}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `clearKey: ${key}`)
       throw error
     }
@@ -70,7 +70,7 @@ export const cacheService = {
     try {
       const response = await apiClient.post<ApiResponse<void>>('/cache/clear')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'clearAll')
       throw error
     }
@@ -83,7 +83,7 @@ export const cacheService = {
         pattern,
       })
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `clearByPattern: ${pattern}`)
       throw error
     }
@@ -94,7 +94,7 @@ export const cacheService = {
     try {
       const response = await apiClient.post<ApiResponse<void>>('/cache/warmup')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'warmUp')
       throw error
     }
@@ -103,9 +103,9 @@ export const cacheService = {
   // Get cache configuration
   getConfig: async () => {
     try {
-      const response = await apiClient.get<Record<string, any>>('/cache/config')
+      const response = await apiClient.get<Record<string, unknown>>('/cache/config')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getConfig')
       throw error
     }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaTimes, FaFile, FaFolder } from 'react-icons/fa'
+import { FaTimes, FaFolder } from 'react-icons/fa'
 import { FilePreview } from './FilePreview'
 import type { FileItem } from '@/types'
 

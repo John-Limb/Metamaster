@@ -1,7 +1,6 @@
 import { apiClient } from '@/utils/api'
 import { errorHandler } from '@/utils/errorHandler'
 import type { Movie, PaginatedResponse, ApiResponse } from '@/types'
-import type { paths } from '@/types/api-schema'
 
 const buildPaginationQuery = (page?: number, pageSize?: number) => {
   const params = new URLSearchParams()
@@ -34,7 +33,7 @@ export const movieService = {
       const suffix = params.toString() ? `?${params.toString()}` : ''
       const response = await apiClient.get<PaginatedResponse<Movie>>(`/movies${suffix}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getMovies: page=${page}`)
       throw error
     }
@@ -45,7 +44,7 @@ export const movieService = {
     try {
       const response = await apiClient.get<EnrichmentStats>('/movies/enrichment-stats')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getEnrichmentStats')
       throw error
     }
@@ -56,7 +55,7 @@ export const movieService = {
     try {
       const response = await apiClient.get<Movie>(`/movies/${id}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getMovieDetails: ${id}`)
       throw error
     }
@@ -71,7 +70,7 @@ export const movieService = {
         `/movies/search?q=${encodeURIComponent(query)}${separator}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `searchMovies: ${query}`)
       throw error
     }
@@ -86,7 +85,7 @@ export const movieService = {
         `/genres/${encodeURIComponent(genre)}/movies${suffix}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getMoviesByGenre: ${genre}`)
       throw error
     }
@@ -97,7 +96,7 @@ export const movieService = {
     try {
       const response = await apiClient.post<Movie>('/movies', movie)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `createMovie: ${movie.title}`)
       throw error
     }
@@ -108,7 +107,7 @@ export const movieService = {
     try {
       const response = await apiClient.put<Movie>(`/movies/${id}`, updates)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `updateMovie: ${id}`)
       throw error
     }
@@ -119,7 +118,7 @@ export const movieService = {
     try {
       const response = await apiClient.delete<ApiResponse<void>>(`/movies/${id}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `deleteMovie: ${id}`)
       throw error
     }
@@ -134,7 +133,7 @@ export const movieService = {
         `/movies/popular${suffix}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getPopularMovies')
       throw error
     }
@@ -145,7 +144,7 @@ export const movieService = {
     try {
       const response = await apiClient.post<Movie>(`/movies/${id}/sync-metadata`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `syncMetadata: ${id}`)
       throw error
     }
@@ -156,7 +155,7 @@ export const movieService = {
     try {
       const response = await apiClient.post<Movie>(`/movies/${id}/scan`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `scanMovie: ${id}`)
       throw error
     }
@@ -169,7 +168,7 @@ export const movieService = {
         '/movies/scan-directory'
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'scanDirectory')
       throw error
     }
@@ -184,7 +183,7 @@ export const movieService = {
         `/movies/top-rated${suffix}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getTopRatedMovies')
       throw error
     }

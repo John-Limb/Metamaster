@@ -18,13 +18,13 @@ def temp_media_dir():
 @pytest.fixture
 def file_monitor(temp_media_dir):
     """Create a FileMonitorService instance for testing"""
-    return FileMonitorService(watch_path=temp_media_dir)
+    return FileMonitorService(watch_paths=[str(temp_media_dir)])
 
 
 @pytest.mark.asyncio
 async def test_file_monitor_initialization(file_monitor, temp_media_dir):
     """Test FileMonitorService initialization"""
-    assert file_monitor.watch_path == temp_media_dir
+    assert file_monitor.watch_paths == [str(temp_media_dir)]
     assert file_monitor.is_running is False
     assert file_monitor.file_queue == []
 
@@ -45,7 +45,7 @@ async def test_file_monitor_start_creates_directory(temp_media_dir):
     non_existent_dir = Path(temp_media_dir) / "non_existent"
     assert not non_existent_dir.exists()
 
-    monitor = FileMonitorService(watch_path=str(non_existent_dir))
+    monitor = FileMonitorService(watch_paths=[str(non_existent_dir)])
     await monitor.start()
 
     assert non_existent_dir.exists()
@@ -119,7 +119,7 @@ async def test_get_status(file_monitor, temp_media_dir):
     status = file_monitor.get_status()
 
     assert status["is_running"] is False
-    assert status["watch_path"] == temp_media_dir
+    assert status["watch_paths"] == [str(temp_media_dir)]
     assert status["queued_files_count"] == 1
     assert "/path/to/file1.mp4" in status["queued_files"]
 

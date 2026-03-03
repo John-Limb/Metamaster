@@ -1,15 +1,22 @@
 // Persistence configuration types
+
+interface StoreApi {
+  getState: () => unknown
+  setState: (state: unknown, replace?: boolean) => void
+  subscribe: (listener: (state: unknown) => void) => () => void
+}
+
 export interface PersistenceConfig {
   name: string
   storage?: 'localStorage' | 'sessionStorage'
-  partialize?: (state: any) => any
-  onRehydrateStorage?: (state: any) => void
+  partialize?: (state: unknown) => unknown
+  onRehydrateStorage?: (state: unknown) => void
   skipHydration?: boolean
 }
 
 // Custom persistence middleware factory
 export function createPersistenceMiddleware(config: PersistenceConfig) {
-  return (store: any) => {
+  return (store: StoreApi) => {
     const storage = config.storage === 'sessionStorage' ? sessionStorage : localStorage
     const storageKey = `metamaster-${config.name}`
 
@@ -18,12 +25,12 @@ export function createPersistenceMiddleware(config: PersistenceConfig) {
       try {
         const serializedState = storage.getItem(storageKey)
         if (serializedState) {
-          const persistedState = JSON.parse(serializedState)
+          const persistedState = JSON.parse(serializedState) as unknown
           if (config.partialize) {
             const partialState = config.partialize(persistedState)
-            store.setState({ ...store.getState(), ...partialState }, true)
+            store.setState({ ...(store.getState() as object), ...(partialState as object) }, true)
           } else {
-            store.setState({ ...store.getState(), ...persistedState }, true)
+            store.setState({ ...(store.getState() as object), ...(persistedState as object) }, true)
           }
         }
       } catch (error) {
@@ -32,7 +39,7 @@ export function createPersistenceMiddleware(config: PersistenceConfig) {
     }
 
     // Save state to storage
-    const saveState = (state: any) => {
+    const saveState = (state: unknown) => {
       try {
         let stateToSave = state
         if (config.partialize) {
@@ -67,7 +74,7 @@ export function createAutoSaveMiddleware(
 ) {
   let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-  return (store: any) => {
+  return (store: StoreApi) => {
     const storage = localStorage
     const key = `metamaster-${storageKey}`
 
@@ -101,8 +108,7 @@ export function createAutoSaveMiddleware(
 
 // State encryption middleware
 export function createEncryptedStorageMiddleware(
-  storageKey: string,
-  secretKey: string
+  storageKey: string
 ) {
   const storage = localStorage
   const key = `metamaster-${storageKey}`
@@ -126,14 +132,14 @@ export function createEncryptedStorageMiddleware(
     }
   }
 
-  return (store: any) => {
+  return (store: StoreApi) => {
     // Load encrypted state
     const loadEncryptedState = () => {
       try {
         const encryptedData = storage.getItem(key)
         if (encryptedData) {
-          const decryptedState = JSON.parse(decrypt(encryptedData))
-          store.setState({ ...store.getState(), ...decryptedState }, true)
+          const decryptedState = JSON.parse(decrypt(encryptedData)) as unknown
+          store.setState({ ...(store.getState() as object), ...(decryptedState as object) }, true)
         }
       } catch (error) {
         console.warn(`Failed to load encrypted state for ${storageKey}:`, error)
@@ -141,7 +147,7 @@ export function createEncryptedStorageMiddleware(
     }
 
     // Save encrypted state
-    const saveEncryptedState = (state: any) => {
+    const saveEncryptedState = (state: unknown) => {
       try {
         const serializedState = JSON.stringify(state)
         const encryptedState = encrypt(serializedState)
@@ -204,8 +210,8 @@ export function clearAllAppStorage(): void {
 }
 
 // Export storage for debugging
-export function exportStorageDebug(): Record<string, any> {
-  const debug: Record<string, any> = {
+export function exportStorageDebug(): Record<string, unknown> {
+  const debug: Record<string, unknown> = {
     quota: checkStorageQuota(),
     stores: {},
   }
@@ -217,9 +223,9 @@ export function exportStorageDebug(): Record<string, any> {
         const value = localStorage.getItem(key)
         if (value) {
           try {
-            debug.stores[key] = JSON.parse(value)
+            (debug.stores as Record<string, unknown>)[key] = JSON.parse(value) as unknown
           } catch {
-            debug.stores[key] = value.substring(0, 100) + '...'
+            (debug.stores as Record<string, unknown>)[key] = value.substring(0, 100) + '...'
           }
         }
       }

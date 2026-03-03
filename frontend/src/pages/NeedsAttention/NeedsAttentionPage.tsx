@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
+import { EnrichmentBadge, type EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import { enrichmentService } from '@/services/enrichmentService'
 import type { PendingEnrichmentItem, PendingEnrichmentResponse } from '@/services/enrichmentService'
 
@@ -301,7 +301,7 @@ export const NeedsAttentionPage: React.FC = () => {
                 key={getInputKey(type, item.id)}
                 className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-4 py-3 flex items-center gap-3"
               >
-                <EnrichmentBadge status={item.enrichment_status as any} />
+                <EnrichmentBadge status={item.enrichment_status as EnrichmentStatus} />
                 <span className="font-medium text-gray-900 dark:text-white">{item.title}</span>
                 {item.year && (
                   <span className="text-sm text-gray-500 dark:text-gray-400">({item.year})</span>

@@ -8,13 +8,20 @@ export interface ToastProps extends Omit<ToastType, 'id'> {
 }
 
 export const Toast: React.FC<ToastProps> = ({
-  id,
+  id: _id, // eslint-disable-line @typescript-eslint/no-unused-vars
   type = 'info',
   message,
   duration = 5000,
   onClose,
 }) => {
   const [isExiting, setIsExiting] = useState(false)
+
+  const handleClose = () => {
+    setIsExiting(true)
+    setTimeout(() => {
+      onClose?.()
+    }, 200)
+  }
 
   useEffect(() => {
     if (duration > 0) {
@@ -24,13 +31,6 @@ export const Toast: React.FC<ToastProps> = ({
       return () => clearTimeout(timer)
     }
   }, [duration])
-
-  const handleClose = () => {
-    setIsExiting(true)
-    setTimeout(() => {
-      onClose?.()
-    }, 200)
-  }
 
   const typeConfig = {
     success: {

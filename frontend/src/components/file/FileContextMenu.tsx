@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { FaTrash, FaEdit, FaArrowRight, FaCopy, FaDownload, FaInfo } from 'react-icons/fa'
+import { FaTrash, FaEdit, FaCopy, FaDownload, FaInfo } from 'react-icons/fa'
 import { useUIStore } from '@/stores/uiStore'
 import { fileService } from '@/services/fileService'
 import type { FileItem } from '@/types'
@@ -34,7 +34,7 @@ export const FileContextMenu: React.FC<FileContextMenuProps> = ({ file, x, y, on
         message: `${file.name} deleted successfully`,
       })
       onClose()
-    } catch (error) {
+    } catch {
       addToast({
         type: 'error',
         message: `Failed to delete ${file.name}`,

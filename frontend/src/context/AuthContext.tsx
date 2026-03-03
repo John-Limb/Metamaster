@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useContext,
@@ -131,7 +132,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await authService.refreshToken()
       storeToken(response.access_token, response.expires_in)
       return true
-    } catch (err) {
+    } catch {
       // Refresh failed - clear tokens and user state
       clearTokens()
       setUser(null)
@@ -178,7 +179,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (shouldRefreshToken()) {
           await refreshToken()
         }
-      } catch (err) {
+      } catch {
         // Token is invalid or expired - clear it
         clearTokens()
         setUser(null)

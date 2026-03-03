@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
 import { queueService } from '@/services/queueService'
 import { useQueueStore } from '@/stores/queueStore'
 import type { QueueTask, QueueStats, PaginatedResponse } from '@/types'
@@ -8,7 +7,6 @@ const QUEUE_QUERY_KEY = ['queue']
 
 export const useQueue = (page = 1, pageSize = 20, status?: string, autoRefresh = true) => {
   const { setTasks, setIsLoading } = useQueueStore()
-  const queryClient = useQueryClient()
 
   const query = useQuery<PaginatedResponse<QueueTask>>({
     queryKey: [...QUEUE_QUERY_KEY, 'tasks', page, pageSize, status],

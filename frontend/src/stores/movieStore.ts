@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Movie, PaginatedResponse } from '@/types'
+import type { Movie } from '@/types'
 import { movieService } from '@/services/movieService'
 
 interface MovieState {
@@ -79,8 +79,8 @@ export const useMovieStore = create<MovieState>()(
             currentPage: page,
             pageSize,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch movies' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch movies' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -92,8 +92,8 @@ export const useMovieStore = create<MovieState>()(
           const movie = await movieService.getMovieDetails(id)
           set({ selectedMovie: movie })
           return movie
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch movie details' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch movie details' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -109,8 +109,8 @@ export const useMovieStore = create<MovieState>()(
             currentPage: page,
             pageSize,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Search failed' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Search failed' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -127,8 +127,8 @@ export const useMovieStore = create<MovieState>()(
             pageSize,
             genreFilter: genre,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch movies by genre' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch movies by genre' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -144,8 +144,8 @@ export const useMovieStore = create<MovieState>()(
             currentPage: page,
             pageSize,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch popular movies' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch popular movies' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -161,8 +161,8 @@ export const useMovieStore = create<MovieState>()(
             currentPage: page,
             pageSize,
           })
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to fetch top rated movies' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch top rated movies' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -179,8 +179,8 @@ export const useMovieStore = create<MovieState>()(
             totalMovies: state.totalMovies + 1,
           }))
           return created
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to create movie' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to create movie' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -195,8 +195,8 @@ export const useMovieStore = create<MovieState>()(
             selectedMovie: state.selectedMovie?.id === id ? updated : state.selectedMovie,
           }))
           return updated
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to update movie' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to update movie' })
           throw error
         } finally {
           set({ isLoading: false })
@@ -211,8 +211,8 @@ export const useMovieStore = create<MovieState>()(
             totalMovies: state.totalMovies - 1,
             selectedMovie: state.selectedMovie?.id === id ? null : state.selectedMovie,
           }))
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to delete movie' })
+        } catch (error: unknown) {
+          set({ error: error instanceof Error ? error.message : 'Failed to delete movie' })
           throw error
         } finally {
           set({ isLoading: false })

@@ -19,7 +19,7 @@ export interface PaginatedResponse<T> {
 export interface ApiError {
   code: string
   message: string
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 }
 
 // File types
@@ -33,7 +33,7 @@ export interface FileItem {
   createdAt: string
   updatedAt: string
   isIndexed?: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface FileStats {

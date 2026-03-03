@@ -17,7 +17,7 @@ export const fileService = {
         `/files?path=${encodeURIComponent(path)}&page=${page}&pageSize=${pageSize}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getFiles: ${path}`)
       throw error
     }
@@ -28,7 +28,7 @@ export const fileService = {
     try {
       const response = await apiClient.get<FileItem>(`/files/${id}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `getFileDetails: ${id}`)
       throw error
     }
@@ -39,7 +39,7 @@ export const fileService = {
     try {
       const response = await apiClient.get<FileStats>('/files/stats')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getFileStats')
       throw error
     }
@@ -50,7 +50,7 @@ export const fileService = {
     try {
       const response = await apiClient.delete<ApiResponse<void>>(`/files/${id}`)
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `deleteFile: ${id}`)
       throw error
     }
@@ -63,7 +63,7 @@ export const fileService = {
         path: newPath,
       })
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `moveFile: ${id} to ${newPath}`)
       throw error
     }
@@ -76,7 +76,7 @@ export const fileService = {
         name: newName,
       })
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `renameFile: ${id} to ${newName}`)
       throw error
     }
@@ -101,7 +101,7 @@ export const fileService = {
         },
       })
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `uploadFile: ${file.name}`)
       throw error
     }
@@ -114,7 +114,7 @@ export const fileService = {
         ids,
       })
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `batchDeleteFiles: ${ids.length} files`)
       throw error
     }
@@ -128,7 +128,7 @@ export const fileService = {
         path: newPath,
       })
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `batchMoveFiles: ${ids.length} files to ${newPath}`)
       throw error
     }
@@ -142,7 +142,7 @@ export const fileService = {
         file_ids: fileIds,
       })
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'classifyFiles')
       throw error
     }
@@ -155,7 +155,7 @@ export const fileService = {
         `/files/search?query=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, `searchFiles: ${query}`)
       throw error
     }

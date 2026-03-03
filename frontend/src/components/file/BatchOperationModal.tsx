@@ -43,7 +43,7 @@ export const BatchOperationModal: React.FC<BatchOperationModalProps> = ({
             await fileService.renameFile(file.id, newName)
           }
           completed++
-        } catch (error) {
+        } catch {
           failed++
         }
         setProgress(Math.round(((completed + failed) / files.length) * 100))
@@ -56,7 +56,7 @@ export const BatchOperationModal: React.FC<BatchOperationModalProps> = ({
 
       onComplete?.()
       onClose()
-    } catch (error) {
+    } catch {
       addToast({
         type: 'error',
         message: `Batch ${operation} failed`,

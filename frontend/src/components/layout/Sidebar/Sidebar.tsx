@@ -42,7 +42,8 @@ const navItems: NavItem[] = [
   { label: 'Settings', path: '/settings', icon: <FaCog className="w-5 h-5" /> },
 ]
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen: _isOpen = true, onClose }) => {
   const location = useLocation()
   const sidebarOpen = useUIStore((state) => state.sidebarOpen)
   const setSidebarOpen = useUIStore((state) => state.setSidebarOpen)
@@ -83,7 +84,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
   }
 
   const sidebarWidth = isCollapsed ? 'w-16' : 'w-64'
-  const collapsedIconSize = 'w-5 h-5'
 
   return (
     <>

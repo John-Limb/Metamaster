@@ -1,21 +1,18 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { TextInput, Button, Pagination, EmptyState, Skeleton, SkeletonCard } from '@/components/common'
+import { TextInput, Button, Pagination, EmptyState, SkeletonCard } from '@/components/common'
 import { FilterPanel, type FilterSection } from '@/components/features/filter'
 import { SortDropdown, type SortOption } from '@/components/features/sort'
-import { MovieCard, type MovieCardProps } from '../MovieCard'
+import { MovieCard } from '../MovieCard'
 import { MediaDetailModal } from '@/components/features/media'
 import { useMovieStore } from '@/stores/movieStore'
 import { movieService } from '@/services/movieService'
 import './MoviesPage.css'
 
 const MoviesPage: React.FC = () => {
-  const navigate = useNavigate()
   const {
     movies,
     totalMovies,
     currentPage,
-    pageSize,
     isLoading,
     error,
     fetchMovies,
@@ -23,7 +20,6 @@ const MoviesPage: React.FC = () => {
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({})
   const [sortValue, setSortValue] = useState('title-asc')
@@ -36,14 +32,6 @@ const MoviesPage: React.FC = () => {
   useEffect(() => {
     fetchMovies(1, itemsPerPage)
   }, [fetchMovies])
-
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchQuery])
 
   const totalPages = Math.ceil(totalMovies / itemsPerPage)
 

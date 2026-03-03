@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { 
   AlertTriangle, 
   AlertCircle, 
@@ -75,8 +75,7 @@ export const ConfigurationStatusBar: React.FC<ConfigurationStatusBarProps> = ({
   className = '',
 }) => {
   const navigate = useNavigate()
-  const location = useLocation()
-  const { state, isLoading, refresh, dismissItem, restoreItem } = useConfiguration()
+  const { state, isLoading, refresh, dismissItem } = useConfiguration()
   const { criticalCount, importantCount, optionalCount, totalCount } = useIncompleteConfiguration()
   
   const [isExpanded, setIsExpanded] = useState(false)
@@ -86,13 +85,15 @@ export const ConfigurationStatusBar: React.FC<ConfigurationStatusBarProps> = ({
   useEffect(() => {
     const hasIncompleteItems = totalCount > 0
     const previouslyCompleted = wasPreviouslyCompleted()
-    
+
     // Show if has incomplete items OR if was not previously completed (first load)
     if (hasIncompleteItems) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldShow(true)
       resetCompletion() // Reset completion flag since there are incomplete items
     } else if (!previouslyCompleted && !hasIncompleteItems) {
       // No incomplete items and first load - check if we should show briefly
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldShow(true)
       // Auto-hide after 3 seconds if no items
       const timer = setTimeout(() => {
@@ -101,8 +102,10 @@ export const ConfigurationStatusBar: React.FC<ConfigurationStatusBarProps> = ({
       }, 3000)
       return () => clearTimeout(timer)
     } else if (autoHide && previouslyCompleted) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldShow(false)
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldShow(true)
     }
   }, [totalCount, autoHide])

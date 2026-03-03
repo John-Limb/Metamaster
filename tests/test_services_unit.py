@@ -643,7 +643,7 @@ class TestFileMonitorService:
     def monitor(self):
         """Create FileMonitorService instance"""
         with patch("app.infrastructure.file_system.monitor.settings"):
-            return FileMonitorService(watch_path="/tmp/test_media")
+            return FileMonitorService(watch_paths=["/tmp/test_media"])
 
     def test_media_file_event_handler_is_media_file(self):
         """Test media file detection"""
@@ -671,7 +671,7 @@ class TestFileMonitorService:
         """Test getting monitor status"""
         status = monitor.get_status()
         assert "is_running" in status
-        assert "watch_path" in status
+        assert "watch_paths" in status
         assert "queued_files_count" in status
 
     @pytest.mark.asyncio

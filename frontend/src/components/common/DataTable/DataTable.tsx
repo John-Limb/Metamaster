@@ -1,5 +1,5 @@
 import React from 'react'
-import { SkeletonDataTableHeader, Skeleton } from '../Skeleton/Skeleton'
+import { Skeleton } from '../Skeleton/Skeleton'
 import { CheckboxInput } from '../Checkbox'
 
 export interface Column<T> {

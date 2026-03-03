@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Button, Badge, Card, EmptyState } from '@/components/common'
+import { Button, Badge, EmptyState } from '@/components/common'
 import { movieService } from '@/services/movieService'
 import { enrichmentService } from '@/services/enrichmentService'
 import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
+import type { EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import { formatFileSize } from '@/utils/helpers'
 import type { Movie } from '@/types'
 import './MovieDetailPage.css'
@@ -234,34 +235,34 @@ const MovieDetailPage: React.FC = () => {
                 <div className="movie-detail-page__detail-row">
                   <span className="movie-detail-page__detail-label">Status</span>
                   <span className="movie-detail-page__detail-value" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <EnrichmentBadge status={(movie as any).enrichment_status} />
-                    <span>{(movie as any).enrichment_status ?? 'unknown'}</span>
+                    <EnrichmentBadge status={movie.enrichment_status as EnrichmentStatus} />
+                    <span>{movie.enrichment_status ?? 'unknown'}</span>
                   </span>
                 </div>
 
-                {(movie as any).enrichment_error && (
+                {movie.enrichment_error && (
                   <div className="movie-detail-page__detail-row">
                     <span className="movie-detail-page__detail-label">Error</span>
                     <span className="movie-detail-page__detail-value" style={{ color: 'var(--color-error, #ef4444)', fontSize: '0.875rem' }}>
-                      {(movie as any).enrichment_error}
+                      {movie.enrichment_error}
                     </span>
                   </div>
                 )}
 
-                {(movie as any).detected_external_id && (
+                {(movie as unknown as Record<string, unknown>).detected_external_id && (
                   <div className="movie-detail-page__detail-row">
                     <span className="movie-detail-page__detail-label">Detected ID</span>
                     <span className="movie-detail-page__detail-value" style={{ fontSize: '0.875rem' }}>
-                      <code>{(movie as any).detected_external_id}</code>
+                      <code>{String((movie as unknown as Record<string, unknown>).detected_external_id)}</code>
                     </span>
                   </div>
                 )}
 
-                {(movie as any).manual_external_id && (
+                {(movie as unknown as Record<string, unknown>).manual_external_id && (
                   <div className="movie-detail-page__detail-row">
                     <span className="movie-detail-page__detail-label">Manual Override</span>
                     <span className="movie-detail-page__detail-value" style={{ fontSize: '0.875rem' }}>
-                      <code>{(movie as any).manual_external_id}</code>
+                      <code>{String((movie as unknown as Record<string, unknown>).manual_external_id)}</code>
                     </span>
                   </div>
                 )}

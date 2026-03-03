@@ -47,7 +47,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
   }, [clearFilters, onClose])
 
   const handleFilterChange = useCallback(
-    (key: keyof SearchFilters, value: any) => {
+    (key: keyof SearchFilters, value: string | number | string[] | undefined) => {
       setLocalFilters((prev) => ({
         ...prev,
         [key]: value === '' ? undefined : value,

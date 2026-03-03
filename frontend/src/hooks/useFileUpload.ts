@@ -45,14 +45,15 @@ export const useFileUpload = () => {
         })
 
         return result
-      } catch (error: any) {
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
         setUploadProgress((prev) => {
           const updated = new Map(prev)
           updated.set(fileKey, {
             fileName: file.name,
             progress: 0,
             status: 'failed',
-            error: error.message,
+            error: errorMessage,
           })
           return updated
         })
@@ -88,8 +89,8 @@ export const useFileUpload = () => {
             )
           })
           results.push(result)
-        } catch (error: any) {
-          errors.push({ file: file.name, error: error.message })
+        } catch (error) {
+          errors.push({ file: file.name, error: error instanceof Error ? error.message : String(error) })
         }
       }
 

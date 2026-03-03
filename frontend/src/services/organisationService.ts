@@ -37,7 +37,7 @@ export const organisationService = {
     try {
       const response = await apiClient.get<{ preset: OrganisationPreset }>('/organisation/settings')
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getOrganisationSettings')
       throw error
     }
@@ -46,7 +46,7 @@ export const organisationService = {
   saveSettings: async (preset: OrganisationPreset): Promise<void> => {
     try {
       await apiClient.put('/organisation/settings', { preset })
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'saveOrganisationSettings')
       throw error
     }
@@ -58,7 +58,7 @@ export const organisationService = {
         `/organisation/stats?preset=${preset}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getOrganisationStats')
       throw error
     }
@@ -70,7 +70,7 @@ export const organisationService = {
         `/organisation/preview?preset=${preset}`
       )
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'getOrganisationPreview')
       throw error
     }
@@ -80,7 +80,7 @@ export const organisationService = {
     try {
       const response = await apiClient.post<ApplyResult>('/organisation/apply', { items })
       return response.data
-    } catch (error: any) {
+    } catch (error) {
       errorHandler.handleError(error, 'applyOrganisationRenames')
       throw error
     }

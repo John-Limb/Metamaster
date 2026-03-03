@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { FaBell, FaCheck, FaTrash, FaChevronRight } from 'react-icons/fa'
-import { Badge } from '@/components/common'
+import { FaBell, FaTrash, FaChevronRight } from 'react-icons/fa'
 
 export interface Notification {
   id: string

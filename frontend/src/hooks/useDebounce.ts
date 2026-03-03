@@ -28,7 +28,7 @@ export const useDebounce = <T>(value: T, delay: number = 500): T => {
  * @param delay - The delay in milliseconds
  * @returns The debounced callback function
  */
-export const useDebouncedCallback = <T extends (...args: any[]) => any>(
+export const useDebouncedCallback = <T extends (...args: Parameters<T>) => ReturnType<T>>(
   callback: T,
   delay: number = 500
 ): ((...args: Parameters<T>) => void) => {
@@ -65,7 +65,7 @@ export const useDebouncedSearch = (query: string, delay: number = 300): string =
  * @param delay - The delay in milliseconds
  * @returns The debounced filter
  */
-export const useDebouncedFilter = <T extends Record<string, any>>(
+export const useDebouncedFilter = <T extends Record<string, unknown>>(
   filter: T,
   delay: number = 500
 ): T => {

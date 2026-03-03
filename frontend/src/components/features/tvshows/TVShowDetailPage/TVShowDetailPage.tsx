@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Badge, EmptyState } from '@/components/common'
 import { tvShowService } from '@/services/tvShowService'
 import { enrichmentService } from '@/services/enrichmentService'
-import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
+import { EnrichmentBadge, type EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import { Button } from '@/components/common/Button'
 import type { TVShow, Season, Episode } from '@/types'
 
@@ -313,19 +313,19 @@ const TVShowDetailPage: React.FC = () => {
       <section className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-3">
         <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Enrichment Status</h3>
         <div className="flex items-center gap-2">
-          <EnrichmentBadge status={(show as any).enrichment_status} />
+          <EnrichmentBadge status={show.enrichment_status as EnrichmentStatus} />
           <span className="text-sm text-slate-500 dark:text-slate-400">
-            {(show as any).enrichment_status ?? 'unknown'}
+            {show.enrichment_status ?? 'unknown'}
           </span>
         </div>
-        {(show as any).enrichment_error && (
+        {show.enrichment_error && (
           <p className="text-xs text-red-500 dark:text-red-400">
-            {(show as any).enrichment_error}
+            {show.enrichment_error}
           </p>
         )}
-        {(show as any).detected_external_id && (
+        {(show as unknown as Record<string, unknown>).detected_external_id && (
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Detected from filename: <code className="font-mono">{(show as any).detected_external_id}</code>
+            Detected from filename: <code className="font-mono">{String((show as unknown as Record<string, unknown>).detected_external_id)}</code>
           </p>
         )}
         <div className="flex gap-2 items-center">

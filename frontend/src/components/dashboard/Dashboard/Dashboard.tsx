@@ -18,7 +18,6 @@ import { fileService } from '@/services/fileService'
 import { configurationService, type ConfigurationState, type ConfigurationItem } from '@/services/configurationService'
 import { type EnrichmentStats } from '@/services/movieService'
 import { storageService, type StorageSummary } from '@/services/storageService'
-import { formatFileSize } from '@/utils/helpers'
 
 const API_STATUS_IDS = ['api-keys-tmdb-token', 'api-keys-tmdb-key']
 
@@ -177,7 +176,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
       const totalMovies = fileStats?.movieCount ?? movieResponse?.total ?? 0
       const totalTVShows = fileStats?.tvShowCount ?? tvResponse?.total ?? 0
       const totalEpisodes = (tvResponse?.items || []).reduce(
-        (acc: number, show: any) => acc + (show.episodes || 0),
+        (acc: number, show: { episodes?: number }) => acc + (show.episodes || 0),
         0
       )
       const totalFiles = fileStats?.totalFiles ?? (totalMovies + totalTVShows)

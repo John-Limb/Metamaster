@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Card, Badge, Button } from '@/components/common'
-import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
+import { EnrichmentBadge, type EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import './TVShowCard.css'
 
 export interface TVShowCardProps {
@@ -25,7 +25,6 @@ export interface TVShowCardProps {
 }
 
 export const TVShowCard: React.FC<TVShowCardProps> = ({
-  id,
   title,
   poster_url,
   seasons = 0,
@@ -40,8 +39,6 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const [showActions, setShowActions] = useState(false)
-
   const renderStars = (rating: number) => {
     const stars = Math.round(rating / 2)
     return '★'.repeat(stars) + '☆'.repeat(5 - stars)
@@ -133,7 +130,7 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
         </div>
 
         <div className="absolute top-2 right-2">
-          <EnrichmentBadge status={enrichment_status as any} />
+          <EnrichmentBadge status={enrichment_status as EnrichmentStatus} />
         </div>
 
         {nextEpisode && (
@@ -146,7 +143,7 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
         )}
 
         <div
-          className={`tvshow-card__overlay ${showActions ? 'tvshow-card__overlay--visible' : ''}`}
+          className="tvshow-card__overlay"
         >
           <div className="tvshow-card__actions">
             {onAddToQueue && (
