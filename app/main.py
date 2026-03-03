@@ -1,38 +1,34 @@
 """FastAPI application entry point"""
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
 import logging
 import time
 import uuid
+from contextlib import asynccontextmanager
 
-from app.core.config import settings, MEDIA_DIRECTORIES
-from app.core.logging_config import setup_logging
-from app.core.init_db import init_database
-from app.core.database import SessionLocal
-from app.domain.files.service import FileService
-from app.domain.movies.scanner import create_movies_from_files
-from app.domain.tv_shows.scanner import create_tv_shows_from_files
-from app.tasks.enrichment import enrich_movie_external, enrich_tv_show_external
-from app.domain.movies.models import Movie
-from app.domain.tv_shows.models import TVShow
-from app.tasks.celery_app import celery_app
-from app.api import health
-from app.api import movies
-from app.api import tv_shows
-from app.api import cache
-from app.api import tasks
-from app.api import files
-from app.api.v1.config import router as config_router
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
+
+from app.api import cache, files, health, movies, tasks, tv_shows
 from app.api.v1.auth import router as auth_router
-from app.api.v1.queue.endpoints import router as queue_router
+from app.api.v1.config import router as config_router
 from app.api.v1.enrichment.endpoints import router as enrichment_router
-from app.api.v1.storage.endpoints import router as storage_router
 from app.api.v1.organisation.endpoints import router as organisation_router
+from app.api.v1.queue.endpoints import router as queue_router
+from app.api.v1.storage.endpoints import router as storage_router
+from app.core.config import MEDIA_DIRECTORIES, settings
+from app.core.database import SessionLocal
+from app.core.init_db import init_database
+from app.core.logging_config import setup_logging
+from app.domain.files.service import FileService
+from app.domain.movies.models import Movie
+from app.domain.movies.scanner import create_movies_from_files
+from app.domain.tv_shows.models import TVShow
+from app.domain.tv_shows.scanner import create_tv_shows_from_files
+from app.tasks.celery_app import celery_app
+from app.tasks.enrichment import enrich_movie_external, enrich_tv_show_external
 
 # Configure structured logging with daily rotation
 setup_logging()

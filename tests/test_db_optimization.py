@@ -1,22 +1,21 @@
 """Tests for database optimization module"""
 
-import pytest
 import time
-from datetime import datetime, timedelta
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import QueuePool
 
-from app.database import Base, get_db
-from app.models import Movie, TVShow, Season, Episode
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 from app.application.db_optimization.service import (
-    QueryPerformanceTracker,
     ConnectionPoolMonitor,
+    DatabaseOptimizationService,
     IndexAnalyzer,
     QueryExecutionPlanAnalyzer,
-    DatabaseOptimizationService,
+    QueryPerformanceTracker,
 )
 from app.config import settings
+from app.database import Base
+from app.models import Movie, TVShow
 from tests.db_utils import TEST_DATABASE_URL
 
 
@@ -359,7 +358,7 @@ class TestDatabaseOptimizationIntegration:
     def test_query_tracking_with_database_operations(self, test_db, sample_movies):
         """Test query tracking with actual database operations"""
         tracker = DatabaseOptimizationService.get_query_tracker()
-        initial_count = tracker.total_queries
+        _ = tracker.total_queries
 
         # Perform a query
         movies = test_db.query(Movie).filter(Movie.year == 2020).all()
@@ -372,7 +371,8 @@ class TestDatabaseOptimizationIntegration:
 
         # Simulate a slow query
         tracker.record_query(
-            "SELECT m.*, COUNT(f.id) FROM movies m LEFT JOIN movie_files f ON m.id = f.movie_id GROUP BY m.id",
+            "SELECT m.*, COUNT(f.id) FROM movies m"
+            " LEFT JOIN movie_files f ON m.id = f.movie_id GROUP BY m.id",
             2.5,
         )
 

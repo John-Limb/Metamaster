@@ -1,7 +1,9 @@
 """SQLAlchemy ORM models for File entities"""
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, BigInteger, DateTime, Boolean, Index
+
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, Index, Integer, String, Text
+
 from app.core.database import Base
 
 

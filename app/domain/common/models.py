@@ -1,7 +1,9 @@
 """SQLAlchemy ORM models for common/shared entities"""
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime, Index
+
+from sqlalchemy import Column, DateTime, Float, Index, Integer, String, Text
+
 from app.core.database import Base
 
 

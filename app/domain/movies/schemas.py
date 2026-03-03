@@ -1,12 +1,12 @@
 """Movie domain schemas - re-export from app.schemas"""
 
 from app.schemas import (
+    MetadataSyncResponse,
     MovieCreate,
-    MovieUpdate,
     MovieResponse,
+    MovieUpdate,
     PaginatedMovieResponse,
     PaginatedMovieResponseWithFilters,
-    MetadataSyncResponse,
 )
 
 __all__ = [

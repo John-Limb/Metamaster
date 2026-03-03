@@ -1,6 +1,7 @@
 """Tests for decoupled TV show scanner Stage 1 (ffprobe only, no TVDB)."""
 
 from unittest.mock import MagicMock, patch
+
 from app.domain.tv_shows.scanner import create_tv_shows_from_files
 
 

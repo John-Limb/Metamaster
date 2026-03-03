@@ -1,17 +1,19 @@
 """Business logic layer for movies and TV shows"""
 
-from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import func
-from app.models import Movie, TVShow, Season, Episode, APICache
-from app.schemas import MovieCreate, MovieUpdate, TVShowCreate, TVShowUpdate
-from app.core.config import settings
-import logging
-import httpx
 import asyncio
 import json
-from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+import logging
 import time
+from datetime import datetime, timedelta
+from typing import Any, Dict, Optional
+
+import httpx
+from sqlalchemy import func
+from sqlalchemy.orm import Session, selectinload
+
+from app.core.config import settings
+from app.models import APICache, Episode, Movie, Season, TVShow
+from app.schemas import MovieCreate, MovieUpdate, TVShowCreate, TVShowUpdate
 
 logger = logging.getLogger(__name__)
 external_api_logger = logging.getLogger("external_api")

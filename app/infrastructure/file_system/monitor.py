@@ -1,12 +1,14 @@
 """File monitoring service using Watchdog for cross-platform file system event monitoring"""
 
-import logging
 import asyncio
+import logging
 from pathlib import Path
 from typing import List, Optional, Set
+
+from watchdog.events import FileCreatedEvent, FileModifiedEvent, FileSystemEventHandler
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent
-from app.core.config import settings, MOVIE_DIR, TV_DIR
+
+from app.core.config import MOVIE_DIR, TV_DIR, settings
 
 logger = logging.getLogger(__name__)
 

@@ -8,7 +8,7 @@ from datetime import datetime
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
-from app.core.database import engine, Base, SessionLocal
+from app.core.database import Base, SessionLocal, engine
 from app.domain.auth.models import User
 from app.infrastructure.security.password import hash_password
 
@@ -117,10 +117,10 @@ def init_database():
     # Import models here to register them with Base.metadata and avoid
     # a circular import: domain.movies.models → core.database → core →
     # core.init_db → domain.movies.models.
-    from app.domain.movies.models import Movie, MovieFile  # noqa: F401
-    from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile  # noqa: F401
     from app.domain.common.models import APICache, FileQueue  # noqa: F401
+    from app.domain.movies.models import Movie, MovieFile  # noqa: F401
     from app.domain.settings.models import AppSetting  # noqa: F401
+    from app.domain.tv_shows.models import Episode, EpisodeFile, Season, TVShow  # noqa: F401
 
     try:
         logger.info("Creating database tables...")

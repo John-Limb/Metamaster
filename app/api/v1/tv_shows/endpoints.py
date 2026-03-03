@@ -14,10 +14,7 @@ from app.core.config import TV_DIR
 from app.core.database import get_db
 from app.domain.files.service import FileService
 from app.domain.tv_shows.models import TVShow as TVShowModel
-from app.domain.tv_shows.scanner import (
-    create_tv_shows_from_files,
-    probe_unscanned_episodes,
-)
+from app.domain.tv_shows.scanner import create_tv_shows_from_files, probe_unscanned_episodes
 from app.infrastructure.cache.redis_cache import get_cache_service
 from app.schemas import (
     MetadataSyncResponse,

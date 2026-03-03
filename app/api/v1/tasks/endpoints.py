@@ -1,32 +1,85 @@
 """Task monitoring and management API endpoints"""
 
-from fastapi import APIRouter, HTTPException, Query
-from celery.result import AsyncResult
+import logging
 from datetime import datetime
 from typing import Optional
-import logging
 
-from app.tasks.celery_app import celery_app
+from celery.result import AsyncResult
+from fastapi import APIRouter, HTTPException, Query
+
+from app.application.batch_operations.service import BatchOperationService
 from app.core.database import SessionLocal
+from app.infrastructure.monitoring.error_handler import TaskErrorHandler
 from app.schemas import (
-    TaskStatusResponse,
-    TaskRetryResponse,
-    TaskListResponse,
-    TaskListItemResponse,
-    TaskCancelResponse,
-    TaskErrorResponse,
-    PaginatedTaskErrorResponse,
     BatchOperationCreate,
     BatchOperationResponse,
     PaginatedBatchOperationResponse,
+    PaginatedTaskErrorResponse,
+    TaskCancelResponse,
+    TaskErrorResponse,
+    TaskListItemResponse,
+    TaskListResponse,
+    TaskRetryResponse,
+    TaskStatusResponse,
 )
-from app.infrastructure.monitoring.error_handler import TaskErrorHandler
-from app.application.batch_operations.service import BatchOperationService
-from app.tasks import bulk_metadata_sync_task, bulk_file_import_task
+from app.tasks import bulk_file_import_task, bulk_metadata_sync_task
+from app.tasks.celery_app import celery_app
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
+
+
+def _validate_task_status(status: Optional[str]) -> None:
+    """Raise HTTPException if status is provided but not a recognised value."""
+    valid_statuses = ["pending", "started", "success", "failure", "retry"]
+    if status and status.lower() not in valid_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}",
+        )
+
+
+def _filter_tasks_by_status(tasks: dict, status: Optional[str]) -> dict:
+    """Return a new dict containing only tasks whose status matches *status*.
+
+    If *status* is falsy the original dict is returned unchanged.
+    """
+    if not status:
+        return tasks
+    status_lower = status.lower()
+    return {tid: info for tid, info in tasks.items() if info["status"] == status_lower}
+
+
+def _validate_batch_operation_type(actual: str, expected: str) -> None:
+    """Raise HTTPException(400) when *actual* does not equal *expected*."""
+    if actual != expected:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid operation_type for {expected.replace('_', ' ')} endpoint",
+        )
+
+
+def _validate_media_ids(media_ids) -> None:
+    """Raise HTTPException(400) when *media_ids* is absent or contains non-positive integers."""
+    if not media_ids or len(media_ids) == 0:
+        raise HTTPException(status_code=400, detail="media_ids list cannot be empty")
+    if not all(isinstance(mid, int) and mid > 0 for mid in media_ids):
+        raise HTTPException(status_code=400, detail="All media_ids must be positive integers")
+
+
+def _validate_file_paths(file_paths) -> None:
+    """Raise HTTPException(400) when *file_paths* is absent or contains empty strings."""
+    if not file_paths or len(file_paths) == 0:
+        raise HTTPException(status_code=400, detail="file_paths list cannot be empty")
+    if not all(isinstance(fp, str) and len(fp) > 0 for fp in file_paths):
+        raise HTTPException(status_code=400, detail="All file_paths must be non-empty strings")
+
+
+def _validate_media_type(media_type) -> None:
+    """Raise HTTPException(400) when *media_type* is not 'movie' or 'tv_show'."""
+    if not media_type or media_type not in ["movie", "tv_show"]:
+        raise HTTPException(status_code=400, detail="media_type must be 'movie' or 'tv_show'")
 
 
 def _parse_iso_timestamp(value) -> Optional[datetime]:
@@ -70,7 +123,8 @@ async def get_task_status(task_id: str):
 
     - **task_id**: Celery task ID (string)
 
-    Returns task status (pending/started/success/failure/retry), result, and error message if failed.
+    Returns task status (pending/started/success/failure/retry), result, and error message if
+    failed.
     """
     logger.info(f"Fetching status for task: {task_id}")
 
@@ -132,7 +186,10 @@ async def retry_task(task_id: str):
             logger.warning(f"Cannot retry task {task_id} with state {result.state}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Task cannot be retried. Current state: {result.state}. Only failed tasks can be retried.",
+                detail=(
+                    f"Task cannot be retried. Current state: {result.state}."
+                    " Only failed tasks can be retried."
+                ),
             )
 
         # Get the original task name and args
@@ -193,21 +250,10 @@ async def list_tasks(
     logger.info(f"Listing tasks with status={status}, limit={limit}, offset={offset}")
 
     try:
-        # Validate status parameter if provided
-        valid_statuses = ["pending", "started", "success", "failure", "retry"]
-        if status and status.lower() not in valid_statuses:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}",
-            )
+        _validate_task_status(status)
 
         all_tasks_dict = _collect_celery_tasks(celery_app.control.inspect())
-
-        if status:
-            status_lower = status.lower()
-            all_tasks_dict = {
-                tid: info for tid, info in all_tasks_dict.items() if info["status"] == status_lower
-            }
+        all_tasks_dict = _filter_tasks_by_status(all_tasks_dict, status)
 
         total = len(all_tasks_dict)
         task_ids = list(all_tasks_dict.keys())[offset : offset + limit]
@@ -258,7 +304,10 @@ async def cancel_task(task_id: str):
             logger.warning(f"Cannot cancel task {task_id} with state {result.state}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Task cannot be cancelled. Current state: {result.state}. Only pending or running tasks can be cancelled.",
+                detail=(
+                    f"Task cannot be cancelled. Current state: {result.state}."
+                    " Only pending or running tasks can be cancelled."
+                ),
             )
 
         # Revoke the task
@@ -377,23 +426,9 @@ async def start_metadata_sync_batch(request: BatchOperationCreate):
     logger.info(f"Starting metadata sync batch with {len(request.media_ids or [])} items")
 
     try:
-        # Validate operation type
-        if request.operation_type != "metadata_sync":
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid operation_type for metadata sync endpoint",
-            )
-
-        # Validate media_ids
-        if not request.media_ids or len(request.media_ids) == 0:
-            raise HTTPException(status_code=400, detail="media_ids list cannot be empty")
-
-        if not all(isinstance(mid, int) and mid > 0 for mid in request.media_ids):
-            raise HTTPException(status_code=400, detail="All media_ids must be positive integers")
-
-        # Validate media_type
-        if not request.media_type or request.media_type not in ["movie", "tv_show"]:
-            raise HTTPException(status_code=400, detail="media_type must be 'movie' or 'tv_show'")
+        _validate_batch_operation_type(request.operation_type, "metadata_sync")
+        _validate_media_ids(request.media_ids)
+        _validate_media_type(request.media_type)
 
         db = SessionLocal()
         try:
@@ -436,23 +471,9 @@ async def start_file_import_batch(request: BatchOperationCreate):
     logger.info(f"Starting file import batch with {len(request.file_paths or [])} files")
 
     try:
-        # Validate operation type
-        if request.operation_type != "file_import":
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid operation_type for file import endpoint",
-            )
-
-        # Validate file_paths
-        if not request.file_paths or len(request.file_paths) == 0:
-            raise HTTPException(status_code=400, detail="file_paths list cannot be empty")
-
-        if not all(isinstance(fp, str) and len(fp) > 0 for fp in request.file_paths):
-            raise HTTPException(status_code=400, detail="All file_paths must be non-empty strings")
-
-        # Validate media_type
-        if not request.media_type or request.media_type not in ["movie", "tv_show"]:
-            raise HTTPException(status_code=400, detail="media_type must be 'movie' or 'tv_show'")
+        _validate_batch_operation_type(request.operation_type, "file_import")
+        _validate_file_paths(request.file_paths)
+        _validate_media_type(request.media_type)
 
         db = SessionLocal()
         try:
@@ -533,7 +554,8 @@ async def list_batch_operations(
     Returns paginated list of batch operations.
     """
     logger.info(
-        f"Listing batch operations: operation_type={operation_type}, status={status}, limit={limit}, offset={offset}"
+        f"Listing batch operations: operation_type={operation_type}, status={status},"
+        f" limit={limit}, offset={offset}"
     )
 
     try:

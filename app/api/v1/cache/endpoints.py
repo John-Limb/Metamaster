@@ -1,16 +1,14 @@
 """Cache management API endpoints"""
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+
 from app.core.database import get_db
-from app.schemas import (
-    CacheStatsResponse,
-    PaginatedCacheResponse,
-    CacheOperationResponse,
-)
-from app.services_impl import CacheService
 from app.infrastructure.cache.redis_cache import get_cache_service
-import logging
+from app.schemas import CacheOperationResponse, CacheStatsResponse, PaginatedCacheResponse
+from app.services_impl import CacheService
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +135,7 @@ async def list_cache_by_type(
             )
 
         entries, total = CacheService.get_cache_by_type(
-            db, cache_type=cache_type, limit=limit, offset=offset
+            db, api_type=cache_type, limit=limit, offset=offset
         )
         logger.info(f"Retrieved {len(entries)} cache entries for type: {cache_type}")
         return {
@@ -171,7 +169,7 @@ async def get_redis_cache_stats():
     try:
         cache_service = get_cache_service()
         stats = cache_service.get_stats()
-        logger.info(f"Retrieved Redis cache statistics")
+        logger.info("Retrieved Redis cache statistics")
         return stats
     except Exception as e:
         logger.error(f"Error retrieving Redis cache statistics: {e}")
@@ -263,8 +261,8 @@ async def get_database_stats(
     - **all_indexes**: All existing indexes
     """
     try:
-        from app.core.database import get_engine
         from app.application.db_optimization.service import DatabaseOptimizationService
+        from app.core.database import get_engine
 
         engine = get_engine()
         report = DatabaseOptimizationService.get_optimization_report(db, engine)

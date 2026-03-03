@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 100
+# E203: whitespace before ':' — black formats slices as x[1 : -1], which conflicts with flake8
+extend-ignore = E203

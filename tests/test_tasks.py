@@ -1,7 +1,7 @@
 """Tests for Celery tasks — technical metadata enrichment."""
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from app.tasks import enrich_file_technical_metadata
 
 

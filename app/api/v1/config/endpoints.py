@@ -1,14 +1,15 @@
 """Configuration check endpoints"""
 
+import logging
+import os
+from datetime import datetime
+from typing import List, Optional
+
+from croniter import croniter
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
-import os
-import logging
-from datetime import datetime
-from croniter import croniter
 
-from app.core.config import settings, MOVIE_DIR, TV_DIR
+from app.core.config import MOVIE_DIR, TV_DIR, settings
 from app.infrastructure.cache.redis_cache import get_cache_service
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,17 @@ class ConfigurationState(BaseModel):
     lastChecked: str
 
 
+def _can_list_dir(path: str) -> bool:
+    """Attempt os.listdir and return False on PermissionError."""
+    try:
+        contents = os.listdir(path)
+        logger.info(f"Path '{path}': exists=True, readable=True, items={len(contents)}")
+        return True
+    except PermissionError:
+        logger.warning(f"Path '{path}': exists=True, readable=False (PermissionError on listdir)")
+        return False
+
+
 def check_path_exists(path: str) -> bool:
     """Check if a path exists, is a directory, and is readable"""
     if not path:
@@ -41,17 +53,106 @@ def check_path_exists(path: str) -> bool:
     is_dir = os.path.isdir(path) if exists else False
     readable = os.access(path, os.R_OK) if exists else False
     if exists and is_dir and readable:
-        try:
-            contents = os.listdir(path)
-            logger.info(f"Path '{path}': exists=True, readable=True, items={len(contents)}")
-        except PermissionError:
-            logger.warning(
-                f"Path '{path}': exists=True, readable=False (PermissionError on listdir)"
-            )
-            return False
+        return _can_list_dir(path)
+    logger.warning(f"Path '{path}': exists={exists}, is_dir={is_dir}, readable={readable}")
+    return False
+
+
+def _build_tmdb_token_item(token_set: bool) -> ConfigurationItem:
+    """Build the TMDB Read Access Token configuration item."""
+    token_desc = (
+        "Long JWT for Bearer auth — get from TMDB Settings → API Read Access Token (v4 auth)"
+    )
+    if token_set:
+        token_desc += " — active"
+    return ConfigurationItem(
+        id="api-keys-tmdb-token",
+        name="TMDB Access Token",
+        description=token_desc,
+        severity="important",
+        status="valid" if token_set else "invalid",
+        actionLabel="Configure Token",
+        actionPath="/settings?section=api-keys",
+    )
+
+
+def _build_tmdb_key_item(token_set: bool, key_set: bool) -> ConfigurationItem:
+    """Build the TMDB v3 API Key configuration item."""
+    if key_set and token_set:
+        key_desc = "v3 API Key — present but not active (Access Token takes priority)"
+    elif key_set:
+        key_desc = "v3 API Key — active (set TMDB_READ_ACCESS_TOKEN to use Bearer auth instead)"
     else:
-        logger.warning(f"Path '{path}': exists={exists}, is_dir={is_dir}, readable={readable}")
-    return exists and is_dir and readable
+        key_desc = "v3 API Key — not set"
+    return ConfigurationItem(
+        id="api-keys-tmdb-key",
+        name="TMDB API Key",
+        description=key_desc,
+        severity="optional" if token_set else "important",
+        status="valid" if key_set else "invalid",
+        actionLabel="Configure API Key",
+        actionPath="/settings?section=api-keys",
+    )
+
+
+def _build_db_item(db_configured: bool) -> ConfigurationItem:
+    """Build the database connection configuration item."""
+    return ConfigurationItem(
+        id="database-connection",
+        name="Database Connection",
+        description="Connection to the PostgreSQL database",
+        severity="critical",
+        status="valid" if db_configured else "invalid",
+        actionLabel="Check Database",
+        actionPath="/settings?section=database",
+    )
+
+
+def _build_path_items(
+    movie_dir_exists: bool,
+    tv_dir_exists: bool,
+    paths_configured: bool,
+    metadata_configured: bool,
+) -> List[ConfigurationItem]:
+    """Build configuration items for paths, monitoring, metadata, and storage."""
+    return [
+        ConfigurationItem(
+            id="file-system-paths",
+            name="File System Paths",
+            description="Base paths for media library and downloads",
+            severity="critical",
+            status="valid" if paths_configured else "invalid",
+            actionLabel="Configure Paths",
+            actionPath="/settings?section=paths",
+        ),
+        ConfigurationItem(
+            id="file-monitoring",
+            name="File Monitoring",
+            description="Watch configured directories for new media files",
+            severity="important",
+            status="valid" if paths_configured else "invalid",
+            actionLabel="Enable Monitoring",
+            actionPath="/settings?section=monitoring",
+        ),
+        ConfigurationItem(
+            id="metadata-sources",
+            name="Metadata Sources",
+            description="Configured sources for fetching movie and TV show metadata",
+            severity="important",
+            status="valid" if metadata_configured else "invalid",
+            actionLabel="Configure Sources",
+            actionPath="/settings?section=metadata",
+        ),
+        ConfigurationItem(
+            id="storage-location",
+            name="Storage Location",
+            description="Accessible storage location for media files",
+            severity="important",
+            status="valid" if paths_configured else "invalid",
+            actionLabel="Check Storage",
+            actionPath="/settings?section=storage",
+        ),
+    ]
 
 
 @router.get("/check", response_model=ConfigurationState)
@@ -64,125 +165,27 @@ async def check_configuration():
     - Database Connection
     - File System Paths (MOVIE_DIR, TV_DIR)
     """
-    items = []
-
-    # Check TMDB credentials — Read Access Token (preferred) and v3 API Key (fallback)
     token_set = bool(settings.tmdb_read_access_token)
     key_set = bool(settings.tmdb_api_key and settings.tmdb_api_key != "your_tmdb_api_key_here")
-
-    token_desc = (
-        "Long JWT for Bearer auth — get from TMDB Settings → API Read Access Token (v4 auth)"
-    )
-    if token_set:
-        token_desc += " — active"
-
-    items.append(
-        ConfigurationItem(
-            id="api-keys-tmdb-token",
-            name="TMDB Access Token",
-            description=token_desc,
-            severity="important",
-            status="valid" if token_set else "invalid",
-            actionLabel="Configure Token",
-            actionPath="/settings?section=api-keys",
-        )
-    )
-
-    if key_set and token_set:
-        key_desc = "v3 API Key — present but not active (Access Token takes priority)"
-    elif key_set:
-        key_desc = "v3 API Key — active (set TMDB_READ_ACCESS_TOKEN to use Bearer auth instead)"
-    else:
-        key_desc = "v3 API Key — not set"
-
-    items.append(
-        ConfigurationItem(
-            id="api-keys-tmdb-key",
-            name="TMDB API Key",
-            description=key_desc,
-            severity="optional" if token_set else "important",
-            status="valid" if key_set else "invalid",
-            actionLabel="Configure API Key",
-            actionPath="/settings?section=api-keys",
-        )
-    )
-
-    # Check Database Connection (we'll verify it's configured in settings)
     db_configured = bool(settings.database_url)
-    items.append(
-        ConfigurationItem(
-            id="database-connection",
-            name="Database Connection",
-            description="Connection to the PostgreSQL database",
-            severity="critical",
-            status="valid" if db_configured else "invalid",
-            actionLabel="Check Database",
-            actionPath="/settings?section=database",
-        )
-    )
 
-    # Check File System Paths
     movie_dir_exists = check_path_exists(MOVIE_DIR)
     tv_dir_exists = check_path_exists(TV_DIR)
     paths_configured = movie_dir_exists or tv_dir_exists
+    metadata_configured = token_set or key_set
 
     logger.info(
-        f"File system paths check: movie_dir={MOVIE_DIR} (exists={movie_dir_exists}), tv_dir={TV_DIR} (exists={tv_dir_exists})"
+        f"File system paths check: movie_dir={MOVIE_DIR} (exists={movie_dir_exists}),"
+        f" tv_dir={TV_DIR} (exists={tv_dir_exists})"
     )
 
-    items.append(
-        ConfigurationItem(
-            id="file-system-paths",
-            name="File System Paths",
-            description="Base paths for media library and downloads",
-            severity="critical",
-            status="valid" if paths_configured else "invalid",
-            actionLabel="Configure Paths",
-            actionPath="/settings?section=paths",
-        )
-    )
+    items: List[ConfigurationItem] = [
+        _build_tmdb_token_item(token_set),
+        _build_tmdb_key_item(token_set, key_set),
+        _build_db_item(db_configured),
+        *_build_path_items(movie_dir_exists, tv_dir_exists, paths_configured, metadata_configured),
+    ]
 
-    # File Monitoring (optional, depends on paths)
-    items.append(
-        ConfigurationItem(
-            id="file-monitoring",
-            name="File Monitoring",
-            description="Watch configured directories for new media files",
-            severity="important",
-            status="valid" if paths_configured else "invalid",
-            actionLabel="Enable Monitoring",
-            actionPath="/settings?section=monitoring",
-        )
-    )
-
-    # Metadata Sources
-    metadata_configured = token_set or key_set
-    items.append(
-        ConfigurationItem(
-            id="metadata-sources",
-            name="Metadata Sources",
-            description="Configured sources for fetching movie and TV show metadata",
-            severity="important",
-            status="valid" if metadata_configured else "invalid",
-            actionLabel="Configure Sources",
-            actionPath="/settings?section=metadata",
-        )
-    )
-
-    # Storage Location
-    items.append(
-        ConfigurationItem(
-            id="storage-location",
-            name="Storage Location",
-            description="Accessible storage location for media files",
-            severity="important",
-            status="valid" if paths_configured else "invalid",
-            actionLabel="Check Storage",
-            actionPath="/settings?section=storage",
-        )
-    )
-
-    # Calculate isComplete - only critical items must be valid
     critical_items = [item for item in items if item.severity == "critical"]
     is_complete = all(item.status == "valid" for item in critical_items)
 

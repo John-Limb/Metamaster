@@ -1,5 +1,6 @@
 """File Organisation API endpoints"""
 
+import logging
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -15,8 +16,6 @@ from app.domain.organisation.service import (
     get_saved_preset,
     save_preset,
 )
-
-import logging
 
 logger = logging.getLogger(__name__)
 

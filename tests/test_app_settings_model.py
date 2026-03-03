@@ -1,9 +1,11 @@
 """Unit tests for AppSetting model"""
 
-import pytest
 from datetime import datetime
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from app.core.database import Base
 from app.domain.settings.models import AppSetting
 from tests.db_utils import TEST_DATABASE_URL

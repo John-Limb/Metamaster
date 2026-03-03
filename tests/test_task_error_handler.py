@@ -1,12 +1,12 @@
 """Tests for task error handling and notifications"""
 
-import pytest
 import logging
-from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
+
+import pytest
+
+from app.database import SessionLocal
 from app.infrastructure.monitoring.error_handler import TaskErrorHandler
 from app.models import TaskError
-from app.database import SessionLocal
 
 
 class TestTaskErrorHandler:

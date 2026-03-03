@@ -1,30 +1,31 @@
 """Files API endpoints"""
 
+import logging
 import os
 import shutil
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
+
+from app.application.pattern_recognition.service import PatternRecognitionService
 from app.core.database import get_db
-from app.domain.files.service import FileService
 from app.domain.files.schemas import (
-    FileItemResponse,
-    FileItemCreate,
-    FileItemUpdate,
-    FileItemMove,
-    FileItemRename,
-    PaginatedFileResponse,
-    FileStatsResponse,
-    FileUploadResponse,
     FileBatchDeleteRequest,
     FileBatchMoveRequest,
-    FileSearchResponse,
-    FileClassifyRequest,
     FileClassificationResult,
+    FileClassifyRequest,
     FileClassifyResponse,
+    FileItemCreate,
+    FileItemMove,
+    FileItemRename,
+    FileItemResponse,
+    FileItemUpdate,
+    FileSearchResponse,
+    FileStatsResponse,
+    FileUploadResponse,
+    PaginatedFileResponse,
 )
-from app.application.pattern_recognition.service import PatternRecognitionService
-import logging
+from app.domain.files.service import FileService
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,8 @@ async def list_files(
         path=path, page=page, page_size=page_size, video_only=video_only
     )
     logger.info(
-        f"list_files(path={path!r}, page={page}, page_size={page_size}) returned {total} total, {len(files)} on this page"
+        f"list_files(path={path!r}, page={page}, page_size={page_size})"
+        f" returned {total} total, {len(files)} on this page"
     )
 
     # Convert to response format
@@ -125,6 +127,37 @@ async def search_files(
     }
 
 
+def _classify_filename(
+    classifier: PatternRecognitionService, filename: str
+) -> FileClassificationResult:
+    """Run pattern classification on a single filename and return the result."""
+    classification = classifier.classify_file(filename)
+    return FileClassificationResult(
+        filename=filename,
+        type=classification["type"],
+        confidence=classification["confidence"],
+        pattern_matched=classification["pattern_matched"],
+        title=classification.get("title"),
+        show_name=classification.get("show_name"),
+        year=classification.get("year"),
+        season=classification.get("season"),
+        episode=classification.get("episode"),
+    )
+
+
+def _classify_file_by_id(
+    classifier: PatternRecognitionService, file_service: FileService, file_id: int
+) -> FileClassificationResult:
+    """Look up a file by ID, classify it, and return the result.
+
+    Raises HTTPException(404) if the file is not found.
+    """
+    file_item = file_service.get_file_by_id(file_id)
+    if not file_item:
+        raise HTTPException(status_code=404, detail=f"File not found: {file_id}")
+    return _classify_filename(classifier, file_item.name)
+
+
 @router.post("/classify", response_model=FileClassifyResponse)
 async def classify_files(
     request: FileClassifyRequest,
@@ -147,41 +180,12 @@ async def classify_files(
 
     if request.filenames:
         for filename in request.filenames:
-            classification = classifier.classify_file(filename)
-            results.append(
-                FileClassificationResult(
-                    filename=filename,
-                    type=classification["type"],
-                    confidence=classification["confidence"],
-                    pattern_matched=classification["pattern_matched"],
-                    title=classification.get("title"),
-                    show_name=classification.get("show_name"),
-                    year=classification.get("year"),
-                    season=classification.get("season"),
-                    episode=classification.get("episode"),
-                )
-            )
+            results.append(_classify_filename(classifier, filename))
 
     if request.file_ids:
         file_service = FileService(db)
         for file_id in request.file_ids:
-            file_item = file_service.get_file_by_id(file_id)
-            if not file_item:
-                raise HTTPException(status_code=404, detail=f"File not found: {file_id}")
-            classification = classifier.classify_file(file_item.name)
-            results.append(
-                FileClassificationResult(
-                    filename=file_item.name,
-                    type=classification["type"],
-                    confidence=classification["confidence"],
-                    pattern_matched=classification["pattern_matched"],
-                    title=classification.get("title"),
-                    show_name=classification.get("show_name"),
-                    year=classification.get("year"),
-                    season=classification.get("season"),
-                    episode=classification.get("episode"),
-                )
-            )
+            results.append(_classify_file_by_id(classifier, file_service, file_id))
 
     return FileClassifyResponse(results=results, total=len(results))
 

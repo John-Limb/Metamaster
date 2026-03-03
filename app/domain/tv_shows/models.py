@@ -1,19 +1,12 @@
 """SQLAlchemy ORM models for TV Show entities"""
 
 from datetime import datetime
-from sqlalchemy import (
-    BigInteger,
-    Column,
-    Integer,
-    String,
-    Text,
-    Float,
-    DateTime,
-    ForeignKey,
-    Index,
-    Enum as SAEnum,
-)
+
+from sqlalchemy import BigInteger, Column, DateTime
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy import Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from app.core.database import Base
 
 

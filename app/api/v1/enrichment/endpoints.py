@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.domain.movies.models import Movie
 from app.domain.tv_shows.models import TVShow

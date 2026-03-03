@@ -1,6 +1,7 @@
 """Tests for the PatternRecognitionService"""
 
 import pytest
+
 from app.application.pattern_recognition.service import PatternRecognitionService
 
 

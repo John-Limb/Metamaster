@@ -2,9 +2,10 @@
 
 import logging
 import time
-from typing import Dict, List, Any
 from datetime import datetime
-from sqlalchemy import text, event, inspect
+from typing import Any, Dict, List
+
+from sqlalchemy import event, inspect, text
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import Pool
 

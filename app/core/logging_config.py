@@ -1,12 +1,13 @@
 """Centralized logging configuration with structured logging support"""
 
+import json
 import logging
 import logging.handlers
-import json
 import sys
-from pathlib import Path
 from datetime import datetime
-from typing import Optional, Dict, Any
+from pathlib import Path
+from typing import Any, Dict, Optional
+
 from app.core.config import settings
 
 

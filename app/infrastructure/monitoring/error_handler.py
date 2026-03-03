@@ -4,7 +4,9 @@ import logging
 import traceback
 from datetime import datetime
 from typing import Optional
+
 from sqlalchemy.orm import Session
+
 from app.core.database import SessionLocal
 from app.models import TaskError
 

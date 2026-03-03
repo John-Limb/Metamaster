@@ -3,9 +3,9 @@
 import math
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
-from sqlalchemy import or_, func
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from app.core.config import MOVIE_DIR, TV_DIR, settings

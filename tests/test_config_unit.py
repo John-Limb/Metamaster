@@ -1,12 +1,9 @@
 """Comprehensive unit tests for application configuration"""
 
-import pytest
 import os
-from unittest.mock import patch, MagicMock
-from pydantic import ValidationError
+from unittest.mock import patch
 
 from app.config import Settings, settings
-from tests.db_utils import TEST_DATABASE_URL
 
 # ============================================================================
 # Configuration Loading Tests

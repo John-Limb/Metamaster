@@ -11,13 +11,15 @@ Comprehensive test coverage for file queue management including:
 - Edge cases
 """
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from app.database import Base
-from app.models import FileQueue
 from app.infrastructure.file_system.queue_manager import FileQueueManager
+from app.models import FileQueue
 from tests.db_utils import TEST_DATABASE_URL
 
 
@@ -309,7 +311,7 @@ class TestQueueStats:
         """Test queue stats with various file statuses."""
         # Add pending files
         queue_id1 = manager.add_file("/path/to/movie1.mp4", "movie")
-        queue_id2 = manager.add_file("/path/to/movie2.mp4", "movie")
+        _ = manager.add_file("/path/to/movie2.mp4", "movie")
 
         # Mark one as processing
         manager.mark_processing(queue_id1)

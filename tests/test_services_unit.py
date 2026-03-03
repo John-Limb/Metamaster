@@ -1,23 +1,20 @@
 """Comprehensive unit tests for all service modules"""
 
-import pytest
 import json
-import logging
-from unittest.mock import Mock, MagicMock, patch, call
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import datetime
+from unittest.mock import MagicMock, patch
+
+import pytest
 from sqlalchemy.orm import Session
 
 from app.application.pattern_recognition.service import (
-    PatternRecognitionService,
     ClassificationResult,
+    PatternRecognitionService,
 )
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
+from app.infrastructure.file_system.monitor import FileMonitorService, MediaFileEventHandler
 from app.infrastructure.file_system.queue_manager import FileQueueManager
 from app.infrastructure.monitoring.error_handler import TaskErrorHandler
-from app.infrastructure.file_system.monitor import FileMonitorService, MediaFileEventHandler
-from app.models import FileQueue, TaskError
-from app.database import SessionLocal
 
 # ============================================================================
 # Pattern Recognition Service Tests
@@ -404,9 +401,9 @@ class TestFileQueueManager:
         mock_file.status = "pending"
         mock_file.created_at = datetime.utcnow()
 
-        mock_session.query.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = [
-            mock_file
-        ]
+        mock_q = mock_session.query.return_value
+        mock_all = mock_q.filter.return_value.order_by.return_value.limit.return_value.all
+        mock_all.return_value = [mock_file]
 
         files = manager.get_pending_files(limit=10)
         assert len(files) == 1

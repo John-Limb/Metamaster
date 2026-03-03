@@ -1,14 +1,16 @@
 """Unit tests for CacheService"""
 
-import pytest
 import json
 from datetime import datetime, timedelta
+
+import pytest
+from db_utils import TEST_DATABASE_URL
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from app.core.database import Base
 from app.models import APICache
 from app.services_impl import CacheService
-from db_utils import TEST_DATABASE_URL
 
 
 @pytest.fixture(scope="function")

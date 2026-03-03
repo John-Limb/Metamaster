@@ -2,25 +2,22 @@
 
 import traceback
 from datetime import datetime, timedelta
-from typing import Optional, List
-from sqlalchemy.orm import Session
+from typing import List, Optional
+
 from croniter import croniter
-from app.core.config import settings, MEDIA_DIRECTORIES
+from sqlalchemy.orm import Session
+
+from app.application.batch_operations.service import BatchOperationService
+from app.core.config import MEDIA_DIRECTORIES, settings
 from app.core.database import SessionLocal
 from app.core.logging_config import get_logger
-from app.models import (
-    Movie,
-    TVShow,
-    APICache,
-    FileQueue,
-)
-from app.services_impl import TMDBService
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
 from app.infrastructure.file_system.queue_manager import FileQueueManager
 from app.infrastructure.monitoring.error_handler import TaskErrorHandler
-from app.application.batch_operations.service import BatchOperationService
-from app.tasks.celery_app import celery_app
+from app.models import APICache, FileQueue, Movie, TVShow
+from app.services_impl import TMDBService
 from app.tasks.async_helpers import run_async
+from app.tasks.celery_app import celery_app
 from app.tasks.metrics import TaskMetricsRecorder
 
 logger = get_logger(__name__)
@@ -655,7 +652,8 @@ def update_batch_progress(
     try:
         with TaskMetricsRecorder("update_batch_progress"):
             logger.info(
-                f"Updating progress for batch {batch_id}: completed={completed_items}, failed={failed_items}"
+                f"Updating progress for batch {batch_id}:"
+                f" completed={completed_items}, failed={failed_items}"
             )
 
             db = SessionLocal()

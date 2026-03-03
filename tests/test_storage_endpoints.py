@@ -1,8 +1,9 @@
 """Tests for /storage API endpoints."""
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app, raise_server_exceptions=False)

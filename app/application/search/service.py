@@ -2,8 +2,10 @@
 
 import json
 import logging
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
+
 from sqlalchemy.orm import Session, selectinload
+
 from app.models import Movie, TVShow
 
 logger = logging.getLogger(__name__)

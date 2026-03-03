@@ -5,15 +5,15 @@
 from importlib import util
 from pathlib import Path
 
-from app.tasks.celery_app import celery_app
 from app.core.database import SessionLocal
+from app.core.logging_config import get_logger as _get_logger
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
+from app.tasks.celery_app import celery_app
 from app.tasks.enrichment import (
     enrich_movie_external,
     enrich_tv_show_external,
     retry_failed_enrichment,
 )
-from app.core.logging_config import get_logger as _get_logger
 
 _logger = _get_logger(__name__)
 

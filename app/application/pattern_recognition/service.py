@@ -1,10 +1,10 @@
 """Pattern recognition service for classifying media files as movies or TV shows"""
 
-import re
 import logging
+import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Tuple
-from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 

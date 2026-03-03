@@ -1,14 +1,14 @@
 """Comprehensive tests for batch operations functionality"""
 
-import pytest
 import json
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
-from sqlalchemy.orm import Session
+from datetime import datetime
+from unittest.mock import patch
 
-from app.models import BatchOperation, Movie, TVShow
+import pytest
+
 from app.application.batch_operations.service import BatchOperationService
-from app.database import SessionLocal, Base, engine
+from app.database import Base, SessionLocal, engine
+from app.models import Movie, TVShow
 
 
 @pytest.fixture
@@ -151,9 +151,7 @@ class TestBatchOperationRetrieval:
         batch1 = batch_service.create_batch_operation(
             operation_type="metadata_sync", total_items=10
         )
-        batch2 = batch_service.create_batch_operation(
-            operation_type="metadata_sync", total_items=10
-        )
+        _ = batch_service.create_batch_operation(operation_type="metadata_sync", total_items=10)
 
         batch_service.start_batch_operation(batch1.id)
 

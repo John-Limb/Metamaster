@@ -13,11 +13,9 @@ from sqlalchemy.orm import Session
 from app.domain.auth.models import RefreshToken, User
 from app.domain.auth.schemas import UserRegisterRequest
 from app.domain.auth.validators import validate_password_strength
-from app.infrastructure.security.password import (
-    hash_password as _hash_password,
-    verify_password as _verify_password,
-)
 from app.infrastructure.security.jwt import jwt_handler
+from app.infrastructure.security.password import hash_password as _hash_password
+from app.infrastructure.security.password import verify_password as _verify_password
 
 
 def hash_password(password: str) -> str:
@@ -332,7 +330,7 @@ class AuthService:
             self.db.query(RefreshToken)
             .filter(
                 RefreshToken.token_hash == token_hash,
-                RefreshToken.revoked == False,
+                RefreshToken.revoked.is_(False),
                 RefreshToken.expires_at > now,
             )
             .first()
@@ -353,7 +351,7 @@ class AuthService:
             self.db.query(RefreshToken)
             .filter(
                 RefreshToken.user_id == user_id,
-                RefreshToken.revoked == False,
+                RefreshToken.revoked.is_(False),
             )
             .update({"revoked": True})
         )

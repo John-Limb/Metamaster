@@ -1,9 +1,10 @@
 """Tests for the FileMonitorService"""
 
-import pytest
-import asyncio
 import tempfile
 from pathlib import Path
+
+import pytest
+
 from app.infrastructure.file_system.monitor import FileMonitorService, MediaFileEventHandler
 
 

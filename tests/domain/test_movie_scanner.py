@@ -2,8 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
-from app.domain.movies.scanner import create_movies_from_files
 from app.domain.files.models import FileItem
+from app.domain.movies.scanner import create_movies_from_files
 
 
 def _make_fi(file_path="/movies/Inception (2010)/inception.mkv", name="inception.mkv"):

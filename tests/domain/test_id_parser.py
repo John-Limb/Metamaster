@@ -1,6 +1,7 @@
 """Tests for external ID parsing from file paths and folder names."""
 
 import pytest
+
 from app.domain.movies.scanner import extract_external_id_from_path
 
 

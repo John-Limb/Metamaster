@@ -1,8 +1,10 @@
 """Tests for Redis caching service"""
 
-import pytest
 import json
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+
 from app.infrastructure.cache.redis_cache import RedisCacheService, get_cache_service
 from app.models import Movie, TVShow
 

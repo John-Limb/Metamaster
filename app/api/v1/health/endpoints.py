@@ -2,18 +2,19 @@
 
 import collections
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
+import redis
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
 from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
 from app.core.database import get_db
 from app.infrastructure.monitoring.monitoring_service import get_monitoring_service
 from app.infrastructure.monitoring.prometheus_metrics import get_metrics
-import logging
-import redis
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/health", tags=["Health"])

@@ -40,7 +40,7 @@ def reset_admin_password() -> None:
 
         print("=" * 60)
         print("Admin password reset successfully.")
-        print(f"  Username       : admin")
+        print("  Username       : admin")
         print(f"  Password       : {new_password}")
         print(f"  Tokens revoked : {revoked}")
         print("You will be prompted to set a new password on next login.")

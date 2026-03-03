@@ -1,24 +1,25 @@
 """Comprehensive unit tests for SQLAlchemy database models"""
 
-import pytest
 from datetime import datetime, timedelta
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
 
+import pytest
+from db_utils import TEST_DATABASE_URL
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from app.database import Base
 from app.models import (
-    Movie,
-    MovieFile,
-    TVShow,
-    Season,
+    APICache,
+    BatchOperation,
     Episode,
     EpisodeFile,
-    APICache,
     FileQueue,
+    Movie,
+    MovieFile,
+    Season,
     TaskError,
-    BatchOperation,
+    TVShow,
 )
-from app.database import Base
-from db_utils import TEST_DATABASE_URL
 
 
 @pytest.fixture

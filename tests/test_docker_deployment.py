@@ -1,12 +1,11 @@
 """Docker deployment tests for container orchestration and health checks"""
 
-import pytest
-import subprocess
-import time
 import json
 import os
-from typing import Dict, Any, Optional
-from unittest.mock import Mock, patch, MagicMock
+import subprocess
+from typing import Any, Dict, Optional
+
+import pytest
 
 # ============================================================================
 # Docker Deployment Test Utilities
@@ -440,7 +439,7 @@ class TestContainerShutdownAndCleanup:
     def test_graceful_shutdown_signals(self):
         """Test graceful shutdown signals are configured"""
         with open("docker-compose.yml", "r") as f:
-            content = f.read()
+            _ = f.read()
 
         # Services should have proper stop signals
         # This is typically handled by Docker's default SIGTERM
@@ -452,7 +451,8 @@ class TestContainerShutdownAndCleanup:
 
 
 @pytest.mark.skip(
-    reason="docker-compose.test.yml no longer exists; project uses a single docker-compose.yml with PostgreSQL"
+    reason="docker-compose.test.yml no longer exists;"
+    " project uses a single docker-compose.yml with PostgreSQL"
 )
 class TestDockerComposeTestConfiguration:
     """Tests for docker-compose.test.yml configuration — skipped, file removed"""

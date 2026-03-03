@@ -1,17 +1,17 @@
 """Comprehensive integration tests for Celery background tasks"""
 
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from celery.result import AsyncResult
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime, timedelta
-from celery.result import AsyncResult
-
-from tests.db_utils import TEST_DATABASE_URL
 
 from app.database import Base
-from app.models import Movie, TVShow, TaskError, BatchOperation, FileQueue
+from app.models import BatchOperation, TaskError
 from app.tasks.celery_app import celery_app
+from tests.db_utils import TEST_DATABASE_URL
 
 # ============================================================================
 # Test Database Setup

@@ -1,16 +1,16 @@
 """Tests for file API endpoints and config check logic"""
 
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from unittest.mock import patch
 
-from tests.db_utils import TEST_DATABASE_URL
-
-from app.main import app
 from app.core.database import Base, get_db
 from app.domain.files.models import FileItem
+from app.main import app
+from tests.db_utils import TEST_DATABASE_URL
 
 
 @pytest.fixture(scope="function")

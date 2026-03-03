@@ -1,16 +1,17 @@
 """Queue management API endpoints"""
 
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
 import logging
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, Query
 
 from app.core.database import SessionLocal
 from app.infrastructure.file_system.queue_manager import FileQueueManager
 from app.schemas import (
-    QueueStatsResponse,
-    QueueTaskResponse,
     PaginatedQueueTaskResponse,
     QueueOperationResponse,
+    QueueStatsResponse,
+    QueueTaskResponse,
 )
 
 logger = logging.getLogger(__name__)

@@ -4,8 +4,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.models import Movie, TVShow
 from app.database import Base
+from app.models import Movie, TVShow
 from tests.db_utils import TEST_DATABASE_URL
 
 

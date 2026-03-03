@@ -7,12 +7,14 @@ duplicate detection, error logging, and retry logic.
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
-from sqlalchemy.orm import Session
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy import and_
-from app.models import FileQueue
-from app.core.database import SessionLocal
+from sqlalchemy.orm import Session
+
 from app.application.pattern_recognition.service import PatternRecognitionService
+from app.core.database import SessionLocal
+from app.models import FileQueue
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +144,6 @@ class FileQueueManager:
 
                 file_path = file_entry.get("file_path")
                 file_type = file_entry.get("file_type")
-                metadata = file_entry.get("metadata")
 
                 if not file_path or not file_path.strip():
                     logger.warning("Skipping entry with empty file_path")
@@ -478,7 +479,8 @@ class FileQueueManager:
 
             if queue_entry.status != self.STATUS_FAILED:
                 logger.warning(
-                    f"Cannot retry file not in failed status: {queue_id} (status: {queue_entry.status})"
+                    f"Cannot retry file not in failed status: {queue_id}"
+                    f" (status: {queue_entry.status})"
                 )
                 return False
 

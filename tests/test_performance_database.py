@@ -1,21 +1,16 @@
 """Performance tests for database operations"""
 
-import pytest
-import time
 import statistics
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, Session
+import time
+
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from app.database import Base
-from app.models import Movie, TVShow, Season, Episode, MovieFile, EpisodeFile
+from app.models import Episode, Movie, Season, TVShow
 from tests.db_utils import TEST_DATABASE_URL
-from tests.performance_utils import (
-    ResponseTimeAnalyzer,
-    ThroughputMeasurer,
-    PerformanceProfiler,
-    measure_time,
-    measure_memory,
-)
+from tests.performance_utils import PerformanceProfiler, ResponseTimeAnalyzer
 
 # ============================================================================
 # Test Database Setup
@@ -163,7 +158,7 @@ class TestIndexEffectiveness:
 
         for i in range(50):
             start = time.time()
-            movie = test_db.query(Movie).filter(Movie.tmdb_id == f"tt{1000000 + (i % 100)}").first()
+            _ = test_db.query(Movie).filter(Movie.tmdb_id == f"tt{1000000 + (i % 100)}").first()
             end = time.time()
             analyzer.add_response_time(end - start)
 
@@ -176,7 +171,7 @@ class TestIndexEffectiveness:
 
         for i in range(50):
             start = time.time()
-            movies = test_db.query(Movie).filter(Movie.plot.like(f"%{i % 10}%")).all()
+            _ = test_db.query(Movie).filter(Movie.plot.like(f"%{i % 10}%")).all()
             end = time.time()
             analyzer.add_response_time(end - start)
 
@@ -320,7 +315,7 @@ class TestQueryOptimization:
 
         for page in range(10):
             start = time.time()
-            movies = test_db.query(Movie).offset(page * page_size).limit(page_size).all()
+            _ = test_db.query(Movie).offset(page * page_size).limit(page_size).all()
             end = time.time()
             times.append(end - start)
 
@@ -363,7 +358,7 @@ class TestDatabaseThroughput:
 
         start = time.time()
         for _ in range(num_queries):
-            movies = test_db.query(Movie).limit(10).all()
+            _ = test_db.query(Movie).limit(10).all()
         end = time.time()
 
         total_time = end - start
@@ -400,7 +395,7 @@ class TestDatabaseMemoryUsage:
         with profiler.measure("batch_processing"):
             batch_size = 10
             for offset in range(0, 100, batch_size):
-                movies = test_db.query(Movie).offset(offset).limit(batch_size).all()
+                _ = test_db.query(Movie).offset(offset).limit(batch_size).all()
 
         metrics = profiler.metrics[0]
         assert metrics.memory_used < 50

@@ -10,13 +10,9 @@ from typing import List, Optional, Tuple
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from app.core.config import settings, MEDIA_DIRECTORIES, MOVIE_DIR, TV_DIR
+from app.core.config import MEDIA_DIRECTORIES, MOVIE_DIR, TV_DIR, settings
 from app.domain.files.models import FileItem
-from app.domain.files.schemas import (
-    FileItemCreate,
-    FileItemUpdate,
-    FileStatsResponse,
-)
+from app.domain.files.schemas import FileItemCreate, FileItemUpdate, FileStatsResponse
 
 
 class FileService:
@@ -347,7 +343,6 @@ class FileService:
             raise ValueError(f"Path must be within media directories: {self.media_dirs}")
 
         synced_count = 0
-        base_path = Path(path)
 
         for root, dirs, files in os.walk(path):
             # Process directories

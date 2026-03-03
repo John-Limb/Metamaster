@@ -1,16 +1,13 @@
 """Tests for search and filtering service"""
 
-import pytest
 import json
-from datetime import datetime
+
+import pytest
 from sqlalchemy.orm import Session
-from app.models import Movie, TVShow
-from app.application.search.service import (
-    SearchFilters,
-    MovieSearchService,
-    TVShowSearchService,
-)
+
+from app.application.search.service import MovieSearchService, SearchFilters, TVShowSearchService
 from app.database import Base, engine
+from app.models import Movie, TVShow
 
 
 @pytest.fixture

@@ -5,9 +5,9 @@ from app.core.database import (
     SessionLocal,
     engine,
     get_db,
-    init_db,
     get_engine,
     get_session_local,
+    init_db,
 )
 
 __all__ = [

@@ -1,28 +1,16 @@
 """Comprehensive integration tests for API endpoints"""
 
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
+
 import pytest
-import json
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from sqlalchemy.orm import sessionmaker
 
-from app.main import app
 from app.database import Base, get_db
-from app.models import (
-    Movie,
-    TVShow,
-    Season,
-    Episode,
-    MovieFile,
-    EpisodeFile,
-    APICache,
-    FileQueue,
-    TaskError,
-    BatchOperation,
-)
-from app.schemas import MovieCreate, TVShowCreate
+from app.main import app
+from app.models import APICache, BatchOperation, Episode, Movie, MovieFile, Season, TVShow
 from tests.db_utils import TEST_DATABASE_URL
 
 # ============================================================================

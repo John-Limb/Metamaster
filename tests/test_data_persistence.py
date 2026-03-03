@@ -1,26 +1,25 @@
 """Data persistence tests for database, cache, and file queue persistence"""
 
-import pytest
 import json
-import tempfile
 import os
+import tempfile
 from datetime import datetime, timedelta
+
+import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from unittest.mock import Mock, patch
+from sqlalchemy.orm import sessionmaker
 
 from app.database import Base
 from app.models import (
-    Movie,
-    MovieFile,
-    TVShow,
-    Season,
+    APICache,
+    BatchOperation,
     Episode,
     EpisodeFile,
-    APICache,
     FileQueue,
-    TaskError,
-    BatchOperation,
+    Movie,
+    MovieFile,
+    Season,
+    TVShow,
 )
 from tests.db_utils import TEST_DATABASE_URL
 

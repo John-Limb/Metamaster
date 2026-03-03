@@ -3,15 +3,16 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from app.core.database import Base
-from tests.db_utils import TEST_DATABASE_URL
-from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
 from app.domain.organisation.service import (
     build_movie_target_path,
     build_tv_target_path,
     get_preview,
     sanitize_filename,
 )
+from app.domain.tv_shows.models import Episode, EpisodeFile, Season, TVShow
+from tests.db_utils import TEST_DATABASE_URL
 
 
 @pytest.mark.parametrize("char", ["/", "\\", ":", "*", "?", '"', "<", ">", "|"])

@@ -4,11 +4,12 @@ import logging
 import re
 import shutil
 from pathlib import Path
+
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import MOVIE_DIR, TV_DIR
 from app.domain.movies.models import Movie, MovieFile
-from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
+from app.domain.tv_shows.models import Episode, EpisodeFile, Season, TVShow
 
 logger = logging.getLogger(__name__)
 

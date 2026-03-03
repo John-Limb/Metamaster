@@ -1,12 +1,7 @@
 """Multi-container integration tests for Docker Compose orchestration"""
 
-import pytest
-import json
-import time
 import subprocess
-from typing import Dict, Any, Optional, List
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime, timedelta
+from typing import Dict, Optional
 
 # ============================================================================
 # Multi-Container Test Utilities

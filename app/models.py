@@ -4,11 +4,12 @@ This module re-exports models from the domain layer to maintain backward compati
 The actual model definitions are in app/domain/ subdirectories.
 """
 
+from app.domain.common.models import APICache, BatchOperation, FileQueue, TaskError
+from app.domain.files.models import FileItem
+
 # Re-export models from domain layer
 from app.domain.movies.models import Movie, MovieFile
-from app.domain.tv_shows.models import TVShow, Season, Episode, EpisodeFile
-from app.domain.common.models import APICache, FileQueue, TaskError, BatchOperation
-from app.domain.files.models import FileItem
+from app.domain.tv_shows.models import Episode, EpisodeFile, Season, TVShow
 
 __all__ = [
     "Movie",

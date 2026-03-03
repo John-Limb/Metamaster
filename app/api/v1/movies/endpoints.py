@@ -62,6 +62,28 @@ async def get_enrichment_stats(db: Session = Depends(get_db)):
     return {"total": total, "indexed": indexed, "pending": pending, "failed": failed}
 
 
+def _build_applied_filters(
+    genre: str,
+    min_rating: float,
+    max_rating: float,
+    year: int,
+    status: str,
+) -> dict:
+    """Build the applied_filters dict from the non-None filter parameters."""
+    applied: dict = {}
+    if genre:
+        applied["genre"] = genre
+    if min_rating is not None:
+        applied["min_rating"] = min_rating
+    if max_rating is not None:
+        applied["max_rating"] = max_rating
+    if year is not None:
+        applied["year"] = year
+    if status:
+        applied["status"] = status
+    return applied
+
+
 @router.get("", response_model=PaginatedMovieResponseWithFilters)
 async def list_movies(
     genre: str = Query(None, description="Filter by genre (case-insensitive)"),
@@ -107,7 +129,8 @@ async def list_movies(
     cache_key = (
         f"{cache_service.MOVIE_LIST_PREFIX}"
         f"genre={genre}:min_rating={min_rating}:max_rating={max_rating}:"
-        f"year={year}:sort_by={sort_by}:status={status}:limit={normalized_limit}:skip={normalized_skip}"
+        f"year={year}:sort_by={sort_by}:status={status}"
+        f":limit={normalized_limit}:skip={normalized_skip}"
     )
 
     # Try to get from cache
@@ -136,18 +159,7 @@ async def list_movies(
     # Perform search
     movies, total = MovieSearchService.search(db, filters)
 
-    # Build applied filters dict
-    applied_filters = {}
-    if genre:
-        applied_filters["genre"] = genre
-    if min_rating is not None:
-        applied_filters["min_rating"] = min_rating
-    if max_rating is not None:
-        applied_filters["max_rating"] = max_rating
-    if year is not None:
-        applied_filters["year"] = year
-    if status:
-        applied_filters["status"] = status
+    applied_filters = _build_applied_filters(genre, min_rating, max_rating, year, status)
 
     result = {
         "items": movies,
@@ -389,6 +401,27 @@ async def scan_movie(
         raise HTTPException(status_code=500, detail="An error occurred while scanning")
 
 
+def _apply_parsed_fields(movie: MovieModel, parsed_data: dict) -> list:
+    """Apply parsed TMDB fields to the movie ORM object.
+
+    Returns the list of field names that were changed.
+    """
+    updated_fields = []
+
+    simple_fields = ["title", "plot", "year", "rating", "runtime", "genres"]
+    for field in simple_fields:
+        if field in parsed_data and parsed_data[field] != getattr(movie, field):
+            setattr(movie, field, parsed_data[field])
+            updated_fields.append(field)
+
+    poster = parsed_data.get("poster")
+    if poster and poster != movie.poster_url:
+        movie.poster_url = poster
+        updated_fields.append("poster_url")
+
+    return updated_fields
+
+
 @router.post("/{movie_id}/sync-metadata", response_model=MetadataSyncResponse)
 async def sync_movie_metadata(
     movie_id: int,
@@ -441,46 +474,8 @@ async def sync_movie_metadata(
         if not parsed_data:
             raise HTTPException(status_code=500, detail="Failed to parse TMDB response")
 
-        # Track which fields were updated
-        updated_fields = []
-        old_values = {}
-
-        # Update movie fields
-        if "title" in parsed_data and parsed_data["title"] != movie.title:
-            old_values["title"] = movie.title
-            movie.title = parsed_data["title"]
-            updated_fields.append("title")
-
-        if "plot" in parsed_data and parsed_data["plot"] != movie.plot:
-            old_values["plot"] = movie.plot
-            movie.plot = parsed_data["plot"]
-            updated_fields.append("plot")
-
-        if "year" in parsed_data and parsed_data["year"] != movie.year:
-            old_values["year"] = movie.year
-            movie.year = parsed_data["year"]
-            updated_fields.append("year")
-
-        if "rating" in parsed_data and parsed_data["rating"] != movie.rating:
-            old_values["rating"] = movie.rating
-            movie.rating = parsed_data["rating"]
-            updated_fields.append("rating")
-
-        if "runtime" in parsed_data and parsed_data["runtime"] != movie.runtime:
-            old_values["runtime"] = movie.runtime
-            movie.runtime = parsed_data["runtime"]
-            updated_fields.append("runtime")
-
-        if "genres" in parsed_data and parsed_data["genres"] != movie.genres:
-            old_values["genres"] = movie.genres
-            movie.genres = parsed_data["genres"]
-            updated_fields.append("genres")
-
-        poster = parsed_data.get("poster")
-        if poster and poster != movie.poster_url:
-            old_values["poster_url"] = movie.poster_url
-            movie.poster_url = poster
-            updated_fields.append("poster_url")
+        # Update movie fields and track which changed
+        updated_fields = _apply_parsed_fields(movie, parsed_data)
 
         # Commit changes
         db.commit()

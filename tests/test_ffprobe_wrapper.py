@@ -1,10 +1,12 @@
 """Comprehensive unit tests for FFProbeWrapper service"""
 
-import pytest
 import json
 import subprocess
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
+
+import pytest
+
 from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
 
 

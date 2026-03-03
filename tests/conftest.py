@@ -1,15 +1,15 @@
 """Shared test configuration and fixtures for pytest"""
 
 import sys
-import os
 from pathlib import Path
 
 # Add the project root to sys.path to ensure app module is importable
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch  # noqa: E402
+
+import pytest  # noqa: E402
 
 
 @pytest.fixture(scope="session")

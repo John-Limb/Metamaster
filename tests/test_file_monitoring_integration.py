@@ -1,18 +1,17 @@
 """Comprehensive integration tests for file monitoring"""
 
-import pytest
 import tempfile
-import os
 from pathlib import Path
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import MagicMock, patch
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
 
-from app.database import Base
-from app.models import FileQueue, Movie, TVShow
 from app.application.pattern_recognition.service import PatternRecognitionService
+from app.database import Base
 from app.infrastructure.file_system.queue_manager import FileQueueManager
+from app.models import FileQueue
 from tests.db_utils import TEST_DATABASE_URL
 
 # ============================================================================

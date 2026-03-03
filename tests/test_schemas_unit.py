@@ -1,35 +1,32 @@
 """Comprehensive unit tests for Pydantic schemas and validation"""
 
-import pytest
 from datetime import datetime
+
+import pytest
 from pydantic import ValidationError
 
 from app.schemas import (
-    MovieCreate,
-    MovieUpdate,
-    MovieResponse,
-    TVShowCreate,
-    TVShowUpdate,
-    TVShowResponse,
-    SeasonResponse,
-    EpisodeResponse,
-    PaginatedMovieResponse,
-    PaginatedTVShowResponse,
-    PaginatedSeasonResponse,
-    PaginatedEpisodeResponse,
-    CacheStatsResponse,
-    CacheEntryResponse,
-    PaginatedCacheResponse,
     CacheOperationResponse,
+    CacheStatsResponse,
+    EpisodeResponse,
     MetadataSyncResponse,
-    TaskStatusResponse,
-    TaskRetryResponse,
-    TaskListItemResponse,
-    TaskListResponse,
+    MovieCreate,
+    MovieResponse,
+    MovieUpdate,
+    PaginatedMovieResponse,
+    PaginatedTaskErrorResponse,
+    PaginatedTVShowResponse,
+    SearchFiltersRequest,
+    SeasonResponse,
     TaskCancelResponse,
     TaskErrorResponse,
-    PaginatedTaskErrorResponse,
-    SearchFiltersRequest,
+    TaskListItemResponse,
+    TaskListResponse,
+    TaskRetryResponse,
+    TaskStatusResponse,
+    TVShowCreate,
+    TVShowResponse,
+    TVShowUpdate,
 )
 
 # ============================================================================

@@ -1,8 +1,6 @@
 """Tests for the /health/logs endpoint helper."""
 
 import json
-import pytest
-from pathlib import Path
 
 
 def test_tail_log_returns_empty_for_missing_file():

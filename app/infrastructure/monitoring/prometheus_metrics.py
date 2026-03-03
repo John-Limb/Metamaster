@@ -1,18 +1,12 @@
 """Prometheus metrics integration for monitoring"""
 
-from prometheus_client import (
-    Counter,
-    Histogram,
-    Gauge,
-    Summary,
-    CollectorRegistry,
-    generate_latest,
-)
-import time
 import asyncio
-from typing import Callable
-from functools import wraps
 import logging
+import time
+from functools import wraps
+from typing import Callable
+
+from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram, Summary, generate_latest
 
 logger = logging.getLogger(__name__)
 
@@ -295,7 +289,7 @@ def track_db_query(operation: str):
                     db_slow_queries_total.inc()
 
                 return result
-            except Exception as e:
+            except Exception:
                 duration = time.time() - start_time
                 db_queries_total.labels(operation=operation, status="error").inc()
                 db_query_duration_seconds.labels(operation=operation).observe(duration)
@@ -326,7 +320,7 @@ def track_cache_operation(operation: str, cache_name: str = "redis"):
                     cache_misses_total.labels(cache_name=cache_name).inc()
 
                 return result
-            except Exception as e:
+            except Exception:
                 duration = time.time() - start_time
                 cache_operation_duration_seconds.labels(operation=operation).observe(duration)
                 app_errors_total.labels(error_type="cache_error").inc()
@@ -350,7 +344,7 @@ def track_task_execution(task_name: str):
                 celery_tasks_total.labels(task_name=task_name, status="success").inc()
                 celery_task_duration_seconds.labels(task_name=task_name).observe(duration)
                 return result
-            except Exception as e:
+            except Exception:
                 duration = time.time() - start_time
                 celery_tasks_total.labels(task_name=task_name, status="error").inc()
                 celery_task_duration_seconds.labels(task_name=task_name).observe(duration)

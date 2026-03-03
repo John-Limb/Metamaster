@@ -1,14 +1,16 @@
 """Batch operations service for large-scale processing with progress tracking"""
 
-import logging
 import json
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List, Tuple
-from sqlalchemy.orm import Session
-from app.models import BatchOperation, Movie, TVShow
-from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
-from app.services_impl import TMDBService
+import logging
 import os
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
+
+from sqlalchemy.orm import Session
+
+from app.infrastructure.file_system.ffprobe_wrapper import FFProbeWrapper
+from app.models import BatchOperation, Movie, TVShow
+from app.services_impl import TMDBService
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +72,8 @@ class BatchOperationService:
         self.db.commit()
         self.db.refresh(batch_op)
         logger.info(
-            f"Created batch operation {batch_op.id} of type {operation_type} with {total_items} items"
+            f"Created batch operation {batch_op.id} of type {operation_type}"
+            f" with {total_items} items"
         )
         return batch_op
 

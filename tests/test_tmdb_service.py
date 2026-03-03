@@ -2,16 +2,15 @@
 
 import asyncio
 import json
-import pytest
-from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
+import pytest
 from sqlalchemy.orm import Session
 
-import app.core.database  # noqa: F401 — must be imported before domain models to avoid circular import
+import app.core.database  # noqa: F401 — import before domain models to avoid circular import
+from app.core.config import settings
 from app.models import APICache
 from app.services_impl import TMDBService
-from app.core.config import settings
 
 
 @pytest.fixture

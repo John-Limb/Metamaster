@@ -1,15 +1,10 @@
 """Celery application configuration and initialization"""
 
-from celery import Celery
-from celery.signals import (
-    task_prerun,
-    task_postrun,
-    task_failure,
-    task_retry,
-    task_revoked,
-)
-from kombu import Exchange, Queue
 import logging
+
+from celery import Celery
+from celery.signals import task_failure, task_postrun, task_prerun, task_retry, task_revoked
+from kombu import Exchange, Queue
 
 from app.core.config import settings
 from app.tasks.celery_beat import beat_schedule

@@ -1,7 +1,9 @@
 """AppSetting model for server-side key/value settings"""
 
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, DateTime
+
+from sqlalchemy import Column, DateTime, String
+
 from app.core.database import Base
 
 

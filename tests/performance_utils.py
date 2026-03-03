@@ -1,14 +1,15 @@
 """Performance testing utilities for benchmarking and profiling"""
 
-import time
-import psutil
 import os
+import statistics
+import time
 from contextlib import contextmanager
-from functools import wraps
-from typing import Callable, Any, Dict, List
 from dataclasses import dataclass, field
 from datetime import datetime
-import statistics
+from functools import wraps
+from typing import Any, Callable, Dict, List
+
+import psutil
 
 
 @dataclass
@@ -50,7 +51,7 @@ class PerformanceProfiler:
     def measure(self, name: str, iterations: int = 1):
         """Context manager for measuring performance"""
         start_memory = self.get_memory_usage()
-        start_cpu = self.get_cpu_percent()
+        _ = self.get_cpu_percent()
         start_time = time.time()
 
         try:
@@ -156,7 +157,7 @@ def measure_memory(name: str = "Operation"):
 def measure_cpu(name: str = "Operation"):
     """Context manager to measure CPU usage"""
     process = psutil.Process(os.getpid())
-    start_cpu = process.cpu_percent(interval=0.1)
+    _ = process.cpu_percent(interval=0.1)
     try:
         yield
     finally:
