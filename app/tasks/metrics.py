@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from prometheus_client import Counter, Histogram
 
-
 task_counter = Counter(
     "celery_task_executions_total",
     "Total Celery task executions",

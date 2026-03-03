@@ -8,7 +8,6 @@ from pydantic import ValidationError
 from app.config import Settings, settings
 from tests.db_utils import TEST_DATABASE_URL
 
-
 # ============================================================================
 # Configuration Loading Tests
 # ============================================================================

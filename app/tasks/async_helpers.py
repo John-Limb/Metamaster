@@ -15,7 +15,6 @@ import logging
 import threading
 from typing import Awaitable, TypeVar
 
-
 logger = logging.getLogger(__name__)
 
 _loop: asyncio.AbstractEventLoop | None = None

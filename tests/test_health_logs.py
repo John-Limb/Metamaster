@@ -1,4 +1,5 @@
 """Tests for the /health/logs endpoint helper."""
+
 import json
 import pytest
 from pathlib import Path

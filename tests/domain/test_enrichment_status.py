@@ -1,4 +1,5 @@
 """Unit tests for enrichment_status on Movie and TVShow models."""
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

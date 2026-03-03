@@ -13,7 +13,6 @@ from app.database import Base
 from app.models import Movie, TVShow, TaskError, BatchOperation, FileQueue
 from app.tasks.celery_app import celery_app
 
-
 # ============================================================================
 # Test Database Setup
 # ============================================================================

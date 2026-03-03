@@ -1,4 +1,5 @@
 """Tests for the admin password reset CLI."""
+
 import sys
 from unittest.mock import MagicMock, patch
 
