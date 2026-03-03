@@ -22,7 +22,7 @@ export function AdvancedSearch({
   const handleSearch = useCallback(
     (searchQuery: string) => {
       search()
-      onSearch?.(searchQuery, filters)
+      onSearch?.(searchQuery, filters as Record<string, unknown>)
     },
     [filters, search, onSearch]
   )

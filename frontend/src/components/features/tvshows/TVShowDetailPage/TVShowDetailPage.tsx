@@ -323,7 +323,7 @@ const TVShowDetailPage: React.FC = () => {
             {show.enrichment_error}
           </p>
         )}
-        {(show as unknown as Record<string, unknown>).detected_external_id && (
+        {!!(show as unknown as Record<string, unknown>).detected_external_id && (
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Detected from filename: <code className="font-mono">{String((show as unknown as Record<string, unknown>).detected_external_id)}</code>
           </p>

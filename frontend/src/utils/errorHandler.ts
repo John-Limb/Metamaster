@@ -15,12 +15,13 @@ class ErrorHandler {
   /**
    * Handle API error and log it
    */
-  public handleError(error: ApiError, context?: string): void {
+  public handleError(error: unknown, context?: string): void {
+    const apiError = error as ApiError
     const errorLog: ErrorLog = {
       timestamp: new Date().toISOString(),
-      code: error.code,
-      message: error.message,
-      details: error.details,
+      code: apiError.code ?? 'UNKNOWN',
+      message: apiError.message ?? 'An error occurred',
+      details: apiError.details,
     }
 
     if (context) {

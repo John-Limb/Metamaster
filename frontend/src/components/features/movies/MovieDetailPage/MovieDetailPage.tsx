@@ -249,7 +249,7 @@ const MovieDetailPage: React.FC = () => {
                   </div>
                 )}
 
-                {(movie as unknown as Record<string, unknown>).detected_external_id && (
+                {!!(movie as unknown as Record<string, unknown>).detected_external_id && (
                   <div className="movie-detail-page__detail-row">
                     <span className="movie-detail-page__detail-label">Detected ID</span>
                     <span className="movie-detail-page__detail-value" style={{ fontSize: '0.875rem' }}>
@@ -258,7 +258,7 @@ const MovieDetailPage: React.FC = () => {
                   </div>
                 )}
 
-                {(movie as unknown as Record<string, unknown>).manual_external_id && (
+                {!!(movie as unknown as Record<string, unknown>).manual_external_id && (
                   <div className="movie-detail-page__detail-row">
                     <span className="movie-detail-page__detail-label">Manual Override</span>
                     <span className="movie-detail-page__detail-value" style={{ fontSize: '0.875rem' }}>

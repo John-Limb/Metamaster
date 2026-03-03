@@ -112,7 +112,7 @@ export const fileManagement = {
     // Filter by tags
     if (filters.tags && filters.tags.length > 0) {
       filtered = filtered.filter((file) =>
-        filters.tags!.some((tag) => file.metadata?.tags?.includes(tag))
+        filters.tags!.some((tag) => (file.metadata?.tags as string[] | undefined)?.includes(tag))
       )
     }
 
