@@ -2,6 +2,7 @@
 
 import enum
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as SAEnum
@@ -52,7 +53,7 @@ class PlexSyncRecord(Base):
     connection_id = Column(
         Integer, ForeignKey("plex_connections.id", ondelete="CASCADE"), nullable=False
     )
-    item_type = Column(
+    item_type: Any = Column(
         SAEnum("movie", "tv_show", "episode", name="plexitemtype"),
         nullable=False,
     )
@@ -63,7 +64,7 @@ class PlexSyncRecord(Base):
     watch_count = Column(Integer, default=0)
     last_watched_at = Column(DateTime, nullable=True)
     is_watched = Column(Boolean, default=False)
-    sync_status = Column(
+    sync_status: Any = Column(
         SAEnum("pending", "synced", "failed", "not_found", name="plexsyncstatus"),
         nullable=False,
         default="pending",

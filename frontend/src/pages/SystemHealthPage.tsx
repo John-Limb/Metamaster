@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { healthService, type DetailedHealthCheck, type ComponentLogs, type LogEntry } from '@/services/healthService'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
+import { PlexHealthPanel } from '@/components/features/plex/PlexHealthPanel'
 
 const STATUS_DOT: Record<string, string> = {
   healthy: 'bg-emerald-500',
@@ -229,6 +230,10 @@ export function SystemHealthPage() {
           )
         })}
       </div>
+
+      <Card variant="elevated">
+        <PlexHealthPanel />
+      </Card>
 
       {health?.timestamp && (
         <p className="text-xs text-slate-400 dark:text-slate-500 text-right">
