@@ -152,17 +152,9 @@ def get_conformance_stats(db: Session, preset: str) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def get_preview(db: Session, preset: str) -> dict:
-    """Return lists of proposed renames for movies and episodes.
-
-    Only includes files where current path != target path.
-    """
-    if preset not in VALID_PRESETS:
-        raise ValueError(f"Invalid preset '{preset}'. Must be one of {VALID_PRESETS}")
-
-    movies = []
-    episodes = []
-
+def _preview_movies(db: Session, preset: str) -> list:
+    """Return proposed movie renames where current path differs from target."""
+    results = []
     for movie in db.query(Movie).options(selectinload(Movie.files)).all():
         if not movie.title or not movie.files:
             continue
@@ -170,7 +162,7 @@ def get_preview(db: Session, preset: str) -> dict:
             ext = Path(mf.file_path).suffix.lower()
             target = build_movie_target_path(MOVIE_DIR, movie.title, movie.year, ext, preset)
             if Path(mf.file_path).resolve() != Path(target).resolve():
-                movies.append(
+                results.append(
                     {
                         "file_id": mf.id,
                         "file_type": "movie",
@@ -178,18 +170,18 @@ def get_preview(db: Session, preset: str) -> dict:
                         "target_path": target,
                     }
                 )
+    return results
 
-    for show in (
-        db.query(TVShow)
-        .options(
-            selectinload(TVShow.seasons).selectinload(Season.episodes).selectinload(Episode.files)
-        )
-        .all()
-    ):
+
+def _preview_episodes(db: Session, preset: str) -> list:
+    """Return proposed episode renames where current path differs from target."""
+    results = []
+    query = db.query(TVShow).options(
+        selectinload(TVShow.seasons).selectinload(Season.episodes).selectinload(Episode.files)
+    )
+    for show in query.all():
         for season in show.seasons:
             for episode in season.episodes:
-                if not episode.files:
-                    continue
                 for ef in episode.files:
                     ext = Path(ef.file_path).suffix.lower()
                     target = build_tv_target_path(
@@ -202,7 +194,7 @@ def get_preview(db: Session, preset: str) -> dict:
                         preset,
                     )
                     if Path(ef.file_path).resolve() != Path(target).resolve():
-                        episodes.append(
+                        results.append(
                             {
                                 "file_id": ef.id,
                                 "file_type": "episode",
@@ -212,8 +204,20 @@ def get_preview(db: Session, preset: str) -> dict:
                                 "season_number": season.season_number,
                             }
                         )
+    return results
 
-    return {"movies": movies, "episodes": episodes}
+
+def get_preview(db: Session, preset: str) -> dict:
+    """Return lists of proposed renames for movies and episodes.
+
+    Only includes files where current path != target path.
+    """
+    if preset not in VALID_PRESETS:
+        raise ValueError(f"Invalid preset '{preset}'. Must be one of {VALID_PRESETS}")
+    return {
+        "movies": _preview_movies(db, preset),
+        "episodes": _preview_episodes(db, preset),
+    }
 
 
 # ---------------------------------------------------------------------------

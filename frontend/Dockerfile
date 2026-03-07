@@ -22,7 +22,7 @@ RUN npm run build
 RUN test -d dist && ls -la dist/ && echo "Build completed successfully"
 
 # Stage 2: Runtime with nginx only
-FROM alpine:latest
+FROM alpine:3.23.3
 
 # Install nginx and curl for healthchecks
 # apk add nginx creates the nginx user/group automatically on Alpine
@@ -42,7 +42,11 @@ COPY --from=builder /app/dist /var/www/html
 
 # Fix ownership of web content after copy, then verify
 RUN chown -R nginx:nginx /var/www/html && \
-    test -f /var/www/html/index.html && ls -la /var/www/html/ && echo "Frontend artifacts deployed successfully" || (echo "ERROR: index.html not found" && exit 1)
+    if test -f /var/www/html/index.html; then \
+        ls -la /var/www/html/ && echo "Frontend artifacts deployed successfully"; \
+    else \
+        echo "ERROR: index.html not found" && exit 1; \
+    fi
 
 USER nginx
 

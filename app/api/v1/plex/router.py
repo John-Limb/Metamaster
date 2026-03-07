@@ -93,14 +93,16 @@ def oauth_callback(
     db: Session = Depends(get_db),
     _: object = Depends(get_current_user),
 ):
-    """Poll for OAuth token after user authorises. Creates PlexConnection on success."""
+    """Poll for OAuth token after user authorises. Creates PlexConnection on success.
+
+    Returns {"status": "pending"} (200) while the user hasn't approved yet so the
+    frontend can keep polling without treating a non-2xx as a hard failure.
+    Returns {"status": "connected", ...connection} once the token is obtained.
+    """
     auth = PlexAuth()
     token = auth.poll_pin(pin_id=pin_id)
     if not token:
-        raise HTTPException(
-            status_code=status.HTTP_202_ACCEPTED,
-            detail="Authorisation pending — user has not approved yet",
-        )
+        return {"status": "pending"}
 
     existing = db.query(PlexConnection).first()
     if existing:
@@ -112,7 +114,8 @@ def oauth_callback(
     db.commit()
     db.refresh(conn)
     logger.info("Plex OAuth: connection established server=%s", server_url)
-    return PlexConnectionResponse.model_validate(conn)
+    conn_data = PlexConnectionResponse.model_validate(conn).model_dump(mode="json")
+    return {"status": "connected", **conn_data}
 
 
 @router.post("/sync", response_model=PlexSyncTriggerResponse, status_code=202)

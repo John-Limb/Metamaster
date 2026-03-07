@@ -252,6 +252,57 @@ def create_movies_from_files(db: Session) -> int:
     return created
 
 
+def _tmdb_search_id(movie: Movie, db: Session, existing_tmdb_ids: set) -> str | None:
+    """Search TMDB for a movie and return its tmdb_id, or None if not found/duplicate."""
+    year_str = str(movie.year) if movie.year else "unknown year"
+    logger.info(f"[Movie] Enriching: '{movie.title}' ({year_str})")
+    logger.info(f"[Movie] TMDB search: '{movie.title}'")
+
+    search_raw = run_async(TMDBService.search_movie(db, movie.title, movie.year))
+    if not search_raw:
+        logger.info(f"[Movie] TMDB: no results for '{movie.title}'")
+        return None
+
+    search_parsed = TMDBService.parse_movie_search_response(search_raw)
+    if not search_parsed or not search_parsed.get("search_results"):
+        logger.info(f"[Movie] TMDB: no match for '{movie.title}'")
+        return None
+
+    tmdb_id = search_parsed["search_results"][0].get("tmdb_id")
+    if not tmdb_id or tmdb_id in existing_tmdb_ids:
+        logger.debug(f"[Movie] TMDB: duplicate or missing ID for '{movie.title}' — skipping")
+        return None
+
+    logger.info(f"[Movie] TMDB match: '{movie.title}' → {tmdb_id}")
+    return tmdb_id
+
+
+def _apply_tmdb_details(movie: Movie, tmdb_id: str, db: Session) -> None:
+    """Fetch full TMDB details and apply them to the movie in place."""
+    movie.tmdb_id = tmdb_id
+    logger.info(f"[Movie] TMDB fetching details: {tmdb_id}")
+
+    detail_raw = run_async(TMDBService.get_movie_details(db, tmdb_id))
+    if not detail_raw:
+        return
+    detail = TMDBService.parse_movie_details_response(detail_raw)
+    if not detail:
+        return
+
+    movie.plot = detail.get("plot", movie.plot)
+    movie.rating = detail.get("rating", movie.rating)
+    movie.runtime = detail.get("runtime", movie.runtime)
+    movie.genres = detail.get("genres", movie.genres)
+    if detail.get("poster"):
+        movie.poster_url = detail["poster"]
+
+    rating_str = f"★{movie.rating}" if movie.rating else "no rating"
+    genres_str = (
+        ", ".join(movie.genres) if isinstance(movie.genres, list) else str(movie.genres or "")
+    )
+    logger.info(f"[Movie] Enriched: '{movie.title}' — {rating_str}, {genres_str}")
+
+
 def enrich_new_movies(db: Session) -> int:
     """Search TMDB for movies missing a tmdb_id and populate metadata.
 
@@ -261,7 +312,6 @@ def enrich_new_movies(db: Session) -> int:
     if not movies:
         return 0
 
-    # Collect existing tmdb_ids to avoid unique-constraint violations
     existing_tmdb_ids = {
         row[0] for row in db.query(Movie.tmdb_id).filter(Movie.tmdb_id.isnot(None)).all()
     }
@@ -269,65 +319,12 @@ def enrich_new_movies(db: Session) -> int:
     enriched = 0
     for movie in movies:
         try:
-            year_str = str(movie.year) if movie.year else "unknown year"
-            logger.info(f"[Movie] Enriching: '{movie.title}' ({year_str})")
-
-            # Step 1: Search TMDB by title/year
-            logger.info(f"[Movie] TMDB search: '{movie.title}'")
-            search_raw = run_async(TMDBService.search_movie(db, movie.title, movie.year))
-            if not search_raw:
-                logger.info(f"[Movie] TMDB: no results for '{movie.title}'")
+            tmdb_id = _tmdb_search_id(movie, db, existing_tmdb_ids)
+            if not tmdb_id:
                 continue
-            search_parsed = TMDBService.parse_movie_search_response(search_raw)
-            if not search_parsed or not search_parsed.get("search_results"):
-                logger.info(f"[Movie] TMDB: no match for '{movie.title}'")
-                continue
-
-            tmdb_id = search_parsed["search_results"][0].get("tmdb_id")
-            if not tmdb_id or tmdb_id in existing_tmdb_ids:
-                logger.debug(
-                    f"[Movie] TMDB: duplicate or missing ID for '{movie.title}' — skipping"
-                )
-                continue
-
-            logger.info(f"[Movie] TMDB match: '{movie.title}' → {tmdb_id}")
-
-            # Step 2: Fetch full details
-            logger.info(f"[Movie] TMDB fetching details: {tmdb_id}")
-            detail_raw = run_async(TMDBService.get_movie_details(db, tmdb_id))
-            if not detail_raw:
-                movie.tmdb_id = tmdb_id
-                existing_tmdb_ids.add(tmdb_id)
-                enriched += 1
-                continue
-
-            detail = TMDBService.parse_movie_details_response(detail_raw)
-            if not detail:
-                movie.tmdb_id = tmdb_id
-                existing_tmdb_ids.add(tmdb_id)
-                enriched += 1
-                continue
-
-            # Step 3: Update fields
-            movie.tmdb_id = tmdb_id
-            movie.plot = detail.get("plot", movie.plot)
-            movie.rating = detail.get("rating", movie.rating)
-            movie.runtime = detail.get("runtime", movie.runtime)
-            movie.genres = detail.get("genres", movie.genres)
-            poster = detail.get("poster")
-            if poster:
-                movie.poster_url = poster
+            _apply_tmdb_details(movie, tmdb_id, db)
             existing_tmdb_ids.add(tmdb_id)
             enriched += 1
-
-            rating_str = f"★{movie.rating}" if movie.rating else "no rating"
-            genres_str = (
-                ", ".join(movie.genres)
-                if isinstance(movie.genres, list)
-                else str(movie.genres or "")
-            )
-            logger.info(f"[Movie] Enriched: '{movie.title}' — {rating_str}, {genres_str}")
-
         except Exception:
             logger.warning(
                 f"[Movie] Failed to enrich '{movie.title}' (ID: {movie.id})", exc_info=True
