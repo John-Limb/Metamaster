@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import axios from 'axios'
 import {
   getPlexConnection,
   createPlexConnection,
@@ -7,38 +6,47 @@ import {
   initiatePlexOAuth,
 } from '../plexService'
 
-vi.mock('axios')
-const mockedAxios = vi.mocked(axios, true)
+vi.mock('@/utils/api', () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
+  },
+}))
+
+import { apiClient } from '@/utils/api'
 
 describe('plexService', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('getPlexConnection calls correct endpoint', async () => {
-    mockedAxios.get = vi.fn().mockResolvedValue({
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
       data: { id: 1, server_url: 'http://plex:32400', is_active: true },
     })
     const result = await getPlexConnection()
-    expect(mockedAxios.get).toHaveBeenCalledWith('/api/v1/plex/connection')
+    expect(apiClient.get).toHaveBeenCalledWith('/api/v1/plex/connection')
     expect(result.id).toBe(1)
   })
 
   it('createPlexConnection posts server_url and token', async () => {
-    mockedAxios.post = vi.fn().mockResolvedValue({ data: { id: 1 } })
+    vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { id: 1 } })
     await createPlexConnection('http://plex:32400', 'my-token')
-    expect(mockedAxios.post).toHaveBeenCalledWith('/api/v1/plex/connection', {
+    expect(apiClient.post).toHaveBeenCalledWith('/api/v1/plex/connection', {
       server_url: 'http://plex:32400',
       token: 'my-token',
     })
   })
 
   it('triggerPlexSync posts to sync endpoint', async () => {
-    mockedAxios.post = vi.fn().mockResolvedValue({ data: { task_id: 'abc', message: 'ok' } })
+    vi.mocked(apiClient.post).mockResolvedValueOnce({
+      data: { task_id: 'abc', message: 'ok' },
+    })
     const result = await triggerPlexSync()
     expect(result.task_id).toBe('abc')
   })
 
   it('initiatePlexOAuth returns oauth_url and pin_id', async () => {
-    mockedAxios.get = vi.fn().mockResolvedValue({
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
       data: { oauth_url: 'https://plex.tv', pin_id: 42 },
     })
     const result = await initiatePlexOAuth('http://localhost/callback')

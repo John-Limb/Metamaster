@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { usePlexStore } from '../../../stores/plexStore'
-import { createPlexConnection, initiatePlexOAuth } from '../../../services/plexService'
+import {
+  createPlexConnection,
+  initiatePlexOAuth,
+  pollPlexOAuthCallback,
+} from '../../../services/plexService'
 
 type AuthMode = 'oauth' | 'manual'
 
@@ -12,22 +16,60 @@ export function PlexSettings() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
+  // OAuth polling state
+  const [oauthServerUrl, setOauthServerUrl] = useState('')
+  const [oauthPinId, setOauthPinId] = useState<number | null>(null)
+  const [oauthPending, setOauthPending] = useState(false)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
   useEffect(() => {
     fetchConnection()
   }, [fetchConnection])
 
+  // Poll every 3 s while waiting for user to approve on plex.tv
+  useEffect(() => {
+    if (!oauthPending || oauthPinId === null) return
+    pollRef.current = setInterval(async () => {
+      try {
+        const result = await pollPlexOAuthCallback(oauthPinId, oauthServerUrl)
+        if (result !== null) {
+          setOauthPending(false)
+          setOauthPinId(null)
+          await fetchConnection()
+        }
+      } catch {
+        // Network error — keep trying
+      }
+    }, 3000)
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [oauthPending, oauthPinId, oauthServerUrl, fetchConnection])
+
   const handleOAuthConnect = async () => {
+    if (!oauthServerUrl.trim()) {
+      setSaveError('Please enter your Plex server URL first')
+      return
+    }
     setSaving(true)
     setSaveError(null)
     try {
-      const redirectUri = `${window.location.origin}/plex/callback`
-      const { oauth_url } = await initiatePlexOAuth(redirectUri)
+      const redirectUri = `${window.location.origin}/settings`
+      const { oauth_url, pin_id } = await initiatePlexOAuth(redirectUri)
       window.open(oauth_url, '_blank', 'width=800,height=600')
+      setOauthPinId(pin_id)
+      setOauthPending(true)
     } catch {
       setSaveError('Failed to initiate Plex OAuth')
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleCancelOAuth = () => {
+    setOauthPending(false)
+    setOauthPinId(null)
+    if (pollRef.current) clearInterval(pollRef.current)
   }
 
   const handleManualConnect = async (e: React.FormEvent) => {
@@ -101,13 +143,47 @@ export function PlexSettings() {
           </div>
 
           {authMode === 'oauth' && (
-            <button
-              onClick={handleOAuthConnect}
-              disabled={saving}
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition text-sm font-medium"
-            >
-              Open Plex.tv to Authorise
-            </button>
+            <div className="space-y-3">
+              <div>
+                <label
+                  htmlFor="oauth-server-url"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  Plex Server URL
+                </label>
+                <input
+                  id="oauth-server-url"
+                  type="url"
+                  value={oauthServerUrl}
+                  onChange={(e) => setOauthServerUrl(e.target.value)}
+                  placeholder="http://192.168.1.x:32400"
+                  disabled={oauthPending}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                />
+              </div>
+              {oauthPending ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Waiting for authorisation on Plex.tv…
+                  </span>
+                  <button
+                    onClick={handleCancelOAuth}
+                    className="ml-auto px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleOAuthConnect}
+                  disabled={saving}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition text-sm font-medium"
+                >
+                  Open Plex.tv to Authorise
+                </button>
+              )}
+            </div>
           )}
 
           {authMode === 'manual' && (

@@ -28,6 +28,14 @@ EFFICIENT_CODECS = {"av1", "hevc"}
 # Legacy / lossless codecs always flagged as large regardless of bitrate
 LEGACY_CODECS = {"mpeg2video", "vc1", "wmv3", "mpeg1video"}
 
+# MB/min threshold below which a codec is considered "efficient".
+# float("inf") means always efficient regardless of bitrate (e.g. AV1).
+_EFFICIENT_THRESHOLD: dict[str, float] = {
+    "av1": float("inf"),
+    "hevc": 50.0,
+    "h264": 30.0,
+}
+
 
 def _sort_key_none_last(value, reverse: bool):
     """Return sort key placing None at the end in both asc and desc."""
@@ -61,20 +69,14 @@ class StorageService:
         if codec is None or mb_per_min is None:
             return "unknown"
         codec_lower = codec.lower()
-        if codec_lower == "av1":
-            return "efficient"
         if codec_lower in LEGACY_CODECS:
             return "large"
         if mb_per_min > 100:
             return "large"
-        if codec_lower == "hevc":
-            return "efficient" if mb_per_min < 50 else "moderate"
-        if codec_lower == "h264":
-            if mb_per_min < 30:
-                return "efficient"
+        threshold = _EFFICIENT_THRESHOLD.get(codec_lower)
+        if threshold is None:
             return "moderate"
-        # Unknown codec with moderate bitrate
-        return "moderate"
+        return "efficient" if mb_per_min < threshold else "moderate"
 
     def _calculate_mb_per_min(
         self, size_bytes: Optional[int], duration_seconds: Optional[int]

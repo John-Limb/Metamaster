@@ -10,9 +10,9 @@ import sys
 # Add the project root to the path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.core.config import settings
-from app.core.database import Base
-from app.models import (
+from app.core.config import settings  # noqa: E402
+from app.core.database import Base  # noqa: E402
+from app.models import (  # noqa: E402, F401
     Movie,
     MovieFile,
     TVShow,

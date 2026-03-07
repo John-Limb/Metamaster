@@ -134,38 +134,44 @@ def setup_logging() -> None:
     perf_logger = logging.getLogger("performance")
     perf_logger.addHandler(_daily_handler("performance.log", logging.INFO))
 
-    # Database query log
-    db_logger = logging.getLogger("database")
-    db_logger.addHandler(_daily_handler("database.log", logging.DEBUG))
+    # Database query log — catches app.core.database and SQLAlchemy loggers
+    logging.getLogger("app.core.database").addHandler(_daily_handler("database.log", logging.DEBUG))
+    logging.getLogger("app.core.init_db").addHandler(_daily_handler("database.log", logging.DEBUG))
+    logging.getLogger("sqlalchemy.engine").addHandler(
+        _daily_handler("database.log", logging.WARNING)
+    )
 
-    # Cache log
-    cache_logger = logging.getLogger("cache")
-    cache_logger.addHandler(_daily_handler("cache.log", logging.DEBUG))
+    # Cache log — catches app.infrastructure.cache.*
+    logging.getLogger("app.infrastructure.cache").addHandler(
+        _daily_handler("cache.log", logging.DEBUG)
+    )
 
-    # Task log
-    task_logger = logging.getLogger("tasks")
-    task_logger.addHandler(_daily_handler("tasks.log", logging.DEBUG))
+    # Task log — catches app.tasks.*
+    logging.getLogger("app.tasks").addHandler(_daily_handler("tasks.log", logging.DEBUG))
 
-    # API request log
-    api_logger = logging.getLogger("api")
-    api_logger.addHandler(_daily_handler("api.log", logging.INFO))
+    # API request log — catches app.api.*
+    logging.getLogger("app.api").addHandler(_daily_handler("api.log", logging.INFO))
 
-    # External API log (TMDB outbound calls)
-    external_api_logger = logging.getLogger("external_api")
-    external_api_logger.addHandler(_daily_handler("external_api.log", logging.DEBUG))
+    # External API log — catches both the explicit named logger (services_impl.py)
+    # and __name__-based loggers under app.infrastructure.external_apis.*
+    logging.getLogger("external_api").addHandler(_daily_handler("external_api.log", logging.DEBUG))
+    logging.getLogger("app.infrastructure.external_apis").addHandler(
+        _daily_handler("external_api.log", logging.DEBUG)
+    )
 
-    # HTTP access log — file only, never console
+    # HTTP access log — file + console
     # Captures the log_requests middleware and uvicorn.access at INFO+
     access_handler = _daily_handler("access.log", logging.INFO)
     access_logger = logging.getLogger("access")
     access_logger.addHandler(access_handler)
-    access_logger.propagate = False
+    access_logger.propagate = True  # also reaches root → console
 
-    # Redirect uvicorn's own access logger to the same file, suppress console output
+    # Redirect uvicorn's own access logger to file; keep propagation so
+    # HTTP request lines remain visible in docker-compose logs / stdout.
     uvicorn_access = logging.getLogger("uvicorn.access")
     uvicorn_access.handlers.clear()
     uvicorn_access.addHandler(access_handler)
-    uvicorn_access.propagate = False
+    uvicorn_access.propagate = True  # propagate to root → console
 
 
 def get_logger(name: str) -> logging.Logger:

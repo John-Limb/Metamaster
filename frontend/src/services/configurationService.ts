@@ -159,7 +159,7 @@ const checkConfigurationItem = async (item: ConfigurationItem): Promise<Configur
   })
 
   // Simulate async check
-  await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 200))
+  await new Promise(resolve => setTimeout(resolve, 150))
 
   return {
     ...item,
