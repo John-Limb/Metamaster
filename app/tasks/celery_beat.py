@@ -2,6 +2,8 @@
 
 from celery.schedules import crontab
 
+from app.core.config import settings
+
 # Define the beat schedule for periodic tasks
 beat_schedule = {
     "cleanup_cache": {
@@ -44,6 +46,14 @@ beat_schedule = {
         "schedule": crontab(minute="*/10"),  # every 10 minutes
         "options": {
             "queue": "media_processing",
+        },
+    },
+    "poll_plex_watched_status": {
+        "task": "app.tasks.plex.poll_plex_watched_status",
+        "schedule": settings.plex_sync_poll_interval_seconds,  # default 300s
+        "args": [1],  # connection_id=1 (single-server for now)
+        "options": {
+            "queue": "external_api",
         },
     },
 }

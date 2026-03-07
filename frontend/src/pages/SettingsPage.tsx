@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FaCog, FaPalette, FaBell, FaSync, FaFolder } from 'react-icons/fa'
+import { FaCog, FaPalette, FaBell, FaSync, FaFolder, FaServer } from 'react-icons/fa'
 import { CheckboxInput, RadioInput } from '@/components/common'
 import { organisationService, type OrganisationPreset } from '@/services/organisationService'
 import { scanScheduleService } from '@/services/configurationService'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { PlexSettings } from '@/components/features/plex/PlexSettings'
 import { useTheme } from '@/context/ThemeContext'
 
 interface SettingsSectionProps {
@@ -259,6 +260,15 @@ export const SettingsPage: React.FC = () => {
             .
           </p>
         </div>
+      </SettingsSection>
+
+      {/* Plex Integration */}
+      <SettingsSection
+        icon={<FaServer />}
+        title="Plex Integration"
+        description="Connect your Plex Media Server to sync watch status and trigger library refreshes"
+      >
+        <PlexSettings />
       </SettingsSection>
 
       {/* Action Buttons */}

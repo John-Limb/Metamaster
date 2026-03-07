@@ -9,6 +9,7 @@ from app.domain.files.models import FileItem
 
 # Re-export models from domain layer
 from app.domain.movies.models import Movie, MovieFile
+from app.domain.plex.models import PlexConnection, PlexSyncRecord  # noqa: F401
 from app.domain.tv_shows.models import Episode, EpisodeFile, Season, TVShow
 
 __all__ = [
@@ -23,4 +24,6 @@ __all__ = [
     "TaskError",
     "BatchOperation",
     "FileItem",
+    "PlexConnection",
+    "PlexSyncRecord",
 ]

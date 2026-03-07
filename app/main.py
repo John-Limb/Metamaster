@@ -16,6 +16,7 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.config import router as config_router
 from app.api.v1.enrichment.endpoints import router as enrichment_router
 from app.api.v1.organisation.endpoints import router as organisation_router
+from app.api.v1.plex.router import router as plex_router
 from app.api.v1.queue.endpoints import router as queue_router
 from app.api.v1.storage.endpoints import router as storage_router
 from app.core.config import MEDIA_DIRECTORIES, settings
@@ -213,6 +214,7 @@ app.include_router(queue_router, prefix="/api/v1")
 app.include_router(enrichment_router, prefix="/api/v1")
 app.include_router(storage_router, prefix="/api/v1")
 app.include_router(organisation_router, prefix="/api/v1")
+app.include_router(plex_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Root"])

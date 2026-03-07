@@ -67,6 +67,13 @@ class Settings(BaseSettings):
     tmdb_rate_limit: int = 4  # requests per second (~40/10s)
     tmdb_cache_ttl: int = 2592000  # 30 days in seconds
 
+    # Plex Media Server
+    plex_server_url: Optional[str] = None
+    plex_token: Optional[str] = None  # manual fallback; OAuth stores token in DB
+    plex_library_movies: str = "Movies"  # must match Plex library name exactly
+    plex_library_tv: str = "TV Shows"  # must match Plex library name exactly
+    plex_sync_poll_interval_seconds: int = 300
+
     watch_extensions: list = [
         ".mp4",
         ".mkv",

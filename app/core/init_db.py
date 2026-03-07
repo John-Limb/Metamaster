@@ -119,6 +119,7 @@ def init_database():
     # core.init_db → domain.movies.models.
     from app.domain.common.models import APICache, FileQueue  # noqa: F401
     from app.domain.movies.models import Movie, MovieFile  # noqa: F401
+    from app.domain.plex.models import PlexConnection, PlexSyncRecord  # noqa: F401
     from app.domain.settings.models import AppSetting  # noqa: F401
     from app.domain.tv_shows.models import Episode, EpisodeFile, Season, TVShow  # noqa: F401
 
