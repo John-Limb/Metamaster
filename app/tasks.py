@@ -1,5 +1,6 @@
 """Celery task configuration and definitions"""
 
+import time
 import traceback
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -349,13 +350,63 @@ def cleanup_queue(self):
             db.close()
 
 
+_SYNC_BATCH_SIZE = 10
+
+
+def _sync_movie(db: Session, movie: Movie) -> bool:
+    """Refresh a single movie from TMDB. Returns True if updated."""
+    if not movie.tmdb_id:
+        return False
+    tmdb_data = run_async(TMDBService.get_movie_details(db, movie.tmdb_id))
+    if not tmdb_data:
+        return False
+    parsed = TMDBService.parse_movie_details_response(tmdb_data)
+    if not parsed:
+        return False
+    movie.plot = parsed.get("plot", movie.plot)
+    movie.rating = parsed.get("rating", movie.rating)
+    movie.runtime = parsed.get("runtime", movie.runtime)
+    movie.genres = parsed.get("genres", movie.genres)
+    movie.updated_at = datetime.utcnow()
+    return True
+
+
+def _sync_show(db: Session, show: TVShow) -> bool:
+    """Refresh a single TV show from TMDB. Returns True if updated."""
+    if not show.tmdb_id:
+        return False
+    tmdb_data = run_async(TMDBService.get_series_details(db, show.tmdb_id))
+    if not tmdb_data:
+        return False
+    parsed = TMDBService.parse_series_response(tmdb_data)
+    if not parsed:
+        return False
+    show.plot = parsed.get("plot", show.plot)
+    show.rating = parsed.get("rating", show.rating)
+    show.genres = parsed.get("genres", show.genres)
+    show.status = parsed.get("status", show.status)
+    show.updated_at = datetime.utcnow()
+    return True
+
+
+def _run_sync_batch(db: Session, items: list, sync_fn, label: str) -> tuple[int, int]:
+    """Run sync_fn over items in batches. Returns (synced, failed) counts."""
+    synced = failed = 0
+    for i, item in enumerate(items):
+        if i % _SYNC_BATCH_SIZE == 0 and i > 0:
+            time.sleep(1)
+        try:
+            if sync_fn(db, item):
+                synced += 1
+        except Exception as e:
+            logger.warning(f"Failed to sync {label} {item.id}: {e}", exc_info=True)
+            failed += 1
+    return synced, failed
+
+
 @celery_app.task(bind=True)
 def sync_metadata(self):
-    """Periodic metadata refresh
-
-    Refreshes metadata for all media items in batches.
-    Updates last_sync timestamp.
-    Logs sync statistics.
+    """Periodic metadata refresh — refreshes all media in batches.
 
     Returns:
         Dictionary with sync statistics
@@ -363,79 +414,22 @@ def sync_metadata(self):
     db: Optional[Session] = None
     try:
         logger.info("Starting periodic metadata sync task")
-
         db = SessionLocal()
 
-        # Batch size to avoid overwhelming external APIs
-        batch_size = 10
-
-        # Sync movies
-        movies = db.query(Movie).all()
-        movies_synced = 0
-        movies_failed = 0
-
-        for i, movie in enumerate(movies):
-            if i % batch_size == 0 and i > 0:
-                # Small delay between batches to avoid rate limiting
-                import time
-
-                time.sleep(1)
-
-            try:
-                if movie.tmdb_id:
-                    tmdb_data = run_async(TMDBService.get_movie_details(db, movie.tmdb_id))
-                    if tmdb_data:
-                        parsed = TMDBService.parse_movie_details_response(tmdb_data)
-                        if parsed:
-                            movie.plot = parsed.get("plot", movie.plot)
-                            movie.rating = parsed.get("rating", movie.rating)
-                            movie.runtime = parsed.get("runtime", movie.runtime)
-                            movie.genres = parsed.get("genres", movie.genres)
-                            movie.updated_at = datetime.utcnow()
-                            movies_synced += 1
-            except Exception as e:
-                logger.warning(f"Failed to sync movie {movie.id}: {str(e)}", exc_info=True)
-                movies_failed += 1
-
-        # Sync TV shows
-        tv_shows = db.query(TVShow).all()
-        shows_synced = 0
-        shows_failed = 0
-
-        for i, show in enumerate(tv_shows):
-            if i % batch_size == 0 and i > 0:
-                # Small delay between batches
-                import time
-
-                time.sleep(1)
-
-            try:
-                if show.tmdb_id:
-                    tmdb_data = run_async(TMDBService.get_series_details(db, show.tmdb_id))
-                    if tmdb_data:
-                        parsed = TMDBService.parse_series_response(tmdb_data)
-                        if parsed:
-                            show.plot = parsed.get("plot", show.plot)
-                            show.rating = parsed.get("rating", show.rating)
-                            show.genres = parsed.get("genres", show.genres)
-                            show.status = parsed.get("status", show.status)
-                            show.updated_at = datetime.utcnow()
-                            shows_synced += 1
-            except Exception as e:
-                logger.warning(f"Failed to sync TV show {show.id}: {str(e)}", exc_info=True)
-                shows_failed += 1
-
+        movies_synced, movies_failed = _run_sync_batch(
+            db, db.query(Movie).all(), _sync_movie, "movie"
+        )
+        shows_synced, shows_failed = _run_sync_batch(
+            db, db.query(TVShow).all(), _sync_show, "TV show"
+        )
         db.commit()
 
         total_synced = movies_synced + shows_synced
         total_failed = movies_failed + shows_failed
-
         logger.info(
-            f"Metadata sync completed: {total_synced} items synced, {total_failed} failed. "
-            f"Movies: {movies_synced} synced, {movies_failed} failed. "
-            f"TV Shows: {shows_synced} synced, {shows_failed} failed."
+            f"Metadata sync completed: {total_synced} synced, {total_failed} failed. "
+            f"Movies: {movies_synced}/{movies_failed}. TV Shows: {shows_synced}/{shows_failed}."
         )
-
         return {
             "status": "success",
             "message": "Metadata sync completed",
@@ -450,7 +444,6 @@ def sync_metadata(self):
 
     except Exception as exc:
         logger.error(f"Error during metadata sync: {str(exc)}")
-        # Handle error for non-critical task
         TaskErrorHandler.handle_task_failure(
             task_id=self.request.id,
             task_name=self.name,

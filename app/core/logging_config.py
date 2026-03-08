@@ -14,6 +14,30 @@ from app.core.config import settings
 class JSONFormatter(logging.Formatter):
     """Custom JSON formatter for structured logging"""
 
+    # Maps LogRecord attribute name -> JSON output key.
+    # Only attributes present on the record are included.
+    _EXTRA_FIELDS: Dict[str, str] = {
+        "request_id": "request_id",
+        "trace_id": "trace_id",
+        "user_id": "user_id",
+        "duration": "duration_ms",
+        "status_code": "status_code",
+        "endpoint": "endpoint",
+        "method": "method",
+        "query_time": "query_time_ms",
+        "query": "query",
+        "cache_key": "cache_key",
+        "cache_hit": "cache_hit",
+        "task_id": "task_id",
+        "task_name": "task_name",
+        "task_status": "task_status",
+        "api_service": "api_service",
+        "api_url": "api_url",
+        "response_status": "response_status",
+        "response_size": "response_size",
+        "attempt": "attempt",
+    }
+
     def format(self, record: logging.LogRecord) -> str:
         """Format log record as JSON"""
         log_data = {
@@ -26,63 +50,12 @@ class JSONFormatter(logging.Formatter):
             "line": record.lineno,
         }
 
-        # Add exception info if present
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
 
-        # Add extra fields
-        if hasattr(record, "request_id"):
-            log_data["request_id"] = record.request_id
-        if hasattr(record, "trace_id"):
-            log_data["trace_id"] = record.trace_id
-
-        if hasattr(record, "user_id"):
-            log_data["user_id"] = record.user_id
-
-        if hasattr(record, "duration"):
-            log_data["duration_ms"] = record.duration
-
-        if hasattr(record, "status_code"):
-            log_data["status_code"] = record.status_code
-
-        if hasattr(record, "endpoint"):
-            log_data["endpoint"] = record.endpoint
-
-        if hasattr(record, "method"):
-            log_data["method"] = record.method
-
-        if hasattr(record, "query_time"):
-            log_data["query_time_ms"] = record.query_time
-
-        if hasattr(record, "query"):
-            log_data["query"] = record.query
-
-        if hasattr(record, "cache_key"):
-            log_data["cache_key"] = record.cache_key
-
-        if hasattr(record, "cache_hit"):
-            log_data["cache_hit"] = record.cache_hit
-
-        if hasattr(record, "task_id"):
-            log_data["task_id"] = record.task_id
-
-        if hasattr(record, "task_name"):
-            log_data["task_name"] = record.task_name
-
-        if hasattr(record, "task_status"):
-            log_data["task_status"] = record.task_status
-
-        # External API fields
-        if hasattr(record, "api_service"):
-            log_data["api_service"] = record.api_service
-        if hasattr(record, "api_url"):
-            log_data["api_url"] = record.api_url
-        if hasattr(record, "response_status"):
-            log_data["response_status"] = record.response_status
-        if hasattr(record, "response_size"):
-            log_data["response_size"] = record.response_size
-        if hasattr(record, "attempt"):
-            log_data["attempt"] = record.attempt
+        for attr, key in self._EXTRA_FIELDS.items():
+            if hasattr(record, attr):
+                log_data[key] = getattr(record, attr)
 
         return json.dumps(log_data)
 

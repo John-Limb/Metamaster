@@ -8,34 +8,72 @@ import {
 
 type AuthMode = 'oauth' | 'manual'
 
-export function PlexSettings() {
-  const { connection, isLoading, error, fetchConnection, disconnect, sync } = usePlexStore()
-  const [authMode, setAuthMode] = useState<AuthMode>('oauth')
-  const [serverUrl, setServerUrl] = useState('')
-  const [token, setToken] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+const INPUT_CLASS =
+  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
 
-  // OAuth polling state
-  const [oauthServerUrl, setOauthServerUrl] = useState('')
-  const [oauthPinId, setOauthPinId] = useState<number | null>(null)
-  const [oauthPending, setOauthPending] = useState(false)
+const PRIMARY_BTN_CLASS =
+  'px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition text-sm font-medium'
+
+const LABEL_CLASS = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
+
+function tabClass(active: boolean) {
+  return `px-4 py-2 text-sm font-medium border-b-2 transition ${
+    active
+      ? 'border-primary-600 text-primary-600'
+      : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+  }`
+}
+
+// ---------------------------------------------------------------------------
+
+function ConnectedView({
+  serverUrl,
+  onSync,
+  onDisconnect,
+}: {
+  serverUrl: string
+  onSync: () => void
+  onDisconnect: () => void
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-gray-700 dark:text-gray-300">
+        Connected to: <strong>{serverUrl}</strong>
+      </p>
+      <div className="flex gap-3">
+        <button onClick={onSync} className={PRIMARY_BTN_CLASS}>
+          Sync Now
+        </button>
+        <button
+          onClick={onDisconnect}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
+        >
+          Disconnect
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+
+function OAuthTab({ onConnected }: { onConnected: () => void }) {
+  const [serverUrl, setServerUrl] = useState('')
+  const [pinId, setPinId] = useState<number | null>(null)
+  const [pending, setPending] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
-    fetchConnection()
-  }, [fetchConnection])
-
-  // Poll every 3 s while waiting for user to approve on plex.tv
-  useEffect(() => {
-    if (!oauthPending || oauthPinId === null) return
+    if (!pending || pinId === null) return
     pollRef.current = setInterval(async () => {
       try {
-        const result = await pollPlexOAuthCallback(oauthPinId, oauthServerUrl)
+        const result = await pollPlexOAuthCallback(pinId, serverUrl)
         if (result !== null) {
-          setOauthPending(false)
-          setOauthPinId(null)
-          await fetchConnection()
+          setPending(false)
+          setPinId(null)
+          onConnected()
         }
       } catch {
         // Network error — keep trying
@@ -44,74 +82,166 @@ export function PlexSettings() {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current)
     }
-  }, [oauthPending, oauthPinId, oauthServerUrl, fetchConnection])
+  }, [pending, pinId, serverUrl, onConnected])
 
-  const handleOAuthConnect = async () => {
-    if (!oauthServerUrl.trim()) {
-      setSaveError('Please enter your Plex server URL first')
+  const handleConnect = async () => {
+    if (!serverUrl.trim()) {
+      setError('Please enter your Plex server URL first')
       return
     }
     setSaving(true)
-    setSaveError(null)
+    setError(null)
     try {
       const redirectUri = `${window.location.origin}/settings`
       const { oauth_url, pin_id } = await initiatePlexOAuth(redirectUri)
       window.open(oauth_url, '_blank', 'width=800,height=600')
-      setOauthPinId(pin_id)
-      setOauthPending(true)
+      setPinId(pin_id)
+      setPending(true)
     } catch {
-      setSaveError('Failed to initiate Plex OAuth')
+      setError('Failed to initiate Plex OAuth')
     } finally {
       setSaving(false)
     }
   }
 
-  const handleCancelOAuth = () => {
-    setOauthPending(false)
-    setOauthPinId(null)
+  const handleCancel = () => {
+    setPending(false)
+    setPinId(null)
     if (pollRef.current) clearInterval(pollRef.current)
   }
 
-  const handleManualConnect = async (e: React.FormEvent) => {
+  return (
+    <div className="space-y-3">
+      <div>
+        <label htmlFor="oauth-server-url" className={LABEL_CLASS}>
+          Plex Server URL
+        </label>
+        <input
+          id="oauth-server-url"
+          type="url"
+          value={serverUrl}
+          onChange={(e) => setServerUrl(e.target.value)}
+          placeholder="http://192.168.1.x:32400"
+          disabled={pending}
+          className={`${INPUT_CLASS} disabled:opacity-50`}
+        />
+      </div>
+      {pending ? (
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            Waiting for authorisation on Plex.tv…
+          </span>
+          <button
+            onClick={handleCancel}
+            className="ml-auto px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <button onClick={handleConnect} disabled={saving} className={PRIMARY_BTN_CLASS}>
+          Open Plex.tv to Authorise
+        </button>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+
+function ManualTab({ onConnected }: { onConnected: () => void }) {
+  const [serverUrl, setServerUrl] = useState('')
+  const [token, setToken] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    setSaveError(null)
+    setError(null)
     try {
       await createPlexConnection(serverUrl, token)
-      await fetchConnection()
+      onConnected()
     } catch {
-      setSaveError('Failed to connect. Check your server URL and token.')
+      setError('Failed to connect. Check your server URL and token.')
     } finally {
       setSaving(false)
     }
   }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div>
+        <label htmlFor="server-url" className={LABEL_CLASS}>
+          Server URL
+        </label>
+        <input
+          id="server-url"
+          type="url"
+          value={serverUrl}
+          onChange={(e) => setServerUrl(e.target.value)}
+          placeholder="http://192.168.1.x:32400"
+          required
+          className={INPUT_CLASS}
+        />
+      </div>
+      <div>
+        <label htmlFor="plex-token" className={LABEL_CLASS}>
+          Plex Token
+        </label>
+        <input
+          id="plex-token"
+          type="text"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+          required
+          className={INPUT_CLASS}
+        />
+      </div>
+      <button type="submit" disabled={saving} className={PRIMARY_BTN_CLASS}>
+        Connect
+      </button>
+      {error && (
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      )}
+    </form>
+  )
+}
+
+// ---------------------------------------------------------------------------
+
+export function PlexSettings() {
+  const { connection, isLoading, error, fetchConnection, disconnect, sync } = usePlexStore()
+  const [authMode, setAuthMode] = useState<AuthMode>('oauth')
+
+  useEffect(() => {
+    fetchConnection()
+  }, [fetchConnection])
 
   if (isLoading) return <div>Loading...</div>
 
   return (
     <div className="space-y-4">
-      {error && <div role="alert" className="text-red-600 dark:text-red-400 text-sm">{error}</div>}
+      {error && (
+        <div role="alert" className="text-red-600 dark:text-red-400 text-sm">
+          {error}
+        </div>
+      )}
 
       {connection ? (
-        <div className="space-y-3">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            Connected to: <strong>{connection.server_url}</strong>
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => sync()}
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium"
-            >
-              Sync Now
-            </button>
-            <button
-              onClick={disconnect}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
-            >
-              Disconnect
-            </button>
-          </div>
-        </div>
+        <ConnectedView
+          serverUrl={connection.server_url}
+          onSync={sync}
+          onDisconnect={disconnect}
+        />
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Not connected</p>
@@ -120,11 +250,7 @@ export function PlexSettings() {
               role="tab"
               aria-selected={authMode === 'oauth'}
               onClick={() => setAuthMode('oauth')}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
-                authMode === 'oauth'
-                  ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
+              className={tabClass(authMode === 'oauth')}
             >
               Connect via Plex.tv
             </button>
@@ -132,110 +258,14 @@ export function PlexSettings() {
               role="tab"
               aria-selected={authMode === 'manual'}
               onClick={() => setAuthMode('manual')}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
-                authMode === 'manual'
-                  ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
+              className={tabClass(authMode === 'manual')}
             >
               Manual Token
             </button>
           </div>
 
-          {authMode === 'oauth' && (
-            <div className="space-y-3">
-              <div>
-                <label
-                  htmlFor="oauth-server-url"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >
-                  Plex Server URL
-                </label>
-                <input
-                  id="oauth-server-url"
-                  type="url"
-                  value={oauthServerUrl}
-                  onChange={(e) => setOauthServerUrl(e.target.value)}
-                  placeholder="http://192.168.1.x:32400"
-                  disabled={oauthPending}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
-                />
-              </div>
-              {oauthPending ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Waiting for authorisation on Plex.tv…
-                  </span>
-                  <button
-                    onClick={handleCancelOAuth}
-                    className="ml-auto px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleOAuthConnect}
-                  disabled={saving}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition text-sm font-medium"
-                >
-                  Open Plex.tv to Authorise
-                </button>
-              )}
-            </div>
-          )}
-
-          {authMode === 'manual' && (
-            <form onSubmit={handleManualConnect} className="space-y-3">
-              <div>
-                <label
-                  htmlFor="server-url"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >
-                  Server URL
-                </label>
-                <input
-                  id="server-url"
-                  type="url"
-                  value={serverUrl}
-                  onChange={(e) => setServerUrl(e.target.value)}
-                  placeholder="http://192.168.1.x:32400"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="plex-token"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >
-                  Plex Token
-                </label>
-                <input
-                  id="plex-token"
-                  type="text"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition text-sm font-medium"
-              >
-                Connect
-              </button>
-            </form>
-          )}
-
-          {saveError && (
-            <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-              {saveError}
-            </p>
-          )}
+          {authMode === 'oauth' && <OAuthTab onConnected={fetchConnection} />}
+          {authMode === 'manual' && <ManualTab onConnected={fetchConnection} />}
         </div>
       )}
     </div>
