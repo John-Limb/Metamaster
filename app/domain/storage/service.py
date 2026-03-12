@@ -115,10 +115,11 @@ class StorageService:
 
     def _get_unwatched_sizes(self) -> tuple:
         """Return (unwatched_movie_bytes, unwatched_tv_bytes) for the space banner."""
+        from sqlalchemy import func as sa_func
+
         from app.domain.movies.models import Movie, MovieFile
         from app.domain.plex.models import PlexItemType, PlexSyncRecord
         from app.domain.tv_shows.models import Episode, EpisodeFile, Season
-        from sqlalchemy import func as sa_func
 
         movie_bytes = (
             self.db.query(sa_func.coalesce(sa_func.sum(MovieFile.file_size), 0))
