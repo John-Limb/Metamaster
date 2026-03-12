@@ -5,6 +5,7 @@ import { SortDropdown, type SortOption } from '@/components/features/sort'
 import { MovieCard } from '../MovieCard'
 import { MediaDetailModal } from '@/components/features/media'
 import { useMovieStore } from '@/stores/movieStore'
+import { usePlexStore } from '@/stores/plexStore'
 import { movieService } from '@/services/movieService'
 import './MoviesPage.css'
 
@@ -17,6 +18,8 @@ const MoviesPage: React.FC = () => {
     error,
     fetchMovies,
   } = useMovieStore()
+
+  const { mismatches, resolveMismatch } = usePlexStore()
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
@@ -307,29 +310,37 @@ const MoviesPage: React.FC = () => {
         ) : (
           <>
             <div className={`movies-page__grid movies-page__grid--${viewMode}`}>
-              {movies.map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  id={String(movie.id)}
-                  title={movie.title}
-                  year={movie.year ?? 0}
-                  rating={movie.rating}
-                  poster_url={movie.poster_url}
-                  genres={movie.genre}
-                  quality={movie.quality}
-                  resolution={movie.resolution}
-                  codec_video={movie.codec_video}
-                  codec_audio={movie.codec_audio}
-                  audio_channels={movie.audio_channels}
-                  file_size={movie.file_size}
-                  file_duration={movie.file_duration}
-                  onClick={() => handleMovieClick(String(movie.id))}
-                  onAddToQueue={() => handleAddToQueue(String(movie.id))}
-                  onScan={() => handleScan(String(movie.id))}
-                  onEdit={() => handleEdit(String(movie.id))}
-                  onDelete={() => handleDelete(String(movie.id))}
-                />
-              ))}
+              {movies.map((movie) => {
+                const movieMismatch = mismatches.find(
+                  (m) => m.item_type === 'movie' && m.item_id === Number(movie.id)
+                )
+                return (
+                  <MovieCard
+                    key={movie.id}
+                    id={String(movie.id)}
+                    title={movie.title}
+                    year={movie.year ?? 0}
+                    rating={movie.rating}
+                    poster_url={movie.poster_url}
+                    genres={movie.genre}
+                    quality={movie.quality}
+                    resolution={movie.resolution}
+                    codec_video={movie.codec_video}
+                    codec_audio={movie.codec_audio}
+                    audio_channels={movie.audio_channels}
+                    file_size={movie.file_size}
+                    file_duration={movie.file_duration}
+                    mismatch={movieMismatch}
+                    ourTmdbId={movie.tmdb_id ?? ''}
+                    onResolve={resolveMismatch}
+                    onClick={() => handleMovieClick(String(movie.id))}
+                    onAddToQueue={() => handleAddToQueue(String(movie.id))}
+                    onScan={() => handleScan(String(movie.id))}
+                    onEdit={() => handleEdit(String(movie.id))}
+                    onDelete={() => handleDelete(String(movie.id))}
+                  />
+                )
+              })}
             </div>
 
             {totalPages > 1 && (

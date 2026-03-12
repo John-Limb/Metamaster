@@ -5,6 +5,7 @@ import {
   initiatePlexOAuth,
   pollPlexOAuthCallback,
 } from '../../../services/plexService'
+import { MismatchesPanel } from './MismatchesPanel'
 
 type AuthMode = 'oauth' | 'manual'
 
@@ -219,12 +220,23 @@ function ManualTab({ onConnected }: { onConnected: () => void }) {
 // ---------------------------------------------------------------------------
 
 export function PlexSettings() {
-  const { connection, isLoading, error, fetchConnection, disconnect, sync } = usePlexStore()
+  const {
+    connection,
+    isLoading,
+    error,
+    mismatches,
+    fetchConnection,
+    disconnect,
+    sync,
+    fetchMismatches,
+    resolveMismatch,
+  } = usePlexStore()
   const [authMode, setAuthMode] = useState<AuthMode>('oauth')
 
   useEffect(() => {
     fetchConnection()
-  }, [fetchConnection])
+    fetchMismatches()
+  }, [fetchConnection, fetchMismatches])
 
   if (isLoading) return <div>Loading...</div>
 
@@ -237,11 +249,14 @@ export function PlexSettings() {
       )}
 
       {connection ? (
-        <ConnectedView
-          serverUrl={connection.server_url}
-          onSync={sync}
-          onDisconnect={disconnect}
-        />
+        <>
+          <ConnectedView
+            serverUrl={connection.server_url}
+            onSync={sync}
+            onDisconnect={disconnect}
+          />
+          <MismatchesPanel mismatches={mismatches} onResolve={resolveMismatch} />
+        </>
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Not connected</p>

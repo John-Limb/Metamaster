@@ -84,3 +84,23 @@ export async function getPlexHealth(): Promise<PlexHealthResponse> {
 export async function resyncPlexItem(syncRecordId: number): Promise<void> {
   await apiClient.post(`/api/v1/plex/sync/${syncRecordId}`)
 }
+
+export interface PlexMismatchItem {
+  id: number
+  item_type: string
+  item_id: number
+  plex_rating_key: string
+  plex_tmdb_id: string
+}
+
+export async function getMismatches(): Promise<PlexMismatchItem[]> {
+  const { data } = await apiClient.get<PlexMismatchItem[]>('/api/v1/plex/mismatches')
+  return data
+}
+
+export async function resolveMismatch(
+  recordId: number,
+  trust: 'metamaster' | 'plex'
+): Promise<void> {
+  await apiClient.post(`/api/v1/plex/mismatches/${recordId}/resolve`, { trust })
+}

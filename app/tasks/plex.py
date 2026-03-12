@@ -5,8 +5,10 @@ from typing import Optional
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.domain.movies.models import Movie
 from app.domain.plex.models import PlexItemType
 from app.domain.plex.service import PlexSyncService
+from app.domain.tv_shows.models import TVShow
 from app.infrastructure.external_apis.plex.client import PlexClient
 from app.tasks.celery_app import celery_app
 
@@ -42,6 +44,17 @@ def refresh_plex_library(section_id: str) -> None:
     logger.info("Plex: library section %s refresh triggered", section_id)
 
 
+def _get_title_year(db, item_type_str: str, item_id: int):
+    """Return (title, year) for the given item, or (None, None) if not found."""
+    if item_type_str == "movie":
+        item = db.query(Movie).filter(Movie.id == item_id).first()
+        return (item.title, item.year) if item else (None, None)
+    if item_type_str == "tv_show":
+        item = db.query(TVShow).filter(TVShow.id == item_id).first()
+        return (item.title, None) if item else (None, None)
+    return (None, None)
+
+
 @celery_app.task(
     name="app.tasks.plex.lock_plex_match",
     queue="external_api",
@@ -64,12 +77,15 @@ def lock_plex_match(item_type_str: str, item_id: int, tmdb_id: str, connection_i
         item_type = _ITEM_TYPE_MAP[item_type_str]
         # Route to correct section: movies to movie library, TV/episodes to TV library
         section_id = movie_section_id if item_type == PlexItemType.MOVIE else tv_section_id
+        title, year = _get_title_year(db, item_type_str, item_id)
         svc.lock_match(
             section_id=section_id,
             item_type=item_type,
             item_id=item_id,
             tmdb_id=tmdb_id,
             connection_id=connection_id,
+            title=title,
+            year=year,
         )
     finally:
         db.close()

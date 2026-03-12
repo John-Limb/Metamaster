@@ -20,6 +20,7 @@ def test_plex_sync_status_values():
     assert PlexSyncStatus.SYNCED == "synced"
     assert PlexSyncStatus.FAILED == "failed"
     assert PlexSyncStatus.NOT_FOUND == "not_found"
+    assert PlexSyncStatus.MISMATCH == "mismatch"
 
 
 @pytest.mark.unit
@@ -38,6 +39,7 @@ def test_plex_sync_record_has_required_columns():
         "item_type",
         "item_id",
         "plex_rating_key",
+        "plex_tmdb_id",
         "last_matched_at",
         "last_pulled_at",
         "watch_count",
@@ -118,3 +120,14 @@ def test_plex_connection_response_optional_fields_default_none():
     schema = PlexConnectionResponse(**data)
     assert schema.movie_library_id is None
     assert schema.is_active is False
+
+
+@pytest.mark.unit
+def test_plex_sync_status_has_mismatch_value():
+    assert PlexSyncStatus.MISMATCH == "mismatch"
+
+
+@pytest.mark.unit
+def test_plex_sync_record_has_plex_tmdb_id_column():
+    cols = {c.name for c in PlexSyncRecord.__table__.columns}
+    assert "plex_tmdb_id" in cols

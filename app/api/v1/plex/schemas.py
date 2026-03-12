@@ -16,3 +16,15 @@ class PlexSyncTriggerResponse(BaseModel):
 class PlexOAuthInitResponse(BaseModel):
     oauth_url: str
     pin_id: int
+
+
+class PlexMismatchItem(BaseModel):
+    id: int
+    item_type: str
+    item_id: int
+    plex_rating_key: str
+    plex_tmdb_id: str
+
+
+class PlexResolveRequest(BaseModel):
+    trust: str  # "metamaster" or "plex"

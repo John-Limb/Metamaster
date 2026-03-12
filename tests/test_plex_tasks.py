@@ -58,13 +58,41 @@ def test_lock_plex_match_delegates_to_service(
 
     lock_plex_match.apply(args=["movie", 42, "603", 1]).get()
 
-    mock_service.lock_match.assert_called_once_with(
-        section_id="1",
-        item_type=PlexItemType.MOVIE,
-        item_id=42,
-        tmdb_id="603",
-        connection_id=1,
-    )
+    call_kwargs = mock_service.lock_match.call_args[1]
+    assert call_kwargs["section_id"] == "1"
+    assert call_kwargs["item_type"] == PlexItemType.MOVIE
+    assert call_kwargs["item_id"] == 42
+    assert call_kwargs["tmdb_id"] == "603"
+    assert call_kwargs["connection_id"] == 1
+    assert "title" in call_kwargs
+    assert "year" in call_kwargs
+
+
+@pytest.mark.unit
+@patch("app.tasks.plex.PlexSyncService")
+@patch("app.tasks.plex.get_db")
+@patch("app.tasks.plex._make_client")
+def test_lock_plex_match_passes_title_and_year(mock_make_client, mock_get_db, mock_svc_cls):
+    mock_client = MagicMock()
+    mock_make_client.return_value = mock_client
+
+    mock_db = MagicMock()
+    mock_get_db.return_value = iter([mock_db])
+
+    mock_movie = MagicMock()
+    mock_movie.title = "The Matrix"
+    mock_movie.year = 1999
+    mock_db.query.return_value.filter.return_value.first.return_value = mock_movie
+
+    mock_svc = MagicMock()
+    mock_svc.resolve_library_ids.return_value = ("1", "2")
+    mock_svc_cls.return_value = mock_svc
+
+    lock_plex_match("movie", 42, "603", 1)
+
+    call_kwargs = mock_svc.lock_match.call_args[1]
+    assert call_kwargs["title"] == "The Matrix"
+    assert call_kwargs["year"] == 1999
 
 
 @pytest.mark.unit
