@@ -5,6 +5,7 @@ import { SortDropdown, type SortOption } from '@/components/features/sort'
 import { TVShowCard } from '../TVShowCard'
 import { MediaDetailModal } from '@/components/features/media'
 import { useTVShowStore } from '@/stores/tvShowStore'
+import { usePlexStore } from '@/stores/plexStore'
 import { tvShowService } from '@/services/tvShowService'
 import './TVShowsPage.css'
 
@@ -17,6 +18,8 @@ const TVShowsPage: React.FC = () => {
     error,
     fetchTVShows,
   } = useTVShowStore()
+
+  const { mismatches, resolveMismatch } = usePlexStore()
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
@@ -291,22 +294,30 @@ const TVShowsPage: React.FC = () => {
         ) : (
           <>
             <div className={`tvshows-page__grid tvshows-page__grid--${viewMode}`}>
-              {tvShows.map((show) => (
-                <TVShowCard
-                  key={show.id}
-                  id={String(show.id)}
-                  title={show.title}
-                  rating={show.rating}
-                  poster_url={show.poster_url}
-                  genres={show.genre}
-                  seasons={show.seasons}
-                  episodes={show.episodes}
-                  onClick={() => handleShowClick(String(show.id))}
-                  onAddToQueue={() => handleAddToQueue(String(show.id))}
-                  onEdit={() => handleEdit(String(show.id))}
-                  onDelete={() => handleDelete(String(show.id))}
-                />
-              ))}
+              {tvShows.map((show) => {
+                const showMismatch = mismatches.find(
+                  (m) => m.item_type === 'tv_show' && m.item_id === Number(show.id)
+                )
+                return (
+                  <TVShowCard
+                    key={show.id}
+                    id={String(show.id)}
+                    title={show.title}
+                    rating={show.rating}
+                    poster_url={show.poster_url}
+                    genres={show.genre}
+                    seasons={show.seasons}
+                    episodes={show.episodes}
+                    mismatch={showMismatch}
+                    ourTmdbId={show.tmdb_id ?? ''}
+                    onResolve={resolveMismatch}
+                    onClick={() => handleShowClick(String(show.id))}
+                    onAddToQueue={() => handleAddToQueue(String(show.id))}
+                    onEdit={() => handleEdit(String(show.id))}
+                    onDelete={() => handleDelete(String(show.id))}
+                  />
+                )
+              })}
             </div>
 
             {totalPages > 1 && (

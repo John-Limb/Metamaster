@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, Badge, Button } from '@/components/common'
 import { EnrichmentBadge, type EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
+import { MismatchResolveModal } from '@/components/features/plex/MismatchResolveModal'
+import type { PlexMismatchItem } from '@/services/plexService'
 import { formatFileSize } from '@/utils/helpers'
 import './MovieCard.css'
 
@@ -19,6 +21,9 @@ export interface MovieCardProps {
   file_size?: number
   file_duration?: number
   enrichment_status?: string | null
+  mismatch?: PlexMismatchItem
+  ourTmdbId?: string
+  onResolve?: (recordId: number, trust: 'metamaster' | 'plex') => Promise<void>
   onClick?: () => void
   onAddToQueue?: () => void
   onScan?: () => void
@@ -40,12 +45,16 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   file_size,
   file_duration,
   enrichment_status,
+  mismatch,
+  ourTmdbId,
+  onResolve,
   onClick,
   onAddToQueue,
   onScan,
   onEdit,
   onDelete,
 }) => {
+  const [activeMismatch, setActiveMismatch] = useState<PlexMismatchItem | null>(null)
   const hasFileStats = resolution || codec_video || codec_audio || audio_channels || file_size || file_duration
 
   const formatDuration = (seconds: number) => {
@@ -114,6 +123,28 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         <div className="absolute top-2 right-2">
           <EnrichmentBadge status={enrichment_status as EnrichmentStatus} />
         </div>
+
+        {mismatch && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setActiveMismatch(mismatch) }}
+            className="absolute top-2 left-2 z-10 p-1 bg-orange-500 text-white rounded-full text-xs leading-none"
+            title="TMDB ID mismatch with Plex"
+            aria-label="TMDB mismatch — click to resolve"
+          >
+            &#9888;
+          </button>
+        )}
+        {activeMismatch && (
+          <MismatchResolveModal
+            mismatch={activeMismatch}
+            ourTmdbId={ourTmdbId ?? ''}
+            onResolve={async (id, trust) => {
+              await onResolve?.(id, trust)
+              setActiveMismatch(null)
+            }}
+            onClose={() => setActiveMismatch(null)}
+          />
+        )}
 
         <div
           className="movie-card__overlay"

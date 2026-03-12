@@ -55,6 +55,24 @@ class PlexClient:
                 return item.rating_key
         return None
 
+    def find_by_title_year(
+        self,
+        section_id: str,
+        title: str,
+        year: Optional[int],
+        media_type: int = 1,
+    ) -> Optional[PlexMediaItem]:
+        """Find a Plex item by title and year. Returns first match, or None."""
+        data = self._get(
+            f"/library/sections/{section_id}/all",
+            params={"type": media_type, "title": title},
+        )
+        for raw in data.get("MediaContainer", {}).get("Metadata", []):
+            item = PlexMediaItem(**raw)
+            if year is None or item.year == year:
+                return item
+        return None
+
     def get_all_items(self, section_id: str, media_type: int) -> List[PlexMediaItem]:
         data = self._get(
             f"/library/sections/{section_id}/all",
@@ -62,3 +80,17 @@ class PlexClient:
         )
         metadata = data.get("MediaContainer", {}).get("Metadata", [])
         return [PlexMediaItem(**m) for m in metadata]
+
+    def _put(self, path: str, params: Optional[dict] = None) -> None:
+        url = f"{self._base}{path}"
+        logger.info("Plex API PUT %s params=%s", url, params)
+        with httpx.Client(timeout=10) as http:
+            response = http.put(url, headers=self._headers(), params=params)
+        response.raise_for_status()
+
+    def fix_match(self, rating_key: str, tmdb_id: str, title: str) -> None:
+        """Push our TMDB ID to Plex to correct its match."""
+        self._put(
+            f"/library/metadata/{rating_key}/match",
+            params={"guid": f"tmdb://{tmdb_id}", "name": title},
+        )

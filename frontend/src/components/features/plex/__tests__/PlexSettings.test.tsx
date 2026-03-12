@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { PlexSettings } from '../PlexSettings'
 import { usePlexStore } from '../../../../stores/plexStore'
-import type { PlexConnection } from '../../../../services/plexService'
+import type { PlexConnection, PlexMismatchItem } from '../../../../services/plexService'
 
 vi.mock('../../../../stores/plexStore')
 
@@ -10,18 +10,24 @@ interface MockPlexState {
   connection: PlexConnection | null
   isLoading: boolean
   error: string | null
+  mismatches: PlexMismatchItem[]
   fetchConnection: ReturnType<typeof vi.fn>
   disconnect: ReturnType<typeof vi.fn>
   sync: ReturnType<typeof vi.fn>
+  fetchMismatches: ReturnType<typeof vi.fn>
+  resolveMismatch: ReturnType<typeof vi.fn>
 }
 
 const makeMockState = (overrides: Partial<MockPlexState> = {}): MockPlexState => ({
   connection: null,
   isLoading: false,
   error: null,
+  mismatches: [],
   fetchConnection: vi.fn(),
   disconnect: vi.fn(),
   sync: vi.fn(),
+  fetchMismatches: vi.fn(),
+  resolveMismatch: vi.fn(),
   ...overrides,
 })
 

@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, Badge, Button } from '@/components/common'
 import { EnrichmentBadge, type EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
+import { MismatchResolveModal } from '@/components/features/plex/MismatchResolveModal'
+import type { PlexMismatchItem } from '@/services/plexService'
 import './TVShowCard.css'
 
 export interface TVShowCardProps {
@@ -18,6 +20,9 @@ export interface TVShowCardProps {
   rating?: number
   genres?: string[]
   enrichment_status?: string | null
+  mismatch?: PlexMismatchItem
+  ourTmdbId?: string
+  onResolve?: (recordId: number, trust: 'metamaster' | 'plex') => Promise<void>
   onClick?: () => void
   onAddToQueue?: () => void
   onEdit?: () => void
@@ -34,11 +39,16 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
   rating,
   genres = [],
   enrichment_status,
+  mismatch,
+  ourTmdbId,
+  onResolve,
   onClick,
   onAddToQueue,
   onEdit,
   onDelete,
 }) => {
+  const [activeMismatch, setActiveMismatch] = useState<PlexMismatchItem | null>(null)
+
   const renderStars = (rating: number) => {
     const stars = Math.round(rating / 2)
     return '★'.repeat(stars) + '☆'.repeat(5 - stars)
@@ -132,6 +142,28 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
         <div className="absolute top-2 right-2">
           <EnrichmentBadge status={enrichment_status as EnrichmentStatus} />
         </div>
+
+        {mismatch && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setActiveMismatch(mismatch) }}
+            className="absolute top-2 left-2 z-10 p-1 bg-orange-500 text-white rounded-full text-xs leading-none"
+            title="TMDB ID mismatch with Plex"
+            aria-label="TMDB mismatch — click to resolve"
+          >
+            &#9888;
+          </button>
+        )}
+        {activeMismatch && (
+          <MismatchResolveModal
+            mismatch={activeMismatch}
+            ourTmdbId={ourTmdbId ?? ''}
+            onResolve={async (id, trust) => {
+              await onResolve?.(id, trust)
+              setActiveMismatch(null)
+            }}
+            onClose={() => setActiveMismatch(null)}
+          />
+        )}
 
         {nextEpisode && (
           <div className="tvshow-card__next-episode">

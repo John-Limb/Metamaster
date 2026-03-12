@@ -166,3 +166,100 @@ def test_get_all_items_with_watch_status():
     items = client.get_all_items(section_id="1", media_type=1)
     assert items[0].view_count == 3
     assert items[0].tmdb_id == "100"
+
+
+@pytest.mark.unit
+@respx.mock
+def test_find_by_title_year_returns_item_when_found():
+    respx.get(
+        "http://plex:32400/library/sections/1/all",
+        params={"type": 1, "title": "The Matrix"},
+    ).mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "MediaContainer": {
+                    "Metadata": [
+                        {
+                            "ratingKey": "77",
+                            "title": "The Matrix",
+                            "year": 1999,
+                            "Guid": [{"id": "tmdb://9999"}],
+                        }
+                    ]
+                }
+            },
+        )
+    )
+    client = PlexClient(server_url="http://plex:32400", token="fake-token")
+    item = client.find_by_title_year(section_id="1", title="The Matrix", year=1999)
+    assert item is not None
+    assert item.rating_key == "77"
+    assert item.tmdb_id == "9999"
+
+
+@pytest.mark.unit
+@respx.mock
+def test_find_by_title_year_returns_none_when_year_mismatch():
+    respx.get(
+        "http://plex:32400/library/sections/1/all",
+        params={"type": 1, "title": "The Matrix"},
+    ).mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "MediaContainer": {
+                    "Metadata": [
+                        {"ratingKey": "77", "title": "The Matrix", "year": 2003, "Guid": []}
+                    ]
+                }
+            },
+        )
+    )
+    client = PlexClient(server_url="http://plex:32400", token="fake-token")
+    item = client.find_by_title_year(section_id="1", title="The Matrix", year=1999)
+    assert item is None
+
+
+@pytest.mark.unit
+@respx.mock
+def test_find_by_title_year_returns_item_when_year_is_none():
+    """When year is None (e.g. TV show), return the first title match."""
+    respx.get(
+        "http://plex:32400/library/sections/2/all",
+        params={"type": 2, "title": "Breaking Bad"},
+    ).mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "MediaContainer": {
+                    "Metadata": [
+                        {
+                            "ratingKey": "55",
+                            "title": "Breaking Bad",
+                            "year": 2008,
+                            "Guid": [{"id": "tmdb://1396"}],
+                        }
+                    ]
+                }
+            },
+        )
+    )
+    client = PlexClient(server_url="http://plex:32400", token="fake-token")
+    item = client.find_by_title_year(section_id="2", title="Breaking Bad", year=None, media_type=2)
+    assert item is not None
+    assert item.rating_key == "55"
+
+
+@pytest.mark.unit
+@respx.mock
+def test_fix_match_calls_correct_url():
+    route = respx.put("http://plex:32400/library/metadata/99/match").mock(
+        return_value=httpx.Response(200)
+    )
+    client = PlexClient(server_url="http://plex:32400", token="fake-token")
+    client.fix_match(rating_key="99", tmdb_id="603", title="The Matrix")
+    assert route.called
+    request = route.calls[0].request
+    assert "tmdb" in str(request.url)
+    assert "603" in str(request.url)

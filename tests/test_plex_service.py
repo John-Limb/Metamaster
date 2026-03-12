@@ -131,6 +131,100 @@ def test_lock_match_does_not_raise_on_not_found():
 
 
 @pytest.mark.unit
+def test_lock_match_detects_mismatch_via_title_year_fallback():
+    """If TMDB lookup fails but title+year finds a different TMDB ID, mark MISMATCH."""
+    mock_db = MagicMock()
+    mock_client = MagicMock()
+    mock_client.find_rating_key_by_tmdb_id.return_value = None
+    plex_item = PlexMediaItem(
+        **{
+            "ratingKey": "77",
+            "title": "The Matrix",
+            "year": 1999,
+            "Guid": [{"id": "tmdb://9999"}],
+        }
+    )
+    mock_client.find_by_title_year.return_value = plex_item
+    mock_db.query.return_value.filter.return_value.first.return_value = None
+
+    svc = PlexSyncService(
+        db=mock_db,
+        client=mock_client,
+        movie_library_name="Movies",
+        tv_library_name="TV Shows",
+    )
+    svc.lock_match(
+        section_id="1",
+        item_type=PlexItemType.MOVIE,
+        item_id=42,
+        tmdb_id="603",
+        connection_id=1,
+        title="The Matrix",
+        year=1999,
+    )
+
+    record = mock_db.add.call_args[0][0]
+    assert record.sync_status == PlexSyncStatus.MISMATCH
+    assert record.plex_tmdb_id == "9999"
+    assert record.plex_rating_key == "77"
+
+
+@pytest.mark.unit
+def test_lock_match_skips_title_fallback_when_no_title_provided():
+    """If title is not provided, fall straight through to NOT_FOUND."""
+    mock_db = MagicMock()
+    mock_client = MagicMock()
+    mock_client.find_rating_key_by_tmdb_id.return_value = None
+    mock_db.query.return_value.filter.return_value.first.return_value = None
+
+    svc = PlexSyncService(
+        db=mock_db,
+        client=mock_client,
+        movie_library_name="Movies",
+        tv_library_name="TV Shows",
+    )
+    svc.lock_match(
+        section_id="1",
+        item_type=PlexItemType.MOVIE,
+        item_id=42,
+        tmdb_id="603",
+        connection_id=1,
+    )
+
+    record = mock_db.add.call_args[0][0]
+    assert record.sync_status == PlexSyncStatus.NOT_FOUND
+    mock_client.find_by_title_year.assert_not_called()
+
+
+@pytest.mark.unit
+def test_lock_match_not_found_when_title_fallback_finds_nothing():
+    mock_db = MagicMock()
+    mock_client = MagicMock()
+    mock_client.find_rating_key_by_tmdb_id.return_value = None
+    mock_client.find_by_title_year.return_value = None
+    mock_db.query.return_value.filter.return_value.first.return_value = None
+
+    svc = PlexSyncService(
+        db=mock_db,
+        client=mock_client,
+        movie_library_name="Movies",
+        tv_library_name="TV Shows",
+    )
+    svc.lock_match(
+        section_id="1",
+        item_type=PlexItemType.MOVIE,
+        item_id=42,
+        tmdb_id="603",
+        connection_id=1,
+        title="The Matrix",
+        year=1999,
+    )
+
+    record = mock_db.add.call_args[0][0]
+    assert record.sync_status == PlexSyncStatus.NOT_FOUND
+
+
+@pytest.mark.unit
 def test_pull_watched_status_updates_existing_record():
     mock_db = MagicMock()
     mock_client = MagicMock()

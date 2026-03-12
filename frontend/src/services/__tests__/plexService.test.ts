@@ -4,6 +4,8 @@ import {
   createPlexConnection,
   triggerPlexSync,
   initiatePlexOAuth,
+  getMismatches,
+  resolveMismatch,
 } from '../plexService'
 
 vi.mock('@/utils/api', () => ({
@@ -51,5 +53,27 @@ describe('plexService', () => {
     })
     const result = await initiatePlexOAuth('http://localhost/callback')
     expect(result.pin_id).toBe(42)
+  })
+})
+
+describe('getMismatches', () => {
+  it('returns mismatch items from the API', async () => {
+    const mockData = [
+      { id: 10, item_type: 'movie', item_id: 42, plex_rating_key: '77', plex_tmdb_id: '9999' },
+    ]
+    vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockData })
+    const result = await getMismatches()
+    expect(result).toEqual(mockData)
+    expect(apiClient.get).toHaveBeenCalledWith('/api/v1/plex/mismatches')
+  })
+})
+
+describe('resolveMismatch', () => {
+  it('posts resolve request to the API', async () => {
+    vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { status: 'resolved' } })
+    await resolveMismatch(10, 'metamaster')
+    expect(apiClient.post).toHaveBeenCalledWith('/api/v1/plex/mismatches/10/resolve', {
+      trust: 'metamaster',
+    })
   })
 })

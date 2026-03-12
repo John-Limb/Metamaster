@@ -17,6 +17,7 @@ class PlexSyncStatus(str, enum.Enum):
     SYNCED = "synced"
     FAILED = "failed"
     NOT_FOUND = "not_found"
+    MISMATCH = "mismatch"
 
 
 class PlexItemType(str, enum.Enum):
@@ -59,13 +60,14 @@ class PlexSyncRecord(Base):
     )
     item_id = Column(Integer, nullable=False)
     plex_rating_key = Column(String(50), nullable=True)
+    plex_tmdb_id = Column(String(50), nullable=True)
     last_matched_at = Column(DateTime, nullable=True)
     last_pulled_at = Column(DateTime, nullable=True)
     watch_count = Column(Integer, default=0)
     last_watched_at = Column(DateTime, nullable=True)
     is_watched = Column(Boolean, default=False)
     sync_status: Any = Column(
-        SAEnum("pending", "synced", "failed", "not_found", name="plexsyncstatus"),
+        SAEnum("pending", "synced", "failed", "not_found", "mismatch", name="plexsyncstatus"),
         nullable=False,
         default="pending",
     )

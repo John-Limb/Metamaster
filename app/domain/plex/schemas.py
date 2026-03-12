@@ -26,6 +26,7 @@ class PlexSyncRecordResponse(BaseModel):
     item_type: str
     item_id: int
     plex_rating_key: Optional[str] = None
+    plex_tmdb_id: Optional[str] = None
     sync_status: str
     watch_count: int = 0
     is_watched: bool = False

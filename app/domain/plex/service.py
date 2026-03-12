@@ -60,14 +60,15 @@ class PlexSyncService:
         item_id: int,
         tmdb_id: str,
         connection_id: int,
+        title: Optional[str] = None,
+        year: Optional[int] = None,
     ) -> PlexSyncRecord:
         """Resolve TMDB ID to Plex ratingKey and upsert sync record.
 
-        Marks NOT_FOUND if Plex has no item with the given TMDB ID.
-        Never raises — missing items are skipped, not failures.
+        Two-step lookup:
+        1. Search by our tmdb_id -> SYNCED
+        2. Fallback title+year search -> MISMATCH (different tmdb_id) or NOT_FOUND
         """
-        rating_key = self._client.find_rating_key_by_tmdb_id(section_id=section_id, tmdb_id=tmdb_id)
-
         record = (
             self._db.query(PlexSyncRecord)
             .filter(
@@ -77,7 +78,6 @@ class PlexSyncService:
             )
             .first()
         )
-
         if record is None:
             record = PlexSyncRecord(
                 connection_id=connection_id,
@@ -86,21 +86,39 @@ class PlexSyncService:
             )
             self._db.add(record)
 
+        rating_key = self._client.find_rating_key_by_tmdb_id(section_id=section_id, tmdb_id=tmdb_id)
         if rating_key:
             record.plex_rating_key = rating_key  # type: ignore[assignment]
+            record.plex_tmdb_id = None  # type: ignore[assignment]
             record.sync_status = PlexSyncStatus.SYNCED  # type: ignore[assignment]
             record.last_matched_at = datetime.utcnow()  # type: ignore[assignment]
             logger.info("Plex match locked: %s id=%s key=%s", item_type, item_id, rating_key)
-        else:
-            record.sync_status = PlexSyncStatus.NOT_FOUND  # type: ignore[assignment]
-            record.plex_rating_key = None  # type: ignore[assignment]
-            logger.warning(
-                "Plex match not found: %s id=%s tmdb_id=%s — skipping",
-                item_type,
-                item_id,
-                tmdb_id,
-            )
+            self._db.commit()
+            return record
 
+        if title:
+            plex_item = self._client.find_by_title_year(
+                section_id=section_id, title=title, year=year
+            )
+            if plex_item and plex_item.tmdb_id and plex_item.tmdb_id != tmdb_id:
+                record.plex_rating_key = plex_item.rating_key  # type: ignore[assignment]
+                record.plex_tmdb_id = plex_item.tmdb_id  # type: ignore[assignment]
+                record.sync_status = PlexSyncStatus.MISMATCH  # type: ignore[assignment]
+                record.last_matched_at = datetime.utcnow()  # type: ignore[assignment]
+                logger.warning(
+                    "Plex TMDB mismatch: %s id=%s ours=%s plex=%s",
+                    item_type,
+                    item_id,
+                    tmdb_id,
+                    plex_item.tmdb_id,
+                )
+                self._db.commit()
+                return record
+
+        record.sync_status = PlexSyncStatus.NOT_FOUND  # type: ignore[assignment]
+        record.plex_rating_key = None  # type: ignore[assignment]
+        record.plex_tmdb_id = None  # type: ignore[assignment]
+        logger.warning("Plex match not found: %s id=%s tmdb_id=%s", item_type, item_id, tmdb_id)
         self._db.commit()
         return record
 
