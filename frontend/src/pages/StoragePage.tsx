@@ -106,6 +106,34 @@ function SortHeader({
   )
 }
 
+// ── TV show grouping ───────────────────────────────────────────────────────
+type GroupHeader = { _groupHeader: true; show_title: string; show_fully_unwatched: boolean }
+type GroupedRow = StorageFileItem | GroupHeader
+
+function groupItemsWithShowHeaders(items: StorageFileItem[], showGrouping: boolean): GroupedRow[] {
+  if (!showGrouping) return items
+  const result: GroupedRow[] = []
+  let lastShow: string | null = null
+  const sorted = [...items].sort((a, b) => {
+    if (a.show_title && b.show_title) return a.show_title.localeCompare(b.show_title)
+    if (a.show_title) return 1
+    if (b.show_title) return -1
+    return 0
+  })
+  for (const item of sorted) {
+    if (item.show_title && item.show_title !== lastShow) {
+      result.push({
+        _groupHeader: true,
+        show_title: item.show_title,
+        show_fully_unwatched: item.show_fully_unwatched ?? false,
+      })
+      lastShow = item.show_title
+    }
+    result.push(item)
+  }
+  return result
+}
+
 // ── Main page ──────────────────────────────────────────────────────────────
 export function StoragePage() {
   const [summary, setSummary] = useState<StorageSummary | null>(null)
@@ -118,6 +146,7 @@ export function StoragePage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [filterMediaType, setFilterMediaType] = useState('')
   const [filterEfficiency, setFilterEfficiency] = useState('')
+  const [filterWatchedStatus, setFilterWatchedStatus] = useState('')
 
   const PAGE_SIZE = 50
 
@@ -133,6 +162,7 @@ export function StoragePage() {
           sortDir,
           mediaType: filterMediaType || undefined,
           efficiencyTier: filterEfficiency || undefined,
+          watchedStatus: (filterWatchedStatus as 'watched' | 'unwatched') || undefined,
         }),
       ])
       setSummary(summaryData)
@@ -143,7 +173,7 @@ export function StoragePage() {
     } finally {
       setLoading(false)
     }
-  }, [page, sortBy, sortDir, filterMediaType, filterEfficiency])
+  }, [page, sortBy, sortDir, filterMediaType, filterEfficiency, filterWatchedStatus])
 
   useEffect(() => { load() }, [load])
 
@@ -245,10 +275,32 @@ export function StoragePage() {
           <option value="efficient">Efficient</option>
           <option value="unknown">Pending</option>
         </select>
+        <label htmlFor="filter-watched" className="sr-only">Watched Status</label>
+        <select
+          id="filter-watched"
+          aria-label="Watched Status"
+          value={filterWatchedStatus}
+          onChange={e => { setFilterWatchedStatus(e.target.value); setPage(1) }}
+          className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm px-3 py-2"
+        >
+          <option value="">All</option>
+          <option value="unwatched">Unwatched</option>
+          <option value="watched">Watched</option>
+        </select>
         <span className="text-sm text-slate-500 dark:text-slate-400">
           {total} file{total !== 1 ? 's' : ''}
         </span>
       </div>
+
+      {/* Recoverable space banner */}
+      {filterWatchedStatus === 'unwatched' && summary && (
+        <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+          <span className="font-semibold">
+            {formatBytes(summary.unwatched_movie_size_bytes + summary.unwatched_tv_size_bytes)}
+          </span>{' '}
+          potentially recoverable from unwatched files.
+        </div>
+      )}
 
       {/* File table */}
       <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
@@ -284,23 +336,42 @@ export function StoragePage() {
                     No files found.
                   </td>
                 </tr>
-              ) : items.map(item => (
-                <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <td className="px-4 py-3 max-w-xs truncate font-medium text-slate-900 dark:text-white" title={item.name}>
-                    {item.name}
-                  </td>
-                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400 capitalize">{item.media_type}</td>
-                  <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">{formatBytes(item.size_bytes)}</td>
-                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">{formatDuration(item.duration_seconds)}</td>
-                  <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{item.mb_per_min != null ? item.mb_per_min.toFixed(1) : '—'}</td>
-                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatCodec(item.video_codec)}</td>
-                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400 uppercase text-xs">{item.resolution_tier === 'unknown' ? '—' : item.resolution_tier}</td>
-                  <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                    {item.estimated_savings_bytes > 0 ? `~${formatBytes(item.estimated_savings_bytes)}` : '—'}
-                  </td>
-                  <td className="px-4 py-3"><TierBadge tier={item.efficiency_tier} /></td>
-                </tr>
-              ))}
+              ) : groupItemsWithShowHeaders(items, filterWatchedStatus === 'unwatched').map((row, idx) => {
+                if ('_groupHeader' in row) {
+                  return (
+                    <tr key={`group-${row.show_title}`} className="bg-slate-50 dark:bg-slate-800/50">
+                      <td colSpan={9} className="px-4 py-2">
+                        <span className="font-semibold text-slate-700 dark:text-slate-200 text-sm">{row.show_title}</span>
+                        <span className={`ml-2 text-xs px-1.5 py-0.5 rounded ${
+                          row.show_fully_unwatched
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        }`}>
+                          {row.show_fully_unwatched ? 'Never watched' : 'Partially watched'}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                }
+                const item = row
+                return (
+                  <tr key={`${item.id}-${idx}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 max-w-xs truncate font-medium text-slate-900 dark:text-white" title={item.name}>
+                      {item.name}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 capitalize">{item.media_type}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">{formatBytes(item.size_bytes)}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">{formatDuration(item.duration_seconds)}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{item.mb_per_min != null ? item.mb_per_min.toFixed(1) : '—'}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatCodec(item.video_codec)}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 uppercase text-xs">{item.resolution_tier === 'unknown' ? '—' : item.resolution_tier}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                      {item.estimated_savings_bytes > 0 ? `~${formatBytes(item.estimated_savings_bytes)}` : '—'}
+                    </td>
+                    <td className="px-4 py-3"><TierBadge tier={item.efficiency_tier} /></td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

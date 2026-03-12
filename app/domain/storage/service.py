@@ -113,6 +113,40 @@ class StorageService:
     # DB-backed methods
     # ------------------------------------------------------------------
 
+    def _get_unwatched_sizes(self) -> tuple:
+        """Return (unwatched_movie_bytes, unwatched_tv_bytes) for the space banner."""
+        from app.domain.movies.models import Movie, MovieFile
+        from app.domain.plex.models import PlexItemType, PlexSyncRecord
+        from app.domain.tv_shows.models import Episode, EpisodeFile, Season
+        from sqlalchemy import func as sa_func
+
+        movie_bytes = (
+            self.db.query(sa_func.coalesce(sa_func.sum(MovieFile.file_size), 0))
+            .join(Movie, MovieFile.movie_id == Movie.id)
+            .join(
+                PlexSyncRecord,
+                (PlexSyncRecord.item_id == Movie.id)
+                & (PlexSyncRecord.item_type == PlexItemType.MOVIE),
+            )
+            .filter(PlexSyncRecord.is_watched.is_(False))
+            .scalar()
+        ) or 0
+
+        tv_bytes = (
+            self.db.query(sa_func.coalesce(sa_func.sum(EpisodeFile.file_size), 0))
+            .join(Episode, EpisodeFile.episode_id == Episode.id)
+            .join(Season, Episode.season_id == Season.id)
+            .join(
+                PlexSyncRecord,
+                (PlexSyncRecord.item_id == Episode.id)
+                & (PlexSyncRecord.item_type == PlexItemType.EPISODE),
+            )
+            .filter(PlexSyncRecord.is_watched.is_(False))
+            .scalar()
+        ) or 0
+
+        return int(movie_bytes), int(tv_bytes)
+
     def get_disk_stats(self) -> Dict[str, int]:
         """Get filesystem disk usage via os.statvfs on the movie media directory."""
         try:
@@ -147,6 +181,70 @@ class StorageService:
             return "tv"
         return "other"
 
+    def _get_path_watch_info(self) -> dict:
+        """Return {file_path: {is_watched, title, show_title, show_fully_unwatched}}
+        for every file that is matched in the library."""
+        from app.domain.movies.models import Movie, MovieFile
+        from app.domain.plex.models import PlexItemType, PlexSyncRecord
+        from app.domain.tv_shows.models import Episode, EpisodeFile, Season, TVShow
+
+        result: dict = {}
+
+        movie_rows = (
+            self.db.query(MovieFile.file_path, Movie.title, PlexSyncRecord.is_watched)
+            .join(Movie, MovieFile.movie_id == Movie.id)
+            .outerjoin(
+                PlexSyncRecord,
+                (PlexSyncRecord.item_id == Movie.id)
+                & (PlexSyncRecord.item_type == PlexItemType.MOVIE),
+            )
+            .all()
+        )
+        for file_path, title, is_watched in movie_rows:
+            result[file_path] = {
+                "is_watched": is_watched,
+                "title": title,
+                "show_title": None,
+                "show_fully_unwatched": None,
+            }
+
+        ep_rows = (
+            self.db.query(
+                EpisodeFile.file_path,
+                TVShow.title,
+                TVShow.id,
+                PlexSyncRecord.is_watched,
+            )
+            .join(Episode, EpisodeFile.episode_id == Episode.id)
+            .join(Season, Episode.season_id == Season.id)
+            .join(TVShow, Season.show_id == TVShow.id)
+            .outerjoin(
+                PlexSyncRecord,
+                (PlexSyncRecord.item_id == Episode.id)
+                & (PlexSyncRecord.item_type == PlexItemType.EPISODE),
+            )
+            .all()
+        )
+        show_has_watched: dict = {}
+        ep_data = []
+        for file_path, show_title, show_id, is_watched in ep_rows:
+            ep_data.append((file_path, show_title, show_id, is_watched))
+            if show_id not in show_has_watched:
+                show_has_watched[show_id] = False
+            if is_watched:
+                show_has_watched[show_id] = True
+
+        # Both loops iterate ep_data, so show_id is always present in show_has_watched.
+        for file_path, show_title, show_id, is_watched in ep_data:
+            result[file_path] = {
+                "is_watched": is_watched,
+                "title": None,
+                "show_title": show_title,
+                "show_fully_unwatched": not show_has_watched[show_id],
+            }
+
+        return result
+
     def get_summary(self) -> Dict[str, Any]:
         """Aggregate storage summary for dashboard widget."""
         movies_bytes = 0
@@ -175,6 +273,7 @@ class StorageService:
             else:
                 files_pending += 1
 
+        unwatched_movie_bytes, unwatched_tv_bytes = self._get_unwatched_sizes()
         return {
             "disk": self.get_disk_stats(),
             "library": {
@@ -185,7 +284,21 @@ class StorageService:
             "potential_savings_bytes": potential_savings,
             "files_analyzed": files_analyzed,
             "files_pending_analysis": files_pending,
+            "unwatched_movie_size_bytes": unwatched_movie_bytes,
+            "unwatched_tv_size_bytes": unwatched_tv_bytes,
         }
+
+    def _apply_watched_filter(self, results: list, watched_status: Optional[str]) -> list:
+        """Filter file list by Plex watch status.
+
+        Files with is_watched=None (not yet synced to Plex) are excluded
+        from both 'watched' and 'unwatched' results.
+        """
+        if watched_status == "unwatched":
+            return [r for r in results if r.get("is_watched") is False]
+        if watched_status == "watched":
+            return [r for r in results if r.get("is_watched") is True]
+        return results
 
     def get_files(
         self,
@@ -197,8 +310,10 @@ class StorageService:
         codec: Optional[str] = None,
         resolution_tier: Optional[str] = None,
         efficiency_tier: Optional[str] = None,
+        watched_status: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Return paginated, sortable file list with efficiency analytics."""
+        path_watch_info = self._get_path_watch_info()
         results = []
 
         for f in self._iter_video_files():
@@ -224,6 +339,11 @@ class StorageService:
                     "resolution_tier": res_tier,
                     "efficiency_tier": eff_tier,
                     "estimated_savings_bytes": savings,
+                    "is_watched": path_watch_info.get(f.path, {}).get("is_watched"),
+                    "show_title": path_watch_info.get(f.path, {}).get("show_title"),
+                    "show_fully_unwatched": path_watch_info.get(f.path, {}).get(
+                        "show_fully_unwatched"
+                    ),
                 }
             )
 
@@ -236,6 +356,7 @@ class StorageService:
             results = [r for r in results if r["resolution_tier"] == resolution_tier]
         if efficiency_tier:
             results = [r for r in results if r["efficiency_tier"] == efficiency_tier]
+        results = self._apply_watched_filter(results, watched_status)
 
         # Sort — None values sort to the end
         valid_sort_keys = {

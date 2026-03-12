@@ -18,6 +18,8 @@ export interface StorageSummary {
   potential_savings_bytes: number
   files_analyzed: number
   files_pending_analysis: number
+  unwatched_movie_size_bytes: number
+  unwatched_tv_size_bytes: number
 }
 
 export interface StorageFileItem {
@@ -33,6 +35,9 @@ export interface StorageFileItem {
   resolution_tier: '4k' | '1080p' | '720p' | 'sd' | 'unknown'
   efficiency_tier: 'efficient' | 'moderate' | 'large' | 'unknown'
   estimated_savings_bytes: number
+  is_watched: boolean | null
+  show_title: string | null
+  show_fully_unwatched: boolean | null
 }
 
 export interface StorageFilesResponse {
@@ -49,6 +54,7 @@ export interface StorageFilesParams {
   codec?: string
   resolutionTier?: string
   efficiencyTier?: string
+  watchedStatus?: 'watched' | 'unwatched'
 }
 
 export const storageService = {

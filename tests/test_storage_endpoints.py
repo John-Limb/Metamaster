@@ -77,7 +77,40 @@ def test_get_files_passes_query_params():
             codec=None,
             resolution_tier=None,
             efficiency_tier=None,
+            watched_status=None,
         )
+
+
+def test_get_files_passes_watched_status():
+    with patch("app.api.v1.storage.endpoints.StorageService") as MockService:
+        MockService.return_value.get_files.return_value = {"total": 0, "items": []}
+        client.get("/api/v1/storage/files?watchedStatus=unwatched")
+        MockService.return_value.get_files.assert_called_once_with(
+            page=1,
+            page_size=50,
+            sort_by="size_bytes",
+            sort_dir="desc",
+            media_type=None,
+            codec=None,
+            resolution_tier=None,
+            efficiency_tier=None,
+            watched_status="unwatched",
+        )
+
+
+def test_get_summary_includes_unwatched_size_keys():
+    summary_with_unwatched = {
+        **SUMMARY_PAYLOAD,
+        "unwatched_movie_size_bytes": 500_000_000_000,
+        "unwatched_tv_size_bytes": 200_000_000_000,
+    }
+    with patch("app.api.v1.storage.endpoints.StorageService") as MockService:
+        MockService.return_value.get_summary.return_value = summary_with_unwatched
+        response = client.get("/api/v1/storage/summary")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["unwatched_movie_size_bytes"] == 500_000_000_000
+    assert data["unwatched_tv_size_bytes"] == 200_000_000_000
 
 
 def test_scan_technical_returns_202():

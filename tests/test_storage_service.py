@@ -186,6 +186,7 @@ def test_get_summary_structure(service):
             "get_disk_stats",
             return_value={"total_bytes": 1000, "used_bytes": 500, "available_bytes": 500},
         ),
+        patch.object(service, "_get_unwatched_sizes", return_value=(0, 0)),
     ):
         mock_settings.watch_extensions = [".mkv", ".mp4"]
         result = service.get_summary()
@@ -217,11 +218,32 @@ def test_get_summary_counts_pending(service):
         patch("app.domain.storage.service.settings") as mock_settings,
         patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
         patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+        patch.object(service, "_get_unwatched_sizes", return_value=(0, 0)),
     ):
         mock_settings.watch_extensions = [".mkv", ".mp4"]
         result = service.get_summary()
     assert result["files_pending_analysis"] == 1
     assert result["files_analyzed"] == 0
+
+
+def test_get_summary_includes_unwatched_size_fields(service):
+    """get_summary() response includes unwatched_movie_size_bytes and unwatched_tv_size_bytes."""
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = []
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch.object(
+            service,
+            "get_disk_stats",
+            return_value={"total_bytes": 0, "used_bytes": 0, "available_bytes": 0},
+        ),
+        patch.object(service, "_get_unwatched_sizes", return_value=(0, 0)),
+    ):
+        mock_settings.watch_extensions = []
+        result = service.get_summary()
+    assert "unwatched_movie_size_bytes" in result
+    assert "unwatched_tv_size_bytes" in result
+    assert isinstance(result["unwatched_movie_size_bytes"], int)
+    assert isinstance(result["unwatched_tv_size_bytes"], int)
 
 
 # ===========================================================================
@@ -316,3 +338,152 @@ def test_get_files_sort_none_last_desc(service):
         result = service.get_files(sort_by="mb_per_min", sort_dir="desc")
     items = result["items"]
     assert items[-1]["mb_per_min"] is None, "None should sort last in desc too"
+
+
+def test_get_files_unwatched_filter_excludes_watched(service):
+    """watched_status='unwatched' returns only rows with is_watched=False."""
+    mock_file = _make_mock_file("/media/movies/a.mkv", 2_000_000_000, "h264", 1920, 1080, 7200)
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = [
+        mock_file
+    ]
+    watch_info = {
+        "/media/movies/a.mkv": {
+            "is_watched": False,
+            "title": "Movie A",
+            "show_title": None,
+            "show_fully_unwatched": None,
+        }
+    }
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+        patch.object(service, "_get_path_watch_info", return_value=watch_info),
+    ):
+        mock_settings.watch_extensions = [".mkv"]
+        result = service.get_files(watched_status="unwatched")
+    assert result["total"] == 1
+    assert result["items"][0]["is_watched"] is False
+
+
+def test_get_files_unwatched_filter_excludes_watched_items(service):
+    """watched_status='unwatched' excludes files with is_watched=True."""
+    mock_file = _make_mock_file("/media/movies/b.mkv", 1_000_000_000, "h264", 1920, 1080, 7200)
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = [
+        mock_file
+    ]
+    watch_info = {
+        "/media/movies/b.mkv": {
+            "is_watched": True,
+            "title": "Movie B",
+            "show_title": None,
+            "show_fully_unwatched": None,
+        }
+    }
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+        patch.object(service, "_get_path_watch_info", return_value=watch_info),
+    ):
+        mock_settings.watch_extensions = [".mkv"]
+        result = service.get_files(watched_status="unwatched")
+    assert result["total"] == 0
+
+
+def test_get_files_includes_show_title_for_tv(service):
+    """TV episode files get show_title and show_fully_unwatched in the result."""
+    mock_file = _make_mock_file("/media/tv/show/s01e01.mkv", 500_000_000, "h264", 1920, 1080, 2700)
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = [
+        mock_file
+    ]
+    watch_info = {
+        "/media/tv/show/s01e01.mkv": {
+            "is_watched": False,
+            "title": None,
+            "show_title": "My Show",
+            "show_fully_unwatched": True,
+        }
+    }
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+        patch.object(service, "_get_path_watch_info", return_value=watch_info),
+    ):
+        mock_settings.watch_extensions = [".mkv"]
+        result = service.get_files()
+    item = result["items"][0]
+    assert item["show_title"] == "My Show"
+    assert item["show_fully_unwatched"] is True
+
+
+def test_get_files_watched_filter_returns_only_watched(service):
+    """watched_status='watched' returns only rows with is_watched=True."""
+    mock_file = _make_mock_file("/media/movies/c.mkv", 1_000_000_000, "h264", 1920, 1080, 7200)
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = [
+        mock_file
+    ]
+    watch_info = {
+        "/media/movies/c.mkv": {
+            "is_watched": True,
+            "title": "Movie C",
+            "show_title": None,
+            "show_fully_unwatched": None,
+        }
+    }
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+        patch.object(service, "_get_path_watch_info", return_value=watch_info),
+    ):
+        mock_settings.watch_extensions = [".mkv"]
+        result = service.get_files(watched_status="watched")
+    assert result["total"] == 1
+    assert result["items"][0]["is_watched"] is True
+
+
+def test_get_files_path_not_in_watch_info_returns_none_fields(service):
+    """Files not in the library (no MovieFile/EpisodeFile entry) get None watch fields."""
+    mock_file = _make_mock_file("/media/movies/unknown.mkv", 500_000_000, "h264", 1920, 1080, 3600)
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = [
+        mock_file
+    ]
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+        patch.object(service, "_get_path_watch_info", return_value={}),
+    ):
+        mock_settings.watch_extensions = [".mkv"]
+        result = service.get_files()
+    item = result["items"][0]
+    assert item["is_watched"] is None
+    assert item["show_title"] is None
+    assert item["show_fully_unwatched"] is None
+
+
+def test_get_files_unwatched_filter_excludes_none_is_watched(service):
+    """Files with is_watched=None (not yet synced to Plex) are excluded from 'unwatched' results."""
+    mock_file = _make_mock_file("/media/movies/d.mkv", 800_000_000, "h264", 1920, 1080, 5400)
+    service.db.query.return_value.filter.return_value.filter.return_value.all.return_value = [
+        mock_file
+    ]
+    watch_info = {
+        "/media/movies/d.mkv": {
+            "is_watched": None,
+            "title": "Movie D",
+            "show_title": None,
+            "show_fully_unwatched": None,
+        }
+    }
+    with (
+        patch("app.domain.storage.service.settings") as mock_settings,
+        patch("app.domain.storage.service.MOVIE_DIR", "/media/movies"),
+        patch("app.domain.storage.service.TV_DIR", "/media/tv"),
+        patch.object(service, "_get_path_watch_info", return_value=watch_info),
+    ):
+        mock_settings.watch_extensions = [".mkv"]
+        result = service.get_files(watched_status="unwatched")
+    assert result["total"] == 0

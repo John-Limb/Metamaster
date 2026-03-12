@@ -36,6 +36,7 @@ def get_storage_files(
     codec: Optional[str] = None,
     resolutionTier: Optional[str] = Query(None, alias="resolutionTier"),
     efficiencyTier: Optional[str] = Query(None, alias="efficiencyTier"),
+    watchedStatus: Optional[str] = Query(None, alias="watchedStatus"),
     service: StorageService = Depends(_get_service),
 ):
     """Paginated, sortable file list with efficiency analytics."""
@@ -48,6 +49,7 @@ def get_storage_files(
         codec=codec,
         resolution_tier=resolutionTier,
         efficiency_tier=efficiencyTier,
+        watched_status=watchedStatus,
     )
 
 
