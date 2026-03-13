@@ -1,10 +1,11 @@
 # MetaMaster
 
 [![CI Pipeline](https://github.com/John-Limb/metamaster/actions/workflows/ci.yml/badge.svg)](https://github.com/John-Limb/metamaster/actions/workflows/ci.yml)
-[![Docker Build](https://github.com/John-Limb/metamaster/actions/workflows/docker.yml/badge.svg)](https://github.com/John-Limb/metamaster/actions/workflows/docker.yml)ß
+[![Docker Build](https://github.com/John-Limb/metamaster/actions/workflows/docker.yml/badge.svg)](https://github.com/John-Limb/metamaster/actions/workflows/docker.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/aa284990b5e0484a91dcfdf720b4a658)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+---
 A comprehensive web-based media metadata management system for organizing and managing your movie and TV show library with automatic metadata enrichment from TMDB (The Movie Database).
-
+---
 ![MetaMaster Dashboard](docs/images/dashboard.png)
 
 ## Features
