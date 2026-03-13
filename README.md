@@ -24,7 +24,9 @@ A comprehensive web-based media metadata management system for organizing and ma
 ---
 
 ## Deployment
+You can either clone the repo and then copy and fill out the .env file and perform ` docker-compose up -d --build` to build from source. 
 
+Or you can perform ` docker pull ghcr.io/john-limb/metamaster:latest ` or pin to a version using the SHA id or version number. 
 
 ## Technology Stack
 
