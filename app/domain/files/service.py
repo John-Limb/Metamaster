@@ -263,16 +263,16 @@ class FileService:
                 deleted_count += 1
         return deleted_count
 
-    def batch_move_files(self, file_ids: List[int], new_path: str) -> int:
-        """Move multiple files to a new path"""
-        moved_count = 0
+    def batch_move_files(self, file_ids: List[int], new_path: str) -> List[int]:
+        """Move multiple files to a new path. Returns list of successfully moved file IDs."""
+        moved_ids: List[int] = []
         for file_id in file_ids:
             try:
                 if self.move_file(file_id, new_path):
-                    moved_count += 1
+                    moved_ids.append(file_id)
             except ValueError:
                 continue
-        return moved_count
+        return moved_ids
 
     def search_files(
         self, query: str, page: int = 1, page_size: int = 20

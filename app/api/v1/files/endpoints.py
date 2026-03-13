@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.application.pattern_recognition.service import PatternRecognitionService
 from app.core.database import get_db
+from app.domain.files.models import FileItem
 from app.domain.files.schemas import (
     FileBatchDeleteRequest,
     FileBatchMoveRequest,
@@ -26,6 +27,11 @@ from app.domain.files.schemas import (
     PaginatedFileResponse,
 )
 from app.domain.files.service import FileService
+from app.domain.movies.models import MovieFile
+from app.domain.plex.models import PlexConnection
+from app.domain.plex.service import get_or_cache_library_ids
+from app.domain.tv_shows.models import EpisodeFile
+from app.tasks.plex import refresh_plex_library
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +41,55 @@ router = APIRouter(prefix="/files", tags=["Files"])
 def get_file_service(db: Session = Depends(get_db)) -> FileService:
     """Dependency to get FileService instance"""
     return FileService(db)
+
+
+def _sections_for_file(
+    db: Session,
+    file_id: int,
+    conn: "PlexConnection",
+) -> set[str]:
+    """Return Plex section IDs for a single file based on its media type."""
+    file_item = db.query(FileItem).filter(FileItem.id == file_id).first()
+    if file_item is None:
+        return set()
+    path = file_item.path
+    is_movie = db.query(MovieFile).filter(MovieFile.file_path == path).first() is not None
+    is_tv = db.query(EpisodeFile).filter(EpisodeFile.file_path == path).first() is not None
+    if is_movie and conn.movie_library_id:
+        return {conn.movie_library_id}
+    if is_tv and conn.tv_library_id:
+        return {conn.tv_library_id}
+    # Unlinked — refresh both sections
+    sections = set()
+    if conn.movie_library_id:
+        sections.add(conn.movie_library_id)
+    if conn.tv_library_id:
+        sections.add(conn.tv_library_id)
+    return sections
+
+
+def _plex_section_ids_for_files(db: Session, file_ids: list[int]) -> set[str]:
+    """Return the set of Plex section IDs that cover the given file IDs.
+
+    Returns an empty set if Plex is not configured or unreachable.
+    Never raises — Plex errors must not affect file operations.
+    """
+    conn = db.query(PlexConnection).filter(PlexConnection.is_active.is_(True)).first()
+    if conn is None:
+        return set()
+
+    try:
+        get_or_cache_library_ids(
+            db, conn
+        )  # populates conn.movie_library_id / conn.tv_library_id if missing
+    except Exception:
+        logger.warning("Plex: could not resolve library IDs — skipping refresh")
+        return set()
+
+    section_ids: set[str] = set()
+    for file_id in file_ids:
+        section_ids.update(_sections_for_file(db, file_id, conn))
+    return section_ids
 
 
 @router.get("", response_model=PaginatedFileResponse)
@@ -255,6 +310,9 @@ async def move_file(
     if not file_item:
         raise HTTPException(status_code=404, detail="File not found")
 
+    for section_id in _plex_section_ids_for_files(db, [file_id]):
+        refresh_plex_library.delay(section_id)
+
     return file_service.file_to_response(file_item)
 
 
@@ -271,10 +329,17 @@ async def rename_file(
     - **name**: New name for the file
     """
     file_service = FileService(db)
-    file_item = file_service.rename_file(file_id, rename_data.name)
+
+    try:
+        file_item = file_service.rename_file(file_id, rename_data.name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     if not file_item:
         raise HTTPException(status_code=404, detail="File not found")
+
+    for section_id in _plex_section_ids_for_files(db, [file_id]):
+        refresh_plex_library.delay(section_id)
 
     return file_service.file_to_response(file_item)
 
@@ -398,11 +463,14 @@ async def batch_move_files(
             detail=f"Path must be within media directories: {file_service.media_dirs}",
         )
 
-    moved_count = file_service.batch_move_files(request.ids, request.path)
+    moved_ids = file_service.batch_move_files(request.ids, request.path)
+
+    for section_id in _plex_section_ids_for_files(db, moved_ids):
+        refresh_plex_library.delay(section_id)
 
     return {
         "success": True,
-        "message": f"Moved {moved_count} file(s)",
+        "message": f"Moved {len(moved_ids)} file(s)",
     }
 
 
