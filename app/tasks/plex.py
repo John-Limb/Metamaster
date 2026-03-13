@@ -6,8 +6,8 @@ from typing import Optional
 from app.core.config import settings
 from app.core.database import get_db
 from app.domain.movies.models import Movie
-from app.domain.plex.models import PlexItemType
-from app.domain.plex.service import PlexSyncService
+from app.domain.plex.models import PlexConnection, PlexItemType
+from app.domain.plex.service import PlexSyncService, get_or_cache_library_ids
 from app.domain.tv_shows.models import TVShow
 from app.infrastructure.external_apis.plex.client import PlexClient
 from app.tasks.celery_app import celery_app
@@ -61,21 +61,22 @@ def _get_title_year(db, item_type_str: str, item_id: int):
 )
 def lock_plex_match(item_type_str: str, item_id: int, tmdb_id: str, connection_id: int) -> None:
     """Resolve TMDB ID to Plex ratingKey and lock the match."""
-    client = _make_client()
-    if client is None:
-        return None
-
     db = next(get_db())
     try:
+        conn = db.query(PlexConnection).filter(PlexConnection.id == connection_id).first()
+        if conn is None:
+            logger.warning("lock_plex_match: connection_id=%s not found, skipping", connection_id)
+            return None
+
+        movie_section_id, tv_section_id = get_or_cache_library_ids(db, conn)
+        client = PlexClient(server_url=conn.server_url, token=conn.token)
         svc = PlexSyncService(
             db=db,
             client=client,
             movie_library_name=settings.plex_library_movies,
             tv_library_name=settings.plex_library_tv,
         )
-        movie_section_id, tv_section_id = svc.resolve_library_ids()
         item_type = _ITEM_TYPE_MAP[item_type_str]
-        # Route to correct section: movies to movie library, TV/episodes to TV library
         section_id = movie_section_id if item_type == PlexItemType.MOVIE else tv_section_id
         title, year = _get_title_year(db, item_type_str, item_id)
         svc.lock_match(
@@ -97,19 +98,23 @@ def lock_plex_match(item_type_str: str, item_id: int, tmdb_id: str, connection_i
 )
 def poll_plex_watched_status(connection_id: int) -> None:
     """Pull watch status from Plex for all movies and episodes."""
-    client = _make_client()
-    if client is None:
-        return None
-
     db = next(get_db())
     try:
+        conn = db.query(PlexConnection).filter(PlexConnection.id == connection_id).first()
+        if conn is None:
+            logger.warning(
+                "poll_plex_watched_status: connection_id=%s not found, skipping", connection_id
+            )
+            return None
+
+        movie_section_id, tv_section_id = get_or_cache_library_ids(db, conn)
+        client = PlexClient(server_url=conn.server_url, token=conn.token)
         svc = PlexSyncService(
             db=db,
             client=client,
             movie_library_name=settings.plex_library_movies,
             tv_library_name=settings.plex_library_tv,
         )
-        movie_section_id, tv_section_id = svc.resolve_library_ids()
         logger.info("Plex: polling watched status for movies and TV")
         svc.pull_watched_status(
             section_id=movie_section_id, media_type=1, connection_id=connection_id

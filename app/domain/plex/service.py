@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
-from app.domain.plex.models import PlexItemType, PlexSyncRecord, PlexSyncStatus
+from app.core.config import settings
+from app.domain.plex.models import PlexConnection, PlexItemType, PlexSyncRecord, PlexSyncStatus
 from app.infrastructure.external_apis.plex.client import PlexClient
 
 if TYPE_CHECKING:
@@ -161,3 +162,26 @@ class PlexSyncService:
             item.rating_key,
             item.view_count,
         )
+
+
+def get_or_cache_library_ids(db: Session, conn: PlexConnection) -> tuple[str, str]:
+    """Return (movie_section_id, tv_section_id) from the DB cache.
+
+    If either ID is missing, resolve from Plex, persist, and return.
+    Raises ValueError / any exception from resolve_library_ids on failure.
+    """
+    if conn.movie_library_id and conn.tv_library_id:
+        return conn.movie_library_id, conn.tv_library_id
+
+    client = PlexClient(server_url=conn.server_url, token=conn.token)
+    svc = PlexSyncService(
+        db=db,
+        client=client,
+        movie_library_name=settings.plex_library_movies,
+        tv_library_name=settings.plex_library_tv,
+    )
+    movie_section_id, tv_section_id = svc.resolve_library_ids()
+    conn.movie_library_id = movie_section_id
+    conn.tv_library_id = tv_section_id
+    db.commit()
+    return movie_section_id, tv_section_id

@@ -1,9 +1,9 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.domain.plex.models import PlexItemType, PlexSyncRecord, PlexSyncStatus
-from app.domain.plex.service import PlexSyncService
+from app.domain.plex.models import PlexConnection, PlexItemType, PlexSyncRecord, PlexSyncStatus
+from app.domain.plex.service import PlexSyncService, get_or_cache_library_ids
 from app.infrastructure.external_apis.plex.schemas import PlexLibrarySection, PlexMediaItem
 
 
@@ -314,3 +314,96 @@ def test_pull_watched_status_continues_after_unmatched_record():
 
     # Second item should still be updated despite first having no record
     assert mock_record.watch_count == 2
+
+
+def _make_conn(movie_id=None, tv_id=None):
+    conn = MagicMock(spec=PlexConnection)
+    conn.movie_library_id = movie_id
+    conn.tv_library_id = tv_id
+    conn.server_url = "http://plex:32400"
+    conn.token = "tok"
+    return conn
+
+
+@pytest.mark.unit
+def test_get_or_cache_returns_cached_ids_without_calling_plex():
+    """Both fields populated → returns immediately, no Plex call."""
+    db = MagicMock()
+    conn = _make_conn(movie_id="1", tv_id="2")
+    movie_id, tv_id = get_or_cache_library_ids(db, conn)
+    assert movie_id == "1"
+    assert tv_id == "2"
+    db.commit.assert_not_called()
+
+
+@pytest.mark.unit
+@patch("app.domain.plex.service.PlexClient")
+@patch("app.domain.plex.service.PlexSyncService")
+@patch("app.domain.plex.service.settings")
+def test_get_or_cache_resolves_and_saves_on_full_miss(mock_settings, mock_svc_cls, mock_client_cls):
+    """Both null → resolve, write, commit, return."""
+    mock_settings.plex_library_movies = "Movies"
+    mock_settings.plex_library_tv = "TV Shows"
+    mock_svc = MagicMock()
+    mock_svc.resolve_library_ids.return_value = ("10", "20")
+    mock_svc_cls.return_value = mock_svc
+
+    db = MagicMock()
+    conn = _make_conn(movie_id=None, tv_id=None)
+
+    movie_id, tv_id = get_or_cache_library_ids(db, conn)
+
+    assert movie_id == "10"
+    assert tv_id == "20"
+    assert conn.movie_library_id == "10"
+    assert conn.tv_library_id == "20"
+    db.commit.assert_called_once()
+
+
+@pytest.mark.unit
+@patch("app.domain.plex.service.PlexClient")
+@patch("app.domain.plex.service.PlexSyncService")
+@patch("app.domain.plex.service.settings")
+def test_get_or_cache_resolves_on_partial_miss(mock_settings, mock_svc_cls, mock_client_cls):
+    """One field null → treated as full miss, both resolved."""
+    mock_settings.plex_library_movies = "Movies"
+    mock_settings.plex_library_tv = "TV Shows"
+    mock_svc = MagicMock()
+    mock_svc.resolve_library_ids.return_value = ("10", "20")
+    mock_svc_cls.return_value = mock_svc
+
+    db = MagicMock()
+    conn = _make_conn(
+        movie_id="99", tv_id=None
+    )  # partial — use "99" so write-back to "10" is observable
+
+    movie_id, tv_id = get_or_cache_library_ids(db, conn)
+
+    assert movie_id == "10"
+    assert tv_id == "20"
+    assert conn.movie_library_id == "10"  # was "99", proves write-back occurred
+    assert conn.tv_library_id == "20"
+    db.commit.assert_called_once()
+
+
+@pytest.mark.unit
+@patch("app.domain.plex.service.PlexClient")
+@patch("app.domain.plex.service.PlexSyncService")
+@patch("app.domain.plex.service.settings")
+def test_get_or_cache_propagates_exception_when_plex_unreachable(
+    mock_settings, mock_svc_cls, mock_client_cls
+):
+    """If resolve_library_ids raises, exception propagates."""
+    mock_settings.plex_library_movies = "Movies"
+    mock_settings.plex_library_tv = "TV Shows"
+    mock_svc = MagicMock()
+    mock_svc.resolve_library_ids.side_effect = ValueError("Library not found")
+    mock_svc_cls.return_value = mock_svc
+
+    db = MagicMock()
+    conn = _make_conn(movie_id=None, tv_id=None)
+
+    with pytest.raises(ValueError, match="Library not found"):
+        get_or_cache_library_ids(db, conn)
+
+    db.commit.assert_not_called()
