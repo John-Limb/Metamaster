@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "metamaster"
-version = "1.0.0"
+version = "0.0.1"
 description = "Media metadata management and enrichment system"
 requires-python = ">=3.9"
 
