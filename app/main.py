@@ -26,6 +26,7 @@ from app.core.logging_config import setup_logging
 from app.domain.files.service import FileService
 from app.domain.movies.models import Movie
 from app.domain.movies.scanner import create_movies_from_files
+from app.domain.plex.models import PlexConnection
 from app.domain.tv_shows.models import TVShow
 from app.domain.tv_shows.scanner import create_tv_shows_from_files
 from app.tasks.celery_app import celery_app
@@ -35,6 +36,23 @@ from app.tasks.enrichment import enrich_movie_external, enrich_tv_show_external
 setup_logging()
 logger = logging.getLogger(__name__)
 access_logger = logging.getLogger("access")
+
+
+def _seed_plex_connection(db) -> None:
+    """Create a PlexConnection from env vars if one is configured but not yet in the DB."""
+    if not settings.plex_server_url or not settings.plex_token:
+        return
+    existing = db.query(PlexConnection).first()
+    if existing:
+        return
+    conn = PlexConnection(
+        server_url=settings.plex_server_url,
+        token=settings.plex_token,
+        is_active=True,
+    )
+    db.add(conn)
+    db.commit()
+    logger.info("Plex: seeded connection from env vars server=%s", settings.plex_server_url)
 
 
 @asynccontextmanager
@@ -84,6 +102,9 @@ async def lifespan(app: FastAPI):
         )
         for s in pending_shows:
             enrich_tv_show_external(s.id)
+
+        # Seed Plex connection from env vars if configured but no DB record exists
+        _seed_plex_connection(db)
 
     finally:
         db.close()
