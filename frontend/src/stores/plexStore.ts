@@ -32,8 +32,9 @@ export const usePlexStore = create<PlexState>((set) => ({
       const connection = await getPlexConnection()
       set({ connection, isLoading: false })
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { status: number } }
-      if (axiosErr?.response?.status === 404) {
+      const apiErr = err as { code?: string; response?: { status: number } }
+      const status = apiErr?.code ?? String(apiErr?.response?.status ?? '')
+      if (status === '404') {
         set({ connection: null, isLoading: false })
       } else {
         set({ error: 'Failed to load Plex connection', isLoading: false })

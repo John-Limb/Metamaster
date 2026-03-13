@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.domain.plex.models import PlexConnection
 from app.infrastructure.monitoring.monitoring_service import get_monitoring_service
 from app.infrastructure.monitoring.prometheus_metrics import get_metrics
 
@@ -27,6 +28,7 @@ _COMPONENT_LOG_FILES: dict[str, str] = {
     "tasks": str(_LOG_DIR / "tasks.log"),
     "api": str(_LOG_DIR / "api.log"),
     "external_api": str(_LOG_DIR / "external_api.log"),
+    "plex": str(_LOG_DIR / "plex.log"),
 }
 
 
@@ -158,6 +160,19 @@ async def detailed_health_check(db: Session = Depends(get_db)):
     except Exception as e:
         health_status["checks"]["redis"] = {"status": "unhealthy", "error": str(e)}
         health_status["status"] = "degraded"
+
+    # Add Plex check
+    plex_conn = db.query(PlexConnection).filter(PlexConnection.is_active.is_(True)).first()
+    if plex_conn:
+        health_status["checks"]["plex"] = {
+            "status": "healthy",
+            "server": plex_conn.server_url,
+        }
+    else:
+        health_status["checks"]["plex"] = {
+            "status": "unavailable",
+            "error": "No active connection configured",
+        }
 
     return health_status
 

@@ -16,6 +16,10 @@ celery_app = Celery(
     "media_management",
     broker=settings.celery_broker_url,
     backend=settings.celery_result_backend,
+    include=[
+        "app.tasks.enrichment",
+        "app.tasks.plex",
+    ],
 )
 
 # Configure Celery settings

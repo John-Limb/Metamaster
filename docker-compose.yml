@@ -42,6 +42,10 @@ services:
       - TMDB_API_KEY=${TMDB_API_KEY:-}
       - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
       - MEDIA_SCAN_SCHEDULE=${MEDIA_SCAN_SCHEDULE:-0 2 * * *}
+      - PLEX_SERVER_URL=${PLEX_SERVER_URL:-}
+      - PLEX_TOKEN=${PLEX_TOKEN:-}
+      - PLEX_LIBRARY_MOVIES=${PLEX_LIBRARY_MOVIES:-Movies}
+      - PLEX_LIBRARY_TV=${PLEX_LIBRARY_TV:-TV Shows}
     volumes:
       - ./app:/app/app
       - ${MOVIE_DIR:-./_media/movies}:/media/movies:ro

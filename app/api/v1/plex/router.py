@@ -62,6 +62,7 @@ def create_connection(
     db.add(conn)
     db.commit()
     db.refresh(conn)
+    logger.info("Plex: manual connection created server=%s", payload.server_url)
     return conn
 
 
@@ -73,8 +74,10 @@ def delete_connection(
     """Remove the Plex connection."""
     conn = db.query(PlexConnection).first()
     if conn:
+        server_url = conn.server_url
         db.delete(conn)
         db.commit()
+        logger.info("Plex: connection deleted server=%s", server_url)
 
 
 @router.get("/oauth/initiate", response_model=PlexOAuthInitResponse)

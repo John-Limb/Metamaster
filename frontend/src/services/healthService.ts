@@ -32,6 +32,7 @@ export interface ComponentLogs {
   tasks: LogEntry[]
   api: LogEntry[]
   external_api: LogEntry[]
+  plex: LogEntry[]
 }
 
 export const healthService = {

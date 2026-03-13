@@ -132,6 +132,12 @@ def setup_logging() -> None:
         _daily_handler("external_api.log", logging.DEBUG)
     )
 
+    # Plex log — dedicated file for Plex client, auth, and router
+    logging.getLogger("app.infrastructure.external_apis.plex").addHandler(
+        _daily_handler("plex.log", logging.DEBUG)
+    )
+    logging.getLogger("app.api.v1.plex").addHandler(_daily_handler("plex.log", logging.DEBUG))
+
     # HTTP access log — file + console
     # Captures the log_requests middleware and uvicorn.access at INFO+
     access_handler = _daily_handler("access.log", logging.INFO)

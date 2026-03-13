@@ -21,7 +21,7 @@ export interface PlexOAuthInitResponse {
 }
 
 export async function getPlexConnection(): Promise<PlexConnection> {
-  const { data } = await apiClient.get<PlexConnection>('/api/v1/plex/connection')
+  const { data } = await apiClient.get<PlexConnection>('/plex/connection')
   return data
 }
 
@@ -29,7 +29,7 @@ export async function createPlexConnection(
   serverUrl: string,
   token: string
 ): Promise<PlexConnection> {
-  const { data } = await apiClient.post<PlexConnection>('/api/v1/plex/connection', {
+  const { data } = await apiClient.post<PlexConnection>('/plex/connection', {
     server_url: serverUrl,
     token,
   })
@@ -37,16 +37,16 @@ export async function createPlexConnection(
 }
 
 export async function deletePlexConnection(): Promise<void> {
-  await apiClient.delete('/api/v1/plex/connection')
+  await apiClient.delete('/plex/connection')
 }
 
 export async function triggerPlexSync(): Promise<PlexSyncResponse> {
-  const { data } = await apiClient.post<PlexSyncResponse>('/api/v1/plex/sync')
+  const { data } = await apiClient.post<PlexSyncResponse>('/plex/sync')
   return data
 }
 
 export async function initiatePlexOAuth(redirectUri: string): Promise<PlexOAuthInitResponse> {
-  const { data } = await apiClient.get<PlexOAuthInitResponse>('/api/v1/plex/oauth/initiate', {
+  const { data } = await apiClient.get<PlexOAuthInitResponse>('/plex/oauth/initiate', {
     params: { redirect_uri: redirectUri },
   })
   return data
@@ -58,7 +58,7 @@ export async function pollPlexOAuthCallback(
   serverUrl: string
 ): Promise<PlexConnection | null> {
   const { data } = await apiClient.get<{ status: string } & Partial<PlexConnection>>(
-    '/api/v1/plex/oauth/callback',
+    '/plex/oauth/callback',
     { params: { pin_id: pinId, server_url: serverUrl } }
   )
   if (data.status === 'pending') return null
@@ -77,12 +77,12 @@ export interface PlexHealthResponse {
 }
 
 export async function getPlexHealth(): Promise<PlexHealthResponse> {
-  const { data } = await apiClient.get<PlexHealthResponse>('/api/v1/plex/health')
+  const { data } = await apiClient.get<PlexHealthResponse>('/plex/health')
   return data
 }
 
 export async function resyncPlexItem(syncRecordId: number): Promise<void> {
-  await apiClient.post(`/api/v1/plex/sync/${syncRecordId}`)
+  await apiClient.post(`/plex/sync/${syncRecordId}`)
 }
 
 export interface PlexMismatchItem {
@@ -94,7 +94,7 @@ export interface PlexMismatchItem {
 }
 
 export async function getMismatches(): Promise<PlexMismatchItem[]> {
-  const { data } = await apiClient.get<PlexMismatchItem[]>('/api/v1/plex/mismatches')
+  const { data } = await apiClient.get<PlexMismatchItem[]>('/plex/mismatches')
   return data
 }
 
@@ -102,5 +102,5 @@ export async function resolveMismatch(
   recordId: number,
   trust: 'metamaster' | 'plex'
 ): Promise<void> {
-  await apiClient.post(`/api/v1/plex/mismatches/${recordId}/resolve`, { trust })
+  await apiClient.post(`/plex/mismatches/${recordId}/resolve`, { trust })
 }

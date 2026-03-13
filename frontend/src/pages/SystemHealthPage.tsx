@@ -29,6 +29,7 @@ const LOG_COMPONENT_MAP: Record<string, keyof ComponentLogs> = {
   system: 'api',
   api: 'api',
   external_api: 'external_api',
+  plex: 'plex',
 }
 
 function LogTail({ entries }: { entries: LogEntry[] }) {
@@ -232,6 +233,7 @@ export function SystemHealthPage() {
       </div>
 
       <Card variant="elevated">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Plex Sync Details</h3>
         <PlexHealthPanel />
       </Card>
 
