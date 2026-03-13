@@ -20,9 +20,18 @@ export function PlexHealthPanel() {
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Plex Sync Status</h4>
 
-      {data.not_found_count === 0 ? (
+      <div className="flex items-center gap-2">
+        <span
+          className={`w-2 h-2 rounded-full flex-shrink-0 ${data.connected ? 'bg-emerald-500' : 'bg-red-500'}`}
+        />
+        <span className={`text-sm font-medium ${data.connected ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+          {data.connected ? 'Connected' : 'Not connected'}
+        </span>
+      </div>
+
+      {data.connected && data.not_found_count === 0 ? (
         <p className="text-sm text-emerald-600 dark:text-emerald-400">All items matched in Plex.</p>
-      ) : (
+      ) : data.connected ? (
         <div className="space-y-2">
           <p className="text-sm text-amber-600 dark:text-amber-400">
             {data.not_found_count} item(s) not found in Plex
@@ -50,7 +59,7 @@ export function PlexHealthPanel() {
             ))}
           </ul>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

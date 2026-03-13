@@ -18,12 +18,22 @@ import { fileService } from '@/services/fileService'
 import { configurationService, type ConfigurationState, type ConfigurationItem } from '@/services/configurationService'
 import { type EnrichmentStats } from '@/services/movieService'
 import { storageService, type StorageSummary } from '@/services/storageService'
+import { getPlexHealth } from '@/services/plexService'
 
 const API_STATUS_IDS = ['api-keys-tmdb-token', 'api-keys-tmdb-key']
 
-function ExternalApiStatus({ items }: { items: ConfigurationItem[] }) {
+function ExternalApiStatus({
+  items,
+  plexConnected,
+}: {
+  items: ConfigurationItem[]
+  plexConnected: boolean | null
+}) {
   const apiItems = items.filter(i => API_STATUS_IDS.includes(i.id))
-  const allValid = apiItems.length > 0 && apiItems.every(i => i.status === 'valid')
+  const allValid =
+    apiItems.length > 0 &&
+    apiItems.every(i => i.status === 'valid') &&
+    plexConnected === true
   const hasInvalid = apiItems.some(i => i.status === 'invalid')
 
   const labels: Record<string, string> = {
@@ -31,39 +41,47 @@ function ExternalApiStatus({ items }: { items: ConfigurationItem[] }) {
     'api-keys-tmdb-key': 'TMDB API Key',
   }
 
+  function dotClass(status: string) {
+    if (status === 'valid') return 'bg-emerald-500'
+    if (status === 'invalid') return 'bg-red-500'
+    return 'bg-amber-400 animate-pulse'
+  }
+
+  function labelClass(status: string) {
+    if (status === 'valid') return 'text-emerald-600 dark:text-emerald-400'
+    if (status === 'invalid') return 'text-red-600 dark:text-red-400'
+    return 'text-amber-600 dark:text-amber-400'
+  }
+
+  const plexStatus = plexConnected === null ? 'checking' : plexConnected ? 'valid' : 'invalid'
+
   return (
     <Card variant="elevated" className="flex flex-col gap-3">
       <h3 className="text-base font-semibold text-slate-900 dark:text-white">External APIs</h3>
 
-      {apiItems.length === 0 ? (
+      {apiItems.length === 0 && plexConnected === null ? (
         <p className="text-sm text-slate-400 dark:text-slate-500">Checking…</p>
       ) : (
         <div className="space-y-2">
           {apiItems.map(item => (
             <div key={item.id} className="flex items-center gap-2">
-              <span
-                className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                  item.status === 'valid'
-                    ? 'bg-emerald-500'
-                    : item.status === 'invalid'
-                    ? 'bg-red-500'
-                    : 'bg-amber-400 animate-pulse'
-                }`}
-              />
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotClass(item.status)}`} />
               <span className="text-sm text-slate-700 dark:text-slate-300 flex-1">
                 {labels[item.id] ?? item.name}
               </span>
-              <span className={`text-xs font-medium ${
-                item.status === 'valid'
-                  ? 'text-emerald-600 dark:text-emerald-400'
-                  : item.status === 'invalid'
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-amber-600 dark:text-amber-400'
-              }`}>
+              <span className={`text-xs font-medium ${labelClass(item.status)}`}>
                 {item.status === 'valid' ? 'Connected' : item.status === 'invalid' ? 'Missing' : 'Checking'}
               </span>
             </div>
           ))}
+
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotClass(plexStatus)}`} />
+            <span className="text-sm text-slate-700 dark:text-slate-300 flex-1">Plex Server</span>
+            <span className={`text-xs font-medium ${labelClass(plexStatus)}`}>
+              {plexConnected === null ? 'Checking' : plexConnected ? 'Connected' : 'Not configured'}
+            </span>
+          </div>
         </div>
       )}
 
@@ -132,6 +150,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
   const [recentActivities, setRecentActivities] = useState<Activity[]>([])
   const [storageSummary, setStorageSummary] = useState<StorageSummary | null>(null)
   const [configItems, setConfigItems] = useState<ConfigurationItem[]>([])
+  const [plexConnected, setPlexConnected] = useState<boolean | null>(null)
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -162,6 +181,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
         fileService.getFileStats(),
         movieService.getEnrichmentStats(),
         storageService.getSummary(),
+        getPlexHealth(),
       ])
       const health = results[0].status === 'fulfilled' ? results[0].value : { status: 'unknown', timestamp: new Date().toISOString() }
       const movieResponse = results[1].status === 'fulfilled' ? results[1].value : { total: 0, items: [] }
@@ -170,8 +190,10 @@ export function Dashboard({ className = '' }: DashboardProps) {
       const fileStats = results[4].status === 'fulfilled' ? results[4].value : null
       const enrichStats = results[5].status === 'fulfilled' ? results[5].value as EnrichmentStats : null
       const storageSummaryResult = results[6]
+      const plexHealth = results[7].status === 'fulfilled' ? results[7].value : null
       setEnrichmentStats(enrichStats)
       setStorageSummary(storageSummaryResult.status === 'fulfilled' ? storageSummaryResult.value as StorageSummary : null)
+      setPlexConnected(plexHealth?.connected ?? false)
 
       const totalMovies = fileStats?.movieCount ?? movieResponse?.total ?? 0
       const totalTVShows = fileStats?.tvShowCount ?? tvResponse?.total ?? 0
@@ -481,7 +503,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
         <div className="lg:col-span-2">
           <QuickActions actions={quickActions} />
         </div>
-        <ExternalApiStatus items={configItems} />
+        <ExternalApiStatus items={configItems} plexConnected={plexConnected} />
       </div>
 
       {/* Stat Cards - Responsive grid: 1 col mobile, 2 cols tablet, 4 cols desktop */}
