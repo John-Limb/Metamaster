@@ -76,7 +76,7 @@ dump.rdb
 Thumbs.db
 .worktrees/
 .worktrees/
-
+.superpowers/
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
