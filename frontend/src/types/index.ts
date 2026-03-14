@@ -98,6 +98,7 @@ export interface Movie {
   audio_channels?: string
   file_duration?: number
   file_size?: number
+  is_watched?: boolean
 }
 
 // TV Show types
@@ -118,6 +119,8 @@ export interface TVShow {
   updated_at?: string
   enrichment_status?: EnrichmentStatusValue | null
   enrichment_error?: string | null
+  watched_episode_count?: number
+  total_episode_count?: number
 }
 
 export interface Season {

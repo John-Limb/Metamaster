@@ -18,6 +18,7 @@ from app.domain.movies.scanner import (
     probe_movie_file,
     probe_unscanned_movies,
 )
+from app.domain.plex.models import PlexSyncRecord as _PlexSyncRecord
 from app.infrastructure.cache.redis_cache import get_cache_service
 from app.schemas import (
     MetadataSyncResponse,
@@ -31,6 +32,21 @@ from app.services_impl import MovieService, TMDBService
 from app.tasks.enrichment import enrich_movie_external
 
 logger = logging.getLogger(__name__)
+
+
+def _get_movie_watch_status(db: Session, movie_id: int) -> bool:
+    """Return True if a watched PlexSyncRecord exists for this movie."""
+    record = (
+        db.query(_PlexSyncRecord)
+        .filter(
+            _PlexSyncRecord.item_type == "movie",
+            _PlexSyncRecord.item_id == movie_id,
+            _PlexSyncRecord.is_watched.is_(True),
+        )
+        .first()
+    )
+    return record is not None
+
 
 router = APIRouter(prefix="/movies", tags=["Movies"])
 
@@ -159,10 +175,16 @@ async def list_movies(
     # Perform search
     movies, total = MovieSearchService.search(db, filters)
 
+    movie_items = []
+    for m in movies:
+        m_dict = MovieResponse.model_validate(m).model_dump()
+        m_dict["is_watched"] = _get_movie_watch_status(db, int(m.id))
+        movie_items.append(m_dict)
+
     applied_filters = _build_applied_filters(genre, min_rating, max_rating, year, status)
 
     result = {
-        "items": movies,
+        "items": movie_items,
         "total": total,
         "limit": normalized_limit,
         "offset": normalized_skip,
@@ -280,10 +302,12 @@ async def get_movie(
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
 
-    # Cache the result
-    cache_service.set(cache_key, movie, ttl=cache_service.MOVIE_TTL)
+    movie_dict = MovieResponse.model_validate(movie).model_dump()
+    movie_dict["is_watched"] = _get_movie_watch_status(db, movie_id)
 
-    return movie
+    cache_service.set(cache_key, movie_dict, ttl=cache_service.MOVIE_TTL)
+
+    return movie_dict
 
 
 @router.post("", response_model=MovieResponse, status_code=201)
