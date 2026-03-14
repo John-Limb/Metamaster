@@ -26,14 +26,14 @@ describe('plexService', () => {
       data: { id: 1, server_url: 'http://plex:32400', is_active: true },
     })
     const result = await getPlexConnection()
-    expect(apiClient.get).toHaveBeenCalledWith('/api/v1/plex/connection')
+    expect(apiClient.get).toHaveBeenCalledWith('/plex/connection')
     expect(result.id).toBe(1)
   })
 
   it('createPlexConnection posts server_url and token', async () => {
     vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { id: 1 } })
     await createPlexConnection('http://plex:32400', 'my-token')
-    expect(apiClient.post).toHaveBeenCalledWith('/api/v1/plex/connection', {
+    expect(apiClient.post).toHaveBeenCalledWith('/plex/connection', {
       server_url: 'http://plex:32400',
       token: 'my-token',
     })
@@ -64,7 +64,7 @@ describe('getMismatches', () => {
     vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockData })
     const result = await getMismatches()
     expect(result).toEqual(mockData)
-    expect(apiClient.get).toHaveBeenCalledWith('/api/v1/plex/mismatches')
+    expect(apiClient.get).toHaveBeenCalledWith('/plex/mismatches')
   })
 })
 
@@ -72,7 +72,7 @@ describe('resolveMismatch', () => {
   it('posts resolve request to the API', async () => {
     vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { status: 'resolved' } })
     await resolveMismatch(10, 'metamaster')
-    expect(apiClient.post).toHaveBeenCalledWith('/api/v1/plex/mismatches/10/resolve', {
+    expect(apiClient.post).toHaveBeenCalledWith('/plex/mismatches/10/resolve', {
       trust: 'metamaster',
     })
   })
