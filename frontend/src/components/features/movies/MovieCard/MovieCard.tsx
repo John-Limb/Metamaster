@@ -29,6 +29,7 @@ export interface MovieCardProps {
   onScan?: () => void
   onEdit?: () => void
   onDelete?: () => void
+  isWatched?: boolean
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({
@@ -53,6 +54,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onScan,
   onEdit,
   onDelete,
+  isWatched = false,
 }) => {
   const [activeMismatch, setActiveMismatch] = useState<PlexMismatchItem | null>(null)
   const hasFileStats = resolution || codec_video || codec_audio || audio_channels || file_size || file_duration
@@ -105,6 +107,13 @@ export const MovieCard: React.FC<MovieCardProps> = ({
               <line x1="17" y1="7" x2="22" y2="7" />
             </svg>
           </div>
+        )}
+
+        {isWatched && (
+          <>
+            <div className="movie-card__watched-overlay" aria-hidden="true" />
+            <div className="movie-card__watched-stamp" aria-label="Watched">✓</div>
+          </>
         )}
 
         {rating != null && (

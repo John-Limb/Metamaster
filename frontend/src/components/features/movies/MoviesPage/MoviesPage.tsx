@@ -338,6 +338,7 @@ const MoviesPage: React.FC = () => {
                     onScan={() => handleScan(String(movie.id))}
                     onEdit={() => handleEdit(String(movie.id))}
                     onDelete={() => handleDelete(String(movie.id))}
+                    isWatched={movie.is_watched}
                   />
                 )
               })}

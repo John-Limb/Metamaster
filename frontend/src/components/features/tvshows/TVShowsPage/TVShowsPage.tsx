@@ -315,6 +315,8 @@ const TVShowsPage: React.FC = () => {
                     onAddToQueue={() => handleAddToQueue(String(show.id))}
                     onEdit={() => handleEdit(String(show.id))}
                     onDelete={() => handleDelete(String(show.id))}
+                    watchedEpisodeCount={show.watched_episode_count}
+                    totalEpisodeCount={show.total_episode_count}
                   />
                 )
               })}

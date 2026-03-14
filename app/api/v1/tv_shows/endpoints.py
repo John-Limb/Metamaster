@@ -6,6 +6,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel as PydanticBase
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.api.utils import pagination_metadata, resolve_pagination
@@ -13,6 +14,9 @@ from app.application.search.service import SearchFilters, TVShowSearchService
 from app.core.config import TV_DIR
 from app.core.database import get_db
 from app.domain.files.service import FileService
+from app.domain.plex.models import PlexSyncRecord as _PlexSyncRecord
+from app.domain.tv_shows.models import Episode as _EpisodeModel
+from app.domain.tv_shows.models import Season as _SeasonModel
 from app.domain.tv_shows.models import TVShow as TVShowModel
 from app.domain.tv_shows.scanner import create_tv_shows_from_files, probe_unscanned_episodes
 from app.infrastructure.cache.redis_cache import get_cache_service
@@ -29,6 +33,28 @@ from app.services_impl import TMDBService, TVShowService
 from app.tasks.enrichment import enrich_tv_show_external
 
 logger = logging.getLogger(__name__)
+
+
+def _get_show_episode_counts(db: Session, show_id: int) -> tuple[int, int]:
+    """Return (watched_count, total_count) for episodes of a TV show."""
+    episode_id_query = (
+        db.query(_EpisodeModel.id)
+        .join(_SeasonModel, _EpisodeModel.season_id == _SeasonModel.id)
+        .filter(_SeasonModel.show_id == show_id)
+    )
+    total = episode_id_query.count()
+    watched = (
+        db.query(func.count(_PlexSyncRecord.id))
+        .filter(
+            _PlexSyncRecord.item_type == "episode",
+            _PlexSyncRecord.item_id.in_(episode_id_query),
+            _PlexSyncRecord.is_watched.is_(True),
+        )
+        .scalar()
+        or 0
+    )
+    return watched, total
+
 
 router = APIRouter(prefix="/tv-shows", tags=["TV Shows"])
 
@@ -63,8 +89,6 @@ def _resolution_to_quality(resolution: Optional[str]) -> Optional[str]:
 @router.get("/enrichment-stats")
 async def get_tv_show_enrichment_stats(db: Session = Depends(get_db)):
     """Return TV show counts grouped by enrichment status (indexed / pending / failed)."""
-    from sqlalchemy import func
-
     rows = (
         db.query(TVShowModel.enrichment_status, func.count(TVShowModel.id))
         .group_by(TVShowModel.enrichment_status)
@@ -152,6 +176,14 @@ async def list_tv_shows(
     # Perform search
     shows, total = TVShowSearchService.search(db, filters)
 
+    show_items = []
+    for s in shows:
+        s_dict = TVShowResponse.model_validate(s).model_dump()
+        w, t = _get_show_episode_counts(db, int(s.id))
+        s_dict["watched_episode_count"] = w
+        s_dict["total_episode_count"] = t
+        show_items.append(s_dict)
+
     # Build applied filters dict
     applied_filters = {}
     if genre:
@@ -162,7 +194,7 @@ async def list_tv_shows(
         applied_filters["max_rating"] = max_rating
 
     result = {
-        "items": shows,
+        "items": show_items,
         "total": total,
         "limit": normalized_limit,
         "offset": normalized_skip,
@@ -201,10 +233,13 @@ async def get_tv_show(
     if not show:
         raise HTTPException(status_code=404, detail="TV show not found")
 
-    # Cache the result
-    cache_service.set(cache_key, show, ttl=cache_service.TV_SHOW_TTL)
+    watched, total = _get_show_episode_counts(db, show_id)
+    show_dict = TVShowResponse.model_validate(show).model_dump()
+    show_dict["watched_episode_count"] = watched
+    show_dict["total_episode_count"] = total
 
-    return show
+    cache_service.set(cache_key, show_dict, ttl=cache_service.TV_SHOW_TTL)
+    return show_dict
 
 
 @router.get("/{show_id}/seasons", response_model=PaginatedSeasonResponse)

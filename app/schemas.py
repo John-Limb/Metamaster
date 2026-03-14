@@ -142,6 +142,9 @@ class MovieResponse(BaseModel):
     file_duration: Optional[int] = Field(None, description="Duration in seconds")
     file_size: Optional[int] = Field(None, description="File size in bytes")
 
+    # Plex watch status
+    is_watched: bool = Field(False, description="True if watched in Plex")
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -208,6 +211,10 @@ class TVShowResponse(BaseModel):
     detected_external_id: Optional[str] = Field(None, description="Auto-detected external ID")
     manual_external_id: Optional[str] = Field(None, description="Manually set external ID")
     enrichment_error: Optional[str] = Field(None, description="Last enrichment error message")
+
+    # Plex watch progress
+    watched_episode_count: int = Field(0, description="Episodes watched via Plex")
+    total_episode_count: int = Field(0, description="Total episodes in library")
 
     model_config = ConfigDict(from_attributes=True)
 

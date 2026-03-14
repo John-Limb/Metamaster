@@ -27,6 +27,8 @@ export interface TVShowCardProps {
   onAddToQueue?: () => void
   onEdit?: () => void
   onDelete?: () => void
+  watchedEpisodeCount?: number
+  totalEpisodeCount?: number
 }
 
 export const TVShowCard: React.FC<TVShowCardProps> = ({
@@ -46,6 +48,8 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
   onAddToQueue,
   onEdit,
   onDelete,
+  watchedEpisodeCount,
+  totalEpisodeCount,
 }) => {
   const [activeMismatch, setActiveMismatch] = useState<PlexMismatchItem | null>(null)
 
@@ -276,6 +280,13 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
             </div>
           )}
         </div>
+        {totalEpisodeCount != null && totalEpisodeCount > 0 && (
+          <div className="tvshow-card__watch-count">
+            <span className="tvshow-card__watch-count-text">
+              {watchedEpisodeCount ?? 0} / {totalEpisodeCount} episodes watched
+            </span>
+          </div>
+        )}
       </Card.Content>
     </Card>
   )
