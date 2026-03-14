@@ -16,6 +16,7 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.config import router as config_router
 from app.api.v1.enrichment.endpoints import router as enrichment_router
 from app.api.v1.organisation.endpoints import router as organisation_router
+from app.api.v1.plex.collection_router import router as plex_collection_router
 from app.api.v1.plex.router import router as plex_router
 from app.api.v1.queue.endpoints import router as queue_router
 from app.api.v1.storage.endpoints import router as storage_router
@@ -26,6 +27,7 @@ from app.core.logging_config import setup_logging
 from app.domain.files.service import FileService
 from app.domain.movies.models import Movie
 from app.domain.movies.scanner import create_movies_from_files
+from app.domain.plex.collection_set_seeder import seed_collection_sets
 from app.domain.plex.models import PlexConnection
 from app.domain.tv_shows.models import TVShow
 from app.domain.tv_shows.scanner import create_tv_shows_from_files
@@ -105,6 +107,7 @@ async def lifespan(app: FastAPI):
 
         # Seed Plex connection from env vars if configured but no DB record exists
         _seed_plex_connection(db)
+        seed_collection_sets(db)
 
     finally:
         db.close()
@@ -236,6 +239,7 @@ app.include_router(enrichment_router, prefix="/api/v1")
 app.include_router(storage_router, prefix="/api/v1")
 app.include_router(organisation_router, prefix="/api/v1")
 app.include_router(plex_router, prefix="/api/v1")
+app.include_router(plex_collection_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Root"])

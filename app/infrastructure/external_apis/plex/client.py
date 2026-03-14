@@ -94,3 +94,8 @@ class PlexClient:
             f"/library/metadata/{rating_key}/match",
             params={"guid": f"tmdb://{tmdb_id}", "name": title},
         )
+
+    def get_machine_identifier(self) -> str:
+        """Return the Plex server machine identifier (needed for item URIs)."""
+        data = self._get("/")
+        return data["MediaContainer"]["machineIdentifier"]

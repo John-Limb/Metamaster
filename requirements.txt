@@ -25,6 +25,7 @@ croniter>=1.3.8
 # Utilities
 python-dotenv==1.2.1
 python-multipart==0.0.22
+pyyaml>=6.0
 
 # Security
 argon2-cffi>=23.1.0      # Password hashing (Argon2id)

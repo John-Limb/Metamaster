@@ -41,6 +41,8 @@ class Movie(Base):
     detected_external_id = Column(String(50), nullable=True)
     manual_external_id = Column(String(50), nullable=True)
     enrichment_error = Column(Text, nullable=True)
+    tmdb_collection_id = Column(Integer, nullable=True)
+    tmdb_collection_name = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

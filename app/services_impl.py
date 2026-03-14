@@ -471,6 +471,7 @@ class TMDBService:
             rating = data.get("vote_average")
             if rating is not None:
                 rating = round(float(rating), 1)
+            collection_data = data.get("belongs_to_collection") or {}
             return {
                 "tmdb_id": str(data.get("id")),
                 "title": data.get("title"),
@@ -480,6 +481,8 @@ class TMDBService:
                 "runtime": data.get("runtime"),
                 "genres": json.dumps(genres),
                 "poster": TMDBService._poster_url(data.get("poster_path")),
+                "tmdb_collection_id": collection_data.get("id"),
+                "tmdb_collection_name": collection_data.get("name"),
             }
         except (ValueError, KeyError, AttributeError) as e:
             logger.error(f"Error parsing TMDB movie details response: {e}")
