@@ -3,6 +3,31 @@
 All notable changes to MetaMaster are documented here.
 Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.0.11] - 2026-03-15
+
+### Bug Fixes
+- **tests:** Update API endpoint paths in plexService tests
+- **tests:** Apply dependency overrides in a fixture for better test isolation
+
+### Features
+- **store:** Implement media store functionality with CRUD operations and pagination
+- **dashboard:** Enhance ExternalApiStatus with Plex connection status and improve UI feedback
+- **plex:** Integrate Plex connection management and health checks
+- **plex:** Add function to seed Plex connection from environment variables
+- **gitignore:** Add .superpowers to ignore list
+- **plex:** Add watch status tracking for movies and TV shows with corresponding UI updates
+
+### Other Changes
+- Tidy up to do docs
+- Updated codacy to not include test filed
+- Add unit tests for Plex collection and playlist functionality
+
+- Implement tests for PlexCollectionClient, PlexPlaylistClient, and their respective services.
+- Create tests for collection and playlist schemas, ensuring proper validation and defaults.
+- Add tests for collection and playlist API routes, verifying correct behavior for CRUD operations.
+- Introduce tests for Celery tasks related to Plex collections and playlists.
+- Enhance TMDBService tests to cover movie details response with collection data.
+
 ## [0.0.1] - 2026-03-13
 
 ### Bug Fixes
