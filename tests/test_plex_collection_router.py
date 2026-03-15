@@ -43,11 +43,17 @@ def override_get_current_user():
 
 from app.api.v1.auth.endpoints import get_current_user  # noqa: E402
 
-app.dependency_overrides[get_db] = override_get_db
-app.dependency_overrides[get_current_user] = override_get_current_user
-
-# TestClient must be created AFTER dependency overrides are applied.
+# TestClient is created once; overrides are applied per-test via autouse fixture.
 client = TestClient(app, raise_server_exceptions=True)
+
+
+@pytest.fixture(autouse=True)
+def _apply_overrides():
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    yield
+    app.dependency_overrides.pop(get_db, None)
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 # ---------------------------------------------------------------------------
