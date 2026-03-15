@@ -382,6 +382,64 @@ def test_parse_movie_details_response_no_poster():
     assert result["poster"] is None
 
 
+def test_parse_movie_details_response_with_collection():
+    """parse_movie_details_response extracts belongs_to_collection fields."""
+    data = {
+        "id": 671,
+        "title": "Harry Potter and the Philosopher's Stone",
+        "overview": "A young wizard starts his journey.",
+        "vote_average": 7.9,
+        "poster_path": "/wuMc08IPKEatf9rnMNXvIDxqP4W.jpg",
+        "release_date": "2001-11-16",
+        "runtime": 152,
+        "genres": [{"id": 12, "name": "Adventure"}, {"id": 14, "name": "Fantasy"}],
+        "belongs_to_collection": {
+            "id": 1241,
+            "name": "Harry Potter Collection",
+            "poster_path": "/eVPs2Y0LyvTLZn6AP5Z6O2rtiGB.jpg",
+            "backdrop_path": "/hWhzQ3ggfWDqSKaTkCEBB0Zp6bI.jpg",
+        },
+    }
+    result = TMDBService.parse_movie_details_response(data)
+
+    assert result is not None
+    assert result["tmdb_collection_id"] == 1241
+    assert result["tmdb_collection_name"] == "Harry Potter Collection"
+
+
+def test_parse_movie_details_response_without_collection():
+    """parse_movie_details_response sets collection fields to None when absent."""
+    data = {
+        "id": 278,
+        "title": "The Shawshank Redemption",
+        "overview": "Two imprisoned men bond.",
+        "vote_average": 8.7,
+        "poster_path": "/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg",
+        "release_date": "1994-09-23",
+        "runtime": 142,
+        "genres": [{"id": 18, "name": "Drama"}],
+    }
+    result = TMDBService.parse_movie_details_response(data)
+
+    assert result is not None
+    assert result["tmdb_collection_id"] is None
+    assert result["tmdb_collection_name"] is None
+
+
+def test_parse_movie_details_response_null_collection():
+    """parse_movie_details_response handles explicit null belongs_to_collection."""
+    data = {
+        "id": 278,
+        "title": "The Shawshank Redemption",
+        "belongs_to_collection": None,
+    }
+    result = TMDBService.parse_movie_details_response(data)
+
+    assert result is not None
+    assert result["tmdb_collection_id"] is None
+    assert result["tmdb_collection_name"] is None
+
+
 # ===========================================================================
 # parse_series_search_response
 # ===========================================================================

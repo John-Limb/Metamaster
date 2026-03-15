@@ -23,6 +23,7 @@ const StoragePage = lazy(() => import('./pages/StoragePage').then(m => ({ defaul
 const OrganisationPage = lazy(() => import('./pages/OrganisationPage').then(m => ({ default: m.OrganisationPage })))
 const QueuePage = lazy(() => import('./pages/QueuePage').then(m => ({ default: m.QueuePage })))
 const SystemHealthPage = lazy(() => import('./pages/SystemHealthPage').then(m => ({ default: m.SystemHealthPage })))
+const PlexCollectionsPage = lazy(() => import('./pages/PlexCollectionsPage').then(m => ({ default: m.PlexCollectionsPage })))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -192,6 +193,19 @@ function App() {
               <MainLayout>
                 <Suspense fallback={<LoadingFallback />}>
                   <SystemHealthPage />
+                </Suspense>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/plex/collections"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                  <PlexCollectionsPage />
                 </Suspense>
               </MainLayout>
             </ProtectedRoute>
