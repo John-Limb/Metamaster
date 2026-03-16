@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { FaFolder, FaSearch, FaTv, FaFilm, FaChartBar, FaArrowRight } from 'react-icons/fa'
+import { FaFolder, FaSearch, FaTv, FaFilm, FaChartBar, FaLayerGroup, FaArrowRight } from 'react-icons/fa'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -35,6 +35,12 @@ const features = [
     title: 'Dashboard',
     description: 'View statistics and insights about your library',
     link: '/dashboard',
+  },
+  {
+    icon: <FaLayerGroup className="w-8 h-8" />,
+    title: 'Plex Collections',
+    description: 'Manage and sync collections and playlists with your Plex server',
+    link: '/plex/collections',
   },
 ]
 

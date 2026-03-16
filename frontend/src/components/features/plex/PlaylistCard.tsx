@@ -1,11 +1,15 @@
 import React from 'react'
 import type { PlexPlaylist } from '../../../services/plexCollectionService'
+import { Checkbox, CheckboxInput } from '@/components/common/Checkbox'
 
 interface PlaylistCardProps {
   playlist: PlexPlaylist
   onToggleEnabled: (id: number, enabled: boolean) => void
   onPush: (id: number) => void
   onDelete: (id: number) => void
+  selectable?: boolean
+  selected?: boolean
+  onSelect?: (id: number, selected: boolean) => void
 }
 
 function formatSyncDate(dateStr: string | null): string {
@@ -13,15 +17,35 @@ function formatSyncDate(dateStr: string | null): string {
   return new Date(dateStr).toLocaleString()
 }
 
-export function PlaylistCard({ playlist, onToggleEnabled, onPush, onDelete }: PlaylistCardProps) {
+export function PlaylistCard({
+  playlist,
+  onToggleEnabled,
+  onPush,
+  onDelete,
+  selectable,
+  selected,
+  onSelect,
+}: PlaylistCardProps) {
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-3">
-      <div className="min-w-0">
+    <div className={`rounded-xl border bg-white dark:bg-slate-800 p-4 space-y-3 transition-colors ${
+      selected
+        ? 'border-indigo-400 dark:border-indigo-500 ring-1 ring-indigo-400 dark:ring-indigo-500'
+        : 'border-slate-200 dark:border-slate-700'
+    }`}>
+      <div className="flex items-start justify-between gap-2 min-w-0">
         <h3 className="font-semibold text-slate-900 dark:text-white truncate">{playlist.name}</h3>
-        {playlist.description && (
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">{playlist.description}</p>
+        {selectable && (
+          <CheckboxInput
+            checked={!!selected}
+            onChange={checked => onSelect?.(playlist.id, checked)}
+            aria-label={`Select ${playlist.name}`}
+          />
         )}
       </div>
+
+      {playlist.description && (
+        <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{playlist.description}</p>
+      )}
 
       <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
         <span>{playlist.items.length} item{playlist.items.length !== 1 ? 's' : ''}</span>
@@ -29,15 +53,11 @@ export function PlaylistCard({ playlist, onToggleEnabled, onPush, onDelete }: Pl
       </div>
 
       <div className="flex items-center justify-between gap-2 pt-1">
-        <label className="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={playlist.enabled}
-            onChange={e => onToggleEnabled(playlist.id, e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-          />
-          <span className="text-sm text-slate-700 dark:text-slate-300">Enabled</span>
-        </label>
+        <Checkbox
+          label="Enabled"
+          checked={playlist.enabled}
+          onChange={checked => onToggleEnabled(playlist.id, checked)}
+        />
 
         <div className="flex items-center gap-2">
           <button

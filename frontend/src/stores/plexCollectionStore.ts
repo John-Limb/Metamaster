@@ -22,6 +22,7 @@ import {
   deletePlaylist as svcDeletePlaylist,
   pushPlaylist as svcPushPlaylist,
   pullPlaylists as svcPullPlaylists,
+  bulkDeletePlaylists as svcBulkDeletePlaylists,
   getCollectionSets as svcGetCollectionSets,
   updateCollectionSet as svcUpdateCollectionSet,
   triggerDiscovery as svcTriggerDiscovery,
@@ -51,6 +52,7 @@ interface PlexCollectionState {
   createPlaylist: (data: PlaylistCreate) => Promise<void>
   updatePlaylist: (id: number, data: PlaylistUpdate) => Promise<void>
   deletePlaylist: (id: number) => Promise<void>
+  bulkDeletePlaylists: (ids: number[]) => Promise<void>
   pushPlaylist: (id: number) => Promise<void>
   pullPlaylists: () => Promise<void>
 
@@ -186,10 +188,26 @@ export const usePlexCollectionStore = create<PlexCollectionState>((set, get) => 
     set({ playlistsLoading: true, playlistsError: null })
     try {
       await svcDeletePlaylist(id)
+    } catch (err: unknown) {
+      // 404 means it was already deleted — treat as success
+      if ((err as { code?: string }).code !== '404') {
+        const msg = err instanceof Error ? err.message : 'Failed to delete playlist'
+        set({ playlistsError: msg, playlistsLoading: false })
+        return
+      }
+    }
+    set({ playlistsLoading: false })
+    await get().fetchPlaylists()
+  },
+
+  bulkDeletePlaylists: async (ids) => {
+    set({ playlistsLoading: true, playlistsError: null })
+    try {
+      await svcBulkDeletePlaylists(ids)
       set({ playlistsLoading: false })
       await get().fetchPlaylists()
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete playlist'
+      const msg = err instanceof Error ? err.message : 'Failed to delete playlists'
       set({ playlistsError: msg, playlistsLoading: false })
     }
   },
