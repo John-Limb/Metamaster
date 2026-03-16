@@ -188,4 +188,15 @@ export const movieService = {
       throw error
     }
   },
+
+  // Get all movie genres
+  getMovieGenres: async (): Promise<string[]> => {
+    try {
+      const response = await apiClient.get<{ genres: string[] }>('/movies/genres')
+      return response.data.genres
+    } catch (error) {
+      errorHandler.handleError(error, 'getMovieGenres')
+      throw error
+    }
+  },
 }

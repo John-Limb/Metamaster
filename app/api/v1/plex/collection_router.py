@@ -3,8 +3,9 @@
 import logging
 from typing import List
 
+import httpx
 import yaml
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.v1.auth.endpoints import get_current_user
@@ -20,7 +21,9 @@ from app.api.v1.plex.collection_schemas import (
     PlaylistUpdate,
     YamlImportRequest,
 )
+from app.core.config import settings
 from app.core.database import get_db
+from app.domain.movies.models import Movie as MovieModel
 from app.domain.plex.collection_builder import BuilderResolver
 from app.domain.plex.collection_models import (
     BuilderType,
@@ -73,6 +76,79 @@ def _make_services(
     )
     playlist_svc = PlexPlaylistService(db=db, playlist_client=pc, resolver=resolver)
     return coll_svc, playlist_svc
+
+
+# ---------------------------------------------------------------------------
+# Local TMDB collection endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get("/tmdb-collections/local")
+def get_local_tmdb_collections(
+    db: Session = Depends(get_db),
+    _: object = Depends(get_current_user),
+):
+    """Return TMDB collections already matched in the local movie library."""
+    from sqlalchemy import func
+
+    rows = (
+        db.query(
+            MovieModel.tmdb_collection_id,
+            MovieModel.tmdb_collection_name,
+            func.count(MovieModel.id).label("movie_count"),
+        )
+        .filter(MovieModel.tmdb_collection_id.isnot(None))
+        .group_by(MovieModel.tmdb_collection_id, MovieModel.tmdb_collection_name)
+        .order_by(
+            func.count(MovieModel.id).desc(),
+            MovieModel.tmdb_collection_id.asc(),
+        )
+        .all()
+    )
+
+    seen: dict = {}
+    results = []
+    for tmdb_id, name, count in rows:
+        if tmdb_id not in seen:
+            seen[tmdb_id] = True
+            results.append(
+                {
+                    "tmdb_collection_id": tmdb_id,
+                    "name": name or f"Collection {tmdb_id}",
+                    "movie_count": count,
+                }
+            )
+    return results
+
+
+@router.get("/tmdb-collections/search")
+async def search_tmdb_collections(
+    q: str = Query(..., min_length=1),
+    _: object = Depends(get_current_user),
+):
+    """Proxy to TMDB collection search API."""
+    if settings.tmdb_read_access_token:
+        headers = {"Authorization": f"Bearer {settings.tmdb_read_access_token}"}
+        params = {"query": q}
+    elif settings.tmdb_api_key:
+        headers = {}
+        params = {"query": q, "api_key": settings.tmdb_api_key}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="TMDB API key not configured",
+        )
+
+    async with httpx.AsyncClient() as http_client:
+        resp = await http_client.get(
+            "https://api.themoviedb.org/3/search/collection",
+            headers=headers,
+            params=params,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+    return [{"id": item["id"], "name": item["name"]} for item in data.get("results", [])]
 
 
 # ---------------------------------------------------------------------------
@@ -299,10 +375,17 @@ def delete_playlist(
     db: Session = Depends(get_db),
     _: object = Depends(get_current_user),
 ):
-    """Delete a PlexPlaylist from the DB."""
+    """Delete a PlexPlaylist from the DB and from Plex if it was synced."""
     pl = db.query(PlexPlaylist).filter(PlexPlaylist.id == playlist_id).first()
     if pl is None:
         raise HTTPException(status_code=404, detail="Playlist not found")
+    if pl.plex_rating_key:
+        conn = _get_active_connection(db)
+        _, _, pc = _make_clients(conn)
+        try:
+            pc.delete_playlist(pl.plex_rating_key)
+        except Exception:
+            logger.warning("Could not delete playlist %s from Plex", pl.plex_rating_key)
     db.delete(pl)
     db.commit()
 
@@ -313,9 +396,19 @@ def bulk_delete_playlists(
     db: Session = Depends(get_db),
     _: object = Depends(get_current_user),
 ):
-    """Delete multiple PlexPlaylists from the DB by ID."""
+    """Delete multiple PlexPlaylists from DB and from Plex where synced."""
     if not payload.ids:
         return
+    playlists = db.query(PlexPlaylist).filter(PlexPlaylist.id.in_(payload.ids)).all()
+    plex_keys = [pl.plex_rating_key for pl in playlists if pl.plex_rating_key]
+    if plex_keys:
+        conn = _get_active_connection(db)
+        _, _, pc = _make_clients(conn)
+        for key in plex_keys:
+            try:
+                pc.delete_playlist(key)
+            except Exception:
+                logger.warning("Could not delete playlist %s from Plex", key)
     db.query(PlexPlaylist).filter(PlexPlaylist.id.in_(payload.ids)).delete(
         synchronize_session=False
     )

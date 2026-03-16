@@ -283,6 +283,22 @@ async def top_rated_movies(
     return {"items": movies, "total": total, **metadata}
 
 
+@router.get("/genres")
+async def get_movie_genres(
+    db: Session = Depends(get_db),
+):
+    """Return a sorted, deduplicated list of genres from the movie library."""
+    rows = db.query(MovieModel.genres).filter(MovieModel.genres.isnot(None)).all()
+    genre_set: set = set()
+    for (raw,) in rows:
+        try:
+            genres = json.loads(raw or "[]")
+            genre_set.update(genres)
+        except (ValueError, TypeError):
+            continue
+    return {"genres": sorted(genre_set)}
+
+
 @router.get("/{movie_id}", response_model=MovieResponse)
 async def get_movie(
     movie_id: int,

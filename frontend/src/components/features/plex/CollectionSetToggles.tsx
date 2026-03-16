@@ -1,6 +1,7 @@
 import React from 'react'
 import { usePlexCollectionStore } from '../../../stores/plexCollectionStore'
 import type { SetType } from '../../../services/plexCollectionService'
+import { Checkbox } from '@/components/common/Checkbox'
 
 const SET_LABELS: Record<SetType, string> = {
   franchise: 'Franchise',
@@ -32,16 +33,12 @@ export function CollectionSetToggles() {
                 {formatRunDate(set.last_run_at)}
               </p>
             </div>
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={set.enabled}
-                disabled={setsLoading}
-                onChange={e => toggleCollectionSet(set.set_type, e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-40"
-              />
-              <span className="text-sm text-slate-700 dark:text-slate-300">Enabled</span>
-            </label>
+            <Checkbox
+              label="Enabled"
+              checked={set.enabled}
+              disabled={setsLoading}
+              onChange={checked => toggleCollectionSet(set.set_type, checked)}
+            />
           </div>
         ))}
         {collectionSets.length === 0 && !setsLoading && (

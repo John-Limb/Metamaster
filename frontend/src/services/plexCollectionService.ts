@@ -84,6 +84,17 @@ export interface PlaylistUpdate {
   enabled?: boolean
 }
 
+export interface LocalTmdbCollection {
+  tmdb_collection_id: number
+  name: string
+  movie_count: number
+}
+
+export interface TmdbCollectionSearchResult {
+  id: number
+  name: string
+}
+
 // ---------------------------------------------------------------------------
 // Collections
 // ---------------------------------------------------------------------------
@@ -198,5 +209,21 @@ export async function updateCollectionSet(
 
 export async function triggerDiscovery(): Promise<{ task_id: string; message: string }> {
   const { data } = await apiClient.post<{ task_id: string; message: string }>('/plex/discover')
+  return data
+}
+
+// ---------------------------------------------------------------------------
+// TMDB Collections
+// ---------------------------------------------------------------------------
+
+export async function getLocalTmdbCollections(): Promise<LocalTmdbCollection[]> {
+  const { data } = await apiClient.get<LocalTmdbCollection[]>('/plex/tmdb-collections/local')
+  return data
+}
+
+export async function searchTmdbCollections(q: string): Promise<TmdbCollectionSearchResult[]> {
+  const { data } = await apiClient.get<TmdbCollectionSearchResult[]>(
+    `/plex/tmdb-collections/search?q=${encodeURIComponent(q)}`
+  )
   return data
 }
