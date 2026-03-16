@@ -14,6 +14,8 @@ import {
   FaDatabase,
   FaList,
   FaServer,
+  FaLayerGroup,
+  FaListUl,
 } from 'react-icons/fa'
 import { useUIStore } from '@/stores/uiStore'
 
@@ -38,6 +40,8 @@ const navItems: NavItem[] = [
   { label: 'Organisation', path: '/organisation', icon: <FaFolderOpen className="w-5 h-5" /> },
   { label: 'Storage', path: '/storage', icon: <FaDatabase className="w-5 h-5" /> },
   { label: 'Queue', path: '/queue', icon: <FaList className="w-5 h-5" /> },
+  { label: 'Plex Collections', path: '/plex/collections', icon: <FaLayerGroup className="w-5 h-5" /> },
+  { label: 'Plex Playlists', path: '/plex/playlists', icon: <FaListUl className="w-5 h-5" /> },
   { label: 'System Health', path: '/system-health', icon: <FaServer className="w-5 h-5" /> },
   { label: 'Settings', path: '/settings', icon: <FaCog className="w-5 h-5" /> },
 ]
