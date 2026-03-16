@@ -14,6 +14,7 @@ from app.api.v1.plex.collection_schemas import (
     CollectionSetResponse,
     CollectionSetUpdate,
     CollectionUpdate,
+    PlaylistBulkDeleteRequest,
     PlaylistCreate,
     PlaylistResponse,
     PlaylistUpdate,
@@ -303,6 +304,21 @@ def delete_playlist(
     if pl is None:
         raise HTTPException(status_code=404, detail="Playlist not found")
     db.delete(pl)
+    db.commit()
+
+
+@router.post("/playlists/bulk-delete", status_code=204)
+def bulk_delete_playlists(
+    payload: PlaylistBulkDeleteRequest,
+    db: Session = Depends(get_db),
+    _: object = Depends(get_current_user),
+):
+    """Delete multiple PlexPlaylists from the DB by ID."""
+    if not payload.ids:
+        return
+    db.query(PlexPlaylist).filter(PlexPlaylist.id.in_(payload.ids)).delete(
+        synchronize_session=False
+    )
     db.commit()
 
 

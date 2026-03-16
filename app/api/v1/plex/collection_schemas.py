@@ -1,7 +1,7 @@
 """Pydantic request/response schemas for Plex collection and playlist API endpoints."""
 
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -22,6 +22,10 @@ class CollectionUpdate(BaseModel):
     sort_title: Optional[str] = None
     builder_config: Optional[dict] = None
     enabled: Optional[bool] = None
+
+
+class PlaylistBulkDeleteRequest(BaseModel):
+    ids: List[int]
 
 
 class PlaylistCreate(BaseModel):

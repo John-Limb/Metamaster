@@ -28,11 +28,14 @@ export function PlexCollectionsPage() {
     deletePlaylist,
     pushPlaylist,
     pullPlaylists,
+    bulkDeletePlaylists,
   } = usePlexCollectionStore()
 
   const [showForm, setShowForm] = useState(false)
   const [showYamlImport, setShowYamlImport] = useState(false)
   const [discoverMessage, setDiscoverMessage] = useState<string | null>(null)
+  const [selectedPlaylistIds, setSelectedPlaylistIds] = useState<Set<number>>(new Set())
+  const [selectMode, setSelectMode] = useState(false)
 
   useEffect(() => {
     fetchCollections()
@@ -66,6 +69,31 @@ export function PlexCollectionsPage() {
   const handleYamlImported = () => {
     fetchCollections()
     fetchPlaylists()
+  }
+
+  const handleToggleSelect = (id: number, checked: boolean) => {
+    setSelectedPlaylistIds(prev => {
+      const next = new Set(prev)
+      if (checked) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }
+
+  const handleSelectAll = () => {
+    setSelectedPlaylistIds(new Set(playlists.map(p => p.id)))
+  }
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedPlaylistIds)
+    setSelectedPlaylistIds(new Set())
+    setSelectMode(false)
+    await bulkDeletePlaylists(ids)
+  }
+
+  const exitSelectMode = () => {
+    setSelectMode(false)
+    setSelectedPlaylistIds(new Set())
   }
 
   return (
@@ -156,14 +184,54 @@ export function PlexCollectionsPage() {
       {/* Playlists section */}
       <section>
         <div className="flex items-center justify-between gap-4 mb-4">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Playlists</h2>
-          <button
-            onClick={() => pullPlaylists()}
-            disabled={playlistsLoading}
-            className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
-          >
-            Pull from Plex
-          </button>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+            Playlists {playlists.length > 0 && <span className="text-slate-400 font-normal text-sm">({playlists.length})</span>}
+          </h2>
+          <div className="flex items-center gap-2">
+            {selectMode ? (
+              <>
+                <button
+                  onClick={handleSelectAll}
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Select All
+                </button>
+                {selectedPlaylistIds.size > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    disabled={playlistsLoading}
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white transition-colors"
+                  >
+                    Delete Selected ({selectedPlaylistIds.size})
+                  </button>
+                )}
+                <button
+                  onClick={exitSelectMode}
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                {playlists.length > 0 && (
+                  <button
+                    onClick={() => setSelectMode(true)}
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Select
+                  </button>
+                )}
+                <button
+                  onClick={() => pullPlaylists()}
+                  disabled={playlistsLoading}
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
+                >
+                  Pull from Plex
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {playlistsError && (
@@ -191,6 +259,9 @@ export function PlexCollectionsPage() {
                 onToggleEnabled={handleTogglePlaylist}
                 onPush={pushPlaylist}
                 onDelete={deletePlaylist}
+                selectable={selectMode}
+                selected={selectedPlaylistIds.has(pl.id)}
+                onSelect={handleToggleSelect}
               />
             ))}
           </div>

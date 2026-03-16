@@ -175,6 +175,10 @@ export async function pullPlaylists(): Promise<void> {
   await apiClient.post('/plex/playlists/pull')
 }
 
+export async function bulkDeletePlaylists(ids: number[]): Promise<void> {
+  await apiClient.post('/plex/playlists/bulk-delete', { ids })
+}
+
 // ---------------------------------------------------------------------------
 // Collection Sets
 // ---------------------------------------------------------------------------
