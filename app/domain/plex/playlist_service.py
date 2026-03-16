@@ -54,9 +54,15 @@ class PlexPlaylistService:
         )
 
     def pull_playlists(self, connection_id: int) -> None:
-        """Import all Plex playlists into the DB. Pull is always unconditional."""
+        """Import Plex playlists into the DB, removing any no longer in Plex."""
+        seen_keys: set = set()
         for raw in self._pc.get_playlists():
             self._upsert_pulled_playlist(raw, connection_id)
+            seen_keys.add(raw["ratingKey"])
+        self._db.query(PlexPlaylist).filter(
+            PlexPlaylist.connection_id == connection_id,
+            PlexPlaylist.plex_rating_key.notin_(seen_keys),
+        ).delete(synchronize_session=False)
         self._db.commit()
 
     def _reconcile(self, playlist_key: str, target_keys: set) -> None:

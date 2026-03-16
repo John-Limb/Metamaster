@@ -93,3 +93,45 @@ def test_pull_imports_playlist(svc, mock_pc, db_session):
     assert pl is not None
     assert pl.name == "Weekend"
     assert pl.enabled is False
+
+
+@pytest.mark.unit
+def test_pull_removes_playlists_deleted_in_plex(svc, mock_pc, db_session):
+    """Playlists removed from Plex must be deleted from the DB on next pull."""
+    from app.domain.plex.collection_models import PlexPlaylist
+    from app.domain.plex.models import PlexConnection
+
+    conn = PlexConnection(server_url="http://plex", token="t", is_active=True)
+    db_session.add(conn)
+    db_session.flush()
+
+    # Seed two playlists as if they were previously synced from Plex
+    kept = PlexPlaylist(
+        connection_id=conn.id,
+        name="Keep Me",
+        plex_rating_key="30",
+        builder_config={"items": []},
+        enabled=False,
+    )
+    deleted = PlexPlaylist(
+        connection_id=conn.id,
+        name="Gone from Plex",
+        plex_rating_key="31",
+        builder_config={"items": []},
+        enabled=False,
+    )
+    db_session.add_all([kept, deleted])
+    db_session.flush()
+
+    # Plex now only returns the first playlist — the second was deleted
+    mock_pc.get_playlists.return_value = [{"ratingKey": "30", "title": "Keep Me", "summary": ""}]
+
+    svc.pull_playlists(connection_id=conn.id)
+
+    assert (
+        db_session.query(PlexPlaylist).filter(PlexPlaylist.plex_rating_key == "30").first()
+        is not None
+    )
+    assert (
+        db_session.query(PlexPlaylist).filter(PlexPlaylist.plex_rating_key == "31").first() is None
+    )
