@@ -121,8 +121,9 @@ class PlexCollectionService:
                 is_default=False,
             )
             self._db.add(existing)
+            self._db.flush()  # populate existing.id before FK use
 
-        existing.name = raw.get("title", plex_key)
+        existing.name = raw.get("title") or plex_key
         existing.description = raw.get("summary")
         existing.last_synced_at = datetime.utcnow()
 

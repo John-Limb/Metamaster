@@ -5,6 +5,7 @@ Revises: 013
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import ENUM as PgENUM
 
 revision = "014"
 down_revision = "013"
@@ -32,12 +33,13 @@ def upgrade() -> None:
         sa.Column("sort_title", sa.String(500), nullable=True),
         sa.Column(
             "builder_type",
-            sa.Enum(
+            PgENUM(
                 "tmdb_collection",
                 "static_items",
                 "genre",
                 "decade",
                 name="plexbuildertype",
+                create_type=False,
             ),
             nullable=False,
         ),
@@ -113,7 +115,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "set_type",
-            sa.Enum("franchise", "genre", "decade", name="plexsettype"),
+            PgENUM("franchise", "genre", "decade", name="plexsettype", create_type=False),
             nullable=False,
         ),
         sa.Column("enabled", sa.Boolean, nullable=False, server_default="false"),
