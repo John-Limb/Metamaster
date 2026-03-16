@@ -57,12 +57,9 @@ class BuilderResolver:
         return results
 
     def resolve_genre(self, config: Dict[str, Any]) -> List[ResolvedItem]:
-        """Return synced movies and TV shows matching the given genre."""
+        """Return synced movies matching the given genre (movies only)."""
         genre = config["genre"]
-        results: List[ResolvedItem] = []
-        results.extend(self._resolve_genre_for_model(genre, Movie, "movie"))
-        results.extend(self._resolve_genre_for_model(genre, TVShow, "tv_show"))
-        return results
+        return self._resolve_genre_for_model(genre, Movie, "movie")
 
     def resolve_decade(self, config: Dict[str, Any]) -> List[ResolvedItem]:
         """Return synced movies from the given decade (e.g. decade=2000 means 2000-2009)."""

@@ -137,20 +137,49 @@ def test_resolve_genre_excludes_movie_with_wrong_genre(db_session):
 
 
 @pytest.mark.unit
-def test_resolve_genre_matches_tv_show(db_session):
-    """A TV show with matching genre is included in results."""
-    conn = _make_connection(db_session, connection_id=12)
-    show = TVShow(title="Breaking Bad", genres=json.dumps(["Drama", "Crime"]))
-    db_session.add(show)
+def test_resolve_genre_excludes_tv_shows(db_session):
+    """resolve_genre must return only movies, not TV shows."""
+    conn = PlexConnection(
+        server_url="http://x",
+        token="t",
+    )
+    db_session.add(conn)
     db_session.flush()
-    _make_synced_record(db_session, conn.id, "tv_show", show.id, "rk-drama-tv-1")
+
+    movie = Movie(
+        title="Action Movie",
+        genres=json.dumps(["Action"]),
+    )
+    show = TVShow(
+        title="Action Show",
+        genres=json.dumps(["Action"]),
+    )
+    db_session.add_all([movie, show])
+    db_session.flush()
+
+    movie_record = PlexSyncRecord(
+        connection_id=conn.id,
+        item_type="movie",
+        item_id=movie.id,
+        plex_rating_key="111",
+        sync_status=PlexSyncStatus.SYNCED,
+    )
+    show_record = PlexSyncRecord(
+        connection_id=conn.id,
+        item_type="tv_show",
+        item_id=show.id,
+        plex_rating_key="222",
+        sync_status=PlexSyncStatus.SYNCED,
+    )
+    db_session.add_all([movie_record, show_record])
+    db_session.flush()
 
     resolver = BuilderResolver(db=db_session, connection_id=conn.id)
-    result = resolver.resolve_genre({"genre": "Drama"})
+    results = resolver.resolve_genre({"genre": "Action"})
 
-    tv_results = [r for r in result if r.item_type == "tv_show"]
-    assert len(tv_results) == 1
-    assert tv_results[0].plex_rating_key == "rk-drama-tv-1"
+    assert len(results) == 1
+    assert results[0].plex_rating_key == "111"
+    assert results[0].item_type == "movie"
 
 
 # ---------------------------------------------------------------------------

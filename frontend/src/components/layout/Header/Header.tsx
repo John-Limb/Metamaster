@@ -9,6 +9,7 @@ import {
   FaFilm,
   FaTv,
   FaFolderOpen,
+  FaLayerGroup,
   FaCog,
 } from 'react-icons/fa'
 import { useTheme } from '@/context/ThemeContext'
@@ -157,6 +158,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
               { to: '/movies', label: 'Movies', icon: <FaFilm className="w-4 h-4" /> },
               { to: '/tv-shows', label: 'TV Shows', icon: <FaTv className="w-4 h-4" /> },
               { to: '/organisation', label: 'Organisation', icon: <FaFolderOpen className="w-4 h-4" /> },
+              { to: '/plex/collections', label: 'Plex', icon: <FaLayerGroup className="w-4 h-4" /> },
               { to: '/settings', label: 'Settings', icon: <FaCog className="w-4 h-4" /> },
             ].map((item) => {
               const active = item.to === '/'

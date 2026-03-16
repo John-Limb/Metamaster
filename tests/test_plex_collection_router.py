@@ -305,3 +305,130 @@ def test_import_yaml_invalid_yaml_returns_422():
         json={"yaml_content": ":\tinvalid: [yaml"},
     )
     assert resp.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Tests: local TMDB collections
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def db():
+    """Provide a DB session and clean up Movie rows after each test."""
+    from app.domain.movies.models import Movie
+
+    session = _SessionLocal()
+    yield session
+    session.query(Movie).delete()
+    session.commit()
+    session.close()
+
+
+@pytest.mark.unit
+def test_get_local_tmdb_collections_groups_by_collection(db):
+    """Returns movies grouped by tmdb_collection_id, sorted by count desc."""
+    from app.domain.movies.models import Movie
+
+    db.add(
+        Movie(
+            title="Batman Begins",
+            tmdb_collection_id=263,
+            tmdb_collection_name="The Dark Knight Collection",
+        )
+    )
+    db.add(
+        Movie(
+            title="The Dark Knight",
+            tmdb_collection_id=263,
+            tmdb_collection_name="The Dark Knight Collection",
+        )
+    )
+    db.add(
+        Movie(
+            title="Inception",
+            tmdb_collection_id=536,
+            tmdb_collection_name="Inception Collection",
+        )
+    )
+    db.add(Movie(title="No Collection"))
+    db.commit()
+
+    response = client.get("/api/v1/plex/tmdb-collections/local")
+    assert response.status_code == 200
+    data = response.json()
+    # sorted by movie_count desc: 263 (2) before 536 (1)
+    assert len(data) == 2
+    assert data[0]["tmdb_collection_id"] == 263
+    assert data[0]["movie_count"] == 2
+    assert data[0]["name"] == "The Dark Knight Collection"
+    assert data[1]["tmdb_collection_id"] == 536
+    assert data[1]["movie_count"] == 1
+
+
+@pytest.mark.unit
+def test_get_local_tmdb_collections_fallback_name(db):
+    """Falls back to 'Collection {id}' when tmdb_collection_name is None."""
+    from app.domain.movies.models import Movie
+
+    db.add(
+        Movie(
+            title="Mystery Film",
+            tmdb_collection_id=999,
+            tmdb_collection_name=None,
+        )
+    )
+    db.commit()
+
+    response = client.get("/api/v1/plex/tmdb-collections/local")
+    assert response.status_code == 200
+    names = [item["name"] for item in response.json()]
+    assert "Collection 999" in names
+
+
+# ---------------------------------------------------------------------------
+# Tests: TMDB collection search proxy
+# ---------------------------------------------------------------------------
+
+
+def test_search_tmdb_collections_returns_results(monkeypatch):
+    """Proxies to TMDB and returns id + name list."""
+    from unittest.mock import MagicMock, patch
+
+    import httpx
+
+    fake_response_data = {
+        "results": [
+            {"id": 9485, "name": "Christopher Nolan Collection"},
+            {"id": 948, "name": "Batman Collection"},
+        ]
+    }
+
+    async def mock_get(self, url, **kwargs):
+        mock = MagicMock()
+        mock.raise_for_status = MagicMock()
+        mock.json.return_value = fake_response_data
+        return mock
+
+    monkeypatch.setattr(httpx.AsyncClient, "get", mock_get)
+
+    with patch("app.api.v1.plex.collection_router.settings") as mock_settings:
+        mock_settings.tmdb_read_access_token = "fake-token"
+        mock_settings.tmdb_api_key = None
+        response = client.get("/api/v1/plex/tmdb-collections/search?q=nolan")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert data[0] == {"id": 9485, "name": "Christopher Nolan Collection"}
+
+
+def test_search_tmdb_collections_returns_503_when_no_credentials():
+    """Returns 503 when no TMDB credentials are configured."""
+    from unittest.mock import patch
+
+    with patch("app.api.v1.plex.collection_router.settings") as mock_settings:
+        mock_settings.tmdb_read_access_token = None
+        mock_settings.tmdb_api_key = None
+        response = client.get("/api/v1/plex/tmdb-collections/search?q=batman")
+
+    assert response.status_code == 503
