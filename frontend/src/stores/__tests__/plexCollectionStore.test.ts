@@ -43,6 +43,8 @@ describe('plexCollectionStore', () => {
       playlists: [],
       playlistsLoading: false,
       playlistsError: null,
+      pushAllLoading: false,
+      pushAllError: null,
     })
     vi.clearAllMocks()
   })
@@ -107,9 +109,39 @@ describe('plexCollectionStore', () => {
 
     await usePlexCollectionStore.getState().deleteCollection(1)
 
-    expect(svc.deleteCollection).toHaveBeenCalledWith(1)
+    expect(svc.deleteCollection).toHaveBeenCalledWith(1, false)
     expect(svc.getCollections).toHaveBeenCalled()
     expect(usePlexCollectionStore.getState().collections).toEqual([])
+  })
+
+  it('deleteCollection forwards deleteFromPlex=true to service', async () => {
+    vi.mocked(svc.deleteCollection).mockResolvedValue(undefined)
+    vi.mocked(svc.getCollections).mockResolvedValue([])
+
+    await usePlexCollectionStore.getState().deleteCollection(99, true)
+
+    expect(svc.deleteCollection).toHaveBeenCalledWith(99, true)
+  })
+
+  it('pushAllCollections calls service and manages pushAllLoading state', async () => {
+    vi.mocked(svc.pushAllCollections).mockResolvedValue(undefined)
+
+    await usePlexCollectionStore.getState().pushAllCollections()
+
+    expect(svc.pushAllCollections).toHaveBeenCalled()
+    const state = usePlexCollectionStore.getState()
+    expect(state.pushAllLoading).toBe(false)
+    expect(state.pushAllError).toBeNull()
+  })
+
+  it('pushAllCollections sets pushAllError on failure', async () => {
+    vi.mocked(svc.pushAllCollections).mockRejectedValue(new Error('Server error'))
+
+    await usePlexCollectionStore.getState().pushAllCollections()
+
+    const state = usePlexCollectionStore.getState()
+    expect(state.pushAllError).toBe('Failed to queue push. Please try again.')
+    expect(state.pushAllLoading).toBe(false)
   })
 
   it('pullCollections calls service then re-fetches', async () => {

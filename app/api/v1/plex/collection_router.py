@@ -39,6 +39,7 @@ from app.domain.plex.service import get_or_cache_library_ids
 from app.infrastructure.external_apis.plex.client import PlexClient
 from app.infrastructure.external_apis.plex.collection_client import PlexCollectionClient
 from app.infrastructure.external_apis.plex.playlist_client import PlexPlaylistClient
+from app.tasks.plex_collections import push_all_collections
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/plex", tags=["plex-collections"])
@@ -183,6 +184,7 @@ def create_collection(
         builder_config=payload.builder_config,
         enabled=False,
         is_default=False,
+        content_type="movie",
     )
     db.add(coll)
     db.commit()
@@ -225,6 +227,17 @@ def export_collections(
     return {"yaml_content": yaml.dump(payload, allow_unicode=True)}
 
 
+@router.post("/collections/push-all", status_code=202)
+def push_all_collections_endpoint(
+    db: Session = Depends(get_db),
+    _: object = Depends(get_current_user),
+):
+    """Queue a Celery task to push all enabled collections to Plex."""
+    conn = _get_active_connection(db)
+    push_all_collections.delay(conn.id)
+    return {"status": "queued"}
+
+
 @router.get("/collections/{collection_id}", response_model=CollectionResponse)
 def get_collection(
     collection_id: int,
@@ -259,13 +272,25 @@ def update_collection(
 @router.delete("/collections/{collection_id}", status_code=204)
 def delete_collection(
     collection_id: int,
+    delete_from_plex: bool = Query(default=False),
     db: Session = Depends(get_db),
     _: object = Depends(get_current_user),
 ):
-    """Delete a PlexCollection from the DB."""
+    """Delete a PlexCollection from the DB, optionally also removing it from Plex."""
     coll = db.query(PlexCollection).filter(PlexCollection.id == collection_id).first()
     if coll is None:
         raise HTTPException(status_code=404, detail="Collection not found")
+    if delete_from_plex and coll.plex_rating_key:
+        conn = _get_active_connection(db)
+        _, cc, _ = _make_clients(conn)
+        try:
+            cc.delete_collection(coll.plex_rating_key)
+        except Exception:
+            logger.warning(
+                "Failed to delete collection %s from Plex; continuing with DB delete",
+                coll.plex_rating_key,
+                exc_info=True,
+            )
     db.delete(coll)
     db.commit()
 

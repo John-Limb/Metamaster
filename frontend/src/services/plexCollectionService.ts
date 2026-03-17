@@ -33,6 +33,7 @@ export interface PlexCollection {
   enabled: boolean
   is_default: boolean
   items: CollectionItem[]
+  content_type: string | null
 }
 
 export interface PlaylistItem {
@@ -122,8 +123,11 @@ export async function updateCollection(
   return data
 }
 
-export async function deleteCollection(id: number): Promise<void> {
-  await apiClient.delete(`/plex/collections/${id}`)
+export async function deleteCollection(id: number, deleteFromPlex = false): Promise<void> {
+  const url = deleteFromPlex
+    ? `/plex/collections/${id}?delete_from_plex=true`
+    : `/plex/collections/${id}`
+  await apiClient.delete(url)
 }
 
 export async function pushCollection(id: number): Promise<void> {
@@ -132,6 +136,10 @@ export async function pushCollection(id: number): Promise<void> {
 
 export async function pullCollections(): Promise<void> {
   await apiClient.post('/plex/collections/pull')
+}
+
+export async function pushAllCollections(): Promise<void> {
+  await apiClient.post('/plex/collections/push-all')
 }
 
 export async function exportCollectionsYaml(): Promise<string> {
