@@ -85,3 +85,17 @@ def test_collections_yaml_parses_both_sections():
     parsed = CollectionsYaml.model_validate(raw)
     assert "MCU" in parsed.collections
     assert "Weekend" in parsed.playlists
+
+
+@pytest.mark.unit
+def test_collection_response_includes_content_type():
+    """CollectionResponse must expose content_type."""
+    from app.api.v1.plex.collection_schemas import CollectionResponse
+
+    fields = CollectionResponse.model_fields
+    assert "content_type" in fields, "content_type missing from CollectionResponse"
+    import typing
+
+    annotation = fields["content_type"].annotation
+    args = typing.get_args(annotation)
+    assert type(None) in args, "content_type must be Optional (allow None)"

@@ -62,6 +62,7 @@ class CollectionResponse(BaseModel):
     last_synced_at: Optional[datetime]
     enabled: bool
     is_default: bool
+    content_type: Optional[str] = None
     items: list[CollectionItemResponse] = []
     model_config = ConfigDict(from_attributes=True)
 

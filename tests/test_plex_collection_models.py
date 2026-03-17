@@ -102,6 +102,16 @@ def test_plex_collection_set_has_enabled_false_default():
 
 
 @pytest.mark.unit
+def test_plex_collection_has_content_type_column():
+    """PlexCollection must have a nullable content_type column."""
+    from app.domain.plex.collection_models import PlexCollection
+
+    col = PlexCollection.__table__.c.get("content_type")
+    assert col is not None, "content_type column missing from PlexCollection"
+    assert col.nullable is True
+
+
+@pytest.mark.unit
 def test_collection_set_defaults(db_session):
     conn = PlexConnection(server_url="http://x", token="t", is_active=True)
     db_session.add(conn)
