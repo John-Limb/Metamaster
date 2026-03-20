@@ -164,7 +164,7 @@ def list_collections(
 ):
     """List all PlexCollections for the active connection."""
     conn = _get_active_connection(db)
-    return db.query(PlexCollection).filter(PlexCollection.connection_id == conn.id).all()
+    return db.query(PlexCollection).filter(PlexCollection.connection_id == conn.id).order_by(PlexCollection.name).all()
 
 
 @router.post("/collections", response_model=CollectionResponse, status_code=201)
@@ -282,7 +282,7 @@ def delete_collection(
         raise HTTPException(status_code=404, detail="Collection not found")
     if delete_from_plex and coll.plex_rating_key:
         conn = _get_active_connection(db)
-        _, cc, _ = _make_clients(conn)
+        cc = PlexCollectionClient(server_url=conn.server_url, token=conn.token)
         try:
             cc.delete_collection(coll.plex_rating_key)
         except Exception:
@@ -326,7 +326,7 @@ def list_playlists(
 ):
     """List all PlexPlaylists for the active connection."""
     conn = _get_active_connection(db)
-    return db.query(PlexPlaylist).filter(PlexPlaylist.connection_id == conn.id).all()
+    return db.query(PlexPlaylist).filter(PlexPlaylist.connection_id == conn.id).order_by(PlexPlaylist.name).all()
 
 
 @router.post("/playlists", response_model=PlaylistResponse, status_code=201)
@@ -406,7 +406,7 @@ def delete_playlist(
         raise HTTPException(status_code=404, detail="Playlist not found")
     if pl.plex_rating_key:
         conn = _get_active_connection(db)
-        _, _, pc = _make_clients(conn)
+        pc = PlexPlaylistClient(server_url=conn.server_url, token=conn.token)
         try:
             pc.delete_playlist(pl.plex_rating_key)
         except Exception:
@@ -428,7 +428,7 @@ def bulk_delete_playlists(
     plex_keys = [pl.plex_rating_key for pl in playlists if pl.plex_rating_key]
     if plex_keys:
         conn = _get_active_connection(db)
-        _, _, pc = _make_clients(conn)
+        pc = PlexPlaylistClient(server_url=conn.server_url, token=conn.token)
         for key in plex_keys:
             try:
                 pc.delete_playlist(key)

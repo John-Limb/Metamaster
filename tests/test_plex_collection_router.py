@@ -490,8 +490,8 @@ def test_delete_collection_with_plex_flag_calls_client():
 
     mock_cc = MagicMock()
     with patch(
-        "app.api.v1.plex.collection_router._make_clients",
-        return_value=(MagicMock(), mock_cc, MagicMock()),
+        "app.api.v1.plex.collection_router.PlexCollectionClient",
+        return_value=mock_cc,
     ):
         resp = client.delete(f"/api/v1/plex/collections/{coll_id}?delete_from_plex=true")
 
