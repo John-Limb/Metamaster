@@ -43,6 +43,7 @@ class PlexCollection(Base):
     last_synced_at = Column(DateTime, nullable=True)
     enabled = Column(Boolean, nullable=False, default=False, server_default="false")
     is_default = Column(Boolean, nullable=False, default=False, server_default="false")
+    content_type = Column(String(20), nullable=True)  # "movie" | "tv_show" | None
 
     items = relationship(
         "PlexCollectionItem", back_populates="collection", cascade="all, delete-orphan"

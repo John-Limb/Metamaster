@@ -432,3 +432,104 @@ def test_search_tmdb_collections_returns_503_when_no_credentials():
         response = client.get("/api/v1/plex/tmdb-collections/search?q=batman")
 
     assert response.status_code == 503
+
+
+@pytest.mark.unit
+def test_push_all_collections_queues_task():
+    """POST /plex/collections/push-all returns 202 and queues Celery task with connection id."""
+    _clear_db()
+    conn_id = _seed_connection()
+    with patch("app.api.v1.plex.collection_router.push_all_collections") as mock_task:
+        resp = client.post("/api/v1/plex/collections/push-all")
+    assert resp.status_code == 202
+    assert resp.json() == {"status": "queued"}
+    mock_task.delay.assert_called_once_with(conn_id)
+
+
+@pytest.mark.unit
+def test_delete_collection_without_plex_flag():
+    """DELETE /plex/collections/{id} without flag just deletes from DB (no Plex call)."""
+    _clear_db()
+    _seed_connection()
+    payload = {
+        "name": "To Delete",
+        "builder_type": "static_items",
+        "builder_config": {"items": []},
+    }
+    create_resp = client.post("/api/v1/plex/collections", json=payload)
+    coll_id = create_resp.json()["id"]
+
+    with patch("app.api.v1.plex.collection_router._make_clients") as mock_clients:
+        resp = client.delete(f"/api/v1/plex/collections/{coll_id}")
+
+    assert resp.status_code == 204
+    mock_clients.assert_not_called()
+
+
+@pytest.mark.unit
+def test_delete_collection_with_plex_flag_calls_client():
+    """DELETE with ?delete_from_plex=true calls PlexCollectionClient.delete_collection."""
+    _clear_db()
+    _seed_connection()
+    payload = {
+        "name": "Plex Delete Test",
+        "builder_type": "static_items",
+        "builder_config": {"items": []},
+    }
+    create_resp = client.post("/api/v1/plex/collections", json=payload)
+    coll_id = create_resp.json()["id"]
+
+    # Manually set plex_rating_key so the branch is exercised
+    db = _SessionLocal()
+    from app.domain.plex.collection_models import PlexCollection
+
+    coll = db.query(PlexCollection).filter_by(id=coll_id).first()
+    coll.plex_rating_key = "plex-key-999"
+    db.commit()
+    db.close()
+
+    mock_cc = MagicMock()
+    with patch(
+        "app.api.v1.plex.collection_router._make_clients",
+        return_value=(MagicMock(), mock_cc, MagicMock()),
+    ):
+        resp = client.delete(f"/api/v1/plex/collections/{coll_id}?delete_from_plex=true")
+
+    assert resp.status_code == 204
+    mock_cc.delete_collection.assert_called_once_with("plex-key-999")
+
+
+@pytest.mark.unit
+def test_delete_collection_plex_failure_still_deletes_db_row():
+    """If Plex delete_collection raises, endpoint still returns 204 and removes DB row."""
+    _clear_db()
+    _seed_connection()
+    payload = {
+        "name": "Plex Fail Test",
+        "builder_type": "static_items",
+        "builder_config": {"items": []},
+    }
+    create_resp = client.post("/api/v1/plex/collections", json=payload)
+    coll_id = create_resp.json()["id"]
+
+    db = _SessionLocal()
+    from app.domain.plex.collection_models import PlexCollection
+
+    coll = db.query(PlexCollection).filter_by(id=coll_id).first()
+    coll.plex_rating_key = "plex-key-fail"
+    db.commit()
+    db.close()
+
+    mock_cc = MagicMock()
+    mock_cc.delete_collection.side_effect = Exception("Plex unavailable")
+    with patch(
+        "app.api.v1.plex.collection_router._make_clients",
+        return_value=(MagicMock(), mock_cc, MagicMock()),
+    ):
+        resp = client.delete(f"/api/v1/plex/collections/{coll_id}?delete_from_plex=true")
+
+    assert resp.status_code == 204
+    # Row must be gone from the DB
+    db = _SessionLocal()
+    assert db.query(PlexCollection).filter_by(id=coll_id).first() is None
+    db.close()

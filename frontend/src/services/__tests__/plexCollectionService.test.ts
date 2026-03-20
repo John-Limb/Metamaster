@@ -7,6 +7,7 @@ import {
   deleteCollection,
   pushCollection,
   pullCollections,
+  pushAllCollections,
   exportCollectionsYaml,
   getPlaylists,
   getPlaylist,
@@ -41,6 +42,7 @@ const mockCollection = {
   enabled: false,
   is_default: false,
   items: [],
+  content_type: null,
 }
 
 const mockPlaylist = {
@@ -99,10 +101,28 @@ describe('plexCollectionService — collections', () => {
     expect(apiClient.delete).toHaveBeenCalledWith('/plex/collections/1')
   })
 
+  it('deleteCollection DELETEs without query param by default', async () => {
+    vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: null })
+    await deleteCollection(42)
+    expect(apiClient.delete).toHaveBeenCalledWith('/plex/collections/42')
+  })
+
+  it('deleteCollection appends ?delete_from_plex=true when flag is set', async () => {
+    vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: null })
+    await deleteCollection(42, true)
+    expect(apiClient.delete).toHaveBeenCalledWith('/plex/collections/42?delete_from_plex=true')
+  })
+
   it('pushCollection posts to push endpoint', async () => {
     vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { status: 'ok' } })
     await pushCollection(1)
     expect(apiClient.post).toHaveBeenCalledWith('/plex/collections/1/push')
+  })
+
+  it('pushAllCollections POSTs to /plex/collections/push-all', async () => {
+    vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { status: 'queued' } })
+    await pushAllCollections()
+    expect(apiClient.post).toHaveBeenCalledWith('/plex/collections/push-all')
   })
 
   it('pullCollections posts to /pull', async () => {
@@ -118,6 +138,26 @@ describe('plexCollectionService — collections', () => {
     const result = await exportCollectionsYaml()
     expect(apiClient.post).toHaveBeenCalledWith('/plex/collections/export')
     expect(result).toBe('collections:\n  Marvel: {}')
+  })
+
+  it('PlexCollection interface includes content_type field', () => {
+    // Compile-time check — if TypeScript is happy, runtime is fine too
+    const col: import('../plexCollectionService').PlexCollection = {
+      id: 1,
+      connection_id: 1,
+      name: 'Test',
+      description: null,
+      sort_title: null,
+      builder_type: 'static_items',
+      builder_config: {},
+      plex_rating_key: null,
+      last_synced_at: null,
+      enabled: false,
+      is_default: false,
+      items: [],
+      content_type: null,
+    }
+    expect(col.content_type).toBeNull()
   })
 })
 

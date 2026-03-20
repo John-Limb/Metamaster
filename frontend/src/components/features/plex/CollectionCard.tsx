@@ -7,7 +7,7 @@ interface CollectionCardProps {
   collection: PlexCollection
   onToggleEnabled: (id: number, enabled: boolean) => void
   onPush: (id: number) => void
-  onDelete: (id: number) => void
+  onDelete: (id: number, deleteFromPlex: boolean) => void
 }
 
 const BUILDER_LABELS: Record<string, string> = {
@@ -24,8 +24,20 @@ function formatSyncDate(dateStr: string | null): string {
 
 export function CollectionCard({ collection, onToggleEnabled, onPush, onDelete }: CollectionCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [deleteFromPlex, setDeleteFromPlex] = useState(!!collection.plex_rating_key)
   const builderLabel = BUILDER_LABELS[collection.builder_type] ?? collection.builder_type
   const hasItems = collection.items.length > 0
+
+  const handleDeleteClick = () => {
+    setDeleteFromPlex(!!collection.plex_rating_key)
+    setShowConfirm(true)
+  }
+
+  const handleConfirmDelete = () => {
+    setShowConfirm(false)
+    onDelete(collection.id, deleteFromPlex)
+  }
 
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-3">
@@ -79,14 +91,47 @@ export function CollectionCard({ collection, onToggleEnabled, onPush, onDelete }
           >
             Push to Plex
           </button>
-          <button
-            onClick={() => onDelete(collection.id)}
-            className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-          >
-            Delete
-          </button>
+          {!showConfirm && (
+            <button
+              onClick={handleDeleteClick}
+              className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
+
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 w-full max-w-sm mx-4 space-y-4">
+            <p className="text-sm font-medium text-slate-900 dark:text-white">
+              Delete <strong>{collection.name}</strong>?
+            </p>
+            {collection.plex_rating_key && (
+              <Checkbox
+                label="Also delete from Plex"
+                checked={deleteFromPlex}
+                onChange={setDeleteFromPlex}
+              />
+            )}
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

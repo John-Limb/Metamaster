@@ -125,6 +125,10 @@ class PlexCollectionService:
         existing.name = raw.get("title") or plex_key
         existing.description = raw.get("summary")
         existing.last_synced_at = datetime.utcnow()
+        if section_id == self._movie_section:
+            existing.content_type = "movie"
+        elif section_id == self._tv_section:
+            existing.content_type = "tv_show"
         self._db.flush()  # populate existing.id before FK use
 
         item_keys = self._cc.get_collection_item_keys(plex_key)

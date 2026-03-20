@@ -16,6 +16,7 @@ import {
   deleteCollection as svcDeleteCollection,
   pushCollection as svcPushCollection,
   pullCollections as svcPullCollections,
+  pushAllCollections as svcPushAllCollections,
   getPlaylists,
   createPlaylist as svcCreatePlaylist,
   updatePlaylist as svcUpdatePlaylist,
@@ -43,9 +44,12 @@ interface PlexCollectionState {
   fetchCollections: () => Promise<void>
   createCollection: (data: CollectionCreate) => Promise<void>
   updateCollection: (id: number, data: CollectionUpdate) => Promise<void>
-  deleteCollection: (id: number) => Promise<void>
+  deleteCollection: (id: number, deleteFromPlex?: boolean) => Promise<void>
   pushCollection: (id: number) => Promise<void>
   pullCollections: () => Promise<void>
+  pushAllCollections: () => Promise<void>
+  pushAllLoading: boolean
+  pushAllError: string | null
 
   // Actions — Playlists
   fetchPlaylists: () => Promise<void>
@@ -77,6 +81,9 @@ export const usePlexCollectionStore = create<PlexCollectionState>((set, get) => 
 
   collectionSets: [],
   setsLoading: false,
+
+  pushAllLoading: false,
+  pushAllError: null,
 
   fetchCollections: async () => {
     set({ collectionsLoading: true, collectionsError: null })
@@ -113,10 +120,10 @@ export const usePlexCollectionStore = create<PlexCollectionState>((set, get) => 
     }
   },
 
-  deleteCollection: async (id) => {
+  deleteCollection: async (id, deleteFromPlex = false) => {
     set({ collectionsLoading: true, collectionsError: null })
     try {
-      await svcDeleteCollection(id)
+      await svcDeleteCollection(id, deleteFromPlex)
       set({ collectionsLoading: false })
       await get().fetchCollections()
     } catch (err: unknown) {
@@ -146,6 +153,17 @@ export const usePlexCollectionStore = create<PlexCollectionState>((set, get) => 
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to pull collections'
       set({ collectionsError: msg, collectionsLoading: false })
+    }
+  },
+
+  pushAllCollections: async () => {
+    set({ pushAllLoading: true, pushAllError: null })
+    try {
+      await svcPushAllCollections()
+    } catch {
+      set({ pushAllError: 'Failed to queue push. Please try again.' })
+    } finally {
+      set({ pushAllLoading: false })
     }
   },
 

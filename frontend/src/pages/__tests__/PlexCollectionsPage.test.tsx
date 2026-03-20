@@ -1,16 +1,12 @@
+import React from 'react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { PlexCollectionsPage } from '../PlexCollectionsPage'
-
-vi.mock('../../stores/plexCollectionStore')
-
-import { usePlexCollectionStore } from '../../stores/plexCollectionStore'
 
 const mockStore = {
-  collections: [],
+  collections: [] as import('../../services/plexCollectionService').PlexCollection[],
   collectionsLoading: false,
   collectionsError: null,
-  playlists: [],
+  playlists: [] as import('../../services/plexCollectionService').PlexPlaylist[],
   playlistsLoading: false,
   playlistsError: null,
   collectionSets: [],
@@ -23,74 +19,97 @@ const mockStore = {
   deleteCollection: vi.fn(),
   pushCollection: vi.fn(),
   pullCollections: vi.fn(),
-  createPlaylist: vi.fn(),
+  pushAllCollections: vi.fn(),
+  pushAllLoading: false,
+  pushAllError: null as string | null,
   updatePlaylist: vi.fn(),
   deletePlaylist: vi.fn(),
   pushPlaylist: vi.fn(),
   pullPlaylists: vi.fn(),
+  bulkDeletePlaylists: vi.fn(),
   toggleCollectionSet: vi.fn(),
-  triggerDiscovery: vi.fn(),
+  triggerDiscovery: vi.fn().mockResolvedValue({ message: 'ok', task_id: '1' }),
 }
 
-beforeEach(() => {
-  vi.clearAllMocks()
-  vi.mocked(usePlexCollectionStore).mockReturnValue(mockStore)
-})
+vi.mock('../../stores/plexCollectionStore', () => ({
+  usePlexCollectionStore: () => mockStore,
+}))
+
+vi.mock('../../components/features/plex/CollectionSetToggles', () => ({
+  CollectionSetToggles: () => <div data-testid="set-toggles" />,
+}))
+
+vi.mock('../../components/features/plex/CollectionCard', () => ({
+  CollectionCard: ({ collection }: { collection: { name: string } }) => (
+    <div data-testid="collection-card">{collection.name}</div>
+  ),
+}))
+
+vi.mock('../../components/features/plex/PlaylistCard', () => ({
+  PlaylistCard: () => <div data-testid="playlist-card" />,
+}))
+
+vi.mock('../../components/features/plex/CollectionForm', () => ({
+  CollectionForm: () => <div data-testid="collection-form" />,
+}))
+
+vi.mock('../../components/features/plex/YamlImportModal', () => ({
+  YamlImportModal: () => <div data-testid="yaml-import-modal" />,
+}))
+
+import { PlexCollectionsPage } from '../PlexCollectionsPage'
+
+const movieCol: import('../../services/plexCollectionService').PlexCollection = {
+  id: 1, connection_id: 1, name: 'Action Pack', description: null, sort_title: null,
+  builder_type: 'static_items', builder_config: {}, plex_rating_key: null,
+  last_synced_at: null, enabled: true, is_default: false, items: [], content_type: 'movie',
+}
+const tvCol: import('../../services/plexCollectionService').PlexCollection = {
+  id: 2, connection_id: 1, name: 'Crime Dramas', description: null, sort_title: null,
+  builder_type: 'static_items', builder_config: {}, plex_rating_key: null,
+  last_synced_at: null, enabled: true, is_default: false, items: [], content_type: 'tv_show',
+}
+const nullTypeCol: import('../../services/plexCollectionService').PlexCollection = {
+  ...movieCol, id: 3, name: 'Legacy Collection', content_type: null,
+}
 
 describe('PlexCollectionsPage', () => {
-  it('renders the Collections heading', () => {
-    render(<PlexCollectionsPage />)
-    expect(screen.getByRole('heading', { name: /plex collections/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /^collections$/i })).toBeInTheDocument()
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockStore.collections = []
+    mockStore.pushAllLoading = false
+    mockStore.pushAllError = null
   })
 
-  it('shows loading skeleton when collectionsLoading is true and no collections', () => {
-    vi.mocked(usePlexCollectionStore).mockReturnValue({
-      ...mockStore,
-      collectionsLoading: true,
-    })
+  it('renders Push All to Plex button', () => {
     render(<PlexCollectionsPage />)
-    // The loading skeletons are animate-pulse divs; check the page still renders
-    expect(screen.getByRole('heading', { name: /^collections$/i })).toBeInTheDocument()
-    // The empty state message should NOT appear during loading
-    expect(screen.queryByText(/no collections yet/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /push all to plex/i })).toBeInTheDocument()
   })
 
-  it('shows empty state when there are no collections and not loading', () => {
+  it('Push All button calls pushAllCollections', () => {
     render(<PlexCollectionsPage />)
-    expect(screen.getByText(/no collections yet/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /push all to plex/i }))
+    expect(mockStore.pushAllCollections).toHaveBeenCalled()
   })
 
-  it('renders collection cards when collections are present', () => {
-    vi.mocked(usePlexCollectionStore).mockReturnValue({
-      ...mockStore,
-      collections: [
-        {
-          id: 1,
-          connection_id: 1,
-          name: 'Marvel Movies',
-          description: null,
-          sort_title: null,
-          builder_type: 'tmdb_collection',
-          builder_config: {},
-          plex_rating_key: null,
-          last_synced_at: null,
-          enabled: true,
-          is_default: false,
-          items: [],
-        },
-      ],
-    })
+  it('shows Movies section heading when movie or null collections exist', () => {
+    mockStore.collections = [movieCol, nullTypeCol]
     render(<PlexCollectionsPage />)
-    expect(screen.getByText('Marvel Movies')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /movies/i })).toBeInTheDocument()
+    expect(screen.getByText('Action Pack')).toBeInTheDocument()
+    expect(screen.getByText('Legacy Collection')).toBeInTheDocument()
   })
 
-  it('shows error banner when collectionsError is set', () => {
-    vi.mocked(usePlexCollectionStore).mockReturnValue({
-      ...mockStore,
-      collectionsError: 'Failed to fetch collections',
-    })
+  it('shows TV Shows section only when tv collections exist', () => {
+    mockStore.collections = [tvCol]
     render(<PlexCollectionsPage />)
-    expect(screen.getByText(/failed to fetch collections/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /tv shows/i })).toBeInTheDocument()
+    expect(screen.getByText('Crime Dramas')).toBeInTheDocument()
+  })
+
+  it('does not render TV Shows section when empty', () => {
+    mockStore.collections = [movieCol]
+    render(<PlexCollectionsPage />)
+    expect(screen.queryByRole('heading', { name: /tv shows/i })).not.toBeInTheDocument()
   })
 })
