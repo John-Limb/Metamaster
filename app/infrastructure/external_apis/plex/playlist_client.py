@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class PlexPlaylistClient:
     """HTTP client for Plex playlist management."""
 
-    def __init__(self, server_url: str, token: str, machine_id: str):
+    def __init__(self, server_url: str, token: str, machine_id: str = ""):
         self._base = server_url.rstrip("/")
         self._token = token
         self._machine_id = machine_id
@@ -22,6 +22,8 @@ class PlexPlaylistClient:
         return {**_PLEX_HEADERS, "X-Plex-Token": self._token}
 
     def _item_uri(self, rating_key: str) -> str:
+        if not self._machine_id:
+            raise ValueError("machine_id is required for item URI operations")
         return (
             f"server://{self._machine_id}"
             "/com.plexapp.plugins.library"
