@@ -164,7 +164,12 @@ def list_collections(
 ):
     """List all PlexCollections for the active connection."""
     conn = _get_active_connection(db)
-    return db.query(PlexCollection).filter(PlexCollection.connection_id == conn.id).order_by(PlexCollection.name).all()
+    return (
+        db.query(PlexCollection)
+        .filter(PlexCollection.connection_id == conn.id)
+        .order_by(PlexCollection.name)
+        .all()
+    )
 
 
 @router.post("/collections", response_model=CollectionResponse, status_code=201)
@@ -326,7 +331,12 @@ def list_playlists(
 ):
     """List all PlexPlaylists for the active connection."""
     conn = _get_active_connection(db)
-    return db.query(PlexPlaylist).filter(PlexPlaylist.connection_id == conn.id).order_by(PlexPlaylist.name).all()
+    return (
+        db.query(PlexPlaylist)
+        .filter(PlexPlaylist.connection_id == conn.id)
+        .order_by(PlexPlaylist.name)
+        .all()
+    )
 
 
 @router.post("/playlists", response_model=PlaylistResponse, status_code=201)
