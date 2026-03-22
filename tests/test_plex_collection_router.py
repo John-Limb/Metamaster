@@ -105,6 +105,7 @@ def _clear_db():
 
 def _seed_movie(title: str) -> int:
     from app.domain.movies.models import Movie
+
     db = _SessionLocal()
     movie = Movie(title=title, enrichment_status="local_only")
     db.add(movie)
@@ -559,7 +560,7 @@ def test_delete_collection_plex_failure_still_deletes_db_row():
 
 @pytest.mark.unit
 def test_get_collection_items_have_movie_title_field():
-    """GET /plex/collections/{id} returns 200 with items list (scaffolding; movie_title tested in enrichment tests)."""
+    """GET /plex/collections/{id} returns items list (movie_title tested in enrichment tests)."""
     _clear_db()
     _seed_connection()
     create_resp = client.post(
@@ -574,7 +575,7 @@ def test_get_collection_items_have_movie_title_field():
 
 @pytest.mark.unit
 def test_get_playlist_items_have_movie_title_field():
-    """GET /plex/playlists/{id} returns 200 with items list (scaffolding; movie_title tested in enrichment tests)."""
+    """GET /plex/playlists/{id} returns items list (movie_title tested in enrichment tests)."""
     _clear_db()
     _seed_connection()
     pl_resp = client.post(
@@ -601,14 +602,17 @@ def test_get_collection_items_resolved_with_movie_title():
     coll_id = create_resp.json()["id"]
 
     from app.domain.plex.collection_models import PlexCollectionItem
+
     db = _SessionLocal()
-    db.add(PlexCollectionItem(
-        collection_id=coll_id,
-        plex_rating_key="key-1",
-        item_type="movie",
-        item_id=movie_id,
-        position=0,
-    ))
+    db.add(
+        PlexCollectionItem(
+            collection_id=coll_id,
+            plex_rating_key="key-1",
+            item_type="movie",
+            item_id=movie_id,
+            position=0,
+        )
+    )
     db.commit()
     db.close()
 
@@ -631,14 +635,17 @@ def test_get_collection_item_unmatched_has_null_title():
     coll_id = create_resp.json()["id"]
 
     from app.domain.plex.collection_models import PlexCollectionItem
+
     db = _SessionLocal()
-    db.add(PlexCollectionItem(
-        collection_id=coll_id,
-        plex_rating_key="key-tv",
-        item_type="tv_show",
-        item_id=999,
-        position=0,
-    ))
+    db.add(
+        PlexCollectionItem(
+            collection_id=coll_id,
+            plex_rating_key="key-tv",
+            item_type="tv_show",
+            item_id=999,
+            position=0,
+        )
+    )
     db.commit()
     db.close()
 
@@ -658,14 +665,17 @@ def test_get_playlist_items_resolved_with_movie_title():
     pl_id = pl_resp.json()["id"]
 
     from app.domain.plex.collection_models import PlexPlaylistItem
+
     db = _SessionLocal()
-    db.add(PlexPlaylistItem(
-        playlist_id=pl_id,
-        plex_rating_key="key-2",
-        item_type="movie",
-        item_id=movie_id,
-        position=0,
-    ))
+    db.add(
+        PlexPlaylistItem(
+            playlist_id=pl_id,
+            plex_rating_key="key-2",
+            item_type="movie",
+            item_id=movie_id,
+            position=0,
+        )
+    )
     db.commit()
     db.close()
 
@@ -701,6 +711,7 @@ def test_collection_artwork_proxies_plex_image():
     coll_id = create_resp.json()["id"]
 
     from app.domain.plex.collection_models import PlexCollection
+
     db = _SessionLocal()
     coll = db.query(PlexCollection).filter_by(id=coll_id).first()
     coll.plex_rating_key = "rk-art"
@@ -733,6 +744,7 @@ def test_collection_artwork_returns_502_on_plex_error():
     coll_id = create_resp.json()["id"]
 
     from app.domain.plex.collection_models import PlexCollection
+
     db = _SessionLocal()
     coll = db.query(PlexCollection).filter_by(id=coll_id).first()
     coll.plex_rating_key = "rk-err"
@@ -741,8 +753,9 @@ def test_collection_artwork_returns_502_on_plex_error():
 
     with patch("app.api.v1.plex.collection_router.httpx.Client") as mock_client:
         import httpx as httpx_lib
-        mock_client.return_value.__enter__.return_value.get.side_effect = (
-            httpx_lib.RequestError("timeout")
+
+        mock_client.return_value.__enter__.return_value.get.side_effect = httpx_lib.RequestError(
+            "timeout"
         )
         resp = client.get(f"/api/v1/plex/collections/{coll_id}/artwork")
 
@@ -769,6 +782,7 @@ def test_playlist_artwork_proxies_plex_image():
     pl_id = pl_resp.json()["id"]
 
     from app.domain.plex.collection_models import PlexPlaylist
+
     db = _SessionLocal()
     pl = db.query(PlexPlaylist).filter_by(id=pl_id).first()
     pl.plex_rating_key = "rk-pl"
@@ -797,6 +811,7 @@ def test_playlist_artwork_returns_502_on_plex_error():
     pl_id = pl_resp.json()["id"]
 
     from app.domain.plex.collection_models import PlexPlaylist
+
     db = _SessionLocal()
     pl = db.query(PlexPlaylist).filter_by(id=pl_id).first()
     pl.plex_rating_key = "rk-pl-err"
@@ -805,8 +820,9 @@ def test_playlist_artwork_returns_502_on_plex_error():
 
     with patch("app.api.v1.plex.collection_router.httpx.Client") as mock_client:
         import httpx as httpx_lib
-        mock_client.return_value.__enter__.return_value.get.side_effect = (
-            httpx_lib.RequestError("timeout")
+
+        mock_client.return_value.__enter__.return_value.get.side_effect = httpx_lib.RequestError(
+            "timeout"
         )
         resp = client.get(f"/api/v1/plex/playlists/{pl_id}/artwork")
 
