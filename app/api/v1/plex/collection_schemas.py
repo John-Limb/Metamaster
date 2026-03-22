@@ -47,6 +47,7 @@ class CollectionItemResponse(BaseModel):
     item_type: str
     item_id: int
     position: int
+    movie_title: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -73,6 +74,7 @@ class PlaylistItemResponse(BaseModel):
     item_type: str
     item_id: int
     position: int
+    movie_title: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 

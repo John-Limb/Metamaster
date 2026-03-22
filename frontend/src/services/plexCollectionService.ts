@@ -18,6 +18,7 @@ export interface CollectionItem {
   item_type: string
   item_id: number
   position: number
+  movie_title: string | null
 }
 
 export interface PlexCollection {
@@ -42,6 +43,7 @@ export interface PlaylistItem {
   item_type: string
   item_id: number
   position: number
+  movie_title: string | null
 }
 
 export interface PlexPlaylist {
@@ -233,5 +235,15 @@ export async function searchTmdbCollections(q: string): Promise<TmdbCollectionSe
   const { data } = await apiClient.get<TmdbCollectionSearchResult[]>(
     `/plex/tmdb-collections/search?q=${encodeURIComponent(q)}`
   )
+  return data
+}
+
+export async function getCollectionArtwork(id: number): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>(`/plex/collections/${id}/artwork`, { responseType: 'blob' })
+  return data
+}
+
+export async function getPlaylistArtwork(id: number): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>(`/plex/playlists/${id}/artwork`, { responseType: 'blob' })
   return data
 }
