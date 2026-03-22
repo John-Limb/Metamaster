@@ -27,12 +27,12 @@ export interface StatCardProps {
 const VARIANT_STYLES = {
   default: {
     iconBg: 'bg-slate-100 dark:bg-slate-800',
-    iconColor: 'text-slate-600 dark:text-slate-400',
+    iconColor: 'text-dim',
     badge: 'primary' as const,
   },
   primary: {
-    iconBg: 'bg-indigo-100 dark:bg-indigo-900/50',
-    iconColor: 'text-indigo-600 dark:text-indigo-400',
+    iconBg: 'bg-primary-100 dark:bg-primary-900/50',
+    iconColor: 'text-primary-600 dark:text-primary-400',
     badge: 'primary' as const,
   },
   success: {
@@ -134,10 +134,10 @@ export function StatCard({
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+          <p className="text-sm font-medium text-dim">
             {title}
           </p>
-          <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
+          <p className="mt-2 text-3xl font-bold text-body">
             {value}
           </p>
           {change && (
@@ -148,7 +148,7 @@ export function StatCard({
                   {formatChange(change.value)}
                 </span>
               </Badge>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="text-xs text-hint">
                 {change.label}
               </span>
             </div>
@@ -160,7 +160,7 @@ export function StatCard({
                   <span className={`text-sm font-semibold ${BREAKDOWN_COLOR_CLASSES[item.color]}`}>
                     {item.value}
                   </span>
-                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                  <span className="text-xs text-hint">
                     {item.label}
                   </span>
                 </div>

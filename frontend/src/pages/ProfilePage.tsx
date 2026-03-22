@@ -11,12 +11,12 @@ interface ProfileSectionProps {
 }
 
 const ProfileSection: React.FC<ProfileSectionProps> = ({ icon, title, description, children }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-primary-600">
+  <div className="bg-card rounded-lg shadow-md p-6 border-l-4 border-primary-600">
     <div className="flex items-start gap-4 mb-4">
       <div className="text-primary-600 text-2xl mt-1">{icon}</div>
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-400 text-sm">{description}</p>
+        <h3 className="text-lg font-semibold text-body">{title}</h3>
+        <p className="text-dim text-sm">{description}</p>
       </div>
     </div>
     <div className="mt-4">{children}</div>
@@ -93,8 +93,8 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Profile</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold text-body mb-2">Profile</h1>
+        <p className="text-dim">
           Manage your account details
           {user && (
             <span className="ml-1">

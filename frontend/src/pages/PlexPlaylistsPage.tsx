@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { usePlexCollectionStore } from '../stores/plexCollectionStore'
 import { PlaylistRow } from '../components/features/plex/PlaylistRow'
 import { PlaylistDrawer } from '../components/features/plex/PlaylistDrawer'
-import { Button } from '@/components/common/Button'
+import { Button, AlertMessage } from '@/components/common'
 import { EmptyState } from '@/components/common/EmptyState'
 import { SkeletonTable } from '@/components/common/Skeleton'
 
@@ -69,11 +69,11 @@ export function PlexPlaylistsPage() {
     : null
 
   const tableHeaders = (
-    <tr className="border-b border-slate-200 dark:border-slate-700">
-      <th className="py-2 pl-3 pr-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
-      <th className="py-2 px-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Items</th>
-      <th className="py-2 px-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Last Synced</th>
-      <th className="py-2 pl-2 pr-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+    <tr className="border-b border-edge">
+      <th className="py-2 pl-3 pr-2 text-left text-xs font-medium text-hint uppercase tracking-wider">Name</th>
+      <th className="py-2 px-2 text-left text-xs font-medium text-hint uppercase tracking-wider">Items</th>
+      <th className="py-2 px-2 text-left text-xs font-medium text-hint uppercase tracking-wider">Last Synced</th>
+      <th className="py-2 pl-2 pr-3 text-right text-xs font-medium text-hint uppercase tracking-wider">Actions</th>
     </tr>
   )
 
@@ -83,10 +83,10 @@ export function PlexPlaylistsPage() {
       <div className={`flex-1 min-w-0 space-y-8 ${selectedPlaylist ? 'overflow-hidden' : ''}`}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-body">
               Plex Playlists{playlists.length > 0 && <span className="text-slate-400 font-normal text-lg ml-2">({playlists.length})</span>}
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-hint mt-1">
               Manage playlists synced to your Plex server.
             </p>
           </div>
@@ -131,11 +131,7 @@ export function PlexPlaylistsPage() {
           </div>
         </div>
 
-        {playlistsError && (
-          <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
-            {playlistsError}
-          </div>
-        )}
+        {playlistsError && <AlertMessage variant="error" message={playlistsError} />}
 
         {playlistsLoading && playlists.length === 0 ? (
           <SkeletonTable columns={4} rows={5} showHeader={false} />
@@ -151,10 +147,10 @@ export function PlexPlaylistsPage() {
             }}
           />
         ) : (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+          <div className="rounded-xl border border-edge bg-card overflow-hidden">
             <table className="w-full">
               <thead>{tableHeaders}</thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              <tbody className="divide-y divide-rule">
                 {playlists.map(pl => (
                   <PlaylistRow
                     key={pl.id}

@@ -15,7 +15,7 @@ const variantClasses = {
   warning: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
   danger: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
   info: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  indigo: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+  indigo: 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200',
   secondary: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
 }
 

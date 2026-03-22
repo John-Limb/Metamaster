@@ -231,14 +231,14 @@ export function OrganisationPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">File Organisation</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-body">File Organisation</h1>
+          <p className="text-sm text-hint mt-1">
             Format:{' '}
-            <span className="font-medium capitalize text-gray-700 dark:text-gray-200">{preset}</span>
+            <span className="font-medium capitalize text-dim">{preset}</span>
             {' · '}
             <Link
               to="/settings"
-              className="text-indigo-600 dark:text-indigo-400 hover:underline text-xs"
+              className="text-primary-600 dark:text-primary-400 hover:underline text-xs"
             >
               change in Settings
             </Link>
@@ -256,17 +256,17 @@ export function OrganisationPage() {
 
       {/* Stats bar */}
       {preview && (
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg px-4 py-2.5">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-dim bg-subtle rounded-lg px-4 py-2.5">
           <span>
             {movies.length} movie{movies.length !== 1 ? 's' : ''} need renaming
           </span>
-          <span className="text-gray-300 dark:text-gray-600">·</span>
+          <span className="text-hint">·</span>
           <span>
             {episodes.length} episode{episodes.length !== 1 ? 's' : ''} need renaming
           </span>
           {showGroups.length > 0 && (
             <>
-              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span className="text-hint">·</span>
               <span>
                 across {showGroups.length} show{showGroups.length !== 1 ? 's' : ''}
               </span>
@@ -278,7 +278,7 @@ export function OrganisationPage() {
       {/* Loading */}
       {loading && (
         <div className="flex justify-center py-16">
-          <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -307,7 +307,7 @@ export function OrganisationPage() {
       {!loading && preview && (
         <>
           {/* ---- Movies section ---- */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="bg-card rounded-xl shadow-sm border border-edge overflow-hidden">
             {/* Section header */}
             <div className="flex items-center justify-between">
               <button
@@ -319,14 +319,14 @@ export function OrganisationPage() {
                 ) : (
                   <FaChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 )}
-                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                <span className="font-semibold text-body">
                   Movies
                   <span className="ml-2 text-sm font-normal text-slate-400">({movies.length})</span>
                 </span>
               </button>
               {movies.length > 0 && !collapsedSections.has('movies') && (
                 <button
-                  className="px-5 text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="px-5 text-xs text-primary-600 dark:text-primary-400 hover:underline"
                   onClick={() => toggleKeys(movieKeys)}
                 >
                   select all
@@ -337,13 +337,13 @@ export function OrganisationPage() {
             {/* Movies body */}
             {!collapsedSections.has('movies') && (
               movies.length === 0 ? (
-                <p className="px-5 py-6 text-sm text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-700">
+                <p className="px-5 py-6 text-sm text-hint border-t border-rule">
                   All movies already match the {preset} format.
                 </p>
               ) : (
-                <table className="w-full text-xs border-t border-slate-200 dark:border-slate-700">
+                <table className="w-full text-xs border-t border-edge">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-700/30 text-slate-400 dark:text-slate-500 text-left">
+                    <tr className="bg-subtle text-hint text-left">
                       <th className="px-5 py-2 w-10">
                         <IndeterminateCheckbox
                           keys={movieKeys}
@@ -355,7 +355,7 @@ export function OrganisationPage() {
                       <th className="py-2 pr-5">Proposed path</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                  <tbody className="divide-y divide-rule/50">
                     {movies.map((m) => {
                       const key = `movie-${m.file_id}`
                       return (
@@ -366,10 +366,10 @@ export function OrganisationPage() {
                               onChange={() => toggleItem(key)}
                             />
                           </td>
-                          <td className="py-2 pr-4 font-mono text-slate-500 dark:text-slate-400">
+                          <td className="py-2 pr-4 font-mono text-hint">
                             {maybeShorten(m.current_path)}
                           </td>
-                          <td className="py-2 pr-5 font-mono text-slate-800 dark:text-slate-200">
+                          <td className="py-2 pr-5 font-mono text-body">
                             {maybeShorten(m.target_path)}
                           </td>
                         </tr>
@@ -382,9 +382,9 @@ export function OrganisationPage() {
           </div>
 
           {/* ---- TV Shows section ---- */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="bg-card rounded-xl shadow-sm border border-edge overflow-hidden">
             {/* Section header */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-edge">
               <button
                 className="flex items-center gap-3 flex-1 text-left hover:text-slate-600 dark:hover:text-slate-300 transition"
                 onClick={() => toggleSection('tv')}
@@ -394,7 +394,7 @@ export function OrganisationPage() {
                 ) : (
                   <FaChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 )}
-                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                <span className="font-semibold text-body">
                   TV Shows
                   <span className="ml-2 text-sm font-normal text-slate-400">
                     ({episodes.length} episode{episodes.length !== 1 ? 's' : ''},{' '}
@@ -403,7 +403,7 @@ export function OrganisationPage() {
                 </span>
               </button>
               {showGroups.length > 0 && !collapsedSections.has('tv') && (
-                <div className="flex gap-3 text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
+                <div className="flex gap-3 text-xs text-primary-600 dark:text-primary-400 shrink-0">
                   <button onClick={expandAllShows} className="hover:underline">
                     expand all
                   </button>
@@ -416,7 +416,7 @@ export function OrganisationPage() {
 
             {!collapsedSections.has('tv') && (
               showGroups.length === 0 ? (
-                <p className="px-5 py-6 text-sm text-slate-400 dark:text-slate-500">
+                <p className="px-5 py-6 text-sm text-hint">
                   All episodes already match the {preset} format.
                 </p>
               ) : (
@@ -427,7 +427,7 @@ export function OrganisationPage() {
                   return (
                     <div
                       key={group.show_title}
-                      className="border-b border-slate-100 dark:border-slate-700/50 last:border-b-0"
+                      className="border-b border-rule/50 last:border-b-0"
                     >
                       {/* Show header */}
                       <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50/50 dark:bg-slate-700/20">
@@ -446,7 +446,7 @@ export function OrganisationPage() {
                             onChange={() => toggleKeys(allShowKeys)}
                             onClick={(e) => e.stopPropagation()}
                           />
-                          <span className="text-sm font-medium text-slate-700 dark:text-slate-200 ml-1 truncate">
+                          <span className="text-sm font-medium text-dim ml-1 truncate">
                             {group.show_title}
                             <span className="ml-2 text-xs font-normal text-slate-400">
                               ({allShowKeys.length})
@@ -454,7 +454,7 @@ export function OrganisationPage() {
                           </span>
                         </button>
                         <button
-                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline shrink-0 ml-3"
+                          className="text-xs text-primary-600 dark:text-primary-400 hover:underline shrink-0 ml-3"
                           onClick={() => toggleKeys(allShowKeys)}
                         >
                           select all
@@ -471,7 +471,7 @@ export function OrganisationPage() {
                           return (
                             <div key={seasonKey}>
                               {/* Season header */}
-                              <div className="flex items-center justify-between pl-10 pr-5 py-2 border-t border-slate-100 dark:border-slate-700/30">
+                              <div className="flex items-center justify-between pl-10 pr-5 py-2 border-t border-rule/30">
                                 <button
                                   className="flex items-center gap-2 flex-1 text-left min-w-0"
                                   onClick={() => toggleSeason(seasonKey)}
@@ -487,7 +487,7 @@ export function OrganisationPage() {
                                     onChange={() => toggleKeys(sKeys)}
                                     onClick={(e) => e.stopPropagation()}
                                   />
-                                  <span className="text-xs font-medium text-slate-600 dark:text-slate-300 ml-1">
+                                  <span className="text-xs font-medium text-dim ml-1">
                                     Season {String(season.season_number).padStart(2, '0')}
                                     <span className="ml-2 font-normal text-slate-400">
                                       ({season.episodes.length})
@@ -495,7 +495,7 @@ export function OrganisationPage() {
                                   </span>
                                 </button>
                                 <button
-                                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline shrink-0 ml-3"
+                                  className="text-xs text-primary-600 dark:text-primary-400 hover:underline shrink-0 ml-3"
                                   onClick={() => toggleKeys(sKeys)}
                                 >
                                   select all
@@ -505,7 +505,7 @@ export function OrganisationPage() {
                               {/* Episode rows */}
                               {!isSeasonCollapsed && (
                                 <table className="w-full text-xs">
-                                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700/30">
+                                  <tbody className="divide-y divide-rule/30">
                                     {season.episodes.map((ep) => {
                                       const key = `episode-${ep.file_id}`
                                       return (
@@ -519,10 +519,10 @@ export function OrganisationPage() {
                                               onChange={() => toggleItem(key)}
                                             />
                                           </td>
-                                          <td className="py-1.5 pr-4 font-mono text-slate-500 dark:text-slate-400">
+                                          <td className="py-1.5 pr-4 font-mono text-hint">
                                             {maybeShorten(ep.current_path)}
                                           </td>
-                                          <td className="py-1.5 pr-5 font-mono text-slate-700 dark:text-slate-300">
+                                          <td className="py-1.5 pr-5 font-mono text-dim">
                                             {maybeShorten(ep.target_path)}
                                           </td>
                                         </tr>
@@ -544,8 +544,8 @@ export function OrganisationPage() {
       )}
 
       {/* Sticky footer */}
-      <div className="sticky bottom-0 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
-        <div className="text-sm text-slate-500 dark:text-slate-400">
+      <div className="sticky bottom-0 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-page border-t border-edge flex items-center justify-between gap-4">
+        <div className="text-sm text-hint">
           {selectedCount > 0
             ? `${selectedCount} file${selectedCount !== 1 ? 's' : ''} selected`
             : 'No files selected'}
@@ -563,7 +563,7 @@ export function OrganisationPage() {
         <button
           onClick={handleApply}
           disabled={applying || selectedCount === 0}
-          className="px-5 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
+          className="px-5 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
         >
           {applying
             ? 'Applying…'

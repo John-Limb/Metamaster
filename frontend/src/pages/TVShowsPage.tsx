@@ -33,15 +33,15 @@ export const TVShowsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">TV Shows</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold text-body mb-2">TV Shows</h1>
+        <p className="text-dim">
           Browse and manage your TV show collection
           {totalTVShows > 0 && ` — ${totalTVShows} show${totalTVShows !== 1 ? 's' : ''}`}
         </p>
       </div>
 
       {/* Filters and Sort */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-4 flex flex-col sm:flex-row gap-4">
+      <div className="bg-card rounded-lg shadow-md p-4 flex flex-col sm:flex-row gap-4">
         <div className="flex-1 flex gap-2">
           <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition">
             <FaFilter className="w-4 h-4" />
@@ -81,7 +81,7 @@ export const TVShowsPage: React.FC = () => {
       {isLoading && tvShows.length === 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden animate-pulse">
+            <div key={i} className="bg-card rounded-lg shadow-md overflow-hidden animate-pulse">
               <div className="aspect-[2/3] bg-gray-200 dark:bg-slate-700" />
               <div className="p-4 space-y-2">
                 <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-3/4" />
@@ -97,8 +97,8 @@ export const TVShowsPage: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {tvShows.length === 0 ? (
             <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 text-lg">No TV shows found</p>
-              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+              <p className="text-hint text-lg">No TV shows found</p>
+              <p className="text-hint text-sm mt-2">
                 Start by scanning your media library
               </p>
             </div>
@@ -107,7 +107,7 @@ export const TVShowsPage: React.FC = () => {
               <div
                 key={show.id}
                 onClick={() => setModalShowId(String(show.id))}
-                className="group bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+                className="group bg-card rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer"
               >
                 <div className="relative aspect-[2/3] bg-gray-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
                   {show.poster_url ? (
@@ -118,7 +118,7 @@ export const TVShowsPage: React.FC = () => {
                       loading="lazy"
                     />
                   ) : (
-                    <div className="flex flex-col items-center gap-2 text-gray-400 dark:text-slate-500">
+                    <div className="flex flex-col items-center gap-2 text-hint">
                       <svg
                         className="w-12 h-12"
                         fill="none"
@@ -156,10 +156,10 @@ export const TVShowsPage: React.FC = () => {
                   )}
                 </div>
                 <div className="p-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white truncate text-sm">
+                  <h3 className="font-semibold text-body truncate text-sm">
                     {show.title}
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-hint mt-1">
                     {show.seasons != null && show.seasons > 0 && `${show.seasons} Season${show.seasons !== 1 ? 's' : ''}`}
                     {show.episodes != null && show.episodes > 0 && ` · ${show.episodes} Episodes`}
                     {show.genre && show.genre.length > 0 && ` · ${show.genre.slice(0, 2).join(', ')}`}
@@ -181,7 +181,7 @@ export const TVShowsPage: React.FC = () => {
           >
             Previous
           </button>
-          <span className="px-4 py-2 text-gray-600 dark:text-gray-400">
+          <span className="px-4 py-2 text-dim">
             Page {currentPage} of {totalPages}
           </span>
           <button

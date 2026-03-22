@@ -29,7 +29,7 @@ interface SearchResult {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => {
-  const { setTheme, resolvedTheme } = useTheme()
+  const { setTheme, resolvedTheme, colourTheme } = useTheme()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -170,7 +170,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
                   to={item.to}
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
                     active
-                      ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                      ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -188,14 +188,14 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
             <div
               className={`relative flex items-center transition-all duration-200 ${
                 isSearchFocused
-                  ? 'bg-white dark:bg-gray-800 shadow-md ring-2 ring-indigo-500 rounded-xl -ml-2'
+                  ? 'bg-card shadow-md ring-2 ring-indigo-500 rounded-xl -ml-2'
                   : 'bg-gray-100 dark:bg-gray-800 rounded-xl'
               }`}
             >
               <FaSearch
                 className={`absolute left-3 w-4 h-4 transition-colors ${
                   isSearchFocused
-                    ? 'text-indigo-500'
+                    ? 'text-primary-500'
                     : 'text-gray-400 dark:text-gray-500'
                 }`}
               />
@@ -230,7 +230,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
             {isSearchFocused && (searchQuery.length > 1 || searchResults.length > 0) && (
               <div
                 id="search-results"
-                className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+                className="absolute top-full left-0 right-0 mt-2 bg-card rounded-xl shadow-lg border border-edge overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
                 role="listbox"
               >
                 {searchResults.length > 0 ? (
@@ -276,17 +276,19 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
           </button>
 
           {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            {resolvedTheme === 'dark' ? (
-              <FaSun className="w-5 h-5" />
-            ) : (
-              <FaMoon className="w-5 h-5" />
-            )}
-          </button>
+          {colourTheme === 'default' && (
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {resolvedTheme === 'dark' ? (
+                <FaSun className="w-5 h-5" />
+              ) : (
+                <FaMoon className="w-5 h-5" />
+              )}
+            </button>
+          )}
 
           {/* Notifications */}
           <NotificationDropdown

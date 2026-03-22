@@ -33,15 +33,15 @@ export const FileList: React.FC<FileListProps> = ({
   if (files.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-slate-500 dark:text-slate-400 text-lg">{emptyMessage}</p>
+        <p className="text-hint text-lg">{emptyMessage}</p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <div className="rounded-lg border border-edge overflow-hidden">
       {/* Header */}
-      <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 font-semibold text-sm text-slate-700 dark:text-slate-300">
+      <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-subtle border-b border-edge font-semibold text-sm text-dim">
         <div className="col-span-1">
           <CheckboxInput
             checked={selectedFiles.length === files.length && files.length > 0}
@@ -61,7 +61,7 @@ export const FileList: React.FC<FileListProps> = ({
       </div>
 
       {/* File rows */}
-      <div className="divide-y divide-slate-200 dark:divide-slate-700">
+      <div className="divide-y divide-edge">
         {files.map((file) => (
           <FileCard
             key={file.id}

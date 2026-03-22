@@ -97,7 +97,7 @@ export function RecentActivity({
     return (
       <Card variant="elevated" className={className}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-body">
             Recent Activity
           </h3>
         </div>
@@ -107,10 +107,10 @@ export function RecentActivity({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h4 className="text-base font-medium text-slate-900 dark:text-white mb-2">
+          <h4 className="text-base font-medium text-body mb-2">
             No recent activity
           </h4>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-hint">
             Activity will appear here as you use the application.
           </p>
         </div>
@@ -121,13 +121,13 @@ export function RecentActivity({
   return (
     <Card variant="elevated" className={className}>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-body">
           Recent Activity
         </h3>
         {onViewAll && (
           <button
             onClick={onViewAll}
-            className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+            className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
           >
             View All
           </button>
@@ -177,7 +177,7 @@ export function RecentActivity({
                 {/* Content */}
                 <div className="flex-1 min-w-0 pt-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                    <p className="text-sm font-medium text-body truncate">
                       {activity.title}
                     </p>
                     {statusBadge.label && (
@@ -186,11 +186,11 @@ export function RecentActivity({
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                  <p className="text-sm text-hint mt-0.5 line-clamp-2">
                     {activity.description}
                   </p>
                   <time
-                    className="text-xs text-slate-400 dark:text-slate-500 mt-1 block"
+                    className="text-xs text-hint mt-1 block"
                     dateTime={activity.timestamp}
                   >
                     {formatDateTime(activity.timestamp)}

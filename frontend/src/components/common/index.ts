@@ -71,3 +71,6 @@ export type { ProgressBarProps } from './ProgressBar'
 
 // Error Boundaries
 export { ApiErrorBoundary } from './ApiErrorBoundary'
+
+export { AlertMessage } from './AlertMessage'
+export type { AlertMessageProps } from './AlertMessage'

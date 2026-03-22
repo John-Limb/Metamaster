@@ -44,8 +44,8 @@ export const CheckboxInput: React.FC<CheckboxInputProps> = ({
       <div
         className={`pointer-events-none w-full h-full rounded-sm border transition-colors flex items-center justify-center ${
           active
-            ? 'bg-indigo-500 border-indigo-500 dark:bg-indigo-400 dark:border-indigo-400'
-            : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 group-hover/cb:border-indigo-400 dark:group-hover/cb:border-indigo-500'
+            ? 'bg-primary-500 border-primary-500 dark:bg-primary-400 dark:border-primary-400'
+            : 'bg-card border-slate-300 dark:border-slate-600 group-hover/cb:border-primary-400 dark:group-hover/cb:border-primary-500'
         }`}
       >
         {checked && !indeterminate && (

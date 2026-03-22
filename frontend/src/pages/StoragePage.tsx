@@ -58,25 +58,25 @@ function SummaryCards({ summary }: { summary: StorageSummary }) {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Total Library</p>
-        <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatBytes(libraryTotal)}</p>
+      <div className="rounded-xl border border-edge bg-card p-4">
+        <p className="text-sm text-hint mb-1">Total Library</p>
+        <p className="text-2xl font-bold text-body">{formatBytes(libraryTotal)}</p>
       </div>
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Disk Available</p>
-        <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatBytes(summary.disk.available_bytes)}</p>
+      <div className="rounded-xl border border-edge bg-card p-4">
+        <p className="text-sm text-hint mb-1">Disk Available</p>
+        <p className="text-2xl font-bold text-body">{formatBytes(summary.disk.available_bytes)}</p>
         <p className="text-xs text-slate-400 mt-1">{diskPct}% used of {formatBytes(summary.disk.total_bytes)}</p>
       </div>
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Potential Savings</p>
+      <div className="rounded-xl border border-edge bg-card p-4">
+        <p className="text-sm text-hint mb-1">Potential Savings</p>
         <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
           ~{formatBytes(summary.potential_savings_bytes)}
         </p>
         <p className="text-xs text-slate-400 mt-1">if re-encoded to H.265</p>
       </div>
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Files Analyzed</p>
-        <p className="text-2xl font-bold text-slate-900 dark:text-white">
+      <div className="rounded-xl border border-edge bg-card p-4">
+        <p className="text-sm text-hint mb-1">Files Analyzed</p>
+        <p className="text-2xl font-bold text-body">
           {summary.files_analyzed} <span className="text-base font-normal text-slate-400">/ {totalFiles}</span>
         </p>
       </div>
@@ -97,7 +97,7 @@ function SortHeader({
   const active = sortBy === field
   return (
     <th
-      className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide cursor-pointer hover:text-slate-900 dark:hover:text-white select-none whitespace-nowrap"
+      className="px-4 py-3 text-left text-xs font-semibold text-hint uppercase tracking-wide cursor-pointer hover:text-slate-900 dark:hover:text-white select-none whitespace-nowrap"
       onClick={() => onSort(field)}
     >
       {label}
@@ -206,15 +206,15 @@ export function StoragePage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Storage Analytics</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-body">Storage Analytics</h1>
+          <p className="text-hint mt-1">
             File efficiency analysis — MB/min, codec, and estimated re-encode savings.
           </p>
         </div>
         <button
           onClick={handleAnalyseNow}
           disabled={scanning}
-          className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-medium transition-colors"
+          className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white text-sm font-medium transition-colors"
         >
           {scanning ? (
             <>
@@ -258,7 +258,7 @@ export function StoragePage() {
         <select
           value={filterMediaType}
           onChange={e => { setFilterMediaType(e.target.value); setPage(1) }}
-          className="text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-1.5"
+          className="text-sm rounded-lg border border-edge bg-card text-body px-3 py-1.5"
         >
           <option value="">All Types</option>
           <option value="movie">Movies</option>
@@ -267,7 +267,7 @@ export function StoragePage() {
         <select
           value={filterEfficiency}
           onChange={e => { setFilterEfficiency(e.target.value); setPage(1) }}
-          className="text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-1.5"
+          className="text-sm rounded-lg border border-edge bg-card text-body px-3 py-1.5"
         >
           <option value="">All Tiers</option>
           <option value="large">Large</option>
@@ -281,13 +281,13 @@ export function StoragePage() {
           aria-label="Watched Status"
           value={filterWatchedStatus}
           onChange={e => { setFilterWatchedStatus(e.target.value); setPage(1) }}
-          className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm px-3 py-2"
+          className="rounded-lg border border-edge bg-card text-slate-700 dark:text-slate-200 text-sm px-3 py-2"
         >
           <option value="">All</option>
           <option value="unwatched">Unwatched</option>
           <option value="watched">Watched</option>
         </select>
-        <span className="text-sm text-slate-500 dark:text-slate-400">
+        <span className="text-sm text-hint">
           {total} file{total !== 1 ? 's' : ''}
         </span>
       </div>
@@ -303,20 +303,20 @@ export function StoragePage() {
       )}
 
       {/* File table */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+      <div className="rounded-xl border border-edge bg-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="border-b border-slate-200 dark:border-slate-700">
+            <thead className="border-b border-edge">
               <tr>
                 <SortHeader label="File" field="name" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-hint uppercase tracking-wide">Type</th>
                 <SortHeader label="Size" field="size_bytes" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                 <SortHeader label="Duration" field="duration_seconds" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                 <SortHeader label="MB/min" field="mb_per_min" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Codec</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Resolution</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-hint uppercase tracking-wide">Codec</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-hint uppercase tracking-wide">Resolution</th>
                 <SortHeader label="Est. Savings" field="estimated_savings_bytes" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tier</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-hint uppercase tracking-wide">Tier</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -332,7 +332,7 @@ export function StoragePage() {
                 ))
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
+                  <td colSpan={9} className="px-4 py-12 text-center text-hint">
                     No files found.
                   </td>
                 </tr>
@@ -341,7 +341,7 @@ export function StoragePage() {
                   return (
                     <tr key={`group-${row.show_title}`} className="bg-slate-50 dark:bg-slate-800/50">
                       <td colSpan={9} className="px-4 py-2">
-                        <span className="font-semibold text-slate-700 dark:text-slate-200 text-sm">{row.show_title}</span>
+                        <span className="font-semibold text-body text-sm">{row.show_title}</span>
                         <span className={`ml-2 text-xs px-1.5 py-0.5 rounded ${
                           row.show_fully_unwatched
                             ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
@@ -356,16 +356,16 @@ export function StoragePage() {
                 const item = row
                 return (
                   <tr key={`${item.id}-${idx}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-4 py-3 max-w-xs truncate font-medium text-slate-900 dark:text-white" title={item.name}>
+                    <td className="px-4 py-3 max-w-xs truncate font-medium text-body" title={item.name}>
                       {item.name}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 capitalize">{item.media_type}</td>
-                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">{formatBytes(item.size_bytes)}</td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">{formatDuration(item.duration_seconds)}</td>
-                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{item.mb_per_min != null ? item.mb_per_min.toFixed(1) : '—'}</td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatCodec(item.video_codec)}</td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 uppercase text-xs">{item.resolution_tier === 'unknown' ? '—' : item.resolution_tier}</td>
-                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                    <td className="px-4 py-3 text-hint capitalize">{item.media_type}</td>
+                    <td className="px-4 py-3 text-dim whitespace-nowrap">{formatBytes(item.size_bytes)}</td>
+                    <td className="px-4 py-3 text-hint whitespace-nowrap">{formatDuration(item.duration_seconds)}</td>
+                    <td className="px-4 py-3 text-dim">{item.mb_per_min != null ? item.mb_per_min.toFixed(1) : '—'}</td>
+                    <td className="px-4 py-3 text-hint">{formatCodec(item.video_codec)}</td>
+                    <td className="px-4 py-3 text-hint uppercase text-xs">{item.resolution_tier === 'unknown' ? '—' : item.resolution_tier}</td>
+                    <td className="px-4 py-3 text-dim whitespace-nowrap">
                       {item.estimated_savings_bytes > 0 ? `~${formatBytes(item.estimated_savings_bytes)}` : '—'}
                     </td>
                     <td className="px-4 py-3"><TierBadge tier={item.efficiency_tier} /></td>
@@ -378,21 +378,21 @@ export function StoragePage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-edge">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="text-sm px-3 py-1.5 rounded-lg border border-edge disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Previous
             </button>
-            <span className="text-sm text-slate-500 dark:text-slate-400">
+            <span className="text-sm text-hint">
               Page {page} of {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="text-sm px-3 py-1.5 rounded-lg border border-edge disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Next
             </button>

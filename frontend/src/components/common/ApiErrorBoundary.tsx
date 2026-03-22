@@ -123,20 +123,20 @@ export class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, Api
                     />
                   </svg>
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">API Error</h1>
+                <h1 className="text-2xl font-bold text-body">API Error</h1>
               </div>
 
               <div className="mb-4 p-3 bg-danger-50 dark:bg-danger-900/20 rounded-lg">
                 <p className="text-sm font-semibold text-danger-700 dark:text-danger-300 mb-1">
                   Error Code: {this.state.error.code}
                 </p>
-                <p className="text-gray-700 dark:text-gray-300 text-sm">
+                <p className="text-dim text-sm">
                   {this.state.error.message}
                 </p>
               </div>
 
               {import.meta.env.DEV && this.state.error.details && (
-                <details className="mb-4 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-secondary-700 p-3 rounded">
+                <details className="mb-4 text-xs text-hint bg-subtle p-3 rounded">
                   <summary className="cursor-pointer font-semibold mb-2">Error Details</summary>
                   <pre className="overflow-auto max-h-40">
                     {JSON.stringify(this.state.error.details, null, 2)}
@@ -202,7 +202,7 @@ export class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, Api
               </div>
 
               {this.state.errorCount > 2 && (
-                <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 text-center">
+                <p className="mt-4 text-xs text-hint text-center">
                   Multiple errors detected. Please consider refreshing the page or contacting support if the issue persists.
                 </p>
               )}

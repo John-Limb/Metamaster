@@ -36,8 +36,8 @@ export const RadioInput: React.FC<RadioInputProps> = ({
       <div
         className={`pointer-events-none w-full h-full rounded-full border transition-colors flex items-center justify-center ${
           checked
-            ? 'bg-indigo-500 border-indigo-500 dark:bg-indigo-400 dark:border-indigo-400'
-            : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 group-hover/rb:border-indigo-400 dark:group-hover/rb:border-indigo-500'
+            ? 'bg-primary-500 border-primary-500 dark:bg-primary-400 dark:border-primary-400'
+            : 'bg-card border-slate-300 dark:border-slate-600 group-hover/rb:border-primary-400 dark:group-hover/rb:border-primary-500'
         }`}
       >
         {checked && (

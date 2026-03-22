@@ -109,18 +109,18 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          className="absolute right-0 mt-2 w-80 sm:w-96 bg-card rounded-xl shadow-lg border border-edge overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
           role="menu"
           aria-orientation="vertical"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-edge">
+            <h3 className="font-semibold text-body">Notifications</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
                   onClick={onMarkAllAsRead}
-                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors"
+                  className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
                   role="menuitem"
                 >
                   Mark all read
@@ -142,14 +142,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-                <FaBell className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-3" />
-                <p className="text-gray-500 dark:text-gray-400 text-sm">No notifications yet</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                <FaBell className="w-10 h-10 text-hint mb-3" />
+                <p className="text-hint text-sm">No notifications yet</p>
+                <p className="text-xs text-hint mt-1">
                   We'll notify you when something arrives
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+              <div className="divide-y divide-edge">
                 {notifications.map((notification) => (
                   <button
                     key={notification.id}
@@ -160,7 +160,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                       }
                     }}
                     className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-150 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-750 ${
-                      !notification.read ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''
+                      !notification.read ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''
                     }`}
                     role="menuitem"
                   >
@@ -177,17 +177,17 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          <p className="text-sm font-medium text-body truncate">
                             {notification.title}
                           </p>
                           {!notification.read && (
-                            <span className="flex-shrink-0 w-2 h-2 bg-indigo-500 rounded-full mt-1.5" />
+                            <span className="flex-shrink-0 w-2 h-2 bg-primary-500 rounded-full mt-1.5" />
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                        <p className="text-xs text-hint mt-0.5 line-clamp-2">
                           {notification.message}
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        <p className="text-xs text-hint mt-1">
                           {formatTime(notification.timestamp)}
                         </p>
                       </div>
@@ -201,8 +201,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
-              <button className="w-full text-center text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors">
+            <div className="px-4 py-2 border-t border-edge bg-subtle">
+              <button className="w-full text-center text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors">
                 View all notifications
               </button>
             </div>

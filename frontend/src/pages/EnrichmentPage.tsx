@@ -111,8 +111,8 @@ export const EnrichmentPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Enrichment Status</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold text-body">Enrichment Status</h1>
+        <p className="text-hint mt-1">
           Track metadata enrichment across your media library.
         </p>
       </div>
@@ -125,8 +125,8 @@ export const EnrichmentPage: React.FC = () => {
             onClick={() => setMediaType(type)}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               mediaType === type
-                ? 'bg-indigo-600 text-white'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                ? 'bg-primary-600 text-white'
+                : 'bg-slate-100 dark:bg-slate-800 text-dim hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             {type === 'movies' ? 'Movies' : 'TV Shows'}
@@ -135,7 +135,7 @@ export const EnrichmentPage: React.FC = () => {
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-2 border-b border-slate-200 dark:border-slate-700">
+      <div className="flex gap-2 border-b border-edge">
         {TABS.map((tab) => {
           const count = getTabCount(tab) ?? (tab.key === 'all' ? total : undefined)
           const isActive = activeTab === tab.key
@@ -146,7 +146,7 @@ export const EnrichmentPage: React.FC = () => {
               className={`
                 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors
                 ${isActive
-                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}
               `}
             >
@@ -154,7 +154,7 @@ export const EnrichmentPage: React.FC = () => {
               {count !== undefined && (
                 <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full font-medium
                   ${isActive
-                    ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400'
+                    ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
                     : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
                   {count}
                 </span>
@@ -165,17 +165,17 @@ export const EnrichmentPage: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="rounded-lg border border-edge overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-800">
+          <thead className="bg-subtle">
             <tr>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-300">Title</th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-300 w-16">Year</th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-300 w-36">Status</th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-300">Error</th>
+              <th className="px-4 py-3 text-left font-medium text-dim">Title</th>
+              <th className="px-4 py-3 text-left font-medium text-dim w-16">Year</th>
+              <th className="px-4 py-3 text-left font-medium text-dim w-36">Status</th>
+              <th className="px-4 py-3 text-left font-medium text-dim">Error</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+          <tbody className="divide-y divide-rule/50">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <tr key={i} className="animate-pulse">
@@ -187,7 +187,7 @@ export const EnrichmentPage: React.FC = () => {
               ))
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
+                <td colSpan={4} className="px-4 py-12 text-center text-hint">
                   No {mediaType === 'movies' ? 'movies' : 'TV shows'} found.
                 </td>
               </tr>
@@ -198,16 +198,16 @@ export const EnrichmentPage: React.FC = () => {
                   onClick={() => handleRowClick(item)}
                   className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                 >
-                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 font-medium text-body">
                     {item.title}
                   </td>
-                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                  <td className="px-4 py-3 text-hint">
                     {item.year ?? '—'}
                   </td>
                   <td className="px-4 py-3">
                     <EnrichmentBadge status={item.enrichment_status as EnrichmentStatus} />
                   </td>
-                  <td className="px-4 py-3 text-slate-400 dark:text-slate-500 text-xs truncate max-w-xs">
+                  <td className="px-4 py-3 text-hint text-xs truncate max-w-xs">
                     {item.enrichment_error ?? '—'}
                   </td>
                 </tr>
@@ -219,13 +219,13 @@ export const EnrichmentPage: React.FC = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-sm text-hint">
           <span>{total} total</span>
           <div className="flex gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="px-3 py-1 rounded border border-edge disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               Previous
             </button>
@@ -233,7 +233,7 @@ export const EnrichmentPage: React.FC = () => {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-3 py-1 rounded border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="px-3 py-1 rounded border border-edge disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               Next
             </button>

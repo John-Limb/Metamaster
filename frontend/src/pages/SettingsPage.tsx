@@ -21,17 +21,47 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
   description,
   children,
 }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-primary-600">
+  <div className="bg-card rounded-lg shadow-md p-6 border-l-4 border-primary-600">
     <div className="flex items-start gap-4 mb-4">
       <div className="text-primary-600 text-2xl mt-1">{icon}</div>
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-400 text-sm">{description}</p>
+        <h3 className="text-lg font-semibold text-body">{title}</h3>
+        <p className="text-dim text-sm">{description}</p>
       </div>
     </div>
     <div className="mt-4">{children}</div>
   </div>
 )
+
+interface SwatchProps {
+  label: string
+  chips: [string, string, string]
+  active: boolean
+  onClick: () => void
+}
+
+function ColourThemeSwatch({ label, chips, active, onClick }: SwatchProps) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`flex items-center gap-3 px-3 py-2 rounded-lg border-2 transition-colors text-left w-full ${
+        active
+          ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
+          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+      }`}
+    >
+      <div className="flex gap-1">
+        {chips.map((c, i) => (
+          <span key={i} className="w-4 h-4 rounded-full border border-white/20" style={{ background: c }} />
+        ))}
+      </div>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{label}</span>
+      {active && <span className="ml-auto text-xs text-primary-600 font-semibold">Active</span>}
+    </button>
+  )
+}
 
 export const SettingsPage: React.FC = () => {
   const {
@@ -39,7 +69,7 @@ export const SettingsPage: React.FC = () => {
     updateUserSettings,
     resetUserSettings,
   } = useSettingsStore()
-  const { setTheme: applyTheme } = useTheme()
+  const { setTheme: applyTheme, colourTheme, setColourTheme } = useTheme()
 
   // Map between settings store ('auto') and ThemeContext ('system')
   const toThemeContext = (t: string) => (t === 'auto' ? 'system' : t) as 'light' | 'dark' | 'system'
@@ -115,8 +145,8 @@ export const SettingsPage: React.FC = () => {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400">Manage your preferences and configuration</p>
+        <h1 className="text-3xl font-bold text-body mb-2">Settings</h1>
+        <p className="text-dim">Manage your preferences and configuration</p>
       </div>
 
       {/* General Settings */}
@@ -179,6 +209,7 @@ export const SettingsPage: React.FC = () => {
             )}
           </div>
           <button
+            type="button"
             onClick={handleSaveScanSchedule}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium"
           >
@@ -193,18 +224,54 @@ export const SettingsPage: React.FC = () => {
         title="Theme"
         description="Customize the appearance of the application"
       >
-        <div className="space-y-3">
-          {(['light', 'dark', 'auto'] as const).map((option) => (
-            <label key={option} className="flex items-center gap-2 cursor-pointer">
-              <RadioInput
-                name="theme"
-                value={option}
-                checked={theme === option}
-                onChange={(val) => setTheme(val as 'light' | 'dark' | 'auto')}
+        <div className="space-y-4">
+          {/* Colour theme */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Colour Theme</p>
+            <div className="space-y-2">
+              <ColourThemeSwatch
+                label="Default"
+                chips={['#1e293b', '#4f46e5', '#f1f5f9']}
+                active={colourTheme === 'default'}
+                onClick={() => setColourTheme('default')}
               />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{option}</span>
-            </label>
-          ))}
+              <ColourThemeSwatch
+                label="Matrix"
+                chips={['#000000', '#00ff41', '#00b835']}
+                active={colourTheme === 'matrix'}
+                onClick={() => setColourTheme('matrix')}
+              />
+              <ColourThemeSwatch
+                label="Synthwave"
+                chips={['#0d0117', '#c84dff', '#e8d5ff']}
+                active={colourTheme === 'synthwave'}
+                onClick={() => setColourTheme('synthwave')}
+              />
+            </div>
+          </div>
+
+          {/* Light / dark mode — only relevant for Default theme */}
+          <div className={colourTheme !== 'default' ? 'opacity-40 pointer-events-none select-none' : ''}>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Light / Dark Mode
+              {colourTheme !== 'default' && (
+                <span className="ml-2 text-xs font-normal text-gray-400">(not available for this theme)</span>
+              )}
+            </p>
+            <div className="space-y-2">
+              {(['light', 'dark', 'auto'] as const).map((option) => (
+                <label key={option} className="flex items-center gap-2 cursor-pointer">
+                  <RadioInput
+                    name="theme"
+                    value={option}
+                    checked={theme === option}
+                    onChange={(val) => setTheme(val as 'light' | 'dark' | 'auto')}
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{option}</span>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
       </SettingsSection>
 
@@ -252,9 +319,9 @@ export const SettingsPage: React.FC = () => {
               <option value="jellyfin">Jellyfin</option>
             </select>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-hint">
             To rename and organise files, visit the{' '}
-            <Link to="/organisation" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+            <Link to="/organisation" className="text-primary-600 dark:text-primary-400 hover:underline">
               Organisation page
             </Link>
             .
@@ -274,12 +341,14 @@ export const SettingsPage: React.FC = () => {
       {/* Action Buttons */}
       <div className="flex items-center gap-4">
         <button
+          type="button"
           onClick={handleSaveSettings}
           className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-medium"
         >
           Save Settings
         </button>
         <button
+          type="button"
           onClick={handleResetToDefaults}
           className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium"
         >

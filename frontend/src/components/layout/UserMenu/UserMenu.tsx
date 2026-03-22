@@ -109,17 +109,17 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-            <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-300">
+          <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+            <span className="text-sm font-semibold text-primary-600 dark:text-primary-300">
               {getInitials(user.username)}
             </span>
           </div>
         )}
         <div className="hidden sm:block text-left">
-          <p className="text-sm font-medium text-gray-900 dark:text-white leading-none">
+          <p className="text-sm font-medium text-body leading-none">
             {user.username}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-[120px]">
+          <p className="text-xs text-hint mt-0.5 truncate max-w-[120px]">
             {user.email}
           </p>
         </div>
@@ -133,12 +133,12 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          className="absolute right-0 mt-2 w-56 bg-card rounded-xl shadow-lg border border-edge overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
           role="menu"
           aria-orientation="vertical"
         >
           {/* User Info Header */}
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
+          <div className="px-4 py-3 border-b border-edge bg-subtle">
             <div className="flex items-center gap-3">
               {user.avatar_url ? (
                 <img
@@ -147,17 +147,17 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                   className="w-10 h-10 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                  <span className="text-lg font-semibold text-indigo-600 dark:text-indigo-300">
+                <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+                  <span className="text-lg font-semibold text-primary-600 dark:text-primary-300">
                     {getInitials(user.username)}
                   </span>
                 </div>
               )}
               <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p className="text-sm font-medium text-body truncate">
                   {user.username}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                <p className="text-xs text-hint truncate">
                   {user.email}
                 </p>
               </div>
@@ -199,7 +199,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
           </div>
 
           {/* Divider */}
-          <div className="border-t border-gray-200 dark:border-gray-700" />
+          <div className="border-t border-edge" />
 
           {/* Logout */}
           <div className="py-1">

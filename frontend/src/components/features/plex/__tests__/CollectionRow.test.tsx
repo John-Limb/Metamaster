@@ -91,6 +91,6 @@ describe('CollectionRow', () => {
       </tbody></table>
     )
     const row = container.querySelector('tr')
-    expect(row?.className).toMatch(/border-indigo/)
+    expect(row?.className).toMatch(/border-primary/)
   })
 })

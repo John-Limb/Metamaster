@@ -45,8 +45,8 @@ export function CustomBuilder({ selected, onAdd, onRemove }: CustomBuilderProps)
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-4 space-y-3">
-      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+    <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4 space-y-3">
+      <p className="text-xs font-semibold text-hint uppercase tracking-wide">
         Search your library
       </p>
 
@@ -61,7 +61,7 @@ export function CustomBuilder({ selected, onAdd, onRemove }: CustomBuilderProps)
       {searchError && <p className="text-sm text-red-500">{searchError}</p>}
 
       {results.length > 0 && (
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
+        <div className="rounded-lg border border-edge divide-y divide-rule overflow-hidden">
           {results.map((movie) => {
             const alreadyAdded = movie.tmdb_id
               ? selectedIds.has(movie.tmdb_id)
@@ -70,12 +70,12 @@ export function CustomBuilder({ selected, onAdd, onRemove }: CustomBuilderProps)
             return (
               <div
                 key={movie.id}
-                className="flex items-center justify-between px-3 py-2 bg-white dark:bg-slate-800"
+                className="flex items-center justify-between px-3 py-2 bg-card"
               >
                 <span className="text-sm text-slate-700 dark:text-slate-200">
                   {movie.title}
                   {movie.year && (
-                    <span className="text-slate-400 dark:text-slate-500 ml-1">
+                    <span className="text-hint ml-1">
                       ({movie.year})
                     </span>
                   )}
@@ -105,20 +105,20 @@ export function CustomBuilder({ selected, onAdd, onRemove }: CustomBuilderProps)
 
       {selected.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1.5">
+          <p className="text-xs font-semibold text-primary-600 dark:text-primary-400 mb-1.5">
             Selected ({selected.length})
           </p>
           <div className="flex flex-wrap gap-1.5">
             {selected.map((m) => (
               <span
                 key={m.tmdb_id}
-                className="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-full text-xs font-medium"
+                className="inline-flex items-center gap-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-2.5 py-1 rounded-full text-xs font-medium"
               >
                 {m.title}
                 <button
                   type="button"
                   onClick={() => onRemove(m.tmdb_id)}
-                  className="text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-200 ml-0.5"
+                  className="text-primary-400 hover:text-primary-600 dark:hover:text-primary-200 ml-0.5"
                   aria-label={`Remove ${m.title}`}
                 >
                   <FaTimes className="w-3 h-3" />

@@ -7,7 +7,7 @@ import { CollectionSetToggles } from '../components/features/plex/CollectionSetT
 import { YamlImportModal } from '../components/features/plex/YamlImportModal'
 import { CollectionsSection } from '../components/features/plex/CollectionsSection'
 import { PlaylistsSection } from '../components/features/plex/PlaylistsSection'
-import { Button } from '@/components/common/Button'
+import { Button, AlertMessage } from '@/components/common'
 import type { CollectionCreate } from '../services/plexCollectionService'
 
 export function PlexCollectionsPage() {
@@ -79,11 +79,11 @@ export function PlexCollectionsPage() {
 
   return (
     <div className="flex gap-0 min-h-0">
-      <div className={`flex-1 min-w-0 space-y-8 ${drawerOpen ? 'overflow-hidden' : ''}`}>
+      <div className={`flex-1 min-w-0 space-y-8 transition-all duration-200 ${drawerOpen ? 'pr-80' : ''}`}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Plex Collections</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage collections and playlists synced to your Plex server.</p>
+            <h1 className="text-2xl font-bold text-body">Plex Collections</h1>
+            <p className="text-hint mt-1">Manage collections and playlists synced to your Plex server.</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => pushAllCollections()} disabled={pushAllLoading}>
@@ -93,12 +93,8 @@ export function PlexCollectionsPage() {
           </div>
         </div>
 
-        {discoverMessage && (
-          <div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-700 dark:text-green-400">{discoverMessage}</div>
-        )}
-        {pushAllError && (
-          <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">{pushAllError}</div>
-        )}
+        {discoverMessage && <AlertMessage variant="success" message={discoverMessage} />}
+        {pushAllError && <AlertMessage variant="error" message={pushAllError} />}
 
         <CollectionSetToggles />
 

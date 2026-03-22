@@ -22,9 +22,9 @@ export const NotFound: React.FC<NotFoundProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-4">404</h1>
-        <p className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{title}</p>
-        <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">{message}</p>
+        <h1 className="text-6xl font-bold text-body mb-4">404</h1>
+        <p className="text-2xl font-semibold text-dim mb-4">{title}</p>
+        <p className="text-dim mb-8 max-w-md">{message}</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => navigate('/')}

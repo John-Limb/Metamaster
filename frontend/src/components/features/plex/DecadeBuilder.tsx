@@ -9,8 +9,8 @@ interface DecadeBuilderProps {
 
 export function DecadeBuilder({ selected, onSelect }: DecadeBuilderProps) {
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-4">
-      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+    <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4">
+      <p className="text-xs font-semibold text-hint uppercase tracking-wide mb-3">
         Choose one decade
       </p>
       <div className="grid grid-cols-4 gap-2">
@@ -21,8 +21,8 @@ export function DecadeBuilder({ selected, onSelect }: DecadeBuilderProps) {
             onClick={() => onSelect(decade)}
             className={`rounded-lg py-2.5 text-sm font-medium text-center transition-colors ${
               selected === decade
-                ? 'bg-indigo-600 text-white border-2 border-indigo-600'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500'
+                ? 'bg-primary-600 text-white border-2 border-primary-600'
+                : 'bg-card text-slate-600 dark:text-slate-300 border border-edge hover:border-primary-400 dark:hover:border-primary-500'
             }`}
           >
             {decade}s
@@ -31,7 +31,7 @@ export function DecadeBuilder({ selected, onSelect }: DecadeBuilderProps) {
         <button
           type="button"
           disabled
-          className="rounded-lg py-2.5 text-sm text-center text-slate-300 dark:text-slate-600 border border-dashed border-slate-200 dark:border-slate-700 cursor-not-allowed"
+          className="rounded-lg py-2.5 text-sm text-center text-slate-300 dark:text-slate-600 border border-dashed border-edge cursor-not-allowed"
         >
           2030s
         </button>

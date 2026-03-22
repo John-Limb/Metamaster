@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { importYaml } from '../../../services/plexCollectionService'
+import { AlertMessage } from '@/components/common'
 
 interface YamlImportModalProps {
   onClose: () => void
@@ -31,9 +32,9 @@ export function YamlImportModal({ onClose, onImported }: YamlImportModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-2xl rounded-xl bg-white dark:bg-slate-800 shadow-xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+      <div className="w-full max-w-2xl rounded-xl bg-card shadow-xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-edge">
+          <h2 className="text-lg font-semibold text-body">
             Import Kometa YAML
           </h2>
           <button
@@ -56,7 +57,7 @@ export function YamlImportModal({ onClose, onImported }: YamlImportModalProps) {
           <div>
             <label
               htmlFor="yaml-input"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+              className="block text-sm font-medium text-dim mb-1"
             >
               Paste your Kometa YAML below
             </label>
@@ -65,26 +66,19 @@ export function YamlImportModal({ onClose, onImported }: YamlImportModalProps) {
               rows={14}
               value={yamlContent}
               onChange={e => setYamlContent(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-body px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
               placeholder="collections:&#10;  Marvel Cinematic Universe:&#10;    description: All MCU films&#10;    builder:&#10;      builder_type: tmdb_collection&#10;      tmdb_collection_id: '86311'"
             />
           </div>
 
-          {error && (
-            <div
-              role="alert"
-              className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400"
-            >
-              {error}
-            </div>
-          )}
+          {error && <AlertMessage variant="error" message={error} />}
 
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
+              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 text-dim hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
             >
               Cancel
             </button>
@@ -92,7 +86,7 @@ export function YamlImportModal({ onClose, onImported }: YamlImportModalProps) {
               type="button"
               onClick={handleImport}
               disabled={loading || yamlContent.trim().length === 0}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40 transition-colors"
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white disabled:opacity-40 transition-colors"
             >
               {loading ? 'Importing…' : 'Import'}
             </button>
