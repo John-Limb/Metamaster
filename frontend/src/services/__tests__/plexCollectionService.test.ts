@@ -16,6 +16,8 @@ import {
   deletePlaylist,
   pushPlaylist,
   pullPlaylists,
+  getCollectionArtwork,
+  getPlaylistArtwork,
 } from '../plexCollectionService'
 
 vi.mock('@/utils/api', () => ({
@@ -211,5 +213,25 @@ describe('plexCollectionService — playlists', () => {
     vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { status: 'ok' } })
     await pullPlaylists()
     expect(apiClient.post).toHaveBeenCalledWith('/plex/playlists/pull')
+  })
+})
+
+describe('getCollectionArtwork', () => {
+  it('calls GET /plex/collections/{id}/artwork with responseType blob', async () => {
+    const mockBlob = new Blob(['data'], { type: 'image/jpeg' })
+    vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBlob })
+    const result = await getCollectionArtwork(5)
+    expect(apiClient.get).toHaveBeenCalledWith('/plex/collections/5/artwork', { responseType: 'blob' })
+    expect(result).toBe(mockBlob)
+  })
+})
+
+describe('getPlaylistArtwork', () => {
+  it('calls GET /plex/playlists/{id}/artwork with responseType blob', async () => {
+    const mockBlob = new Blob(['data'], { type: 'image/jpeg' })
+    vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBlob })
+    const result = await getPlaylistArtwork(7)
+    expect(apiClient.get).toHaveBeenCalledWith('/plex/playlists/7/artwork', { responseType: 'blob' })
+    expect(result).toBe(mockBlob)
   })
 })

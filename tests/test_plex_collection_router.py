@@ -82,15 +82,38 @@ def _seed_connection():
 
 def _clear_db():
     db = _SessionLocal()
-    from app.domain.plex.collection_models import PlexCollection, PlexCollectionSet, PlexPlaylist
+    from app.domain.movies.models import Movie
+    from app.domain.plex.collection_models import (
+        PlexCollection,
+        PlexCollectionItem,
+        PlexCollectionSet,
+        PlexPlaylist,
+        PlexPlaylistItem,
+    )
     from app.domain.plex.models import PlexConnection
 
+    db.query(PlexPlaylistItem).delete()
+    db.query(PlexCollectionItem).delete()
     db.query(PlexPlaylist).delete()
     db.query(PlexCollection).delete()
     db.query(PlexCollectionSet).delete()
     db.query(PlexConnection).delete()
+    db.query(Movie).delete()
     db.commit()
     db.close()
+
+
+def _seed_movie(title: str) -> int:
+    from app.domain.movies.models import Movie
+
+    db = _SessionLocal()
+    movie = Movie(title=title, enrichment_status="local_only")
+    db.add(movie)
+    db.commit()
+    db.refresh(movie)
+    mid = movie.id
+    db.close()
+    return mid
 
 
 # ---------------------------------------------------------------------------
@@ -521,10 +544,10 @@ def test_delete_collection_plex_failure_still_deletes_db_row():
     db.close()
 
     mock_cc = MagicMock()
-    mock_cc.delete_collection.side_effect = Exception("Plex unavailable")
+    mock_cc.return_value.delete_collection.side_effect = Exception("Plex unavailable")
     with patch(
-        "app.api.v1.plex.collection_router._make_clients",
-        return_value=(MagicMock(), mock_cc, MagicMock()),
+        "app.api.v1.plex.collection_router.PlexCollectionClient",
+        mock_cc,
     ):
         resp = client.delete(f"/api/v1/plex/collections/{coll_id}?delete_from_plex=true")
 
@@ -533,3 +556,274 @@ def test_delete_collection_plex_failure_still_deletes_db_row():
     db = _SessionLocal()
     assert db.query(PlexCollection).filter_by(id=coll_id).first() is None
     db.close()
+
+
+@pytest.mark.unit
+def test_get_collection_items_have_movie_title_field():
+    """GET /plex/collections/{id} returns items list (movie_title tested in enrichment tests)."""
+    _clear_db()
+    _seed_connection()
+    create_resp = client.post(
+        "/api/v1/plex/collections",
+        json={"name": "T", "builder_type": "static_items", "builder_config": {"items": []}},
+    )
+    coll_id = create_resp.json()["id"]
+    resp = client.get(f"/api/v1/plex/collections/{coll_id}")
+    assert resp.status_code == 200
+    assert "items" in resp.json()
+
+
+@pytest.mark.unit
+def test_get_playlist_items_have_movie_title_field():
+    """GET /plex/playlists/{id} returns items list (movie_title tested in enrichment tests)."""
+    _clear_db()
+    _seed_connection()
+    pl_resp = client.post(
+        "/api/v1/plex/playlists",
+        json={"name": "P", "builder_config": {}},
+    )
+    pl_id = pl_resp.json()["id"]
+    resp = client.get(f"/api/v1/plex/playlists/{pl_id}")
+    assert resp.status_code == 200
+    assert "items" in resp.json()
+
+
+@pytest.mark.unit
+def test_get_collection_items_resolved_with_movie_title():
+    """Items matched in the local movie DB include their title."""
+    _clear_db()
+    _seed_connection()
+    movie_id = _seed_movie("The Dark Knight")
+
+    create_resp = client.post(
+        "/api/v1/plex/collections",
+        json={"name": "Heroes", "builder_type": "static_items", "builder_config": {}},
+    )
+    coll_id = create_resp.json()["id"]
+
+    from app.domain.plex.collection_models import PlexCollectionItem
+
+    db = _SessionLocal()
+    db.add(
+        PlexCollectionItem(
+            collection_id=coll_id,
+            plex_rating_key="key-1",
+            item_type="movie",
+            item_id=movie_id,
+            position=0,
+        )
+    )
+    db.commit()
+    db.close()
+
+    resp = client.get(f"/api/v1/plex/collections/{coll_id}")
+    assert resp.status_code == 200
+    items = resp.json()["items"]
+    assert len(items) == 1
+    assert items[0]["movie_title"] == "The Dark Knight"
+
+
+@pytest.mark.unit
+def test_get_collection_item_unmatched_has_null_title():
+    """Items with item_type=tv_show get movie_title=null."""
+    _clear_db()
+    _seed_connection()
+    create_resp = client.post(
+        "/api/v1/plex/collections",
+        json={"name": "TV", "builder_type": "static_items", "builder_config": {}},
+    )
+    coll_id = create_resp.json()["id"]
+
+    from app.domain.plex.collection_models import PlexCollectionItem
+
+    db = _SessionLocal()
+    db.add(
+        PlexCollectionItem(
+            collection_id=coll_id,
+            plex_rating_key="key-tv",
+            item_type="tv_show",
+            item_id=999,
+            position=0,
+        )
+    )
+    db.commit()
+    db.close()
+
+    resp = client.get(f"/api/v1/plex/collections/{coll_id}")
+    items = resp.json()["items"]
+    assert items[0]["movie_title"] is None
+
+
+@pytest.mark.unit
+def test_get_playlist_items_resolved_with_movie_title():
+    """Playlist items matched in the local movie DB include their title."""
+    _clear_db()
+    _seed_connection()
+    movie_id = _seed_movie("Mad Max")
+
+    pl_resp = client.post("/api/v1/plex/playlists", json={"name": "P", "builder_config": {}})
+    pl_id = pl_resp.json()["id"]
+
+    from app.domain.plex.collection_models import PlexPlaylistItem
+
+    db = _SessionLocal()
+    db.add(
+        PlexPlaylistItem(
+            playlist_id=pl_id,
+            plex_rating_key="key-2",
+            item_type="movie",
+            item_id=movie_id,
+            position=0,
+        )
+    )
+    db.commit()
+    db.close()
+
+    resp = client.get(f"/api/v1/plex/playlists/{pl_id}")
+    assert resp.status_code == 200
+    items = resp.json()["items"]
+    assert items[0]["movie_title"] == "Mad Max"
+
+
+@pytest.mark.unit
+def test_collection_artwork_returns_404_when_no_plex_key():
+    """GET /plex/collections/{id}/artwork returns 404 when not synced to Plex."""
+    _clear_db()
+    _seed_connection()
+    create_resp = client.post(
+        "/api/v1/plex/collections",
+        json={"name": "Art", "builder_type": "static_items", "builder_config": {}},
+    )
+    coll_id = create_resp.json()["id"]
+    resp = client.get(f"/api/v1/plex/collections/{coll_id}/artwork")
+    assert resp.status_code == 404
+
+
+@pytest.mark.unit
+def test_collection_artwork_proxies_plex_image():
+    """GET /plex/collections/{id}/artwork returns proxied image from Plex."""
+    _clear_db()
+    _seed_connection()
+    create_resp = client.post(
+        "/api/v1/plex/collections",
+        json={"name": "Art", "builder_type": "static_items", "builder_config": {}},
+    )
+    coll_id = create_resp.json()["id"]
+
+    from app.domain.plex.collection_models import PlexCollection
+
+    db = _SessionLocal()
+    coll = db.query(PlexCollection).filter_by(id=coll_id).first()
+    coll.plex_rating_key = "rk-art"
+    db.commit()
+    db.close()
+
+    mock_response = MagicMock()
+    mock_response.content = b"fake-image-bytes"
+    mock_response.headers = {"content-type": "image/jpeg"}
+    mock_response.raise_for_status = MagicMock()
+
+    with patch("app.api.v1.plex.collection_router.httpx.Client") as mock_client:
+        mock_client.return_value.__enter__.return_value.get.return_value = mock_response
+        resp = client.get(f"/api/v1/plex/collections/{coll_id}/artwork")
+
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "image/jpeg"
+    assert resp.content == b"fake-image-bytes"
+
+
+@pytest.mark.unit
+def test_collection_artwork_returns_502_on_plex_error():
+    """GET /plex/collections/{id}/artwork returns 502 when Plex is unreachable."""
+    _clear_db()
+    _seed_connection()
+    create_resp = client.post(
+        "/api/v1/plex/collections",
+        json={"name": "Art", "builder_type": "static_items", "builder_config": {}},
+    )
+    coll_id = create_resp.json()["id"]
+
+    from app.domain.plex.collection_models import PlexCollection
+
+    db = _SessionLocal()
+    coll = db.query(PlexCollection).filter_by(id=coll_id).first()
+    coll.plex_rating_key = "rk-err"
+    db.commit()
+    db.close()
+
+    with patch("app.api.v1.plex.collection_router.httpx.Client") as mock_client:
+        import httpx as httpx_lib
+
+        mock_client.return_value.__enter__.return_value.get.side_effect = httpx_lib.RequestError(
+            "timeout"
+        )
+        resp = client.get(f"/api/v1/plex/collections/{coll_id}/artwork")
+
+    assert resp.status_code == 502
+
+
+@pytest.mark.unit
+def test_playlist_artwork_returns_404_when_no_plex_key():
+    """GET /plex/playlists/{id}/artwork returns 404 when not synced to Plex."""
+    _clear_db()
+    _seed_connection()
+    pl_resp = client.post("/api/v1/plex/playlists", json={"name": "P", "builder_config": {}})
+    pl_id = pl_resp.json()["id"]
+    resp = client.get(f"/api/v1/plex/playlists/{pl_id}/artwork")
+    assert resp.status_code == 404
+
+
+@pytest.mark.unit
+def test_playlist_artwork_proxies_plex_image():
+    """GET /plex/playlists/{id}/artwork returns proxied image from Plex."""
+    _clear_db()
+    _seed_connection()
+    pl_resp = client.post("/api/v1/plex/playlists", json={"name": "P", "builder_config": {}})
+    pl_id = pl_resp.json()["id"]
+
+    from app.domain.plex.collection_models import PlexPlaylist
+
+    db = _SessionLocal()
+    pl = db.query(PlexPlaylist).filter_by(id=pl_id).first()
+    pl.plex_rating_key = "rk-pl"
+    db.commit()
+    db.close()
+
+    mock_response = MagicMock()
+    mock_response.content = b"playlist-image"
+    mock_response.headers = {"content-type": "image/png"}
+    mock_response.raise_for_status = MagicMock()
+
+    with patch("app.api.v1.plex.collection_router.httpx.Client") as mock_client:
+        mock_client.return_value.__enter__.return_value.get.return_value = mock_response
+        resp = client.get(f"/api/v1/plex/playlists/{pl_id}/artwork")
+
+    assert resp.status_code == 200
+    assert resp.content == b"playlist-image"
+
+
+@pytest.mark.unit
+def test_playlist_artwork_returns_502_on_plex_error():
+    """GET /plex/playlists/{id}/artwork returns 502 when Plex is unreachable."""
+    _clear_db()
+    _seed_connection()
+    pl_resp = client.post("/api/v1/plex/playlists", json={"name": "P", "builder_config": {}})
+    pl_id = pl_resp.json()["id"]
+
+    from app.domain.plex.collection_models import PlexPlaylist
+
+    db = _SessionLocal()
+    pl = db.query(PlexPlaylist).filter_by(id=pl_id).first()
+    pl.plex_rating_key = "rk-pl-err"
+    db.commit()
+    db.close()
+
+    with patch("app.api.v1.plex.collection_router.httpx.Client") as mock_client:
+        import httpx as httpx_lib
+
+        mock_client.return_value.__enter__.return_value.get.side_effect = httpx_lib.RequestError(
+            "timeout"
+        )
+        resp = client.get(f"/api/v1/plex/playlists/{pl_id}/artwork")
+
+    assert resp.status_code == 502

@@ -4,11 +4,12 @@ import { FaExclamationTriangle, FaTimes } from 'react-icons/fa'
 interface ConfirmDialogProps {
   isOpen: boolean
   title: string
-  message: string
+  message?: string
   confirmText?: string
   cancelText?: string
   isDangerous?: boolean
   isLoading?: boolean
+  children?: React.ReactNode
   onConfirm: () => void | Promise<void>
   onCancel: () => void
 }
@@ -16,11 +17,12 @@ interface ConfirmDialogProps {
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   title,
-  message,
+  message = '',
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   isDangerous = false,
   isLoading = false,
+  children,
   onConfirm,
   onCancel,
 }) => {
@@ -40,7 +42,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       />
 
       {/* Dialog */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full mx-4 animate-slide-in">
+      <div role="dialog" aria-modal="true" className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full mx-4 animate-slide-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
@@ -59,8 +61,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          <p className="text-gray-600 dark:text-gray-300 text-sm">{message}</p>
+        <div className="p-6 space-y-3">
+          {message && <p className="text-gray-600 dark:text-gray-300 text-sm">{message}</p>}
+          {children}
         </div>
 
         {/* Footer */}

@@ -6,17 +6,20 @@ from typing import List
 import httpx
 import yaml
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.api.v1.auth.endpoints import get_current_user
 from app.api.v1.plex.collection_schemas import (
     CollectionCreate,
+    CollectionItemResponse,
     CollectionResponse,
     CollectionSetResponse,
     CollectionSetUpdate,
     CollectionUpdate,
     PlaylistBulkDeleteRequest,
     PlaylistCreate,
+    PlaylistItemResponse,
     PlaylistResponse,
     PlaylistUpdate,
     YamlImportRequest,
@@ -77,6 +80,30 @@ def _make_services(
     )
     playlist_svc = PlexPlaylistService(db=db, playlist_client=pc, resolver=resolver)
     return coll_svc, playlist_svc
+
+
+def _resolve_titles(items: list, db: Session) -> dict:
+    """Return {movie_id: title} for all movie-type items in a single query."""
+    movie_ids = [i.item_id for i in items if i.item_type == "movie"]
+    if not movie_ids:
+        return {}
+    return {m.id: m.title for m in db.query(MovieModel).filter(MovieModel.id.in_(movie_ids)).all()}
+
+
+def _enrich_items(items: list, db: Session, response_cls: type) -> list:
+    """Build item response list with movie_title populated."""
+    titles = _resolve_titles(items, db)
+    return [
+        response_cls(
+            id=i.id,
+            plex_rating_key=i.plex_rating_key,
+            item_type=i.item_type,
+            item_id=i.item_id,
+            position=i.position,
+            movie_title=titles.get(i.item_id) if i.item_type == "movie" else None,
+        )
+        for i in items
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -249,11 +276,43 @@ def get_collection(
     db: Session = Depends(get_db),
     _: object = Depends(get_current_user),
 ):
-    """Get a single PlexCollection by ID."""
+    """Get a single PlexCollection by ID, with movie titles resolved on items."""
     coll = db.query(PlexCollection).filter(PlexCollection.id == collection_id).first()
     if coll is None:
         raise HTTPException(status_code=404, detail="Collection not found")
-    return coll
+    response = CollectionResponse.model_validate(coll)
+    response.items = _enrich_items(coll.items, db, CollectionItemResponse)
+    return response
+
+
+@router.get("/collections/{collection_id}/artwork")
+def get_collection_artwork(
+    collection_id: int,
+    db: Session = Depends(get_db),
+    _: object = Depends(get_current_user),
+):
+    """Proxy Plex thumbnail for a collection."""
+    coll = db.query(PlexCollection).filter(PlexCollection.id == collection_id).first()
+    if coll is None:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    conn = _get_active_connection(db)
+    if coll.connection_id != conn.id:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    if not coll.plex_rating_key:
+        raise HTTPException(status_code=404, detail="Collection not synced to Plex")
+    url = f"{conn.server_url}/library/metadata/{coll.plex_rating_key}/thumb"
+    try:
+        with httpx.Client(timeout=10) as http:
+            r = http.get(url, params={"X-Plex-Token": conn.token})
+            r.raise_for_status()
+    except httpx.HTTPStatusError:
+        raise HTTPException(status_code=502, detail="Plex returned an error")
+    except httpx.RequestError:
+        raise HTTPException(status_code=502, detail="Could not reach Plex")
+    return Response(
+        content=r.content,
+        media_type=r.headers.get("content-type", "image/jpeg"),
+    )
 
 
 @router.patch("/collections/{collection_id}", response_model=CollectionResponse)
@@ -379,11 +438,43 @@ def get_playlist(
     db: Session = Depends(get_db),
     _: object = Depends(get_current_user),
 ):
-    """Get a single PlexPlaylist by ID."""
+    """Get a single PlexPlaylist by ID, with movie titles resolved on items."""
     pl = db.query(PlexPlaylist).filter(PlexPlaylist.id == playlist_id).first()
     if pl is None:
         raise HTTPException(status_code=404, detail="Playlist not found")
-    return pl
+    response = PlaylistResponse.model_validate(pl)
+    response.items = _enrich_items(pl.items, db, PlaylistItemResponse)
+    return response
+
+
+@router.get("/playlists/{playlist_id}/artwork")
+def get_playlist_artwork(
+    playlist_id: int,
+    db: Session = Depends(get_db),
+    _: object = Depends(get_current_user),
+):
+    """Proxy Plex thumbnail for a playlist."""
+    pl = db.query(PlexPlaylist).filter(PlexPlaylist.id == playlist_id).first()
+    if pl is None:
+        raise HTTPException(status_code=404, detail="Playlist not found")
+    conn = _get_active_connection(db)
+    if pl.connection_id != conn.id:
+        raise HTTPException(status_code=404, detail="Playlist not found")
+    if not pl.plex_rating_key:
+        raise HTTPException(status_code=404, detail="Playlist not synced to Plex")
+    url = f"{conn.server_url}/library/metadata/{pl.plex_rating_key}/thumb"
+    try:
+        with httpx.Client(timeout=10) as http:
+            r = http.get(url, params={"X-Plex-Token": conn.token})
+            r.raise_for_status()
+    except httpx.HTTPStatusError:
+        raise HTTPException(status_code=502, detail="Plex returned an error")
+    except httpx.RequestError:
+        raise HTTPException(status_code=502, detail="Could not reach Plex")
+    return Response(
+        content=r.content,
+        media_type=r.headers.get("content-type", "image/jpeg"),
+    )
 
 
 @router.patch("/playlists/{playlist_id}", response_model=PlaylistResponse)
