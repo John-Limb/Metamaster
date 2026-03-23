@@ -67,7 +67,7 @@ export interface MediaCollectionConfig<TItem extends { id: string }> {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-export function pageSubtitle(isLoading: boolean, total: number, noun: string): string {
+function pageSubtitle(isLoading: boolean, total: number, noun: string): string {
   if (isLoading) return 'Loading...'
   if (total > 0) return `${total} ${noun}${total !== 1 ? 's' : ''} in your library`
   return `No ${noun}s found`

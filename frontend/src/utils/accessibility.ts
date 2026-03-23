@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
 
 /**
  * Hook for managing keyboard navigation within a component
