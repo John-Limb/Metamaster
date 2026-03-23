@@ -9,8 +9,8 @@ const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.H
 const FilesPage = lazy(() => import('@/pages/FilesPage').then(m => ({ default: m.FilesPage })))
 const SearchPage = lazy(() => import('@/pages/SearchPage').then(m => ({ default: m.SearchPage })))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
-const MoviesPage = lazy(() => import('@/pages/MoviesPage').then(m => ({ default: m.MoviesPage })))
-const TVShowsPage = lazy(() => import('@/pages/TVShowsPage').then(m => ({ default: m.TVShowsPage })))
+const MoviesPage = lazy(() => import('@/components/features/movies/MoviesPage'))
+const TVShowsPage = lazy(() => import('@/components/features/tvshows/TVShowsPage'))
 const EnrichmentPage = lazy(() => import('@/pages/EnrichmentPage').then(m => ({ default: m.EnrichmentPage })))
 
 // Loading fallback component

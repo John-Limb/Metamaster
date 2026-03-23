@@ -21,8 +21,8 @@ export function GenreBuilder({ selected, onSelect }: GenreBuilderProps) {
   }, [])
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-4">
-      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+    <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4">
+      <p className="text-xs font-semibold text-hint uppercase tracking-wide mb-3">
         Choose one genre
       </p>
       {loading && <LoadingSpinner />}
@@ -36,8 +36,8 @@ export function GenreBuilder({ selected, onSelect }: GenreBuilderProps) {
               onClick={() => onSelect(genre)}
               className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                 selected === genre
-                  ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-2 border-indigo-500'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500'
+                  ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 border-2 border-primary-500'
+                  : 'bg-card text-slate-600 dark:text-slate-300 border border-edge hover:border-primary-400 dark:hover:border-primary-500'
               }`}
             >
               {genre}

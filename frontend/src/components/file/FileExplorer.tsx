@@ -98,7 +98,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
+      <div className="flex items-center justify-between gap-4 bg-card border border-edge rounded-lg p-3">
         <div className="flex items-center gap-2 min-w-0">
           {currentPath !== '/' && (
             <button
@@ -106,10 +106,10 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition flex-shrink-0"
               title="Go back"
             >
-              <FaArrowLeft className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+              <FaArrowLeft className="w-4 h-4 text-dim" />
             </button>
           )}
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
+          <span className="text-sm font-medium text-dim truncate">
             {currentPath}
           </span>
         </div>
@@ -119,8 +119,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-lg transition ${
               viewMode === 'grid'
-                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400'
-                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
+                ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
+                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-dim'
             }`}
             title="Grid view"
           >
@@ -130,8 +130,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             onClick={() => setViewMode('list')}
             className={`p-2 rounded-lg transition ${
               viewMode === 'list'
-                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400'
-                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
+                ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
+                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-dim'
             }`}
             title="List view"
           >
@@ -141,8 +141,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             onClick={() => setViewMode('tree')}
             className={`p-2 rounded-lg transition ${
               viewMode === 'tree'
-                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400'
-                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
+                ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
+                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-dim'
             }`}
             title="Tree view"
           >
@@ -154,7 +154,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
       {/* Main content */}
       <div className="flex gap-4 flex-1 min-h-0">
         {/* File view */}
-        <div className="flex-1 min-w-0 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg overflow-auto">
+        <div className="flex-1 min-w-0 bg-card/50 border border-edge rounded-lg overflow-auto">
           {viewMode === 'grid' && (
             <div className="p-4">
               <FileGrid
@@ -193,7 +193,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
         {/* Details panel */}
         {showDetailsPanel && selectedFileDetails && (
-          <div className="w-72 flex-shrink-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-auto">
+          <div className="w-72 flex-shrink-0 bg-card border border-edge rounded-lg overflow-auto">
             <FileDetailsPanel file={selectedFileDetails} />
           </div>
         )}

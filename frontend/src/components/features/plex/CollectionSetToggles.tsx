@@ -18,18 +18,18 @@ export function CollectionSetToggles() {
   const { collectionSets, setsLoading, toggleCollectionSet } = usePlexCollectionStore()
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-      <h2 className="text-base font-semibold text-slate-800 dark:text-slate-200 mb-3">
+    <div className="rounded-xl border border-edge bg-card p-4">
+      <h2 className="text-base font-semibold text-body mb-3">
         Default Collection Sets
       </h2>
-      <div className="divide-y divide-slate-100 dark:divide-slate-700">
+      <div className="divide-y divide-rule">
         {collectionSets.map(set => (
           <div key={set.set_type} className="flex items-center justify-between py-3 gap-4">
             <div>
-              <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+              <p className="text-sm font-medium text-body">
                 {SET_LABELS[set.set_type]}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-hint mt-0.5">
                 {formatRunDate(set.last_run_at)}
               </p>
             </div>
@@ -42,7 +42,7 @@ export function CollectionSetToggles() {
           </div>
         ))}
         {collectionSets.length === 0 && !setsLoading && (
-          <p className="py-3 text-sm text-slate-500 dark:text-slate-400">
+          <p className="py-3 text-sm text-hint">
             No collection sets available.
           </p>
         )}

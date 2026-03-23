@@ -29,32 +29,6 @@ export const fileManagement = {
     return 'other'
   },
 
-  // Format file size
-  formatSize: (bytes: number): string => {
-    if (bytes === 0) return '0 B'
-
-    const units = ['B', 'KB', 'MB', 'GB', 'TB']
-    const k = 1024
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${units[i]}`
-  },
-
-  // Check if file is a video
-  isVideoFile: (file: FileItem): boolean => {
-    return fileManagement.getFileType(file) === 'video'
-  },
-
-  // Check if file is an image
-  isImageFile: (file: FileItem): boolean => {
-    return fileManagement.getFileType(file) === 'image'
-  },
-
-  // Check if file is audio
-  isAudioFile: (file: FileItem): boolean => {
-    return fileManagement.getFileType(file) === 'audio'
-  },
-
   // Get files by type
   filterByType: (files: FileItem[], type: string): FileItem[] => {
     return files.filter((file) => fileManagement.getFileType(file) === type)

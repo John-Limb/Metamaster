@@ -3,7 +3,7 @@ import { Card, Badge, Button } from '@/components/common'
 import { EnrichmentBadge, type EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import { MismatchResolveModal } from '@/components/features/plex/MismatchResolveModal'
 import type { PlexMismatchItem } from '@/services/plexService'
-import { formatFileSize } from '@/utils/helpers'
+import { formatBytes, formatDuration } from '@/utils/formatting'
 import './MovieCard.css'
 
 export interface MovieCardProps {
@@ -58,12 +58,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 }) => {
   const [activeMismatch, setActiveMismatch] = useState<PlexMismatchItem | null>(null)
   const hasFileStats = resolution || codec_video || codec_audio || audio_channels || file_size || file_duration
-
-  const formatDuration = (seconds: number) => {
-    const h = Math.floor(seconds / 3600)
-    const m = Math.floor((seconds % 3600) / 60)
-    return h > 0 ? `${h}h ${m}m` : `${m}m`
-  }
 
   const renderStars = (rating: number) => {
     const stars = Math.round(rating / 2)
@@ -287,7 +281,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             {codec_video && <span className="movie-card__stat">{codec_video}</span>}
             {codec_audio && <span className="movie-card__stat">{codec_audio}</span>}
             {audio_channels && <span className="movie-card__stat">{audio_channels}</span>}
-            {file_size != null && <span className="movie-card__stat">{formatFileSize(file_size)}</span>}
+            {file_size != null && <span className="movie-card__stat">{formatBytes(file_size)}</span>}
             {file_duration != null && <span className="movie-card__stat">{formatDuration(file_duration)}</span>}
           </div>
         )}

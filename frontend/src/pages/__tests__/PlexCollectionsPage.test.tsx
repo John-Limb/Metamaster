@@ -53,9 +53,9 @@ vi.mock('../../components/features/plex/CollectionRow', () => ({
     <tr><td><button onClick={() => onSelect(collection.id)}>{collection.name}</button></td></tr>
   ),
 }))
-vi.mock('../../components/features/plex/PlaylistRow', () => ({
-  PlaylistRow: ({ playlist, onSelect }: { playlist: { name: string; id: number }; onSelect: (id: number) => void }) => (
-    <tr><td><button onClick={() => onSelect(playlist.id)}>{playlist.name}</button></td></tr>
+vi.mock('../../components/features/plex/PlexItemRow', () => ({
+  PlexItemRow: ({ item, onSelect }: { item: { name: string; id: number }; onSelect: (id: number) => void }) => (
+    <tr><td><button onClick={() => onSelect(item.id)}>{item.name}</button></td></tr>
   ),
 }))
 vi.mock('../../components/features/plex/CollectionDrawer', () => ({

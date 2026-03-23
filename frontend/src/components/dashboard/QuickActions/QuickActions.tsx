@@ -19,7 +19,7 @@ export interface QuickActionsProps {
 export function QuickActions({ actions, className = '' }: QuickActionsProps) {
   return (
     <Card variant="elevated" className={className}>
-      <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-4">
+      <h3 className="text-base font-semibold text-body mb-4">
         Quick Actions
       </h3>
 
@@ -35,15 +35,15 @@ export function QuickActions({ actions, className = '' }: QuickActionsProps) {
               focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
               hover:shadow-md hover:-translate-y-0.5
               ${action.variant === 'primary'
-                ? 'bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
-                : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                ? 'bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-dim'
               }
             `}
           >
             <div
               className={`p-2 rounded-lg ${
                 action.variant === 'primary'
-                  ? 'bg-indigo-100 dark:bg-indigo-900/50'
+                  ? 'bg-primary-100 dark:bg-primary-900/50'
                   : 'bg-slate-200 dark:bg-slate-700'
               }`}
             >
@@ -52,7 +52,7 @@ export function QuickActions({ actions, className = '' }: QuickActionsProps) {
             <div className="text-center">
               <p className="text-sm font-medium leading-tight">{action.label}</p>
               {action.description && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
+                <p className="text-xs text-hint mt-0.5 leading-tight">
                   {action.description}
                 </p>
               )}

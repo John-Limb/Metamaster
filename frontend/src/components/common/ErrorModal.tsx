@@ -38,7 +38,7 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 animate-slide-in">
+      <div className="relative bg-card rounded-lg shadow-xl max-w-md w-full mx-4 animate-slide-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/30 rounded-t-lg">
           <div className="flex items-center gap-3">
@@ -56,10 +56,10 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
 
         {/* Content */}
         <div className="p-6">
-          <p className="text-gray-700 dark:text-gray-300 text-sm font-medium mb-3">{message}</p>
+          <p className="text-dim text-sm font-medium mb-3">{message}</p>
           {details && (
-            <details className="text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 p-3 rounded border border-gray-200 dark:border-gray-600">
-              <summary className="cursor-pointer font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <details className="text-xs text-dim bg-subtle p-3 rounded border border-edge">
+              <summary className="cursor-pointer font-semibold text-dim mb-2">
                 Error Details
               </summary>
               <pre className="overflow-auto max-h-40 whitespace-pre-wrap break-words">
@@ -70,11 +70,11 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700 justify-end">
+        <div className="flex gap-3 p-6 border-t border-edge justify-end">
           <button
             onClick={onClose}
             disabled={isRetrying}
-            className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="px-4 py-2 text-dim bg-subtle rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             Close
           </button>

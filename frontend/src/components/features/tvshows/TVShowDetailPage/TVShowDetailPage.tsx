@@ -124,7 +124,7 @@ const TVShowDetailPage: React.FC = () => {
       {/* Back */}
       <button
         onClick={() => navigate('/tv-shows')}
-        className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+        className="flex items-center gap-2 text-sm text-hint hover:text-slate-900 dark:hover:text-white transition-colors"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5M12 19l-7-7 7-7" />
@@ -154,7 +154,7 @@ const TVShowDetailPage: React.FC = () => {
 
         {/* Info */}
         <div className="flex-1 min-w-0 space-y-3">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{show.title}</h1>
+          <h1 className="text-2xl font-bold text-body">{show.title}</h1>
 
           <div className="flex flex-wrap items-center gap-2">
             {show.status && (
@@ -166,7 +166,7 @@ const TVShowDetailPage: React.FC = () => {
               <span className="text-sm text-amber-500 font-medium">★ {show.rating.toFixed(1)}</span>
             )}
             {seasons.length > 0 && (
-              <span className="text-sm text-slate-500 dark:text-slate-400">
+              <span className="text-sm text-hint">
                 {seasons.length} {seasons.length === 1 ? 'season' : 'seasons'}
               </span>
             )}
@@ -181,7 +181,7 @@ const TVShowDetailPage: React.FC = () => {
           )}
 
           {show.plot && (
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
+            <p className="text-sm text-dim leading-relaxed max-w-2xl">
               {show.plot}
             </p>
           )}
@@ -190,14 +190,14 @@ const TVShowDetailPage: React.FC = () => {
 
       {/* Seasons & Episodes */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Seasons & Episodes</h2>
+        <h2 className="text-lg font-semibold text-body">Seasons & Episodes</h2>
 
         {seasons.length === 0 ? (
-          <div className="rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-10 text-center text-slate-500 dark:text-slate-400 text-sm">
+          <div className="rounded-lg border border-edge px-4 py-10 text-center text-hint text-sm">
             No season data available yet.
           </div>
         ) : (
-          <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden divide-y divide-slate-200 dark:divide-slate-700">
+          <div className="rounded-lg border border-edge overflow-hidden divide-y divide-edge">
             {seasons
               .slice()
               .sort((a, b) => a.season_number - b.season_number)
@@ -211,22 +211,22 @@ const TVShowDetailPage: React.FC = () => {
                     {/* Season row */}
                     <button
                       className="w-full flex items-center justify-between px-4 py-3 text-left
-                        bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50
+                        bg-card hover:bg-slate-50 dark:hover:bg-slate-700/50
                         transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
                       onClick={() => handleToggleSeason(season)}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="font-medium text-slate-900 dark:text-white">
+                        <span className="font-medium text-body">
                           Season {season.season_number}
                         </span>
                         {season.episode_count != null && (
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                          <span className="text-xs text-hint">
                             {season.episode_count} {season.episode_count === 1 ? 'episode' : 'episodes'}
                           </span>
                         )}
                       </div>
                       <svg
-                        className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`w-5 h-5 text-hint transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                         fill="none" stroke="currentColor" viewBox="0 0 24 24"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -238,14 +238,14 @@ const TVShowDetailPage: React.FC = () => {
                       <div className="bg-slate-50 dark:bg-slate-900/50">
                         {isLoadingEpisodes ? (
                           <div className="flex items-center justify-center py-8">
-                            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                           </div>
                         ) : episodes.length === 0 ? (
-                          <p className="px-6 py-6 text-sm text-slate-500 dark:text-slate-400 text-center">
+                          <p className="px-6 py-6 text-sm text-hint text-center">
                             No episodes found for this season.
                           </p>
                         ) : (
-                          <div className="divide-y divide-slate-200 dark:divide-slate-700/50">
+                          <div className="divide-y divide-edge">
                             {episodes
                               .slice()
                               .sort((a, b) => a.episode_number - b.episode_number)
@@ -255,29 +255,29 @@ const TVShowDetailPage: React.FC = () => {
                                   className="flex items-start gap-4 px-6 py-3"
                                 >
                                   {/* Episode number */}
-                                  <span className="flex-shrink-0 w-8 text-sm font-mono text-slate-400 dark:text-slate-500 pt-0.5">
+                                  <span className="flex-shrink-0 w-8 text-sm font-mono text-hint pt-0.5">
                                     {String(ep.episode_number).padStart(2, '0')}
                                   </span>
 
                                   {/* Title row + synopsis */}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                      <p className="text-sm font-medium text-body">
                                         {ep.title ?? `Episode ${ep.episode_number}`}
                                       </p>
                                       {ep.quality && (
-                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300">
                                           {ep.quality}
                                         </span>
                                       )}
                                       {ep.runtime != null && (
-                                        <span className="text-xs text-slate-400 dark:text-slate-500">
+                                        <span className="text-xs text-hint">
                                           {formatRuntime(ep.runtime)}
                                         </span>
                                       )}
                                     </div>
                                     {ep.plot && (
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                                      <p className="text-xs text-hint mt-0.5 line-clamp-2">
                                         {ep.plot}
                                       </p>
                                     )}
@@ -286,7 +286,7 @@ const TVShowDetailPage: React.FC = () => {
                                   {/* Meta: air date + rating */}
                                   <div className="flex-shrink-0 text-right space-y-0.5">
                                     {ep.air_date && (
-                                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                                      <p className="text-xs text-hint">
                                         {formatAirDate(ep.air_date)}
                                       </p>
                                     )}
@@ -310,11 +310,11 @@ const TVShowDetailPage: React.FC = () => {
       </section>
 
       {/* Enrichment */}
-      <section className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Enrichment Status</h3>
+      <section className="rounded-lg border border-edge p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-body">Enrichment Status</h3>
         <div className="flex items-center gap-2">
           <EnrichmentBadge status={show.enrichment_status as EnrichmentStatus} />
-          <span className="text-sm text-slate-500 dark:text-slate-400">
+          <span className="text-sm text-hint">
             {show.enrichment_status ?? 'unknown'}
           </span>
         </div>
@@ -324,7 +324,7 @@ const TVShowDetailPage: React.FC = () => {
           </p>
         )}
         {!!(show as unknown as Record<string, unknown>).detected_external_id && (
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-hint">
             Detected from filename: <code className="font-mono">{String((show as unknown as Record<string, unknown>).detected_external_id)}</code>
           </p>
         )}
@@ -334,7 +334,7 @@ const TVShowDetailPage: React.FC = () => {
             placeholder="TMDB ID (e.g. 1396)"
             value={externalIdInput}
             onChange={(e) => setExternalIdInput(e.target.value)}
-            className="flex-1 min-w-0 text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 min-w-0 text-sm px-3 py-1.5 rounded-lg border border-edge bg-card text-body focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <Button
             variant="primary"

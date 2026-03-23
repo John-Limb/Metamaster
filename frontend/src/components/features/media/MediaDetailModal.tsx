@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useEscapeKey } from '@/hooks'
 import { Badge, Button } from '@/components/common'
-import { formatFileSize } from '@/utils/helpers'
+import { formatBytes, formatDuration } from '@/utils/formatting'
 import { movieService } from '@/services/movieService'
 import { tvShowService } from '@/services/tvShowService'
 import type { Movie, TVShow } from '@/types'
@@ -15,12 +16,6 @@ interface MediaDetailModalProps {
   mediaId: string
   onClose: () => void
   onMetadataSynced?: () => void
-}
-
-const formatDuration = (seconds: number) => {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
 const formatRuntime = (minutes: number) => {
@@ -84,14 +79,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
     }
   }, [isOpen, mediaId, mediaType])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handleEsc)
-    return () => document.removeEventListener('keydown', handleEsc)
-  }, [isOpen, onClose])
+  useEscapeKey(onClose, isOpen)
 
   const handleSyncMetadata = useCallback(async () => {
     setIsSyncing(true)
@@ -154,7 +142,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
         aria-label={title || 'Media details'}
       >
         {/* Close button */}
-        <button className="media-modal__close" onClick={onClose} aria-label="Close">
+        <button type="button" className="media-modal__close" onClick={onClose} aria-label="Close">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
@@ -295,7 +283,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
                     {movie.file_size != null && (
                       <div className="media-modal__file-item">
                         <span className="media-modal__file-label">File Size</span>
-                        <span className="media-modal__file-value">{formatFileSize(movie.file_size)}</span>
+                        <span className="media-modal__file-value">{formatBytes(movie.file_size)}</span>
                       </div>
                     )}
                     {movie.file_duration != null && (

@@ -57,16 +57,16 @@ function ExternalApiStatus({
 
   return (
     <Card variant="elevated" className="flex flex-col gap-3">
-      <h3 className="text-base font-semibold text-slate-900 dark:text-white">External APIs</h3>
+      <h3 className="text-base font-semibold text-body">External APIs</h3>
 
       {apiItems.length === 0 && plexConnected === null ? (
-        <p className="text-sm text-slate-400 dark:text-slate-500">Checking…</p>
+        <p className="text-sm text-hint">Checking…</p>
       ) : (
         <div className="space-y-2">
           {apiItems.map(item => (
             <div key={item.id} className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotClass(item.status)}`} />
-              <span className="text-sm text-slate-700 dark:text-slate-300 flex-1">
+              <span className="text-sm text-dim flex-1">
                 {labels[item.id] ?? item.name}
               </span>
               <span className={`text-xs font-medium ${labelClass(item.status)}`}>
@@ -77,7 +77,7 @@ function ExternalApiStatus({
 
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotClass(plexStatus)}`} />
-            <span className="text-sm text-slate-700 dark:text-slate-300 flex-1">Plex Server</span>
+            <span className="text-sm text-dim flex-1">Plex Server</span>
             <span className={`text-xs font-medium ${labelClass(plexStatus)}`}>
               {plexConnected === null ? 'Checking' : plexConnected ? 'Connected' : 'Not configured'}
             </span>
@@ -444,10 +444,10 @@ export function Dashboard({ className = '' }: DashboardProps) {
       <div className={`space-y-6 ${className}`} role="main" aria-label="Dashboard">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-body">
               Dashboard
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-hint mt-1">
               Welcome back! Here's an overview of your library.
             </p>
           </div>
@@ -486,10 +486,10 @@ export function Dashboard({ className = '' }: DashboardProps) {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-body">
             Dashboard
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-hint mt-1">
             Welcome back! Here's an overview of your library.
           </p>
         </div>
@@ -588,7 +588,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
           </div>
         ) : (
           <Card variant="elevated">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+            <h3 className="text-lg font-semibold text-body mb-4">
               Storage Usage
             </h3>
             <div className="text-center py-12">
@@ -597,7 +597,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
                 </svg>
               </div>
-              <h4 className="text-base font-medium text-slate-900 dark:text-white mb-2">
+              <h4 className="text-base font-medium text-body mb-2">
                 Storage analytics loading…
               </h4>
             </div>

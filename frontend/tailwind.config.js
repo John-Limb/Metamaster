@@ -9,16 +9,16 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#f0f4ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
+          50:  'var(--accent-50)',
+          100: 'var(--accent-100)',
+          200: 'var(--accent-200)',
+          300: 'var(--accent-300)',
+          400: 'var(--accent-400)',
+          500: 'var(--accent-500)',
+          600: 'var(--accent-600)',
+          700: 'var(--accent-700)',
+          800: 'var(--accent-800)',
+          900: 'var(--accent-900)',
         },
         secondary: {
           50: '#f8fafc',
@@ -32,10 +32,21 @@ export default {
           800: '#1e293b',
           900: '#0f172a',
         },
-        success: '#10b981',
-        warning: '#f59e0b',
-        danger: '#ef4444',
-        info: '#3b82f6',
+        // Semantic layout tokens
+        page:    'var(--bg-page)',
+        card:    'var(--bg-card)',
+        popover: 'var(--bg-popover)',
+        subtle:  'var(--bg-subtle)',
+        body:    'var(--text-body)',
+        dim:     'var(--text-dim)',
+        hint:    'var(--text-hint)',
+        edge:    'var(--border-edge)',
+        rule:    'var(--border-rule)',
+        // State tokens
+        success: 'var(--success)',
+        warning: 'var(--warning)',
+        danger:  'var(--danger)',
+        info:    'var(--info)',
       },
       /* Named spacing (xs, sm, md, lg, xl) removed to avoid colliding with
          Tailwind v4's unified scale (breaks max-w-md, max-w-sm, etc.).

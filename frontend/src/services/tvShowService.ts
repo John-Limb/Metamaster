@@ -2,19 +2,9 @@ import { apiClient } from '@/utils/api'
 import { errorHandler } from '@/utils/errorHandler'
 import type { TVShow, Season, Episode, PaginatedResponse, ApiResponse } from '@/types'
 import type { EnrichmentStatusGroup, EnrichmentStats } from '@/services/movieService'
+import { buildPaginationQuery } from './queryUtils'
 
 export type { EnrichmentStatusGroup, EnrichmentStats }
-
-const buildPaginationQuery = (page?: number, pageSize?: number) => {
-  const params = new URLSearchParams()
-  if (page && page >= 1) {
-    params.append('page', String(page))
-  }
-  if (pageSize && pageSize > 0) {
-    params.append('pageSize', String(pageSize))
-  }
-  return params.toString()
-}
 
 export const tvShowService = {
   // Get all TV shows, optionally filtered by enrichment status group

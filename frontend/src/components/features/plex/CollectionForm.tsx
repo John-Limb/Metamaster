@@ -145,10 +145,10 @@ export function CollectionForm({ onSubmit, onCancel }: CollectionFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-xl rounded-xl bg-white dark:bg-slate-800 shadow-xl flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-xl rounded-xl bg-card shadow-xl flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">New Collection</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-edge flex-shrink-0">
+          <h2 className="text-lg font-semibold text-body">New Collection</h2>
           <button
             type="button"
             onClick={onCancel}
@@ -216,7 +216,7 @@ export function CollectionForm({ onSubmit, onCancel }: CollectionFormProps) {
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex-shrink-0">
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-edge flex-shrink-0">
             <Button type="button" variant="secondary" onClick={onCancel}>
               Cancel
             </Button>

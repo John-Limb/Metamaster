@@ -75,8 +75,8 @@ export function TmdbCollectionBuilder({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-4">
-        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+      <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4">
+        <p className="text-xs font-semibold text-hint uppercase tracking-wide mb-3">
           Matched in your library
         </p>
         {localLoading && <LoadingSpinner />}
@@ -87,18 +87,18 @@ export function TmdbCollectionBuilder({
           </p>
         )}
         {!localLoading && local.length > 0 && (
-          <div className="rounded-lg border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
+          <div className="rounded-lg border border-edge divide-y divide-rule overflow-hidden">
             {local.map((col) => (
               <div
                 key={col.tmdb_collection_id}
                 className={`flex items-center justify-between px-3 py-2.5 ${
                   isSelected(col.tmdb_collection_id)
                     ? 'bg-green-50 dark:bg-green-900/20'
-                    : 'bg-white dark:bg-slate-800'
+                    : 'bg-card'
                 }`}
               >
                 <div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <p className="text-sm font-medium text-body">
                     {col.name}
                   </p>
                   <p className="text-xs text-slate-400">
@@ -121,8 +121,8 @@ export function TmdbCollectionBuilder({
         )}
       </div>
 
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-4">
-        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+      <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4">
+        <p className="text-xs font-semibold text-hint uppercase tracking-wide mb-3">
           Search TMDB
         </p>
         <TextInput
@@ -138,18 +138,18 @@ export function TmdbCollectionBuilder({
         )}
         {searchError && <p className="text-sm text-red-500 mt-2">{searchError}</p>}
         {!searching && searchResults.length > 0 && (
-          <div className="mt-2 rounded-lg border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
+          <div className="mt-2 rounded-lg border border-edge divide-y divide-rule overflow-hidden">
             {searchResults.map((col) => (
               <div
                 key={col.id}
                 className={`flex items-center justify-between px-3 py-2.5 ${
                   isSelected(col.id)
                     ? 'bg-green-50 dark:bg-green-900/20'
-                    : 'bg-white dark:bg-slate-800'
+                    : 'bg-card'
                 }`}
               >
                 <div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <p className="text-sm font-medium text-body">
                     {col.name}
                   </p>
                   <p className="text-xs text-slate-400">ID {col.id}</p>

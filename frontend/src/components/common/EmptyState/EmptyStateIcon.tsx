@@ -27,7 +27,7 @@ const variantColors = {
   noResults: 'text-secondary-500',
   featureDisabled: 'text-amber-500',
   error: 'text-red-500',
-  loading: 'text-indigo-500',
+  loading: 'text-primary-500',
   'not-found': 'text-secondary-500',
   empty: 'text-primary-500',
   default: 'text-secondary-500',
@@ -40,7 +40,7 @@ const variantBackgrounds = {
   noResults: 'bg-secondary-50 dark:bg-secondary-800',
   featureDisabled: 'bg-amber-50 dark:bg-amber-900/20',
   error: 'bg-red-50 dark:bg-red-900/20',
-  loading: 'bg-indigo-50 dark:bg-indigo-900/20',
+  loading: 'bg-primary-50 dark:bg-primary-900/20',
   'not-found': 'bg-secondary-50 dark:bg-secondary-800',
   empty: 'bg-primary-50 dark:bg-primary-900/20',
   default: 'bg-transparent',
@@ -118,7 +118,7 @@ export const EmptyStateIcons = {
   connectionError: () => <AlertCircle size={36} className="text-red-500" />,
   
   // Loading variants
-  loading: () => <Loader2 size={36} className="text-indigo-500 animate-spin" />,
+  loading: () => <Loader2 size={36} className="text-primary-500 animate-spin" />,
 }
 
 export default EmptyStateIcon

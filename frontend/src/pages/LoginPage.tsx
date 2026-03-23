@@ -56,7 +56,7 @@ export const LoginPage: React.FC = () => {
             Need help?{' '}
             <a
               href="mailto:support@metamaster.local"
-              className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Contact support
             </a>

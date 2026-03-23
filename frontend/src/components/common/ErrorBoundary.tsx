@@ -64,15 +64,15 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                   />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-body">
                 Something went wrong
               </h1>
             </div>
-            <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+            <p className="text-dim mb-4 text-sm">
               {this.state.error.message}
             </p>
             {import.meta.env.DEV && (
-              <details className="mb-4 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-secondary-700 p-3 rounded">
+              <details className="mb-4 text-xs text-hint bg-subtle p-3 rounded">
                 <summary className="cursor-pointer font-semibold mb-2">Error Details</summary>
                 <pre className="mt-2 overflow-auto max-h-40">{this.state.error.stack}</pre>
               </details>

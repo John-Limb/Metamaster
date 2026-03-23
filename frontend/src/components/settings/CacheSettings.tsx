@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { AlertMessage } from '@/components/common'
 
 interface CacheSettingsProps {
   className?: string
@@ -62,14 +63,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
 
       {/* Status Message */}
       {message && (
-        <div
-          className={`p-4 rounded-md ${
-            message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-          }`}
-          role="alert"
-        >
-          {message.text}
-        </div>
+        <AlertMessage variant={message.type} message={message.text} />
       )}
 
       <div className="space-y-4">

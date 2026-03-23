@@ -35,7 +35,7 @@ const LOG_COMPONENT_MAP: Record<string, keyof ComponentLogs> = {
 function LogTail({ entries }: { entries: LogEntry[] }) {
   if (entries.length === 0) {
     return (
-      <p className="text-xs text-slate-500 dark:text-slate-400 italic">No log entries available.</p>
+      <p className="text-xs text-hint italic">No log entries available.</p>
     )
   }
   return (
@@ -80,7 +80,7 @@ function ComponentCard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotColor}`} />
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white capitalize">
+          <h3 className="text-sm font-semibold text-body capitalize">
             {name.replace(/_/g, ' ')}
           </h3>
         </div>
@@ -96,7 +96,7 @@ function ComponentCard({
       {extraKeys.length > 0 && (
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           {extraKeys.map((key) => (
-            <div key={key} className="text-xs text-slate-600 dark:text-slate-400">
+            <div key={key} className="text-xs text-dim">
               <span className="font-medium">{key.replace(/_/g, ' ')}:</span>{' '}
               {typeof check[key] === 'number'
                 ? (check[key] as number).toFixed(1)
@@ -113,7 +113,7 @@ function ComponentCard({
       )}
 
       <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium uppercase tracking-wide">
+        <p className="text-xs text-hint mb-1 font-medium uppercase tracking-wide">
           Recent logs
         </p>
         <LogTail entries={logs} />
@@ -183,7 +183,7 @@ export function SystemHealthPage() {
   if (error && !health) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">System Health</h1>
+        <h1 className="text-2xl font-bold text-body">System Health</h1>
         <Card variant="elevated" className="p-8 text-center">
           <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
           <Button variant="primary" onClick={handleRefresh}>Retry</Button>
@@ -199,15 +199,15 @@ export function SystemHealthPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">System Health</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-body">System Health</h1>
+          <p className="text-hint mt-1">
             Live component status and log tails — refreshing every 2 seconds.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className={`w-2.5 h-2.5 rounded-full ${STATUS_DOT[overallStatus] ?? 'bg-slate-400'}`} />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 capitalize">
+            <span className="text-sm font-medium text-dim capitalize">
               {STATUS_LABEL[overallStatus] ?? overallStatus}
             </span>
           </div>
@@ -233,12 +233,12 @@ export function SystemHealthPage() {
       </div>
 
       <Card variant="elevated">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Plex Sync Details</h3>
+        <h3 className="text-sm font-semibold text-body mb-3">Plex Sync Details</h3>
         <PlexHealthPanel />
       </Card>
 
       {health?.timestamp && (
-        <p className="text-xs text-slate-400 dark:text-slate-500 text-right">
+        <p className="text-xs text-hint text-right">
           Health checked at {new Date(health.timestamp).toLocaleTimeString()}
         </p>
       )}

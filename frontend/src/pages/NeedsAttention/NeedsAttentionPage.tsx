@@ -145,8 +145,8 @@ export const NeedsAttentionPage: React.FC = () => {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Needs Attention</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold text-body mb-2">Needs Attention</h1>
+        <p className="text-dim">
           {data.total} item{data.total !== 1 ? 's' : ''} require attention
         </p>
       </div>
@@ -154,7 +154,7 @@ export const NeedsAttentionPage: React.FC = () => {
       {/* Section 1: Manual needed (not_found) */}
       {(manualNeededMovies.length > 0 || manualNeededShows.length > 0) && (
         <section>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+          <h2 className="text-xl font-semibold text-body mb-4">
             Manual needed
           </h2>
           <div className="space-y-3">
@@ -169,21 +169,21 @@ export const NeedsAttentionPage: React.FC = () => {
               return (
                 <div
                   key={key}
-                  className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4"
+                  className="bg-card border border-edge rounded-lg p-4"
                 >
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-gray-900 dark:text-white">
+                        <span className="font-medium text-body">
                           {item.title}
                         </span>
                         {item.year && (
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                          <span className="text-sm text-hint">
                             ({item.year})
                           </span>
                         )}
                         <EnrichmentBadge status="not_found" />
-                        <span className="text-xs text-gray-400 dark:text-gray-500 capitalize">
+                        <span className="text-xs text-hint capitalize">
                           {type === 'tv_show' ? 'TV Show' : 'Movie'}
                         </span>
                       </div>
@@ -193,9 +193,9 @@ export const NeedsAttentionPage: React.FC = () => {
                         </p>
                       )}
                       {item.detected_external_id && (
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <p className="mt-1 text-xs text-hint">
                           Detected from filename:{' '}
-                          <span className="font-mono font-medium text-gray-700 dark:text-gray-300">
+                          <span className="font-mono font-medium text-dim">
                             {item.detected_external_id}
                           </span>
                         </p>
@@ -214,7 +214,7 @@ export const NeedsAttentionPage: React.FC = () => {
                     <button
                       onClick={() => handleSaveAndEnrich(type, item)}
                       disabled={isSubmitting || !inputValue.trim()}
-                      className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition whitespace-nowrap"
+                      className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition whitespace-nowrap"
                     >
                       {isSubmitting ? 'Saving...' : 'Save & Enrich'}
                     </button>
@@ -230,7 +230,7 @@ export const NeedsAttentionPage: React.FC = () => {
       {failedItems.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Failed</h2>
+            <h2 className="text-xl font-semibold text-body">Failed</h2>
             <button
               onClick={() => handleRetryAll(failedItems)}
               className="px-4 py-1.5 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
@@ -246,20 +246,20 @@ export const NeedsAttentionPage: React.FC = () => {
               return (
                 <div
                   key={key}
-                  className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4 flex items-start justify-between gap-4"
+                  className="bg-card border border-edge rounded-lg p-4 flex items-start justify-between gap-4"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-gray-900 dark:text-white">
+                      <span className="font-medium text-body">
                         {item.title}
                       </span>
                       {item.year && (
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="text-sm text-hint">
                           ({item.year})
                         </span>
                       )}
                       <EnrichmentBadge status="local_only" />
-                      <span className="text-xs text-gray-400 dark:text-gray-500 capitalize">
+                      <span className="text-xs text-hint capitalize">
                         {type === 'tv_show' ? 'TV Show' : 'Movie'}
                       </span>
                     </div>
@@ -286,10 +286,10 @@ export const NeedsAttentionPage: React.FC = () => {
       {/* Section 3: Pending (local_only / pending_local / pending_external) */}
       {(pendingMovies.length > 0 || pendingShows.length > 0) && (
         <section>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+          <h2 className="text-xl font-semibold text-body mb-4">
             Pending enrichment
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+          <p className="text-sm text-hint mb-3">
             These items are queued for automatic enrichment — no action needed.
           </p>
           <div className="space-y-2">
@@ -299,14 +299,14 @@ export const NeedsAttentionPage: React.FC = () => {
             ].map(({ type, item }) => (
               <div
                 key={getInputKey(type, item.id)}
-                className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-4 py-3 flex items-center gap-3"
+                className="bg-card border border-edge rounded-lg px-4 py-3 flex items-center gap-3"
               >
                 <EnrichmentBadge status={item.enrichment_status as EnrichmentStatus} />
-                <span className="font-medium text-gray-900 dark:text-white">{item.title}</span>
+                <span className="font-medium text-body">{item.title}</span>
                 {item.year && (
-                  <span className="text-sm text-gray-500 dark:text-gray-400">({item.year})</span>
+                  <span className="text-sm text-hint">({item.year})</span>
                 )}
-                <span className="ml-auto text-xs text-gray-400 dark:text-gray-500 capitalize">
+                <span className="ml-auto text-xs text-hint capitalize">
                   {item.enrichment_status.replace(/_/g, ' ')}
                 </span>
               </div>

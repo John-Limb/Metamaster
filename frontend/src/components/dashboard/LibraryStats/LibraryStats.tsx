@@ -2,7 +2,7 @@ import React from 'react'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { ProgressBar } from '@/components/common/ProgressBar'
-import { formatFileSize } from '@/utils/helpers'
+import { formatBytes } from '@/utils/formatting'
 
 export interface LibraryStatsProps {
   stats: {
@@ -44,8 +44,8 @@ const STAT_CONFIG: StatConfigType & Record<string, { icon: React.ReactNode; colo
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
       </svg>
     ),
-    color: 'text-indigo-600 dark:text-indigo-400',
-    bg: 'bg-indigo-100 dark:bg-indigo-900/50',
+    color: 'text-primary-600 dark:text-primary-400',
+    bg: 'bg-primary-100 dark:bg-primary-900/50',
   },
   tv: {
     icon: (
@@ -71,7 +71,7 @@ const STAT_CONFIG: StatConfigType & Record<string, { icon: React.ReactNode; colo
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
       </svg>
     ),
-    color: 'text-slate-600 dark:text-slate-400',
+    color: 'text-dim',
     bg: 'bg-slate-100 dark:bg-slate-800',
   },
 }
@@ -109,7 +109,7 @@ export function LibraryStats({
     },
     {
       label: 'Storage Used',
-      value: formatFileSize(stats.totalSize),
+      value: formatBytes(stats.totalSize),
       icon: STAT_CONFIG.storage.icon,
       color: STAT_CONFIG.storage.color,
     },
@@ -139,10 +139,10 @@ export function LibraryStats({
     return (
       <Card variant="elevated" className={className}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-body">
             Library Statistics
           </h3>
-          <span className="text-sm text-slate-500 dark:text-slate-400">
+          <span className="text-sm text-hint">
             Not configured
           </span>
         </div>
@@ -152,10 +152,10 @@ export function LibraryStats({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
             </svg>
           </div>
-          <h4 className="text-base font-medium text-slate-900 dark:text-white mb-2">
+          <h4 className="text-base font-medium text-body mb-2">
             No library configured
           </h4>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 max-w-sm mx-auto">
+          <p className="text-sm text-hint mb-4 max-w-sm mx-auto">
             Add your media library paths to start tracking your collection.
           </p>
           {onConfigure && (
@@ -175,10 +175,10 @@ export function LibraryStats({
   return (
     <Card variant="elevated" className={className}>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-body">
           Library Statistics
         </h3>
-        <span className="text-sm text-slate-500 dark:text-slate-400">
+        <span className="text-sm text-hint">
           Updated: {new Date(stats.lastUpdated).toLocaleDateString()}
         </span>
       </div>
@@ -207,10 +207,10 @@ export function LibraryStats({
                 {item.icon}
               </span>
             </div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+            <p className="text-2xl font-bold text-body">
               {item.value}
             </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-hint">
               {item.label}
             </p>
           </div>
@@ -218,13 +218,13 @@ export function LibraryStats({
       </div>
 
       {stats.storageTotal && (
-        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+        <div className="pt-4 border-t border-edge">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <span className="text-sm font-medium text-dim">
               Storage Usage
             </span>
-            <span className="text-sm text-slate-500 dark:text-slate-400">
-              {formatFileSize(stats.totalSize)} / {formatFileSize(stats.storageTotal)}
+            <span className="text-sm text-hint">
+              {formatBytes(stats.totalSize)} / {formatBytes(stats.storageTotal)}
             </span>
           </div>
           <ProgressBar

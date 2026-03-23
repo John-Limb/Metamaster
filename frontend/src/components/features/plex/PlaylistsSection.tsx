@@ -1,16 +1,16 @@
 import React from 'react'
 import type { PlexPlaylist } from '../../../services/plexCollectionService'
-import { Button } from '@/components/common/Button'
+import { Button, AlertMessage } from '@/components/common'
 import { EmptyState } from '@/components/common/EmptyState'
 import { SkeletonTable } from '@/components/common/Skeleton'
-import { PlaylistRow } from './PlaylistRow'
+import { PlexItemRow } from './PlexItemRow'
 
 const TABLE_HEADERS = (
-  <tr className="border-b border-slate-200 dark:border-slate-700">
-    <th className="py-2 pl-3 pr-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
-    <th className="py-2 px-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Items</th>
-    <th className="py-2 px-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Last Synced</th>
-    <th className="py-2 pl-2 pr-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+  <tr className="border-b border-edge">
+    <th className="py-2 pl-3 pr-2 text-left text-xs font-medium text-hint uppercase tracking-wider">Name</th>
+    <th className="py-2 px-2 text-left text-xs font-medium text-hint uppercase tracking-wider">Items</th>
+    <th className="py-2 px-2 text-left text-xs font-medium text-hint uppercase tracking-wider">Last Synced</th>
+    <th className="py-2 pl-2 pr-3 text-right text-xs font-medium text-hint uppercase tracking-wider">Actions</th>
   </tr>
 )
 
@@ -54,7 +54,7 @@ export function PlaylistsSection({
   return (
     <section>
       <div className="flex items-center justify-between gap-4 mb-4">
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+        <h2 className="text-lg font-semibold text-body">
           Playlists {playlists.length > 0 && <span className="text-slate-400 font-normal text-sm">({playlists.length})</span>}
         </h2>
         <div className="flex items-center gap-2">
@@ -78,9 +78,7 @@ export function PlaylistsSection({
       </div>
 
       {playlistsError && (
-        <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
-          {playlistsError}
-        </div>
+        <AlertMessage variant="error" message={playlistsError} className="mb-4" />
       )}
 
       {playlistsLoading && playlists.length === 0 ? (
@@ -88,14 +86,14 @@ export function PlaylistsSection({
       ) : playlists.length === 0 ? (
         <EmptyState variant="noData" title="No playlists yet" description="Pull from Plex to import your playlists." action={{ label: 'Pull from Plex', onClick: onPull, disabled: playlistsLoading }} />
       ) : (
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+        <div className="rounded-xl border border-edge bg-card overflow-hidden">
           <table className="w-full">
             <thead>{TABLE_HEADERS}</thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            <tbody className="divide-y divide-rule">
               {playlists.map(pl => (
-                <PlaylistRow
+                <PlexItemRow
                   key={pl.id}
-                  playlist={pl}
+                  item={pl}
                   onToggleEnabled={onToggleEnabled}
                   onPush={onPush}
                   onDelete={onDelete}

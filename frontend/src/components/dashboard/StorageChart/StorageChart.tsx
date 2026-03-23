@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Card } from '@/components/common/Card'
-import { formatFileSize } from '@/utils/helpers'
+import { formatBytes } from '@/utils/formatting'
 
 export interface StorageData {
   label: string
@@ -93,10 +93,10 @@ export function StorageChart({
 
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-slate-900 dark:text-white">
-            {formatFileSize(total)}
+          <span className="text-2xl font-bold text-body">
+            {formatBytes(total)}
           </span>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-xs text-hint">
             Total Used
           </span>
         </div>
@@ -107,7 +107,7 @@ export function StorageChart({
   if (data.length === 0) {
     return (
       <Card variant="elevated" className={className}>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+        <h3 className="text-lg font-semibold text-body mb-4">
           Storage Usage
         </h3>
         <div className="text-center py-12">
@@ -116,10 +116,10 @@ export function StorageChart({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
             </svg>
           </div>
-          <h4 className="text-base font-medium text-slate-900 dark:text-white mb-2">
+          <h4 className="text-base font-medium text-body mb-2">
             Storage analytics coming soon
           </h4>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-hint">
             Configure your media library to enable storage tracking.
           </p>
         </div>
@@ -135,7 +135,7 @@ export function StorageChart({
 
   return (
     <Card variant="elevated" className={className}>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+      <h3 className="text-lg font-semibold text-body mb-4">
         Storage Usage
       </h3>
       <div className="flex flex-col md:flex-row items-center gap-6">
@@ -160,16 +160,16 @@ export function StorageChart({
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
+                    <span className="text-sm font-medium text-dim truncate">
                       {item.label}
                     </span>
-                    <span className="text-sm text-slate-500 dark:text-slate-400 flex-shrink-0 ml-2">
+                    <span className="text-sm text-hint flex-shrink-0 ml-2">
                       {item.percentage}%
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400 dark:text-slate-500">
-                      {formatFileSize(item.value)}
+                    <span className="text-xs text-hint">
+                      {formatBytes(item.value)}
                     </span>
                   </div>
                 </div>
@@ -183,10 +183,10 @@ export function StorageChart({
       {diskUsedBytes !== undefined && diskTotalBytes !== undefined && diskTotalBytes > 0 && (() => {
         const pct = Math.round((diskUsedBytes / diskTotalBytes) * 100)
         return (
-          <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
-              <span>{formatFileSize(diskUsedBytes)} used</span>
-              <span>{formatFileSize(diskTotalBytes)} total</span>
+          <div className="mt-6 pt-4 border-t border-edge">
+            <div className="flex justify-between text-xs text-hint mb-1.5">
+              <span>{formatBytes(diskUsedBytes)} used</span>
+              <span>{formatBytes(diskTotalBytes)} total</span>
             </div>
             <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
               <div

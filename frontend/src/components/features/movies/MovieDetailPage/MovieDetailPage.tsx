@@ -5,7 +5,7 @@ import { movieService } from '@/services/movieService'
 import { enrichmentService } from '@/services/enrichmentService'
 import { EnrichmentBadge } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
 import type { EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
-import { formatFileSize } from '@/utils/helpers'
+import { formatBytes, formatDuration } from '@/utils/formatting'
 import type { Movie } from '@/types'
 import './MovieDetailPage.css'
 
@@ -28,12 +28,6 @@ const MovieDetailPage: React.FC = () => {
       .catch(() => setError('Failed to load movie details'))
       .finally(() => setIsLoading(false))
   }, [id])
-
-  const formatDuration = (seconds: number) => {
-    const h = Math.floor(seconds / 3600)
-    const m = Math.floor((seconds % 3600) / 60)
-    return h > 0 ? `${h}h ${m}m` : `${m}m`
-  }
 
   const parseGenres = (genres?: string[] | string): string[] => {
     if (!genres) return []
@@ -215,7 +209,7 @@ const MovieDetailPage: React.FC = () => {
                   {movie.file_size != null && (
                     <div className="movie-detail-page__detail-row">
                       <span className="movie-detail-page__detail-label">File Size</span>
-                      <span className="movie-detail-page__detail-value">{formatFileSize(movie.file_size)}</span>
+                      <span className="movie-detail-page__detail-value">{formatBytes(movie.file_size)}</span>
                     </div>
                   )}
                   {movie.file_duration != null && (

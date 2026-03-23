@@ -32,7 +32,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
   if (files.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-slate-500 dark:text-slate-400 text-lg">{emptyMessage}</p>
+        <p className="text-hint text-lg">{emptyMessage}</p>
       </div>
     )
   }

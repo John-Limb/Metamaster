@@ -1,17 +1,7 @@
 import { apiClient } from '@/utils/api'
 import { errorHandler } from '@/utils/errorHandler'
 import type { Movie, PaginatedResponse, ApiResponse } from '@/types'
-
-const buildPaginationQuery = (page?: number, pageSize?: number) => {
-  const params = new URLSearchParams()
-  if (page && page >= 1) {
-    params.append('page', String(page))
-  }
-  if (pageSize && pageSize > 0) {
-    params.append('pageSize', String(pageSize))
-  }
-  return params.toString()
-}
+import { buildPaginationQuery } from './queryUtils'
 
 export type EnrichmentStatusGroup = 'indexed' | 'pending' | 'failed'
 
