@@ -24,35 +24,35 @@ const iconSizeMap = {
 
 const variantColors = {
   noData: 'text-primary-500',
-  noResults: 'text-secondary-500',
+  noResults: 'text-hint',
   featureDisabled: 'text-amber-500',
   error: 'text-red-500',
   loading: 'text-primary-500',
-  'not-found': 'text-secondary-500',
+  'not-found': 'text-hint',
   empty: 'text-primary-500',
-  default: 'text-secondary-500',
+  default: 'text-hint',
   elevated: 'text-primary-500',
-  bordered: 'text-secondary-500',
+  bordered: 'text-hint',
 }
 
 const variantBackgrounds = {
   noData: 'bg-primary-50 dark:bg-primary-900/20',
-  noResults: 'bg-secondary-50 dark:bg-secondary-800',
+  noResults: 'bg-subtle',
   featureDisabled: 'bg-amber-50 dark:bg-amber-900/20',
   error: 'bg-red-50 dark:bg-red-900/20',
   loading: 'bg-primary-50 dark:bg-primary-900/20',
-  'not-found': 'bg-secondary-50 dark:bg-secondary-800',
+  'not-found': 'bg-subtle',
   empty: 'bg-primary-50 dark:bg-primary-900/20',
   default: 'bg-transparent',
   elevated: 'bg-primary-50 dark:bg-primary-900/20',
-  bordered: 'bg-secondary-50 dark:bg-secondary-800',
+  bordered: 'bg-subtle',
 }
 
 const IconRenderer: React.FC<{ variant: EmptyStateVariant; size: number; className: string }> = ({
   variant,
   size,
   className,
-}) => {
+}: { variant: EmptyStateVariant; size: number; className: string }) => {
   const defaultClass = 'animate-pulse'
 
   switch (variant) {
@@ -75,7 +75,7 @@ export const EmptyStateIcon: React.FC<EmptyStateIconProps> = ({
   variant,
   size = 'md',
   className = '',
-}) => {
+}: EmptyStateIconProps) => {
   const iconSize = iconSizeMap[size]
   const variantColor = variantColors[variant]
   const variantBg = variantBackgrounds[variant]
@@ -110,8 +110,8 @@ export const EmptyStateIcons = {
   allSet: () => <CheckCircle size={36} className="text-green-500" />,
   
   // Search variants
-  noSearchResults: () => <Search size={36} className="text-secondary-500" />,
-  clearFilters: () => <Settings size={36} className="text-secondary-500" />,
+  noSearchResults: () => <Search size={36} className="text-hint" />,
+  clearFilters: () => <Settings size={36} className="text-hint" />,
   
   // Error variants
   loadingError: () => <AlertCircle size={36} className="text-red-500 animate-bounce" />,

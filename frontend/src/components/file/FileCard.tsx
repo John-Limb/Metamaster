@@ -33,7 +33,7 @@ const getFileIcon = (file: FileItem) => {
     return <FaFileArchive className="w-8 h-8 text-orange-500" />
   }
 
-  return <FaFile className="w-8 h-8 text-gray-500" />
+  return <FaFile className="w-8 h-8 text-hint" />
 }
 
 const formatFileSize = (bytes: number): string => {
@@ -62,7 +62,7 @@ export const FileCard: React.FC<FileCardProps> = ({
   onDoubleClick,
   onContextMenu,
   viewMode = 'grid',
-}) => {
+}: FileCardProps) => {
   const handleClick = (e: React.MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
       onSelect?.(file.id)
@@ -88,7 +88,7 @@ export const FileCard: React.FC<FileCardProps> = ({
         className={`flex items-center gap-4 px-4 py-3 border-b border-edge cursor-pointer transition ${
           isSelected
             ? 'bg-primary-50 dark:bg-primary-900/20'
-            : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
+            : 'hover:bg-subtle'
         }`}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
@@ -118,7 +118,7 @@ export const FileCard: React.FC<FileCardProps> = ({
       className={`p-4 rounded-lg border-2 transition cursor-pointer ${
         isSelected
           ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-          : 'border-edge hover:border-slate-300 dark:hover:border-slate-500 bg-card'
+          : 'border-edge hover:border-edge bg-card'
       }`}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}

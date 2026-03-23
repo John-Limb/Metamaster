@@ -129,7 +129,7 @@ export const EnrichmentPage: React.FC = () => {
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               mediaType === type
                 ? 'bg-primary-600 text-white'
-                : 'bg-slate-100 dark:bg-slate-800 text-dim hover:bg-slate-200 dark:hover:bg-slate-700'
+                : 'bg-subtle text-dim hover:bg-edge'
             }`}
           >
             {type === 'movies' ? 'Movies' : 'TV Shows'}
@@ -152,7 +152,7 @@ export const EnrichmentPage: React.FC = () => {
                 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors
                 ${isActive
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}
+                  : 'border-transparent text-hint hover:text-dim'}
               `}
             >
               {tab.label}
@@ -160,7 +160,7 @@ export const EnrichmentPage: React.FC = () => {
                 <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full font-medium
                   ${isActive
                     ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
-                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                    : 'bg-subtle text-hint'}`}>
                   {count}
                 </span>
               )}
@@ -184,10 +184,10 @@ export const EnrichmentPage: React.FC = () => {
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <tr key={i} className="animate-pulse">
-                  <td className="px-4 py-3"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-48" /></td>
-                  <td className="px-4 py-3"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-10" /></td>
-                  <td className="px-4 py-3"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24" /></td>
-                  <td className="px-4 py-3"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-40" /></td>
+                  <td className="px-4 py-3"><div className="h-4 bg-subtle rounded w-48 animate-pulse" /></td>
+                  <td className="px-4 py-3"><div className="h-4 bg-subtle rounded w-10 animate-pulse" /></td>
+                  <td className="px-4 py-3"><div className="h-4 bg-subtle rounded w-24 animate-pulse" /></td>
+                  <td className="px-4 py-3"><div className="h-4 bg-subtle rounded w-40 animate-pulse" /></td>
                 </tr>
               ))
             ) : items.length === 0 ? (
@@ -201,7 +201,7 @@ export const EnrichmentPage: React.FC = () => {
                 <tr
                   key={item.id}
                   onClick={() => handleRowClick(item)}
-                  className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  className="cursor-pointer hover:bg-subtle transition-colors"
                 >
                   <td className="px-4 py-3 font-medium text-body">
                     {item.title}

@@ -16,7 +16,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   onProfile,
   onSettings,
   onLogout,
-}) => {
+}: UserMenuProps) => {
   const { isAuthenticated, isLoading } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -71,7 +71,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+        <div className="w-8 h-8 rounded-full bg-subtle animate-pulse" />
       </div>
     )
   }
@@ -82,7 +82,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       <div className="flex items-center gap-2">
         <Link
           to="/login"
-          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-dim hover:bg-subtle rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <FaSignInAlt className="w-4 h-4" />
           <span className="hidden sm:inline">Sign in</span>
@@ -97,7 +97,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1.5 pr-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="flex items-center gap-2 p-1.5 pr-3 text-dim hover:bg-subtle rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500"
         aria-label="User menu"
         aria-haspopup="true"
         aria-expanded={isOpen}
@@ -124,7 +124,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
           </p>
         </div>
         <FaChevronDown
-          className={`hidden sm:block w-3 h-3 text-gray-400 transition-transform duration-150 ${
+          className={`hidden sm:block w-3 h-3 text-hint transition-transform duration-150 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -175,10 +175,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                 onProfile()
                 setIsOpen(false)
               })}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-dim hover:bg-subtle transition-colors duration-150 focus:outline-none focus:bg-subtle"
               role="menuitem"
             >
-              <FaUser className="w-4 h-4 text-gray-400" />
+              <FaUser className="w-4 h-4 text-hint" />
               <span>Profile</span>
             </button>
             <button
@@ -190,10 +190,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                 onSettings()
                 setIsOpen(false)
               })}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-dim hover:bg-subtle transition-colors duration-150 focus:outline-none focus:bg-subtle"
               role="menuitem"
             >
-              <FaCog className="w-4 h-4 text-gray-400" />
+              <FaCog className="w-4 h-4 text-hint" />
               <span>Settings</span>
             </button>
           </div>

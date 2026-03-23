@@ -152,7 +152,7 @@ export function CollectionForm({ onSubmit, onCancel }: CollectionFormProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            className="text-hint hover:text-dim transition-colors"
             aria-label="Close"
           >
             <FaTimes className="w-4 h-4" />

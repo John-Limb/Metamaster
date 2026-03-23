@@ -130,7 +130,7 @@ export function SearchBar({
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg
-              className="h-5 w-5 text-gray-400"
+              className="h-5 w-5 text-hint"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -153,7 +153,7 @@ export function SearchBar({
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-200"
+            className="block w-full pl-10 pr-3 py-2 border border-edge rounded-lg leading-5 bg-card text-body placeholder-hint focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-200"
             aria-autocomplete="list"
             aria-controls="search-results"
             aria-expanded={isFocused && suggestions.length > 0}
@@ -169,7 +169,7 @@ export function SearchBar({
       {/* Suggestions Dropdown */}
       {isFocused && showSuggestions && (suggestions.length > 0 || recentSearches.length > 0) && (
         <div
-          className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto max-h-60 focus:outline-none sm:text-sm"
+          className="absolute z-10 mt-1 w-full bg-card shadow-lg rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto max-h-60 focus:outline-none sm:text-sm"
           role="listbox"
           id="search-results"
         >
@@ -181,11 +181,11 @@ export function SearchBar({
                   key={`${suggestion}-${index}`}
                   role="option"
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  className="w-full text-left px-4 py-2 hover:bg-subtle focus:bg-subtle focus:outline-none"
                 >
                   <span className="flex items-center">
                     <svg
-                      className="h-4 w-4 mr-2 text-gray-400"
+                      className="h-4 w-4 mr-2 text-hint"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -208,7 +208,7 @@ export function SearchBar({
           {/* Recent Searches */}
           {recentSearches.length > 0 && suggestions.length === 0 && (
             <div role="group" aria-label="Recent searches">
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <div className="px-4 py-2 text-xs font-semibold text-hint uppercase tracking-wider">
                 Recent Searches
               </div>
               {recentSearches.slice(0, 5).map((recentQuery, index) => (
@@ -216,11 +216,11 @@ export function SearchBar({
                   key={`recent-${index}`}
                   role="option"
                   onClick={() => handleRecentSearchClick(recentQuery)}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  className="w-full text-left px-4 py-2 hover:bg-subtle focus:bg-subtle focus:outline-none"
                 >
                   <span className="flex items-center">
                     <svg
-                      className="h-4 w-4 mr-2 text-gray-400"
+                      className="h-4 w-4 mr-2 text-hint"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

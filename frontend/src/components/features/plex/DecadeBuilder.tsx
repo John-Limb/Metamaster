@@ -9,7 +9,7 @@ interface DecadeBuilderProps {
 
 export function DecadeBuilder({ selected, onSelect }: DecadeBuilderProps) {
   return (
-    <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4">
+    <div className="rounded-xl border border-edge bg-subtle p-4">
       <p className="text-xs font-semibold text-hint uppercase tracking-wide mb-3">
         Choose one decade
       </p>
@@ -22,7 +22,7 @@ export function DecadeBuilder({ selected, onSelect }: DecadeBuilderProps) {
             className={`rounded-lg py-2.5 text-sm font-medium text-center transition-colors ${
               selected === decade
                 ? 'bg-primary-600 text-white border-2 border-primary-600'
-                : 'bg-card text-slate-600 dark:text-slate-300 border border-edge hover:border-primary-400 dark:hover:border-primary-500'
+                : 'bg-card text-dim border border-edge hover:border-primary-400 dark:hover:border-primary-500'
             }`}
           >
             {decade}s
@@ -31,12 +31,12 @@ export function DecadeBuilder({ selected, onSelect }: DecadeBuilderProps) {
         <button
           type="button"
           disabled
-          className="rounded-lg py-2.5 text-sm text-center text-slate-300 dark:text-slate-600 border border-dashed border-edge cursor-not-allowed"
+          className="rounded-lg py-2.5 text-sm text-center text-hint border border-dashed border-edge cursor-not-allowed"
         >
           2030s
         </button>
       </div>
-      <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">
+      <p className="text-xs text-hint mt-3">
         One decade per collection · Movies only
       </p>
     </div>

@@ -11,14 +11,14 @@ export const NotFound: React.FC<NotFoundProps> = ({
   title = 'Page Not Found',
   message = 'The page you are looking for does not exist.',
   showBackButton = true,
-}) => {
+}: NotFoundProps) => {
   const navigate = useNavigate()
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
+    <div className="flex items-center justify-center min-h-screen bg-subtle">
       <div className="text-center px-4">
         <div className="mb-8">
-          <svg className="mx-auto h-24 w-24 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="mx-auto h-24 w-24 text-hint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
@@ -35,7 +35,7 @@ export const NotFound: React.FC<NotFoundProps> = ({
           {showBackButton && (
             <button
               onClick={() => navigate(-1)}
-              className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-6 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium"
+              className="bg-subtle text-body px-6 py-3 rounded-lg hover:bg-subtle/80 transition font-medium"
             >
               Go Back
             </button>

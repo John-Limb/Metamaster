@@ -19,6 +19,16 @@ import type {
 
 import { API_BASE_URL } from '@/utils/constants'
 
+const ALLOWED_ENDPOINTS = new Set([
+  '/auth/login',
+  '/auth/register',
+  '/auth/logout',
+  '/auth/refresh',
+  '/auth/me',
+  '/auth/change-password',
+  '/auth/profile',
+])
+
 /**
  * Custom error class for authentication errors
  */
@@ -41,6 +51,9 @@ async function authFetch<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  if (!ALLOWED_ENDPOINTS.has(endpoint)) {
+    throw new Error(`Request blocked: unauthorized endpoint "${endpoint}"`)
+  }
   const url = `${API_BASE_URL}${endpoint}`
 
   const defaultHeaders: HeadersInit = {

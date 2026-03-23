@@ -18,7 +18,7 @@ interface QuickAccessShortcutsProps {
 export const QuickAccessShortcuts: React.FC<QuickAccessShortcutsProps> = ({
   onNavigate,
   className = '',
-}) => {
+}: QuickAccessShortcutsProps) => {
   const { navigateToPath } = useFileStore()
 
   const shortcuts: Shortcut[] = [
@@ -73,7 +73,7 @@ export const QuickAccessShortcuts: React.FC<QuickAccessShortcutsProps> = ({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <h3 className="text-sm font-semibold text-gray-900 px-2">Quick Access</h3>
+      <h3 className="text-sm font-semibold text-body px-2">Quick Access</h3>
       <div className="space-y-1">
         {shortcuts.map((shortcut) => (
           <button

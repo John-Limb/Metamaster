@@ -20,7 +20,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
   onContextMenu,
   isLoading = false,
   emptyMessage = 'No files to display',
-}) => {
+}: FileGridProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">

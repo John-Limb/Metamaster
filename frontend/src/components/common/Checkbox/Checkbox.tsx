@@ -20,7 +20,7 @@ export const CheckboxInput: React.FC<CheckboxInputProps> = ({
   onClick,
   disabled = false,
   'aria-label': ariaLabel,
-}) => {
+}: CheckboxInputProps) => {
   const ref = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export const CheckboxInput: React.FC<CheckboxInputProps> = ({
         className={`pointer-events-none w-full h-full rounded-sm border transition-colors flex items-center justify-center ${
           active
             ? 'bg-primary-500 border-primary-500 dark:bg-primary-400 dark:border-primary-400'
-            : 'bg-card border-slate-300 dark:border-slate-600 group-hover/cb:border-primary-400 dark:group-hover/cb:border-primary-500'
+            : 'bg-card border-edge group-hover/cb:border-primary-400 dark:group-hover/cb:border-primary-500'
         }`}
       >
         {checked && !indeterminate && (
@@ -83,7 +83,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   disabled = false,
   error,
   className = '',
-}) => {
+}: CheckboxProps) => {
   const checkboxId = id || `checkbox-${crypto.randomUUID()}`
 
   return (
@@ -101,8 +101,8 @@ export const Checkbox: React.FC<CheckboxProps> = ({
           htmlFor={checkboxId}
           className={`font-medium cursor-pointer ${
             disabled
-              ? 'text-slate-400 dark:text-slate-600'
-              : 'text-slate-700 dark:text-slate-300'
+              ? 'text-hint'
+              : 'text-dim'
           }`}
         >
           {label}

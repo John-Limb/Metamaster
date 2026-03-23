@@ -6,9 +6,9 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
-    curl \
-    procps \
+    ffmpeg=7:7.1.3-0+deb13u1 \
+    curl=8.14.1-2+deb13u2 \
+    procps=2:4.0.4-9 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies

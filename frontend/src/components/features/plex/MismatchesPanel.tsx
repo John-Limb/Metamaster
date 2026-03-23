@@ -23,7 +23,7 @@ export function MismatchesPanel({ mismatches, onResolve }: Props) {
             key={m.id}
             className="flex items-center justify-between text-sm p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20"
           >
-            <span className="text-gray-700 dark:text-gray-300">
+            <span className="text-dim">
               {m.item_type} #{m.item_id} — Plex TMDB #{m.plex_tmdb_id}
             </span>
             <button

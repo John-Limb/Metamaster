@@ -23,14 +23,14 @@ export const Tabs: React.FC<TabsProps> = ({
   variant = 'default',
   className = '',
   children,
-}) => {
+}: TabsProps) => {
   return (
     <div className={`w-full ${className}`}>
       <div
         className={`${
           variant === 'pills'
-            ? 'flex gap-2 p-1 bg-secondary-100 dark:bg-secondary-800 rounded-lg'
-            : 'flex border-b border-secondary-200 dark:border-secondary-700'
+            ? 'flex gap-2 p-1 bg-subtle rounded-lg'
+            : 'flex border-b border-edge'
         }`}
       >
         {tabs.map((tab) => (
@@ -48,8 +48,8 @@ export const Tabs: React.FC<TabsProps> = ({
                     rounded-md
                     ${
                       activeTab === tab.id
-                        ? 'bg-white dark:bg-secondary-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                        : 'text-secondary-600 dark:text-secondary-400 hover:text-secondary-900 dark:hover:text-secondary-200'
+                        ? 'bg-card text-primary-600 dark:text-primary-400 shadow-sm'
+                        : 'text-dim hover:text-body'
                     }
                     disabled:opacity-50 disabled:cursor-not-allowed
                   `
@@ -58,7 +58,7 @@ export const Tabs: React.FC<TabsProps> = ({
                     ${
                       activeTab === tab.id
                         ? 'border-primary-600 text-primary-600 dark:text-primary-400'
-                        : 'border-transparent text-secondary-500 dark:text-secondary-400 hover:text-secondary-700 dark:hover:text-secondary-200'
+                        : 'border-transparent text-hint hover:text-dim'
                     }
                     disabled:opacity-50 disabled:cursor-not-allowed
                   `

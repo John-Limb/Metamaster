@@ -75,14 +75,14 @@ export function TmdbCollectionBuilder({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4">
+      <div className="rounded-xl border border-edge bg-subtle p-4">
         <p className="text-xs font-semibold text-hint uppercase tracking-wide mb-3">
           Matched in your library
         </p>
         {localLoading && <LoadingSpinner />}
         {localError && <p className="text-sm text-red-500">{localError}</p>}
         {!localLoading && !localError && local.length === 0 && (
-          <p className="text-sm text-slate-400 dark:text-slate-500">
+          <p className="text-sm text-hint">
             No TMDB collections matched in your library yet.
           </p>
         )}
@@ -101,7 +101,7 @@ export function TmdbCollectionBuilder({
                   <p className="text-sm font-medium text-body">
                     {col.name}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-hint">
                     ID {col.tmdb_collection_id} · {col.movie_count} film
                     {col.movie_count !== 1 ? 's' : ''} in library
                   </p>
@@ -121,7 +121,7 @@ export function TmdbCollectionBuilder({
         )}
       </div>
 
-      <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4">
+      <div className="rounded-xl border border-edge bg-subtle p-4">
         <p className="text-xs font-semibold text-hint uppercase tracking-wide mb-3">
           Search TMDB
         </p>
@@ -152,7 +152,7 @@ export function TmdbCollectionBuilder({
                   <p className="text-sm font-medium text-body">
                     {col.name}
                   </p>
-                  <p className="text-xs text-slate-400">ID {col.id}</p>
+                  <p className="text-xs text-hint">ID {col.id}</p>
                 </div>
                 {isSelected(col.id) ? (
                   <Button size="sm" variant="outline" onClick={onRemove}>

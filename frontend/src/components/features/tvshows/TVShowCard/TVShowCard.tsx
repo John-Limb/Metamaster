@@ -50,7 +50,7 @@ export const TVShowCard: React.FC<TVShowCardProps> = ({
   onDelete,
   watchedEpisodeCount,
   totalEpisodeCount,
-}) => {
+}: TVShowCardProps) => {
   const [activeMismatch, setActiveMismatch] = useState<PlexMismatchItem | null>(null)
 
   const renderStars = (rating: number) => {

@@ -9,7 +9,7 @@ const TIER_CONFIG = {
   efficient: { label: 'Efficient', className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
   moderate: { label: 'Moderate', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
   large: { label: 'Large', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  unknown: { label: 'Pending', className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' },
+  unknown: { label: 'Pending', className: 'bg-subtle text-hint' },
 } as const
 
 function TierBadge({ tier }: { tier: StorageFileItem['efficiency_tier'] }) {
@@ -38,19 +38,19 @@ function SummaryCards({ summary }: { summary: StorageSummary }) {
       <div className="rounded-xl border border-edge bg-card p-4">
         <p className="text-sm text-hint mb-1">Disk Available</p>
         <p className="text-2xl font-bold text-body">{formatBytes(summary.disk.available_bytes)}</p>
-        <p className="text-xs text-slate-400 mt-1">{diskPct}% used of {formatBytes(summary.disk.total_bytes)}</p>
+        <p className="text-xs text-hint mt-1">{diskPct}% used of {formatBytes(summary.disk.total_bytes)}</p>
       </div>
       <div className="rounded-xl border border-edge bg-card p-4">
         <p className="text-sm text-hint mb-1">Potential Savings</p>
         <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
           ~{formatBytes(summary.potential_savings_bytes)}
         </p>
-        <p className="text-xs text-slate-400 mt-1">if re-encoded to H.265</p>
+        <p className="text-xs text-hint mt-1">if re-encoded to H.265</p>
       </div>
       <div className="rounded-xl border border-edge bg-card p-4">
         <p className="text-sm text-hint mb-1">Files Analyzed</p>
         <p className="text-2xl font-bold text-body">
-          {summary.files_analyzed} <span className="text-base font-normal text-slate-400">/ {totalFiles}</span>
+          {summary.files_analyzed} <span className="text-base font-normal text-hint">/ {totalFiles}</span>
         </p>
       </div>
     </div>
@@ -70,7 +70,7 @@ function SortHeader({
   const active = sortBy === field
   return (
     <th
-      className="px-4 py-3 text-left text-xs font-semibold text-hint uppercase tracking-wide cursor-pointer hover:text-slate-900 dark:hover:text-white select-none whitespace-nowrap"
+      className="px-4 py-3 text-left text-xs font-semibold text-hint uppercase tracking-wide cursor-pointer hover:text-body select-none whitespace-nowrap"
       onClick={() => onSort(field)}
     >
       {label}
@@ -155,7 +155,7 @@ function StorageFilterBar({
         aria-label="Watched Status"
         value={filterWatchedStatus}
         onChange={e => onWatchedStatusChange(e.target.value)}
-        className="rounded-lg border border-edge bg-card text-slate-700 dark:text-slate-200 text-sm px-3 py-2"
+        className="rounded-lg border border-edge bg-card text-body text-sm px-3 py-2"
       >
         <option value="">All</option>
         <option value="unwatched">Unwatched</option>
@@ -213,13 +213,13 @@ function StorageFileTable({
               <th className="px-4 py-3 text-left text-xs font-semibold text-hint uppercase tracking-wide">Tier</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-edge">
             {loading ? (
               [...Array(10)].map((_, i) => (
                 <tr key={i}>
                   {[...Array(9)].map((_, j) => (
                     <td key={j} className="px-4 py-3">
-                      <div className="h-4 rounded bg-slate-200 dark:bg-slate-700 animate-pulse" />
+                      <div className="h-4 rounded bg-subtle animate-pulse" />
                     </td>
                   ))}
                 </tr>
@@ -233,7 +233,7 @@ function StorageFileTable({
             ) : groupedRows.map((row, idx) => {
               if ('_groupHeader' in row) {
                 return (
-                  <tr key={`group-${row.show_title}`} className="bg-slate-50 dark:bg-slate-800/50">
+                  <tr key={`group-${row.show_title}`} className="bg-subtle">
                     <td colSpan={9} className="px-4 py-2">
                       <span className="font-semibold text-body text-sm">{row.show_title}</span>
                       <span className={`ml-2 text-xs px-1.5 py-0.5 rounded ${
@@ -249,7 +249,7 @@ function StorageFileTable({
               }
               const item = row
               return (
-                <tr key={`${item.id}-${idx}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <tr key={`${item.id}-${idx}`} className="hover:bg-subtle transition-colors">
                   <td className="px-4 py-3 max-w-xs truncate font-medium text-body" title={item.name}>
                     {item.name}
                   </td>
@@ -372,7 +372,7 @@ export function StoragePage() {
       {loading && !summary ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse" />
+            <div key={i} className="h-24 rounded-xl bg-subtle animate-pulse" />
           ))}
         </div>
       ) : summary ? (

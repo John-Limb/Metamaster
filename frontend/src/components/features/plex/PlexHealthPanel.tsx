@@ -14,11 +14,11 @@ export function PlexHealthPanel() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['plex-health'] }),
   })
 
-  if (isLoading || !data) return <div className="text-sm text-gray-500">Loading Plex health...</div>
+  if (isLoading || !data) return <div className="text-sm text-hint">Loading Plex health...</div>
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Plex Sync Status</h4>
+      <h4 className="text-sm font-semibold text-dim">Plex Sync Status</h4>
 
       <div className="flex items-center gap-2">
         <span
@@ -40,7 +40,7 @@ export function PlexHealthPanel() {
             {data.not_found_items.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300"
+                className="flex items-center gap-3 text-sm text-dim"
               >
                 <span>
                   {item.item_type} #{item.item_id}

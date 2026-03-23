@@ -16,7 +16,7 @@ const variantClasses = {
   danger: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
   info: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   indigo: 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200',
-  secondary: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+  secondary: 'bg-subtle text-body',
 }
 
 const sizeClasses = {
@@ -32,7 +32,7 @@ export const Badge: React.FC<BadgeProps> = ({
   onDismiss,
   children,
   className = '',
-}) => {
+}: BadgeProps) => {
   return (
     <span
       className={`

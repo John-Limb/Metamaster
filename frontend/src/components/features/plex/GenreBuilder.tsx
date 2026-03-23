@@ -21,7 +21,7 @@ export function GenreBuilder({ selected, onSelect }: GenreBuilderProps) {
   }, [])
 
   return (
-    <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4">
+    <div className="rounded-xl border border-edge bg-subtle p-4">
       <p className="text-xs font-semibold text-hint uppercase tracking-wide mb-3">
         Choose one genre
       </p>
@@ -37,7 +37,7 @@ export function GenreBuilder({ selected, onSelect }: GenreBuilderProps) {
               className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                 selected === genre
                   ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 border-2 border-primary-500'
-                  : 'bg-card text-slate-600 dark:text-slate-300 border border-edge hover:border-primary-400 dark:hover:border-primary-500'
+                  : 'bg-card text-dim border border-edge hover:border-primary-400 dark:hover:border-primary-500'
               }`}
             >
               {genre}
@@ -45,7 +45,7 @@ export function GenreBuilder({ selected, onSelect }: GenreBuilderProps) {
           ))}
         </div>
       )}
-      <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">
+      <p className="text-xs text-hint mt-3">
         One genre per collection · Movies only · From your library
       </p>
     </div>

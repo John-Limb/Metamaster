@@ -105,7 +105,7 @@ export class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, Api
             role="alert"
             aria-live="assertive"
           >
-            <div className="bg-white dark:bg-secondary-800 p-8 rounded-lg shadow-lg max-w-md w-full animate-scale-in">
+            <div className="bg-card p-8 rounded-lg shadow-lg max-w-md w-full animate-scale-in">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-shrink-0">
                   <svg

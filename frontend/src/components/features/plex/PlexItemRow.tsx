@@ -58,7 +58,7 @@ export function PlexItemRow({
         className={`border-l-4 transition-colors ${
           isSelected
             ? 'border-primary-500 bg-primary-500/10 dark:bg-primary-500/15'
-            : 'border-transparent hover:bg-slate-800/30'
+            : 'border-transparent hover:bg-subtle'
         }`}
       >
         <td className="py-2 pl-3 pr-2">
@@ -73,17 +73,17 @@ export function PlexItemRow({
             <button
               type="button"
               onClick={() => onSelect(item.id)}
-              className="text-left font-medium text-slate-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors truncate max-w-xs"
+              className="text-left font-medium text-body hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors truncate max-w-xs"
             >
               {item.name}
             </button>
           </div>
         </td>
         {badge}
-        <td className="py-2 px-2 text-sm text-slate-500 dark:text-slate-400">
+        <td className="py-2 px-2 text-sm text-hint">
           {item.items.length}
         </td>
-        <td className="py-2 px-2 text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
+        <td className="py-2 px-2 text-sm text-hint whitespace-nowrap">
           {formatSyncDate(item.last_synced_at)}
         </td>
         <td className="py-2 pl-2 pr-3">

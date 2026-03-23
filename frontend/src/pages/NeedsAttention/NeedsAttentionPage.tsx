@@ -89,7 +89,7 @@ export const NeedsAttentionPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="w-8 h-8 border-4 border-gray-300 border-t-indigo-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-edge border-t-primary-500 rounded-full animate-spin" />
       </div>
     )
   }
@@ -97,7 +97,7 @@ export const NeedsAttentionPage: React.FC = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Needs Attention</h1>
+        <h1 className="text-3xl font-bold text-body">Needs Attention</h1>
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <p className="text-red-700 dark:text-red-400">{error}</p>
           <button
@@ -114,7 +114,7 @@ export const NeedsAttentionPage: React.FC = () => {
   if (!data || data.total === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Needs Attention</h1>
+        <h1 className="text-3xl font-bold text-body">Needs Attention</h1>
         <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
           <span className="text-green-600 dark:text-green-400 text-xl font-semibold">
             All media is fully enriched ✓
@@ -209,7 +209,7 @@ export const NeedsAttentionPage: React.FC = () => {
                       value={inputValue}
                       onChange={(e) => handleExternalIdChange(type, item.id, e.target.value)}
                       placeholder={type === 'movie' ? 'Enter TMDB ID (e.g. 278)' : 'Enter TMDB ID (e.g. 1396)'}
-                      className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="flex-1 px-3 py-1.5 text-sm border border-edge rounded-lg bg-card text-body focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                     <button
                       onClick={() => handleSaveAndEnrich(type, item)}

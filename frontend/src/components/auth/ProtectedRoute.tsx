@@ -23,14 +23,14 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requirePasswordChange = false,
-}) => {
+}: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, requiresPasswordChange } = useAuth()
   const location = useLocation()
 
   // Show loading spinner while checking auth status
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-secondary-50 dark:bg-secondary-900">
+      <div className="min-h-screen flex items-center justify-center bg-page">
         <LoadingSpinner size="lg" message="Checking authentication..." />
       </div>
     )

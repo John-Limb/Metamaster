@@ -87,7 +87,7 @@ export function StorageChart({
             fill="none"
             stroke="currentColor"
             strokeWidth="12"
-            className="text-slate-100 dark:text-slate-800 opacity-50"
+            className="text-edge opacity-50"
           />
         </svg>
 
@@ -111,8 +111,8 @@ export function StorageChart({
           Storage Usage
         </h3>
         <div className="text-center py-12">
-          <div className="mx-auto w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mx-auto w-16 h-16 rounded-full bg-subtle flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-hint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
             </svg>
           </div>
@@ -147,14 +147,14 @@ export function StorageChart({
                 key={item.label}
                 className={`
                   flex items-center gap-3 p-3 rounded-lg transition-all duration-200
-                  ${activeSegment === item.label ? 'bg-slate-50 dark:bg-slate-800/50' : ''}
+                  ${activeSegment === item.label ? 'bg-subtle' : ''}
                 `}
                 role="listitem"
                 onMouseEnter={() => setActiveSegment(item.label)}
                 onMouseLeave={() => setActiveSegment(null)}
               >
                 <div
-                  className="w-4 h-4 rounded-full flex-shrink-0 ring-2 ring-white dark:ring-slate-900"
+                  className="w-4 h-4 rounded-full flex-shrink-0 ring-2 ring-card"
                   style={{ backgroundColor: item.color }}
                   aria-hidden="true"
                 />
@@ -188,7 +188,7 @@ export function StorageChart({
               <span>{formatBytes(diskUsedBytes)} used</span>
               <span>{formatBytes(diskTotalBytes)} total</span>
             </div>
-            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+            <div className="w-full bg-subtle rounded-full h-1.5">
               <div
                 className={`h-1.5 rounded-full transition-all ${pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-amber-400' : 'bg-emerald-500'}`}
                 style={{ width: `${Math.min(pct, 100)}%` }}

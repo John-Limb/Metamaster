@@ -16,8 +16,8 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   radius,
   className = '',
   animation = 'shimmer',
-}) => {
-  const baseClasses = 'bg-secondary-200 dark:bg-secondary-700'
+}: SkeletonProps) => {
+  const baseClasses = 'bg-subtle'
 
   const animationClasses = {
     pulse: 'animate-pulse',
@@ -58,7 +58,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({
   lines = 3,
   className = '',
-}) => {
+}: { lines?: number; className?: string }) => {
   return (
     <div className={`space-y-2 ${className}`} role="status" aria-label="Loading text">
       {Array.from({ length: lines }).map((_, index) => (
@@ -76,7 +76,7 @@ export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({
 export const SkeletonAvatar: React.FC<{ size?: number; className?: string }> = ({
   size = 40,
   className = '',
-}) => {
+}: { size?: number; className?: string }) => {
   return (
     <Skeleton
       variant="circular"
@@ -88,7 +88,7 @@ export const SkeletonAvatar: React.FC<{ size?: number; className?: string }> = (
   )
 }
 
-export const SkeletonCard: React.FC<{ className?: string; children?: React.ReactNode }> = ({ className = '', children }) => {
+export const SkeletonCard: React.FC<{ className?: string; children?: React.ReactNode }> = ({ className = '', children }: { className?: string; children?: React.ReactNode }) => {
   return (
     <div className={`space-y-4 p-4 ${className}`} role="status" aria-label="Loading card">
       {children || (
@@ -112,11 +112,16 @@ export const SkeletonTable: React.FC<{
   columns?: number
   className?: string
   showHeader?: boolean
-}> = ({ rows = 5, columns = 4, className = '', showHeader = true }) => {
+}> = ({ rows = 5, columns = 4, className = '', showHeader = true }: {
+  rows?: number
+  columns?: number
+  className?: string
+  showHeader?: boolean
+}) => {
   return (
     <div className={`space-y-3 ${className}`} role="status" aria-label="Loading table">
       {showHeader && (
-        <div className="flex gap-4 border-b border-secondary-200 dark:border-secondary-700 pb-2">
+        <div className="flex gap-4 border-b border-edge pb-2">
           {Array.from({ length: columns }).map((_, index) => (
             <Skeleton
               key={index}
@@ -144,16 +149,16 @@ export const SkeletonTable: React.FC<{
   )
 }
 
-export const SkeletonMovieCard: React.FC<{ className?: string }> = ({ className = '' }) => {
+export const SkeletonMovieCard: React.FC<{ className?: string }> = ({ className = '' }: { className?: string }) => {
   return (
     <div
-      className={`rounded-lg overflow-hidden bg-white dark:bg-secondary-800 ${className}`}
+      className={`rounded-lg overflow-hidden bg-card ${className}`}
       role="status"
       aria-label="Loading movie card"
     >
       {/* Poster placeholder */}
-      <div className="aspect-[2/3] bg-secondary-200 dark:bg-secondary-700 animate-shimmer" />
-      
+      <div className="aspect-[2/3] bg-subtle animate-shimmer" />
+
       {/* Content */}
       <div className="p-4 space-y-3">
         <Skeleton variant="text" width="80%" height="20px" animation="shimmer" />
@@ -167,15 +172,15 @@ export const SkeletonMovieCard: React.FC<{ className?: string }> = ({ className 
   )
 }
 
-export const SkeletonTVShowCard: React.FC<{ className?: string }> = ({ className = '' }) => {
+export const SkeletonTVShowCard: React.FC<{ className?: string }> = ({ className = '' }: { className?: string }) => {
   return (
     <div
-      className={`rounded-lg overflow-hidden bg-white dark:bg-secondary-800 ${className}`}
+      className={`rounded-lg overflow-hidden bg-card ${className}`}
       role="status"
       aria-label="Loading TV show card"
     >
       {/* Poster placeholder */}
-      <div className="aspect-[2/3] bg-secondary-200 dark:bg-secondary-700 animate-shimmer" />
+      <div className="aspect-[2/3] bg-subtle animate-shimmer" />
       
       {/* Content */}
       <div className="p-4 space-y-3">
@@ -190,10 +195,10 @@ export const SkeletonTVShowCard: React.FC<{ className?: string }> = ({ className
   )
 }
 
-export const SkeletonStatCard: React.FC<{ className?: string }> = ({ className = '' }) => {
+export const SkeletonStatCard: React.FC<{ className?: string }> = ({ className = '' }: { className?: string }) => {
   return (
     <div
-      className={`p-6 rounded-lg bg-white dark:bg-secondary-800 ${className}`}
+      className={`p-6 rounded-lg bg-card ${className}`}
       role="status"
       aria-label="Loading stat card"
     >
@@ -212,10 +217,13 @@ export const SkeletonStatCard: React.FC<{ className?: string }> = ({ className =
 export const SkeletonDataTableHeader: React.FC<{
   columns: { width?: string | number }[]
   className?: string
-}> = ({ columns, className = '' }) => {
+}> = ({ columns, className = '' }: {
+  columns: { width?: string | number }[]
+  className?: string
+}) => {
   return (
     <div
-      className={`flex gap-4 p-4 border-b border-secondary-200 dark:border-secondary-700 ${className}`}
+      className={`flex gap-4 p-4 border-b border-edge ${className}`}
       role="rowheader"
       aria-label="Loading table header"
     >
@@ -236,14 +244,18 @@ export const SkeletonList: React.FC<{
   items?: number
   children?: React.ReactNode
   className?: string
-}> = ({ items = 5, children, className = '' }) => {
+}> = ({ items = 5, children, className = '' }: {
+  items?: number
+  children?: React.ReactNode
+  className?: string
+}) => {
   return (
     <div className={`space-y-3 ${className}`} role="list" aria-label="Loading list">
       {children ||
         Array.from({ length: items }).map((_, index) => (
           <div
             key={index}
-            className="flex items-center gap-4 p-3 bg-white dark:bg-secondary-800 rounded-lg"
+            className="flex items-center gap-4 p-3 bg-card rounded-lg"
           >
             <SkeletonAvatar size={40} />
             <div className="flex-1 space-y-2">
@@ -259,7 +271,10 @@ export const SkeletonList: React.FC<{
 export const SkeletonForm: React.FC<{
   fields?: number
   className?: string
-}> = ({ fields = 4, className = '' }) => {
+}> = ({ fields = 4, className = '' }: {
+  fields?: number
+  className?: string
+}) => {
   return (
     <div className={`space-y-4 ${className}`} role="form" aria-label="Loading form">
       {Array.from({ length: fields }).map((_, index) => (

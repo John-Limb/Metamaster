@@ -69,7 +69,7 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5"
+            className="block text-sm font-medium text-dim mb-1.5"
           >
             {label}
             {required && (
@@ -85,7 +85,7 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
         <div className="relative">
           {leftIcon && (
             <div
-              className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary-400"
+              className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-hint"
               aria-hidden="true"
             >
               {leftIcon}
@@ -116,19 +116,19 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
               ${
                 error
                   ? 'border-danger focus:ring-danger focus:border-danger bg-danger-50 dark:bg-danger-900/10'
-                  : 'border-secondary-300 dark:border-secondary-600 focus:ring-primary-500 focus:border-primary-500'
+                  : 'border-edge focus:ring-primary-500 focus:border-primary-500'
               }
-              bg-white dark:bg-secondary-800
-              text-secondary-900 dark:text-white
-              placeholder-secondary-400 dark:placeholder-secondary-500
+              bg-card
+              text-body
+              placeholder-hint
               focus:outline-none focus:ring-2
-              disabled:bg-secondary-50 dark:disabled:bg-secondary-900 disabled:cursor-not-allowed
+              disabled:bg-subtle disabled:cursor-not-allowed
               disabled:opacity-60
             `}
           />
           {rightIcon && (
             <div
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary-400"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-hint"
               aria-hidden="true"
             >
               {rightIcon}
@@ -156,7 +156,7 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
           <p
             id={error ? errorMessageId : helperTextIdVal}
             className={`mt-1.5 text-sm ${
-              error ? 'text-danger' : 'text-secondary-500 dark:text-secondary-400'
+              error ? 'text-danger' : 'text-hint'
             }`}
             role={error ? 'alert' : undefined}
           >

@@ -10,7 +10,7 @@ interface ProfileSectionProps {
   children: React.ReactNode
 }
 
-const ProfileSection: React.FC<ProfileSectionProps> = ({ icon, title, description, children }) => (
+const ProfileSection: React.FC<ProfileSectionProps> = ({ icon, title, description, children }: ProfileSectionProps) => (
   <div className="bg-card rounded-lg shadow-md p-6 border-l-4 border-primary-600">
     <div className="flex items-start gap-4 mb-4">
       <div className="text-primary-600 text-2xl mt-1">{icon}</div>
@@ -88,7 +88,7 @@ export const ProfilePage: React.FC = () => {
   }
 
   const inputClass =
-    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
+    'w-full px-3 py-2 border border-edge bg-card text-body rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
 
   return (
     <div className="space-y-8">
@@ -112,7 +112,7 @@ export const ProfilePage: React.FC = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-dim mb-2">
               Email
             </label>
             <input
@@ -146,7 +146,7 @@ export const ProfilePage: React.FC = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-dim mb-2">
               Current Password
             </label>
             <input
@@ -157,7 +157,7 @@ export const ProfilePage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-dim mb-2">
               New Password
             </label>
             <input
@@ -168,7 +168,7 @@ export const ProfilePage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-dim mb-2">
               Confirm New Password
             </label>
             <input

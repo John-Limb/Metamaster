@@ -18,7 +18,7 @@ interface FileExplorerProps {
 export const FileExplorer: React.FC<FileExplorerProps> = ({
   onFileDoubleClick,
   showDetailsPanel = true,
-}) => {
+}: FileExplorerProps) => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [contextMenu, setContextMenu] = useState<{
     x: number
@@ -103,7 +103,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
           {currentPath !== '/' && (
             <button
               onClick={handleNavigateBack}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition flex-shrink-0"
+              className="p-2 hover:bg-subtle rounded-lg transition flex-shrink-0"
               title="Go back"
             >
               <FaArrowLeft className="w-4 h-4 text-dim" />
@@ -120,7 +120,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             className={`p-2 rounded-lg transition ${
               viewMode === 'grid'
                 ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
-                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-dim'
+                : 'hover:bg-subtle text-dim'
             }`}
             title="Grid view"
           >
@@ -131,7 +131,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             className={`p-2 rounded-lg transition ${
               viewMode === 'list'
                 ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
-                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-dim'
+                : 'hover:bg-subtle text-dim'
             }`}
             title="List view"
           >
@@ -142,7 +142,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             className={`p-2 rounded-lg transition ${
               viewMode === 'tree'
                 ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
-                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-dim'
+                : 'hover:bg-subtle text-dim'
             }`}
             title="Tree view"
           >

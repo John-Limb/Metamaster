@@ -55,7 +55,7 @@ export function PlaylistsSection({
     <section>
       <div className="flex items-center justify-between gap-4 mb-4">
         <h2 className="text-lg font-semibold text-body">
-          Playlists {playlists.length > 0 && <span className="text-slate-400 font-normal text-sm">({playlists.length})</span>}
+          Playlists {playlists.length > 0 && <span className="text-hint font-normal text-sm">({playlists.length})</span>}
         </h2>
         <div className="flex items-center gap-2">
           {selectMode ? (

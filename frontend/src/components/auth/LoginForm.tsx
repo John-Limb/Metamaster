@@ -64,12 +64,12 @@ export const LoginForm: React.FC = () => {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-lg p-8">
+      <div className="bg-card rounded-xl shadow-lg p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-secondary-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-body mb-2">
             Welcome back
           </h1>
-          <p className="text-secondary-600 dark:text-secondary-400">
+          <p className="text-dim">
             Sign in to your account to continue
           </p>
         </div>
@@ -124,7 +124,7 @@ export const LoginForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-[38px] min-h-0 min-w-0 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+                className="absolute right-3 top-[38px] min-h-0 min-w-0 text-hint hover:text-dim focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (

@@ -105,7 +105,7 @@ export function PlexItemDrawer({
           type="button"
           onClick={onClose}
           aria-label="Close drawer"
-          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors flex-shrink-0"
+          className="text-hint hover:text-dim transition-colors flex-shrink-0"
         >
           ✕
         </button>
@@ -114,7 +114,7 @@ export function PlexItemDrawer({
       <div className="overflow-y-auto flex-1 p-4 space-y-4">
         {/* Artwork */}
         {isLoadingArtwork ? (
-          <div className="w-full h-32 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse" />
+          <div className="w-full h-32 rounded-lg bg-subtle animate-pulse" />
         ) : artworkUrl ? (
           <img
             src={artworkUrl}
@@ -122,7 +122,7 @@ export function PlexItemDrawer({
             className="w-full rounded-lg object-cover"
           />
         ) : (
-          <div className="w-full h-32 rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 text-sm">
+          <div className="w-full h-32 rounded-lg bg-subtle flex items-center justify-center text-hint text-sm">
             No artwork
           </div>
         )}
@@ -167,32 +167,32 @@ export function PlexItemDrawer({
 
         {/* Items list */}
         <div>
-          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+          <h4 className="text-xs font-medium text-hint uppercase tracking-wider mb-2">
             Items ({isLoadingDetail ? '…' : items.length})
           </h4>
           {isLoadingDetail ? (
             <div className="space-y-2">
               {[1, 2, 3].map(n => (
-                <div key={n} className="h-10 rounded bg-slate-200 dark:bg-slate-700 animate-pulse" />
+                <div key={n} className="h-10 rounded bg-subtle animate-pulse" />
               ))}
             </div>
           ) : detailError ? (
             <p className="text-sm text-red-500 dark:text-red-400">{detailError}</p>
           ) : items.length === 0 ? (
-            <p className="text-sm text-slate-400 italic">No items</p>
+            <p className="text-sm text-hint italic">No items</p>
           ) : (
-            <div className="rounded-lg border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700">
+            <div className="rounded-lg border border-edge divide-y divide-edge">
               {items.map(i => (
                 <div key={i.id} className="flex items-center justify-between px-3 py-2 gap-2">
                   <div className="min-w-0">
                     {i.movie_title ? (
-                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate block">
+                      <span className="text-sm font-semibold text-body truncate block">
                         {i.movie_title}
                       </span>
                     ) : (
-                      <span className="text-sm text-slate-400 italic truncate block">—</span>
+                      <span className="text-sm text-hint italic truncate block">—</span>
                     )}
-                    <span className="text-xs font-mono text-slate-400">
+                    <span className="text-xs font-mono text-hint">
                       {i.plex_rating_key}
                     </span>
                   </div>

@@ -15,7 +15,7 @@ interface EnrichmentBadgeProps {
   className?: string;
 }
 
-export const EnrichmentBadge: React.FC<EnrichmentBadgeProps> = ({ status, className = '' }) => {
+export const EnrichmentBadge: React.FC<EnrichmentBadgeProps> = ({ status, className = '' }: EnrichmentBadgeProps) => {
   if (!status) return null;
 
   if (status === 'fully_enriched') {
@@ -51,7 +51,7 @@ export const EnrichmentBadge: React.FC<EnrichmentBadgeProps> = ({ status, classN
     <span
       role="status"
       aria-label="Enrichment pending"
-      className={`inline-block w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin ${className}`}
+      className={`inline-block w-4 h-4 border-2 border-edge border-t-blue-500 rounded-full animate-spin ${className}`}
     />
   );
 };

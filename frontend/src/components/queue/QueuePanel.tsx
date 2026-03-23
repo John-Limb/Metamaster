@@ -81,9 +81,9 @@ export function QueuePanel({
     <div className={`space-y-4 ${className}`} role="region" aria-label="Task Queue Panel">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Task Queue</h2>
+        <h2 className="text-xl font-semibold text-body">Task Queue</h2>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-2 text-sm text-gray-600">
+          <label className="flex items-center gap-2 text-sm text-dim">
             <CheckboxInput
               checked={pollingEnabled}
               onChange={(checked) => setPollingEnabled(checked)}
@@ -98,15 +98,15 @@ export function QueuePanel({
 
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm text-gray-600">Filter by status:</span>
+        <span className="text-sm text-dim">Filter by status:</span>
         {statusFilters.map((filter) => (
           <button
             key={filter.label}
             onClick={() => setStatusFilter(filter.value)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
               statusFilter === filter.value
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-primary-600 text-white'
+                : 'bg-subtle text-dim hover:bg-edge'
             }`}
             aria-pressed={statusFilter === filter.value}
           >
@@ -116,7 +116,7 @@ export function QueuePanel({
         {tasks.some((t) => t.status === 'completed') && (
           <button
             onClick={handleClearCompleted}
-            className="ml-auto px-3 py-1.5 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="ml-auto px-3 py-1.5 border border-edge rounded-full text-sm font-medium text-dim hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >
             Clear Completed
           </button>
@@ -153,7 +153,7 @@ export function QueuePanel({
 
       {/* Task List */}
       <div
-        className="bg-white rounded-lg border border-gray-200 overflow-hidden"
+        className="bg-card rounded-lg border border-edge overflow-hidden"
         role="list"
         aria-label="Tasks"
       >
@@ -164,7 +164,7 @@ export function QueuePanel({
         ) : filteredTasks.length === 0 ? (
           <div className="text-center py-12">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-12 w-12 text-hint"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -177,15 +177,15 @@ export function QueuePanel({
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No tasks</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-body">No tasks</h3>
+            <p className="mt-1 text-sm text-hint">
               {statusFilter
                 ? `No ${statusFilter} tasks found.`
                 : 'No tasks in the queue.'}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-edge">
             {filteredTasks.map((task) => (
               <React.Fragment key={task.id}>
                 <QueueItem
@@ -195,13 +195,13 @@ export function QueuePanel({
                   onViewDetails={handleViewDetails}
                 />
                 {selectedTaskId === task.id && (
-                  <div className="border border-t-0 border-gray-200 rounded-b-lg bg-gray-50 dark:bg-gray-800 p-4 text-sm font-mono space-y-1">
-                    <div><span className="text-gray-500">ID:</span> <span className="text-gray-900 dark:text-gray-100">{task.id}</span></div>
-                    <div><span className="text-gray-500">Type:</span> <span className="text-gray-900 dark:text-gray-100">{task.type}</span></div>
-                    <div><span className="text-gray-500">Status:</span> <span className="text-gray-900 dark:text-gray-100">{task.status}</span></div>
-                    <div><span className="text-gray-500">Created:</span> <span className="text-gray-900 dark:text-gray-100">{new Date(task.createdAt).toISOString()}</span></div>
+                  <div className="border border-t-0 border-edge rounded-b-lg bg-subtle p-4 text-sm font-mono space-y-1">
+                    <div><span className="text-hint">ID:</span> <span className="text-body">{task.id}</span></div>
+                    <div><span className="text-hint">Type:</span> <span className="text-body">{task.type}</span></div>
+                    <div><span className="text-hint">Status:</span> <span className="text-body">{task.status}</span></div>
+                    <div><span className="text-hint">Created:</span> <span className="text-body">{new Date(task.createdAt).toISOString()}</span></div>
                     {task.updatedAt && (
-                      <div><span className="text-gray-500">Updated:</span> <span className="text-gray-900 dark:text-gray-100">{new Date(task.updatedAt).toISOString()}</span></div>
+                      <div><span className="text-hint">Updated:</span> <span className="text-body">{new Date(task.updatedAt).toISOString()}</span></div>
                     )}
                     {task.error && (
                       <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
@@ -218,7 +218,7 @@ export function QueuePanel({
 
       {/* Task Count */}
       {tasks.length > 0 && (
-        <p className="text-sm text-gray-500 text-right">
+        <p className="text-sm text-hint text-right">
           Showing {filteredTasks.length} of {tasks.length} tasks
         </p>
       )}

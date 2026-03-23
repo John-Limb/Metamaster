@@ -55,8 +55,8 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
   return (
     <div className={`space-y-6 ${className}`}>
       <div>
-        <h3 className="text-lg font-medium text-gray-900">Cache Settings</h3>
-        <p className="text-sm text-gray-500 mt-1">
+        <h3 className="text-lg font-medium text-body">Cache Settings</h3>
+        <p className="text-sm text-hint mt-1">
           Configure caching behavior and storage management.
         </p>
       </div>
@@ -70,10 +70,10 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
         {/* Enable API Cache */}
         <div className="flex items-center justify-between">
           <div>
-            <label htmlFor="enableApiCache" className="text-sm font-medium text-gray-700">
+            <label htmlFor="enableApiCache" className="text-sm font-medium text-dim">
               API Response Cache
             </label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-hint">
               Cache API responses for faster loading
             </p>
           </div>
@@ -81,13 +81,13 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
             id="enableApiCache"
             onClick={() => handleCacheSettingChange('enableApiCache', !cacheSettings.enableApiCache)}
             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-              cacheSettings.enableApiCache ? 'bg-primary-600' : 'bg-gray-200'
+              cacheSettings.enableApiCache ? 'bg-primary-600' : 'bg-subtle'
             }`}
             role="switch"
             aria-checked={cacheSettings.enableApiCache}
           >
             <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card shadow ring-0 transition duration-200 ease-in-out ${
                 cacheSettings.enableApiCache ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
@@ -99,7 +99,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
           <div>
             <label
               htmlFor="apiCacheMaxAge"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-dim mb-1"
             >
               API Cache Max Age (seconds)
             </label>
@@ -110,7 +110,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
               onChange={(e) => handleCacheSettingChange('apiCacheMaxAge', Number(e.target.value))}
               min={60}
               max={3600}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              className="block w-full border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
         )}
@@ -118,10 +118,10 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
         {/* Enable Image Cache */}
         <div className="flex items-center justify-between">
           <div>
-            <label htmlFor="enableImageCache" className="text-sm font-medium text-gray-700">
+            <label htmlFor="enableImageCache" className="text-sm font-medium text-dim">
               Image Cache
             </label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-hint">
               Cache images and thumbnails
             </p>
           </div>
@@ -129,13 +129,13 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
             id="enableImageCache"
             onClick={() => handleCacheSettingChange('enableImageCache', !cacheSettings.enableImageCache)}
             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-              cacheSettings.enableImageCache ? 'bg-primary-600' : 'bg-gray-200'
+              cacheSettings.enableImageCache ? 'bg-primary-600' : 'bg-subtle'
             }`}
             role="switch"
             aria-checked={cacheSettings.enableImageCache}
           >
             <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card shadow ring-0 transition duration-200 ease-in-out ${
                 cacheSettings.enableImageCache ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
@@ -147,7 +147,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
           <div>
             <label
               htmlFor="imageCacheMaxAge"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-dim mb-1"
             >
               Image Cache Max Age (seconds)
             </label>
@@ -158,7 +158,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
               onChange={(e) => handleCacheSettingChange('imageCacheMaxAge', Number(e.target.value))}
               min={3600}
               max={604800}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              className="block w-full border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
         )}
@@ -167,7 +167,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
         <div>
           <label
             htmlFor="maxCacheSize"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             Maximum Cache Size (MB)
           </label>
@@ -178,13 +178,13 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
             onChange={(e) => handleCacheSettingChange('maxCacheSize', Number(e.target.value))}
             min={10}
             max={1000}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              className="block w-full border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           />
         </div>
 
         {/* Clear Cache Button */}
-        <div className="pt-4 border-t border-gray-200">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Clear Cached Data</h4>
+        <div className="pt-4 border-t border-edge">
+          <h4 className="text-sm font-medium text-body mb-3">Clear Cached Data</h4>
           <div className="flex gap-3">
             <button
               onClick={handleClearCache}
@@ -201,7 +201,7 @@ export function CacheSettings({ className = '' }: CacheSettingsProps) {
               {isClearing === 'storage' ? 'Clearing...' : 'Clear Local Storage'}
             </button>
           </div>
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-2 text-xs text-hint">
             Clearing cache may temporarily slow down the application until data is re-cached.
           </p>
         </div>

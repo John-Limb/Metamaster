@@ -46,7 +46,7 @@ export const MediaDetailModal: React.FC<MediaDetailModalProps> = ({
   mediaId,
   onClose,
   onMetadataSynced,
-}) => {
+}: MediaDetailModalProps) => {
   const navigate = useNavigate()
   const [movie, setMovie] = useState<Movie | null>(null)
   const [tvShow, setTVShow] = useState<TVShow | null>(null)

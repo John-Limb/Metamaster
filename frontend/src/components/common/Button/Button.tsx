@@ -21,8 +21,7 @@ const variantClasses = {
     shadow-sm hover:shadow-md active:shadow-sm
   `,
   secondary: `
-    bg-secondary-100 text-secondary-900 hover:bg-secondary-200 active:bg-secondary-300
-    dark:bg-secondary-700 dark:text-white dark:hover:bg-secondary-600 dark:active:bg-secondary-500
+    bg-subtle text-body hover:bg-subtle/80 active:bg-subtle/60
     focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 dark:focus:ring-offset-secondary-900
     shadow-sm hover:shadow-md active:shadow-sm
   `,
@@ -32,8 +31,7 @@ const variantClasses = {
     focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-secondary-900
   `,
   ghost: `
-    text-secondary-700 hover:bg-secondary-100 active:bg-secondary-200
-    dark:text-secondary-300 dark:hover:bg-secondary-800 dark:active:bg-secondary-700
+    text-dim hover:bg-subtle active:bg-subtle/60
     focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 dark:focus:ring-offset-secondary-900
   `,
   danger: `
@@ -97,7 +95,7 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   fullWidth = false,
   type = 'button',
-}) => {
+}: ButtonProps) => {
   const isDisabled = disabled || loading
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {

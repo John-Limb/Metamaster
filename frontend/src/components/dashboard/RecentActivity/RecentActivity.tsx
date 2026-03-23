@@ -75,8 +75,8 @@ export function RecentActivity({
     return (
       <Card variant="elevated" className={className}>
         <div className="flex items-center justify-between mb-6">
-          <div className="h-6 w-36 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-          <div className="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+          <div className="h-6 w-36 bg-subtle rounded animate-pulse" />
+          <div className="h-5 w-16 bg-subtle rounded animate-pulse" />
         </div>
         <div className="space-y-4">
           {[...Array(4)].map((_, i) => (
@@ -102,8 +102,8 @@ export function RecentActivity({
           </h3>
         </div>
         <div className="text-center py-12">
-          <div className="mx-auto w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mx-auto w-16 h-16 rounded-full bg-subtle flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-hint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
@@ -136,7 +136,7 @@ export function RecentActivity({
 
       <div className="relative">
         {/* Timeline line */}
-        <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-700" />
+        <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-edge" />
 
         <div className="space-y-6" role="list" aria-label="Recent activity">
           {activities.map((activity) => {
@@ -168,7 +168,7 @@ export function RecentActivity({
                     ${colors.bg} ${colors.text}
                     transition-transform duration-200
                     ${activity.onClick ? 'hover:scale-110' : ''}
-                    ring-4 ring-white dark:ring-slate-900
+                    ring-4 ring-card
                   `}
                 >
                   {ACTIVITY_ICONS[activity.type]}

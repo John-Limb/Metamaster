@@ -28,7 +28,7 @@ export const Select: React.FC<SelectProps> = ({
   disabled = false,
   required = false,
   className = '',
-}) => {
+}: SelectProps) => {
   const selectId = `select-${crypto.randomUUID()}`
 
   return (
@@ -36,7 +36,7 @@ export const Select: React.FC<SelectProps> = ({
       {label && (
         <label
           htmlFor={selectId}
-          className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5"
+          className="block text-sm font-medium text-dim mb-1.5"
         >
           {label}
           {required && <span className="text-danger ml-1">*</span>}
@@ -57,12 +57,12 @@ export const Select: React.FC<SelectProps> = ({
             ${
               error
                 ? 'border-danger focus:ring-danger focus:border-danger'
-                : 'border-secondary-300 dark:border-secondary-600 focus:ring-primary-500 focus:border-primary-500'
+                : 'border-edge focus:ring-primary-500 focus:border-primary-500'
             }
-            bg-white dark:bg-secondary-800
-            text-secondary-900 dark:text-white
+            bg-card
+            text-body
             focus:outline-none focus:ring-2
-            disabled:bg-secondary-50 dark:disabled:bg-secondary-900 disabled:cursor-not-allowed
+            disabled:bg-subtle disabled:cursor-not-allowed
           `}
         >
           <option value="" disabled>
@@ -80,7 +80,7 @@ export const Select: React.FC<SelectProps> = ({
         </select>
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           <svg
-            className="w-5 h-5 text-secondary-400"
+            className="w-5 h-5 text-hint"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"

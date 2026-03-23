@@ -11,15 +11,29 @@ export interface Column<T> {
   align?: 'left' | 'center' | 'right'
 }
 
+export interface SortConfig {
+  column?: string
+  direction?: 'asc' | 'desc'
+  onSort?: (column: string, direction: 'asc' | 'desc') => void
+}
+
+export interface LoadingState {
+  loading?: boolean
+  skeletonRows?: number
+}
+
+export interface TableOptions<T> {
+  onRowClick?: (row: T) => void
+  className?: string
+  ariaLabel?: string
+}
+
 export interface DataTableProps<T> {
   columns: Column<T>[]
   data: T[]
   keyExtractor: (row: T) => string
-  loading?: boolean
-  skeletonRows?: number
-  sortColumn?: string
-  sortDirection?: 'asc' | 'desc'
-  onSort?: (column: string, direction: 'asc' | 'desc') => void
+  sort?: SortConfig
+  loadingState?: LoadingState
   pagination?: {
     page: number
     pageSize: number
@@ -30,26 +44,28 @@ export interface DataTableProps<T> {
     selectedKeys: string[]
     onSelectionChange: (keys: string[]) => void
   }
-  onRowClick?: (row: T) => void
-  className?: string
-  ariaLabel?: string
+  tableOptions?: TableOptions<T>
 }
 
 export function DataTable<T>({
   columns,
   data,
   keyExtractor,
-  loading = false,
-  skeletonRows = 5,
-  sortColumn,
-  sortDirection,
-  onSort,
+  sort,
+  loadingState,
   pagination,
   rowSelection,
-  onRowClick,
-  className = '',
-  ariaLabel = 'Data table',
+  tableOptions,
 }: DataTableProps<T>) {
+  const loading = loadingState?.loading ?? false
+  const skeletonRows = loadingState?.skeletonRows ?? 5
+  const sortColumn = sort?.column
+  const sortDirection = sort?.direction
+  const onSort = sort?.onSort
+  const onRowClick = tableOptions?.onRowClick
+  const className = tableOptions?.className ?? ''
+  const ariaLabel = tableOptions?.ariaLabel ?? 'Data table'
+
   const page = pagination?.page ?? 1
   const pageSize = pagination?.pageSize ?? 10
   const total = pagination?.total ?? 0
@@ -92,9 +108,9 @@ export function DataTable<T>({
 
   return (
     <div className={`w-full ${className}`} role="region" aria-label={ariaLabel} tabIndex={-1}>
-      <div className="overflow-x-auto rounded-lg border border-secondary-200 dark:border-secondary-700">
-        <table className="min-w-full divide-y divide-secondary-200 dark:divide-secondary-700">
-          <thead className="bg-secondary-50 dark:bg-secondary-800">
+      <div className="overflow-x-auto rounded-lg border border-edge">
+        <table className="min-w-full divide-y divide-edge">
+          <thead className="bg-subtle">
             <tr>
               {rowSelection && (
                 <th scope="col" className="px-6 py-3 w-12">
@@ -111,8 +127,8 @@ export function DataTable<T>({
                   key={column.key}
                   scope="col"
                   className={`
-                    px-6 py-3 text-xs font-medium text-secondary-500 dark:text-secondary-400 uppercase tracking-wider
-                    ${column.sortable ? 'cursor-pointer hover:bg-secondary-100 dark:hover:bg-secondary-700 transition-colors duration-150' : ''}
+                    px-6 py-3 text-xs font-medium text-hint uppercase tracking-wider
+                    ${column.sortable ? 'cursor-pointer hover:bg-subtle transition-colors duration-150' : ''}
                     ${column.width ? column.width : ''}
                     ${alignClasses[column.align || 'left']}
                   `}
@@ -147,9 +163,8 @@ export function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-secondary-900 divide-y divide-secondary-200 dark:divide-secondary-700">
+          <tbody className="bg-card divide-y divide-edge">
             {loading ? (
-              // Skeleton loading state
               <>
                 {Array.from({ length: skeletonRows }).map((_, rowIndex) => (
                   <tr key={rowIndex} className="table-row-hover">
@@ -183,7 +198,7 @@ export function DataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length + (rowSelection ? 1 : 0)}
-                  className="px-6 py-12 text-center text-secondary-500 dark:text-secondary-400"
+                  className="px-6 py-12 text-center text-hint"
                 >
                   <div className="flex flex-col items-center gap-2">
                     <svg
@@ -196,7 +211,7 @@ export function DataTable<T>({
                       strokeWidth="1"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="text-secondary-300 dark:text-secondary-600"
+                      className="text-hint"
                       aria-hidden="true"
                     >
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -247,7 +262,7 @@ export function DataTable<T>({
                       <td
                         key={column.key}
                         className={`
-                          px-6 py-4 whitespace-nowrap text-sm text-secondary-700 dark:text-secondary-300
+                          px-6 py-4 whitespace-nowrap text-sm text-dim
                           ${alignClasses[column.align || 'left']}
                         `}
                       >
@@ -263,17 +278,17 @@ export function DataTable<T>({
       </div>
       {pagination && (
         <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
-          <div className="text-sm text-secondary-500 dark:text-secondary-400">
+          <div className="text-sm text-hint">
             Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, total)} of {total} results
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => onPageChange(page - 1)}
               disabled={page === 1}
-              className="px-3 py-1.5 text-sm min-h-[36px] border border-secondary-300 dark:border-secondary-600 rounded-md
-                         text-secondary-700 dark:text-secondary-300
+              className="px-3 py-1.5 text-sm min-h-[36px] border border-edge rounded-md
+                         text-dim
                          disabled:opacity-50 disabled:cursor-not-allowed
-                         hover:bg-secondary-50 dark:hover:bg-secondary-800
+                         hover:bg-subtle
                          focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
                          transition-colors duration-150"
               aria-label="Go to previous page"
@@ -283,10 +298,10 @@ export function DataTable<T>({
             <button
               onClick={() => onPageChange(page + 1)}
               disabled={page === totalPages}
-              className="px-3 py-1.5 text-sm min-h-[36px] border border-secondary-300 dark:border-secondary-600 rounded-md
-                         text-secondary-700 dark:text-secondary-300
+              className="px-3 py-1.5 text-sm min-h-[36px] border border-edge rounded-md
+                         text-dim
                          disabled:opacity-50 disabled:cursor-not-allowed
-                         hover:bg-secondary-50 dark:hover:bg-secondary-800
+                         hover:bg-subtle
                          focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
                          transition-colors duration-150"
               aria-label="Go to next page"

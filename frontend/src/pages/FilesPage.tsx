@@ -14,7 +14,7 @@ export const FilesPage: React.FC = () => {
         </div>
         <button
           onClick={() => setShowScanner((s) => !s)}
-          className="text-sm px-3 py-1.5 rounded-lg border border-edge text-dim hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          className="text-sm px-3 py-1.5 rounded-lg border border-edge text-dim hover:bg-subtle transition-colors"
         >
           {showScanner ? 'Hide Scanner' : 'Show Scanner'}
         </button>

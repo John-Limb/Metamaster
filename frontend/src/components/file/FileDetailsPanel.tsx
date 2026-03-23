@@ -26,7 +26,7 @@ const formatDate = (dateString: string): string => {
   })
 }
 
-export const FileDetailsPanel: React.FC<FileDetailsPanelProps> = ({ file }) => {
+export const FileDetailsPanel: React.FC<FileDetailsPanelProps> = ({ file }: FileDetailsPanelProps) => {
   const isDirectory = file.type === 'directory'
 
   return (

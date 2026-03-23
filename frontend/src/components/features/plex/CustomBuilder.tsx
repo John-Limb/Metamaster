@@ -45,7 +45,7 @@ export function CustomBuilder({ selected, onAdd, onRemove }: CustomBuilderProps)
   }
 
   return (
-    <div className="rounded-xl border border-edge bg-slate-50 dark:bg-slate-900 p-4 space-y-3">
+    <div className="rounded-xl border border-edge bg-subtle p-4 space-y-3">
       <p className="text-xs font-semibold text-hint uppercase tracking-wide">
         Search your library
       </p>
@@ -57,7 +57,7 @@ export function CustomBuilder({ selected, onAdd, onRemove }: CustomBuilderProps)
         type="search"
       />
 
-      {searching && <p className="text-xs text-slate-400">Searching...</p>}
+      {searching && <p className="text-xs text-hint">Searching...</p>}
       {searchError && <p className="text-sm text-red-500">{searchError}</p>}
 
       {results.length > 0 && (
@@ -72,7 +72,7 @@ export function CustomBuilder({ selected, onAdd, onRemove }: CustomBuilderProps)
                 key={movie.id}
                 className="flex items-center justify-between px-3 py-2 bg-card"
               >
-                <span className="text-sm text-slate-700 dark:text-slate-200">
+                <span className="text-sm text-body">
                   {movie.title}
                   {movie.year && (
                     <span className="text-hint ml-1">

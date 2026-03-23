@@ -72,7 +72,7 @@ const STAT_CONFIG: StatConfigType & Record<string, { icon: React.ReactNode; colo
       </svg>
     ),
     color: 'text-dim',
-    bg: 'bg-slate-100 dark:bg-slate-800',
+    bg: 'bg-subtle',
   },
 }
 
@@ -119,15 +119,15 @@ export function LibraryStats({
     return (
       <Card variant="elevated" className={className}>
         <div className="flex items-center justify-between mb-6">
-          <div className="h-6 w-40 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-          <div className="h-5 w-28 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+          <div className="h-6 w-40 bg-subtle rounded animate-pulse" />
+          <div className="h-5 w-28 bg-subtle rounded animate-pulse" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-              <div className="h-8 w-8 rounded-lg bg-slate-200 dark:bg-slate-700 mb-3 animate-pulse" />
-              <div className="h-8 w-16 bg-slate-200 dark:bg-slate-700 rounded mb-1 animate-pulse" />
-              <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+            <div key={i} className="p-4 rounded-xl bg-subtle">
+              <div className="h-8 w-8 rounded-lg bg-subtle mb-3 animate-pulse" />
+              <div className="h-8 w-16 bg-subtle rounded mb-1 animate-pulse" />
+              <div className="h-4 w-20 bg-subtle rounded animate-pulse" />
             </div>
           ))}
         </div>
@@ -147,8 +147,8 @@ export function LibraryStats({
           </span>
         </div>
         <div className="text-center py-12">
-          <div className="mx-auto w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mx-auto w-16 h-16 rounded-full bg-subtle flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-hint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
             </svg>
           </div>
@@ -189,8 +189,8 @@ export function LibraryStats({
             key={item.label}
             className={`
               p-4 rounded-xl transition-all duration-200
-              ${item.onClick ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50' : ''}
-              bg-slate-50 dark:bg-slate-800/50
+              ${item.onClick ? 'cursor-pointer hover:bg-subtle' : ''}
+              bg-subtle
             `}
             role="listitem"
             onClick={item.onClick}
@@ -202,8 +202,8 @@ export function LibraryStats({
             }}
             tabIndex={item.onClick ? 0 : -1}
           >
-            <div className={`inline-flex p-2 rounded-lg ${STAT_CONFIG[item.label.toLowerCase().replace(' ', '')]?.bg || 'bg-slate-100 dark:bg-slate-700'} mb-3`}>
-              <span className={STAT_CONFIG[item.label.toLowerCase().replace(' ', '')]?.color || 'text-slate-600'}>
+            <div className={`inline-flex p-2 rounded-lg ${STAT_CONFIG[item.label.toLowerCase().replace(' ', '')]?.bg || 'bg-subtle'} mb-3`}>
+              <span className={STAT_CONFIG[item.label.toLowerCase().replace(' ', '')]?.color || 'text-dim'}>
                 {item.icon}
               </span>
             </div>

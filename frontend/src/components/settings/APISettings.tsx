@@ -85,8 +85,8 @@ export function APISettings({ className = '' }: APISettingsProps) {
   return (
     <div className={`space-y-6 ${className}`}>
       <div>
-        <h3 className="text-lg font-medium text-gray-900">API Settings</h3>
-        <p className="text-sm text-gray-500 mt-1">
+        <h3 className="text-lg font-medium text-body">API Settings</h3>
+        <p className="text-sm text-hint mt-1">
           Configure the API connection settings.
         </p>
       </div>
@@ -96,7 +96,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
         <div>
           <label
             htmlFor="baseUrl"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             API Base URL
           </label>
@@ -106,7 +106,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
               id="baseUrl"
               value={apiSettings.baseUrl}
               onChange={(e) => handleBaseUrlChange(e.target.value)}
-              className="block flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              className="block flex-1 border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
               placeholder="https://api.example.com"
             />
             <button
@@ -124,7 +124,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
         <div>
           <label
             htmlFor="timeout"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             Request Timeout (ms)
           </label>
@@ -136,7 +136,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
             min={1000}
             max={60000}
             step={1000}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              className="block w-full border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           />
         </div>
 
@@ -144,7 +144,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
         <div>
           <label
             htmlFor="retryAttempts"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             Retry Attempts
           </label>
@@ -155,7 +155,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
             onChange={(e) => handleRetryAttemptsChange(Number(e.target.value))}
             min={0}
             max={10}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              className="block w-full border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           />
         </div>
 
@@ -163,7 +163,7 @@ export function APISettings({ className = '' }: APISettingsProps) {
         <div>
           <label
             htmlFor="retryDelay"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             Retry Delay (ms)
           </label>
@@ -175,15 +175,15 @@ export function APISettings({ className = '' }: APISettingsProps) {
             min={100}
             max={10000}
             step={100}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              className="block w-full border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           />
         </div>
 
         {/* Reset to Defaults */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border-edge">
           <button
             onClick={resetApiSettings}
-            className="text-sm text-gray-600 hover:text-gray-900 font-medium"
+            className="text-sm text-dim hover:text-body font-medium"
           >
             Reset to Defaults
           </button>

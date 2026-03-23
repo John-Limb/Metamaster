@@ -73,7 +73,7 @@ export const ConfigurationStatusBar: React.FC<ConfigurationStatusBarProps> = ({
   onConfigure,
   autoHide = true,
   className = '',
-}) => {
+}: ConfigurationStatusBarProps) => {
   const navigate = useNavigate()
   const { state, isLoading, refresh, dismissItem } = useConfiguration()
   const { criticalCount, importantCount, optionalCount, totalCount } = useIncompleteConfiguration()
@@ -189,8 +189,8 @@ export const ConfigurationStatusBar: React.FC<ConfigurationStatusBarProps> = ({
     <div
       className={cn(
         'fixed top-16 left-0 right-0 z-50',
-        'bg-white dark:bg-secondary-900',
-        'border-b border-secondary-200 dark:border-secondary-700',
+        'bg-card',
+        'border-b border-edge',
         'shadow-sm',
         'transition-all duration-300 ease-in-out',
         className
@@ -203,13 +203,13 @@ export const ConfigurationStatusBar: React.FC<ConfigurationStatusBarProps> = ({
         className={cn(
           'flex items-center justify-between px-4 py-2',
           'max-w-7xl mx-auto',
-          isExpanded && 'border-b border-secondary-200 dark:border-secondary-700'
+          isExpanded && 'border-b border-edge'
         )}
       >
         <div className="flex items-center gap-3">
           {/* Status indicator */}
           {isLoading ? (
-            <RefreshCw className="w-4 h-4 text-secondary-500 animate-spin" />
+            <RefreshCw className="w-4 h-4 text-hint animate-spin" />
           ) : criticalCount > 0 ? (
             <AlertCircle className="w-4 h-4 text-red-500" />
           ) : importantCount > 0 ? (
@@ -219,7 +219,7 @@ export const ConfigurationStatusBar: React.FC<ConfigurationStatusBarProps> = ({
           )}
           
           {/* Summary text */}
-          <span className="text-sm text-secondary-700 dark:text-secondary-300">
+          <span className="text-sm text-dim">
             <span className="font-medium">
               {totalCount} item{totalCount !== 1 ? 's' : ''} need{totalCount === 1 ? 's' : ''} attention
             </span>
@@ -282,7 +282,7 @@ export const ConfigurationStatusBar: React.FC<ConfigurationStatusBarProps> = ({
           className={cn(
             'px-4 py-4',
             'max-w-7xl mx-auto',
-            'bg-secondary-50 dark:bg-secondary-800/50'
+            'bg-subtle'
           )}
           role="region"
           aria-label="Configuration details"
@@ -360,7 +360,7 @@ const ConfigurationItemRow: React.FC<ConfigurationItemRowProps> = ({
   item,
   onAction,
   onDismiss,
-}) => {
+}: ConfigurationItemRowProps) => {
   const config = severityConfig[item.severity]
   const Icon = config.icon
 
@@ -380,7 +380,7 @@ const ConfigurationItemRow: React.FC<ConfigurationItemRowProps> = ({
           <p className={cn('text-sm font-medium', config.textColor)}>
             {item.name}
           </p>
-          <p className="text-xs text-secondary-500 dark:text-secondary-400 truncate">
+          <p className="text-xs text-hint truncate">
             {item.description}
           </p>
         </div>
@@ -388,7 +388,7 @@ const ConfigurationItemRow: React.FC<ConfigurationItemRowProps> = ({
 
       <div className="flex items-center gap-2 flex-shrink-0">
         {item.status === 'checking' ? (
-          <span className="text-xs text-secondary-500 animate-pulse">
+          <span className="text-xs text-hint animate-pulse">
             Checking...
           </span>
         ) : (
@@ -400,8 +400,8 @@ const ConfigurationItemRow: React.FC<ConfigurationItemRowProps> = ({
                 onClick={onAction}
                 className={cn(
                   'text-xs',
-                  'border-secondary-300 dark:border-secondary-600',
-                  'hover:bg-secondary-100 dark:hover:bg-secondary-700'
+                  'border-edge',
+                  'hover:bg-subtle'
                 )}
               >
                 {item.actionLabel}
@@ -412,7 +412,7 @@ const ConfigurationItemRow: React.FC<ConfigurationItemRowProps> = ({
               variant="ghost"
               size="sm"
               onClick={onDismiss}
-              className="text-xs text-secondary-500 hover:text-secondary-700 dark:hover:text-secondary-300"
+              className="text-xs text-hint hover:text-dim"
             >
               Dismiss
             </Button>
@@ -426,15 +426,15 @@ const ConfigurationItemRow: React.FC<ConfigurationItemRowProps> = ({
 // Skeleton for loading state
 export const ConfigurationStatusBarSkeleton: React.FC = () => {
   return (
-    <div className="fixed top-16 left-0 right-0 z-50 bg-white dark:bg-secondary-900 border-b border-secondary-200 dark:border-secondary-700">
+    <div className="fixed top-16 left-0 right-0 z-50 bg-card border-b border-edge">
       <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-          <div className="w-4 h-4 bg-secondary-200 dark:bg-secondary-700 rounded animate-pulse" />
-          <div className="h-4 w-48 bg-secondary-200 dark:bg-secondary-700 rounded animate-pulse" />
+          <div className="w-4 h-4 bg-subtle rounded animate-pulse" />
+          <div className="h-4 w-48 bg-subtle rounded animate-pulse" />
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-16 h-8 bg-secondary-200 dark:bg-secondary-700 rounded animate-pulse" />
-          <div className="w-8 h-8 bg-secondary-200 dark:bg-secondary-700 rounded animate-pulse" />
+          <div className="w-16 h-8 bg-subtle rounded animate-pulse" />
+          <div className="w-8 h-8 bg-subtle rounded animate-pulse" />
         </div>
       </div>
     </div>

@@ -11,7 +11,7 @@ interface FileContextMenuProps {
   onClose: () => void
 }
 
-export const FileContextMenu: React.FC<FileContextMenuProps> = ({ file, x, y, onClose }) => {
+export const FileContextMenu: React.FC<FileContextMenuProps> = ({ file, x, y, onClose }: FileContextMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null)
   const { addToast } = useUIStore()
 
@@ -119,7 +119,7 @@ export const FileContextMenu: React.FC<FileContextMenuProps> = ({ file, x, y, on
   return (
     <div
       ref={menuRef}
-      className="fixed bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1 min-w-48"
+      className="fixed bg-card rounded-lg shadow-lg border border-edge z-50 py-1 min-w-48"
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -133,7 +133,7 @@ export const FileContextMenu: React.FC<FileContextMenuProps> = ({ file, x, y, on
             <button
               key={index}
               onClick={item.onClick}
-              className={`w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ${
+              className={`w-full flex items-center gap-3 px-4 py-2 text-sm text-dim hover:bg-subtle transition ${
                 item.className || ''
               }`}
             >

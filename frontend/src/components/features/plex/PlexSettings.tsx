@@ -10,18 +10,18 @@ import { MismatchesPanel } from './MismatchesPanel'
 type AuthMode = 'oauth' | 'manual'
 
 const INPUT_CLASS =
-  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
+  'w-full px-3 py-2 border border-edge bg-card text-body rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
 
 const PRIMARY_BTN_CLASS =
   'px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition text-sm font-medium'
 
-const LABEL_CLASS = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
+const LABEL_CLASS = 'block text-sm font-medium text-dim mb-1'
 
 function tabClass(active: boolean) {
   return `px-4 py-2 text-sm font-medium border-b-2 transition ${
     active
       ? 'border-primary-600 text-primary-600'
-      : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+      : 'border-transparent text-hint hover:text-dim'
   }`
 }
 
@@ -38,7 +38,7 @@ function ConnectedView({
 }) {
   return (
     <div className="space-y-3">
-      <p className="text-sm text-gray-700 dark:text-gray-300">
+      <p className="text-sm text-dim">
         Connected to: <strong>{serverUrl}</strong>
       </p>
       <div className="flex gap-3">
@@ -131,13 +131,13 @@ function OAuthTab({ onConnected }: { onConnected: () => void }) {
       {pending ? (
         <div className="flex items-center gap-3">
           <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-dim">
             Waiting for authorisation on Plex.tv…
           </span>
           <button
             type="button"
             onClick={handleCancel}
-            className="ml-auto px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+            className="ml-auto px-3 py-1.5 text-xs border border-edge rounded-lg hover:bg-subtle transition"
           >
             Cancel
           </button>
@@ -261,8 +261,8 @@ export function PlexSettings() {
         </>
       ) : (
         <div className="space-y-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Not connected</p>
-          <div role="tablist" className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
+          <p className="text-sm text-hint">Not connected</p>
+          <div role="tablist" className="flex gap-2 border-b border-edge">
             <button
               type="button"
               role="tab"

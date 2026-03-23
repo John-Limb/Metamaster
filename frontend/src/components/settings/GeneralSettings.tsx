@@ -61,8 +61,8 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
   return (
     <div className={`space-y-6 ${className}`}>
       <div>
-        <h3 className="text-lg font-medium text-gray-900">General Settings</h3>
-        <p className="text-sm text-gray-500 mt-1">
+        <h3 className="text-lg font-medium text-body">General Settings</h3>
+        <p className="text-sm text-hint mt-1">
           Configure your general application preferences.
         </p>
       </div>
@@ -72,7 +72,7 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
         <div>
           <label
             htmlFor="theme"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             Theme
           </label>
@@ -80,7 +80,7 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
             id="theme"
             value={userSettings.theme}
             onChange={(e) => handleThemeChange(e.target.value as 'light' | 'dark' | 'auto')}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="block w-full border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>
@@ -92,7 +92,7 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
         <div>
           <label
             htmlFor="itemsPerPage"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             Items Per Page
           </label>
@@ -100,7 +100,7 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
             id="itemsPerPage"
             value={userSettings.itemsPerPage}
             onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="block w-full border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
             <option value={10}>10</option>
             <option value={20}>20</option>
@@ -112,10 +112,10 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
         {/* Auto Refresh */}
         <div className="flex items-center justify-between">
           <div>
-            <label htmlFor="autoRefresh" className="text-sm font-medium text-gray-700">
+            <label htmlFor="autoRefresh" className="text-sm font-medium text-dim">
               Auto Refresh
             </label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-hint">
               Automatically refresh data at specified intervals
             </p>
           </div>
@@ -123,13 +123,13 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
             id="autoRefresh"
             onClick={() => handleAutoRefreshChange(!userSettings.autoRefresh)}
             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-              userSettings.autoRefresh ? 'bg-primary-600' : 'bg-gray-200'
+              userSettings.autoRefresh ? 'bg-primary-600' : 'bg-subtle'
             }`}
             role="switch"
             aria-checked={userSettings.autoRefresh}
           >
             <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card shadow ring-0 transition duration-200 ease-in-out ${
                 userSettings.autoRefresh ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
@@ -141,7 +141,7 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
           <div>
             <label
               htmlFor="autoRefreshInterval"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-dim mb-1"
             >
               Refresh Interval (seconds)
             </label>
@@ -152,7 +152,7 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
               onChange={(e) => handleAutoRefreshIntervalChange(Number(e.target.value) * 1000)}
               min={5}
               max={300}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              className="block w-full border border-edge rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
         )}
@@ -160,10 +160,10 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
         {/* Notifications */}
         <div className="flex items-center justify-between">
           <div>
-            <label htmlFor="notifications" className="text-sm font-medium text-gray-700">
+            <label htmlFor="notifications" className="text-sm font-medium text-dim">
               Notifications
             </label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-hint">
               Show desktop notifications for important events
             </p>
           </div>
@@ -171,13 +171,13 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
             id="notifications"
             onClick={() => handleNotificationsChange(!userSettings.notifications)}
             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-              userSettings.notifications ? 'bg-primary-600' : 'bg-gray-200'
+              userSettings.notifications ? 'bg-primary-600' : 'bg-subtle'
             }`}
             role="switch"
             aria-checked={userSettings.notifications}
           >
             <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card shadow ring-0 transition duration-200 ease-in-out ${
                 userSettings.notifications ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
@@ -187,10 +187,10 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
         {/* Sound Enabled */}
         <div className="flex items-center justify-between">
           <div>
-            <label htmlFor="soundEnabled" className="text-sm font-medium text-gray-700">
+            <label htmlFor="soundEnabled" className="text-sm font-medium text-dim">
               Sound Effects
             </label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-hint">
               Play sound effects for notifications
             </p>
           </div>
@@ -198,13 +198,13 @@ export function GeneralSettings({ className = '' }: GeneralSettingsProps) {
             id="soundEnabled"
             onClick={() => handleSoundEnabledChange(!userSettings.soundEnabled)}
             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-              userSettings.soundEnabled ? 'bg-primary-600' : 'bg-gray-200'
+              userSettings.soundEnabled ? 'bg-primary-600' : 'bg-subtle'
             }`}
             role="switch"
             aria-checked={userSettings.soundEnabled}
           >
             <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card shadow ring-0 transition duration-200 ease-in-out ${
                 userSettings.soundEnabled ? 'translate-x-5' : 'translate-x-0'
               }`}
             />

@@ -43,18 +43,18 @@ export function TaskProgress({
       {(showLabel || task.status === 'processing') && (
         <div className="flex items-center justify-between mb-1">
           {showLabel && (
-            <span className={`${labelSizes[size]} font-medium text-gray-700`}>
+            <span className={`${labelSizes[size]} font-medium text-dim`}>
               {STATUS_LABELS[task.status]}
             </span>
           )}
           {task.status === 'processing' && (
-            <span className={`${labelSizes[size]} text-gray-500`}>
+            <span className={`${labelSizes[size]} text-hint`}>
               {task.progress}%
             </span>
           )}
         </div>
       )}
-      <div className={`w-full bg-gray-200 rounded-full overflow-hidden ${sizeClasses[size]}`}>
+      <div className={`w-full bg-subtle rounded-full overflow-hidden ${sizeClasses[size]}`}>
         <div
           className={`${STATUS_COLORS[task.status]} ${sizeClasses[size]} rounded-full transition-all duration-300 ease-out`}
           style={{ width: `${task.progress}%` }}
