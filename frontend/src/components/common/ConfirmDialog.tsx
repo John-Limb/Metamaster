@@ -26,7 +26,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   children,
   onConfirm,
   onCancel,
-}) => {
+}: ConfirmDialogProps) => {
   const titleId = React.useId()
   const dialogRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<Element | null>(null)

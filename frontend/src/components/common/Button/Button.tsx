@@ -95,7 +95,7 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   fullWidth = false,
   type = 'button',
-}) => {
+}: ButtonProps) => {
   const isDisabled = disabled || loading
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {

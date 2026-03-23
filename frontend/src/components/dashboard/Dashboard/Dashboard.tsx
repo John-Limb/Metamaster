@@ -265,7 +265,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [navigate])
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -448,7 +448,7 @@ export function Dashboard({ className = '' }: DashboardProps) {
               Dashboard
             </h1>
             <p className="text-hint mt-1">
-              Welcome back! Here's an overview of your library.
+              Welcome back! Here&apos;s an overview of your library.
             </p>
           </div>
           <Button variant="outline" onClick={handleRefresh} loading={isRefreshing}>

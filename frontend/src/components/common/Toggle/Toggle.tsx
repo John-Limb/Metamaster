@@ -29,7 +29,7 @@ export const Toggle: React.FC<ToggleProps> = ({
   disabled = false,
   size = 'md',
   className = '',
-}) => {
+}: ToggleProps) => {
   const toggleId = `toggle-${crypto.randomUUID()}`
   const config = sizeConfig[size]
 

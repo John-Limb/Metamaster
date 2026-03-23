@@ -15,7 +15,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
   title,
   subtitle,
-}) => {
+}: DashboardLayoutProps) => {
   const toasts = useUIStore((state) => state.toasts)
   const removeToast = useUIStore((state) => state.removeToast)
 

@@ -36,7 +36,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   file,
   maxWidth = 400,
   maxHeight = 300,
-}) => {
+}: FilePreviewProps) => {
   if (isImageFile(file)) {
     return (
       <div className="flex items-center justify-center bg-subtle rounded-lg overflow-hidden">

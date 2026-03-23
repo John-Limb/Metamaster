@@ -16,7 +16,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   showFirstLast = true,
   siblingCount = 1,
   className = '',
-}) => {
+}: PaginationProps) => {
   const createPageNumbers = () => {
     const pages: (number | string)[] = []
     const leftSibling = Math.max(currentPage - siblingCount, 1)

@@ -13,7 +13,7 @@ interface MainLayoutProps {
 export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
   showFooter = true
-}) => {
+}: MainLayoutProps) => {
   const toasts = useUIStore((state) => state.toasts)
   const removeToast = useUIStore((state) => state.removeToast)
 

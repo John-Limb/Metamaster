@@ -37,7 +37,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   onSelectFile,
   onDoubleClick,
   onContextMenu,
-}) => {
+}: TreeNodeProps) => {
   const isDirectory = node.type === 'directory'
   const hasChildren = node.children && node.children.length > 0
 
@@ -108,7 +108,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
   onContextMenu,
   isLoading = false,
   emptyMessage = 'No files to display',
-}) => {
+}: FileTreeProps) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set())
 
   const toggleExpand = (id: string) => {

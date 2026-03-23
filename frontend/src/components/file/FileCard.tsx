@@ -62,7 +62,7 @@ export const FileCard: React.FC<FileCardProps> = ({
   onDoubleClick,
   onContextMenu,
   viewMode = 'grid',
-}) => {
+}: FileCardProps) => {
   const handleClick = (e: React.MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
       onSelect?.(file.id)

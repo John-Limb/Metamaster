@@ -11,7 +11,7 @@ export const NotFound: React.FC<NotFoundProps> = ({
   title = 'Page Not Found',
   message = 'The page you are looking for does not exist.',
   showBackButton = true,
-}) => {
+}: NotFoundProps) => {
   const navigate = useNavigate()
 
   return (

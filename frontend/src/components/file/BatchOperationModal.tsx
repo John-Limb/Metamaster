@@ -16,7 +16,7 @@ export const BatchOperationModal: React.FC<BatchOperationModalProps> = ({
   operation,
   onClose,
   onComplete,
-}) => {
+}: BatchOperationModalProps) => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [newPath, setNewPath] = useState('')
   const [newNamePrefix, setNewNamePrefix] = useState('')

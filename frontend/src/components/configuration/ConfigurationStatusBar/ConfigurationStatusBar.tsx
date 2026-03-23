@@ -73,7 +73,7 @@ export const ConfigurationStatusBar: React.FC<ConfigurationStatusBarProps> = ({
   onConfigure,
   autoHide = true,
   className = '',
-}) => {
+}: ConfigurationStatusBarProps) => {
   const navigate = useNavigate()
   const { state, isLoading, refresh, dismissItem } = useConfiguration()
   const { criticalCount, importantCount, optionalCount, totalCount } = useIncompleteConfiguration()
@@ -360,7 +360,7 @@ const ConfigurationItemRow: React.FC<ConfigurationItemRowProps> = ({
   item,
   onAction,
   onDismiss,
-}) => {
+}: ConfigurationItemRowProps) => {
   const config = severityConfig[item.severity]
   const Icon = config.icon
 

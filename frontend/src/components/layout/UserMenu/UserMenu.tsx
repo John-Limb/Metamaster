@@ -16,7 +16,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   onProfile,
   onSettings,
   onLogout,
-}) => {
+}: UserMenuProps) => {
   const { isAuthenticated, isLoading } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)

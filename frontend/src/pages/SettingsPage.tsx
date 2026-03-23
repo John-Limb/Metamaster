@@ -21,7 +21,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
   title,
   description,
   children,
-}) => (
+}: SettingsSectionProps) => (
   <div className="bg-card rounded-lg shadow-md p-6 border-l-4 border-primary-600">
     <div className="flex items-start gap-4 mb-4">
       <div className="text-primary-600 text-2xl mt-1">{icon}</div>

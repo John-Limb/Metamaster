@@ -11,15 +11,29 @@ export interface Column<T> {
   align?: 'left' | 'center' | 'right'
 }
 
+export interface SortConfig {
+  column?: string
+  direction?: 'asc' | 'desc'
+  onSort?: (column: string, direction: 'asc' | 'desc') => void
+}
+
+export interface LoadingState {
+  loading?: boolean
+  skeletonRows?: number
+}
+
+export interface TableOptions<T> {
+  onRowClick?: (row: T) => void
+  className?: string
+  ariaLabel?: string
+}
+
 export interface DataTableProps<T> {
   columns: Column<T>[]
   data: T[]
   keyExtractor: (row: T) => string
-  loading?: boolean
-  skeletonRows?: number
-  sortColumn?: string
-  sortDirection?: 'asc' | 'desc'
-  onSort?: (column: string, direction: 'asc' | 'desc') => void
+  sort?: SortConfig
+  loadingState?: LoadingState
   pagination?: {
     page: number
     pageSize: number
@@ -30,26 +44,28 @@ export interface DataTableProps<T> {
     selectedKeys: string[]
     onSelectionChange: (keys: string[]) => void
   }
-  onRowClick?: (row: T) => void
-  className?: string
-  ariaLabel?: string
+  tableOptions?: TableOptions<T>
 }
 
 export function DataTable<T>({
   columns,
   data,
   keyExtractor,
-  loading = false,
-  skeletonRows = 5,
-  sortColumn,
-  sortDirection,
-  onSort,
+  sort,
+  loadingState,
   pagination,
   rowSelection,
-  onRowClick,
-  className = '',
-  ariaLabel = 'Data table',
+  tableOptions,
 }: DataTableProps<T>) {
+  const loading = loadingState?.loading ?? false
+  const skeletonRows = loadingState?.skeletonRows ?? 5
+  const sortColumn = sort?.column
+  const sortDirection = sort?.direction
+  const onSort = sort?.onSort
+  const onRowClick = tableOptions?.onRowClick
+  const className = tableOptions?.className ?? ''
+  const ariaLabel = tableOptions?.ariaLabel ?? 'Data table'
+
   const page = pagination?.page ?? 1
   const pageSize = pagination?.pageSize ?? 10
   const total = pagination?.total ?? 0
@@ -149,7 +165,6 @@ export function DataTable<T>({
           </thead>
           <tbody className="bg-card divide-y divide-edge">
             {loading ? (
-              // Skeleton loading state
               <>
                 {Array.from({ length: skeletonRows }).map((_, rowIndex) => (
                   <tr key={rowIndex} className="table-row-hover">

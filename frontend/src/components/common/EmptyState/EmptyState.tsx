@@ -40,7 +40,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   description,
   showPercentage = true,
   className = '',
-}) => {
+}: LoadingStateProps) => {
   const percentage = Math.round(progress * 100)
 
   return (
@@ -88,7 +88,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   illustration,
   className = '',
   testId = 'empty-state',
-}) => {
+}: EmptyStateProps) => {
   return (
     <div
       className={`

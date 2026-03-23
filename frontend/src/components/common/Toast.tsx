@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaTimesCircle, FaTimes } from 'react-icons/fa'
 import type { Toast as ToastType } from '@/types'
 
@@ -13,15 +13,15 @@ export const Toast: React.FC<ToastProps> = ({
   message,
   duration = 5000,
   onClose,
-}) => {
+}: ToastProps) => {
   const [isExiting, setIsExiting] = useState(false)
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsExiting(true)
     setTimeout(() => {
       onClose?.()
     }, 200)
-  }
+  }, [onClose])
 
   useEffect(() => {
     if (duration > 0) {
@@ -30,7 +30,7 @@ export const Toast: React.FC<ToastProps> = ({
       }, duration)
       return () => clearTimeout(timer)
     }
-  }, [duration])
+  }, [duration, handleClose])
 
   const typeConfig = {
     success: {
@@ -96,7 +96,7 @@ interface ToastContainerProps {
   onRemoveToast: (id: string) => void
 }
 
-export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemoveToast }) => {
+export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemoveToast }: ToastContainerProps) => {
   return (
     <div
       className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-md w-full pointer-events-none"

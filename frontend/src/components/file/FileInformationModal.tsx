@@ -28,7 +28,7 @@ const formatDate = (dateString: string): string => {
   })
 }
 
-export const FileInformationModal: React.FC<FileInformationModalProps> = ({ file, onClose }) => {
+export const FileInformationModal: React.FC<FileInformationModalProps> = ({ file, onClose }: FileInformationModalProps) => {
   const isDirectory = file.type === 'directory'
 
   return (

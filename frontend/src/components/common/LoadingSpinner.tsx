@@ -12,7 +12,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   fullScreen = false,
   message,
   overlay = true,
-}) => {
+}: LoadingSpinnerProps) => {
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-12 h-12',

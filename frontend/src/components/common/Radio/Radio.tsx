@@ -20,7 +20,7 @@ export const RadioInput: React.FC<RadioInputProps> = ({
   name,
   disabled = false,
   'aria-label': ariaLabel,
-}) => {
+}: RadioInputProps) => {
   return (
     <div className={`relative w-3.5 h-3.5 flex-shrink-0 group/rb ${disabled ? 'opacity-50' : ''}`}>
       <input
@@ -72,7 +72,7 @@ export const Radio: React.FC<RadioProps> = ({
   onChange,
   disabled = false,
   className = '',
-}) => {
+}: RadioProps) => {
   const radioId = id || `radio-${name ?? ''}-${value}`
 
   return (

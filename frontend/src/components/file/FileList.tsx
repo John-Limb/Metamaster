@@ -21,7 +21,7 @@ export const FileList: React.FC<FileListProps> = ({
   onContextMenu,
   isLoading = false,
   emptyMessage = 'No files to display',
-}) => {
+}: FileListProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">

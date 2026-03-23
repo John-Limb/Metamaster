@@ -20,7 +20,7 @@ export const CheckboxInput: React.FC<CheckboxInputProps> = ({
   onClick,
   disabled = false,
   'aria-label': ariaLabel,
-}) => {
+}: CheckboxInputProps) => {
   const ref = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   disabled = false,
   error,
   className = '',
-}) => {
+}: CheckboxProps) => {
   const checkboxId = id || `checkbox-${crypto.randomUUID()}`
 
   return (

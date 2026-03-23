@@ -29,7 +29,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   variant = 'default',
   showLabel = false,
   className = '',
-}) => {
+}: ProgressBarProps) => {
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100)
 
   return (

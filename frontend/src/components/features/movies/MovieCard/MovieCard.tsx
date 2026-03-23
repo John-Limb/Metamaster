@@ -55,7 +55,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onEdit,
   onDelete,
   isWatched = false,
-}) => {
+}: MovieCardProps) => {
   const [activeMismatch, setActiveMismatch] = useState<PlexMismatchItem | null>(null)
   const hasFileStats = resolution || codec_video || codec_audio || audio_channels || file_size || file_duration
 

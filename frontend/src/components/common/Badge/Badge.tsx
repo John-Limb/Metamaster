@@ -32,7 +32,7 @@ export const Badge: React.FC<BadgeProps> = ({
   onDismiss,
   children,
   className = '',
-}) => {
+}: BadgeProps) => {
   return (
     <span
       className={`

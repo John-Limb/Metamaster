@@ -19,7 +19,7 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
   onClose,
   onRetry,
   isRetrying = false,
-}) => {
+}: ErrorModalProps) => {
   if (!isOpen) return null
 
   const handleRetry = async () => {

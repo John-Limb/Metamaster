@@ -10,7 +10,7 @@ interface ProfileSectionProps {
   children: React.ReactNode
 }
 
-const ProfileSection: React.FC<ProfileSectionProps> = ({ icon, title, description, children }) => (
+const ProfileSection: React.FC<ProfileSectionProps> = ({ icon, title, description, children }: ProfileSectionProps) => (
   <div className="bg-card rounded-lg shadow-md p-6 border-l-4 border-primary-600">
     <div className="flex items-start gap-4 mb-4">
       <div className="text-primary-600 text-2xl mt-1">{icon}</div>

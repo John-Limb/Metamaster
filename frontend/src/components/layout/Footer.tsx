@@ -4,7 +4,7 @@ interface FooterProps {
   className?: string
 }
 
-export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
+export const Footer: React.FC<FooterProps> = ({ className = '' }: FooterProps) => {
   const currentYear = new Date().getFullYear()
 
   return (

@@ -13,7 +13,7 @@ export interface SortDropdownProps {
   onChange: (value: string) => void
 }
 
-export const SortDropdown: React.FC<SortDropdownProps> = ({ options, value, onChange }) => {
+export const SortDropdown: React.FC<SortDropdownProps> = ({ options, value, onChange }: SortDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 

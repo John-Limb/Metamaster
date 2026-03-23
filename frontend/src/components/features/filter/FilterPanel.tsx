@@ -31,7 +31,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onClearAll,
   isOpen,
   onToggle,
-}) => {
+}: FilterPanelProps) => {
   const handleCheckboxChange = (sectionId: string, optionValue: string, checked: boolean) => {
     const currentValues = selectedFilters[sectionId] || []
     if (checked) {

@@ -11,7 +11,7 @@ interface FileContextMenuProps {
   onClose: () => void
 }
 
-export const FileContextMenu: React.FC<FileContextMenuProps> = ({ file, x, y, onClose }) => {
+export const FileContextMenu: React.FC<FileContextMenuProps> = ({ file, x, y, onClose }: FileContextMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null)
   const { addToast } = useUIStore()
 

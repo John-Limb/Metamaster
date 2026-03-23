@@ -18,7 +18,7 @@ interface QuickAccessShortcutsProps {
 export const QuickAccessShortcuts: React.FC<QuickAccessShortcutsProps> = ({
   onNavigate,
   className = '',
-}) => {
+}: QuickAccessShortcutsProps) => {
   const { navigateToPath } = useFileStore()
 
   const shortcuts: Shortcut[] = [

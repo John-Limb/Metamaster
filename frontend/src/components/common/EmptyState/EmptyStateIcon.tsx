@@ -52,7 +52,7 @@ const IconRenderer: React.FC<{ variant: EmptyStateVariant; size: number; classNa
   variant,
   size,
   className,
-}) => {
+}: { variant: EmptyStateVariant; size: number; className: string }) => {
   const defaultClass = 'animate-pulse'
 
   switch (variant) {
@@ -75,7 +75,7 @@ export const EmptyStateIcon: React.FC<EmptyStateIconProps> = ({
   variant,
   size = 'md',
   className = '',
-}) => {
+}: EmptyStateIconProps) => {
   const iconSize = iconSizeMap[size]
   const variantColor = variantColors[variant]
   const variantBg = variantBackgrounds[variant]

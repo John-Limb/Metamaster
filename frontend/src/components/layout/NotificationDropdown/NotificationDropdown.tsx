@@ -38,7 +38,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   onMarkAllAsRead,
   onClearAll,
   onNotificationClick,
-}) => {
+}: NotificationDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -145,7 +145,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 <FaBell className="w-10 h-10 text-hint mb-3" />
                 <p className="text-hint text-sm">No notifications yet</p>
                 <p className="text-xs text-hint mt-1">
-                  We'll notify you when something arrives
+                  We&apos;ll notify you when something arrives
                 </p>
               </div>
             ) : (

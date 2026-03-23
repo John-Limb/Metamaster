@@ -23,7 +23,7 @@ export const Tabs: React.FC<TabsProps> = ({
   variant = 'default',
   className = '',
   children,
-}) => {
+}: TabsProps) => {
   return (
     <div className={`w-full ${className}`}>
       <div

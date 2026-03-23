@@ -28,7 +28,7 @@ export const Select: React.FC<SelectProps> = ({
   disabled = false,
   required = false,
   className = '',
-}) => {
+}: SelectProps) => {
   const selectId = `select-${crypto.randomUUID()}`
 
   return (

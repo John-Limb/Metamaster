@@ -18,7 +18,7 @@ interface FileExplorerProps {
 export const FileExplorer: React.FC<FileExplorerProps> = ({
   onFileDoubleClick,
   showDetailsPanel = true,
-}) => {
+}: FileExplorerProps) => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [contextMenu, setContextMenu] = useState<{
     x: number

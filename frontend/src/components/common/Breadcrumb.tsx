@@ -22,7 +22,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
   className = '',
   showHome = false,
   onHomeClick,
-}) => {
+}: BreadcrumbProps) => {
   const displayItems = showHome
     ? [{ label: 'Home', onClick: onHomeClick }, ...items]
     : items

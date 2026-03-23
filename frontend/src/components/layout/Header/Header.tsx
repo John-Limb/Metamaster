@@ -28,7 +28,7 @@ interface SearchResult {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => {
+export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }: HeaderProps) => {
   const { setTheme, resolvedTheme, colourTheme } = useTheme()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -256,7 +256,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
                   </div>
                 ) : searchQuery.length > 1 ? (
                   <div className="px-4 py-6 text-center text-sm text-hint">
-                    No results found for "{searchQuery}"
+                    No results found for &quot;{searchQuery}&quot;
                   </div>
                 ) : null}
               </div>

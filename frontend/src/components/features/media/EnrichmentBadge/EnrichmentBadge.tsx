@@ -15,7 +15,7 @@ interface EnrichmentBadgeProps {
   className?: string;
 }
 
-export const EnrichmentBadge: React.FC<EnrichmentBadgeProps> = ({ status, className = '' }) => {
+export const EnrichmentBadge: React.FC<EnrichmentBadgeProps> = ({ status, className = '' }: EnrichmentBadgeProps) => {
   if (!status) return null;
 
   if (status === 'fully_enriched') {

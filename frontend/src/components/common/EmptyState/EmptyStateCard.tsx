@@ -17,7 +17,7 @@ export const EmptyStateCard: React.FC<EmptyStateCardProps> = ({
   minHeight = 200,
   className,
   ...props
-}) => {
+}: EmptyStateCardProps) => {
   const cardVariant = variant === 'default' ? 'bordered' : variant
 
   return (
@@ -35,7 +35,7 @@ export const EmptyStateCard: React.FC<EmptyStateCardProps> = ({
 export const EmptyStateCardSkeleton: React.FC<{ count?: number; minHeight?: number }> = ({
   count = 1,
   minHeight = 200,
-}) => {
+}: { count?: number; minHeight?: number }) => {
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (
@@ -68,7 +68,7 @@ export const InlineEmptyState: React.FC<Omit<EmptyStateProps, 'illustration' | '
   description,
   action,
   secondaryAction,
-}) => {
+}: Omit<EmptyStateProps, 'illustration' | 'className'>) => {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
       <div className="flex items-center gap-3 mb-3">

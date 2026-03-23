@@ -23,7 +23,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requirePasswordChange = false,
-}) => {
+}: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, requiresPasswordChange } = useAuth()
   const location = useLocation()
 

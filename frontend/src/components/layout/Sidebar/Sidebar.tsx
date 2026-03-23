@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen: _isOpen = true, onClose }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen: _isOpen = true, onClose }: SidebarProps) => {
   const location = useLocation()
   const sidebarOpen = useUIStore((state) => state.sidebarOpen)
   const setSidebarOpen = useUIStore((state) => state.setSidebarOpen)
