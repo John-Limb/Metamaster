@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { useEscapeKey } from '@/hooks'
 import { usePlexCollectionStore } from '../stores/plexCollectionStore'
 import { CollectionDrawer } from '../components/features/plex/CollectionDrawer'
 import { PlaylistDrawer } from '../components/features/plex/PlaylistDrawer'
@@ -39,11 +40,7 @@ export function PlexCollectionsPage() {
     setSelectedPlaylistId(null)
   }, [])
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') handleCloseDrawer() }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [handleCloseDrawer])
+  useEscapeKey(handleCloseDrawer, selectedCollectionId !== null || selectedPlaylistId !== null)
 
   const handleSelectCollection = (id: number) => { setSelectedCollectionId(id); setSelectedPlaylistId(null) }
   const handleSelectPlaylist = (id: number) => { setSelectedPlaylistId(id); setSelectedCollectionId(null) }

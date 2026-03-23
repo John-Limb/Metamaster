@@ -14,7 +14,7 @@ interface PlexItemRowProps {
   }
   isSelected: boolean
   onToggleEnabled: (id: number, enabled: boolean) => void
-  onPush: (id: number) => void
+  onPush: (id: number) => Promise<void> | void
   // CollectionRow passes a nullary closure here; the id arg is intentionally ignored (TS callback contravariance)
   onDelete: (id: number) => void
   onSelect: (id: number) => void
@@ -41,6 +41,7 @@ export function PlexItemRow({
   onBulkSelect,
 }: PlexItemRowProps) {
   const [showConfirm, setShowConfirm] = useState(false)
+  const [isPushing, setIsPushing] = useState(false)
 
   const handleDeleteConfirm = () => {
     setShowConfirm(false)
@@ -95,8 +96,16 @@ export function PlexItemRow({
             <Button
               variant="primary"
               size="sm"
-              onClick={() => onPush(item.id)}
-              disabled={!item.enabled}
+              onClick={async () => {
+                setIsPushing(true)
+                try {
+                  await onPush(item.id)
+                } finally {
+                  setIsPushing(false)
+                }
+              }}
+              disabled={!item.enabled || isPushing}
+              loading={isPushing}
             >
               Push
             </Button>

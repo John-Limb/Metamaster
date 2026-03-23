@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback } from 'react'
 
 /**
  * Hook for managing keyboard navigation within a component
@@ -93,54 +93,6 @@ export function useKeyboardNavigation(options: {
 }
 
 /**
- * Hook for trap focus within a modal or dialog
- */
-export function useFocusTrap(isActive: boolean = true) {
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isActive) return
-
-    const container = containerRef.current
-    if (!container) return
-
-    const focusableElements = container.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
-
-    const firstElement = focusableElements[0]
-    const lastElement = focusableElements[focusableElements.length - 1]
-
-    const handleTabKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Tab') return
-
-      if (event.shiftKey) {
-        if (document.activeElement === firstElement) {
-          event.preventDefault()
-          lastElement?.focus()
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          event.preventDefault()
-          firstElement?.focus()
-        }
-      }
-    }
-
-    // Focus the first element when activated
-    firstElement?.focus()
-
-    container.addEventListener('keydown', handleTabKey)
-
-    return () => {
-      container.removeEventListener('keydown', handleTabKey)
-    }
-  }, [isActive])
-
-  return containerRef
-}
-
-/**
  * Announce a message to screen readers
  */
 export function announceToScreenReader(
@@ -203,7 +155,6 @@ export function useHighContrastMode(): boolean {
 
 export default {
   useKeyboardNavigation,
-  useFocusTrap,
   announceToScreenReader,
   generateA11yId,
   focusStyles,

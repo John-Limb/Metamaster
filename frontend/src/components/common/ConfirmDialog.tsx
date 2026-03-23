@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { FaExclamationTriangle, FaTimes } from 'react-icons/fa'
+import { useEscapeKey, useFocusTrap } from '@/hooks'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -28,36 +29,21 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   const titleId = React.useId()
   const dialogRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<Element | null>(null)
 
   useEffect(() => {
-    if (!isOpen) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel()
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [isOpen, onCancel])
-
-  useEffect(() => {
-    if (!isOpen || !dialogRef.current) return
-    const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
-    const first = focusable[0]
-    const last = focusable[focusable.length - 1]
-    first?.focus()
-
-    const trap = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return
-      if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last?.focus() }
-      } else {
-        if (document.activeElement === last) { e.preventDefault(); first?.focus() }
+    if (isOpen) {
+      triggerRef.current = document.activeElement
+    } else {
+      // Return focus to trigger when dialog closes
+      if (triggerRef.current instanceof HTMLElement) {
+        triggerRef.current.focus()
       }
     }
-    document.addEventListener('keydown', trap)
-    return () => document.removeEventListener('keydown', trap)
   }, [isOpen])
+
+  useEscapeKey(onCancel, isOpen)
+  useFocusTrap(dialogRef, isOpen)
 
   if (!isOpen) return null
 

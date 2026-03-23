@@ -42,10 +42,11 @@ function ConnectedView({
         Connected to: <strong>{serverUrl}</strong>
       </p>
       <div className="flex gap-3">
-        <button onClick={onSync} className={PRIMARY_BTN_CLASS}>
+        <button type="button" onClick={onSync} className={PRIMARY_BTN_CLASS}>
           Sync Now
         </button>
         <button
+          type="button"
           onClick={onDisconnect}
           className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
         >
@@ -134,6 +135,7 @@ function OAuthTab({ onConnected }: { onConnected: () => void }) {
             Waiting for authorisation on Plex.tv…
           </span>
           <button
+            type="button"
             onClick={handleCancel}
             className="ml-auto px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
@@ -141,7 +143,7 @@ function OAuthTab({ onConnected }: { onConnected: () => void }) {
           </button>
         </div>
       ) : (
-        <button onClick={handleConnect} disabled={saving} className={PRIMARY_BTN_CLASS}>
+        <button type="button" onClick={handleConnect} disabled={saving} className={PRIMARY_BTN_CLASS}>
           Open Plex.tv to Authorise
         </button>
       )}
@@ -262,6 +264,7 @@ export function PlexSettings() {
           <p className="text-sm text-gray-500 dark:text-gray-400">Not connected</p>
           <div role="tablist" className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
             <button
+              type="button"
               role="tab"
               aria-selected={authMode === 'oauth'}
               onClick={() => setAuthMode('oauth')}
@@ -270,6 +273,7 @@ export function PlexSettings() {
               Connect via Plex.tv
             </button>
             <button
+              type="button"
               role="tab"
               aria-selected={authMode === 'manual'}
               onClick={() => setAuthMode('manual')}

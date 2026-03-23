@@ -202,7 +202,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           {/* Footer */}
           {notifications.length > 0 && (
             <div className="px-4 py-2 border-t border-edge bg-subtle">
-              <button className="w-full text-center text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors">
+              <button type="button" className="w-full text-center text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors">
                 View all notifications
               </button>
             </div>

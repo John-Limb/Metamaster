@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Card } from '@/components/common/Card'
-import { formatFileSize } from '@/utils/helpers'
+import { formatBytes } from '@/utils/formatting'
 
 export interface StorageData {
   label: string
@@ -94,7 +94,7 @@ export function StorageChart({
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-2xl font-bold text-body">
-            {formatFileSize(total)}
+            {formatBytes(total)}
           </span>
           <span className="text-xs text-hint">
             Total Used
@@ -169,7 +169,7 @@ export function StorageChart({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-hint">
-                      {formatFileSize(item.value)}
+                      {formatBytes(item.value)}
                     </span>
                   </div>
                 </div>
@@ -185,8 +185,8 @@ export function StorageChart({
         return (
           <div className="mt-6 pt-4 border-t border-edge">
             <div className="flex justify-between text-xs text-hint mb-1.5">
-              <span>{formatFileSize(diskUsedBytes)} used</span>
-              <span>{formatFileSize(diskTotalBytes)} total</span>
+              <span>{formatBytes(diskUsedBytes)} used</span>
+              <span>{formatBytes(diskTotalBytes)} total</span>
             </div>
             <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
               <div

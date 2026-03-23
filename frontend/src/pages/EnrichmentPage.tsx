@@ -3,6 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { movieService, type EnrichmentStatusGroup, type EnrichmentStats } from '@/services/movieService'
 import { tvShowService } from '@/services/tvShowService'
 import { EnrichmentBadge, type EnrichmentStatus } from '@/components/features/media/EnrichmentBadge/EnrichmentBadge'
+import { Pagination } from '@/components/common'
+import { Button } from '@/components/common/Button/Button'
+import { usePagination } from '@/hooks/usePagination'
 import type { Movie, TVShow } from '@/types'
 
 type MediaType = 'movies' | 'tv-shows'
@@ -39,9 +42,10 @@ export const EnrichmentPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<FilterTab>(initialTab)
   const [items, setItems] = useState<MediaItem[]>([])
   const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState<EnrichmentStats | null>(null)
+
+  const { page, totalPages, goToPage } = usePagination(1, PAGE_SIZE, total)
 
   const fetchStats = useCallback(async (type: MediaType) => {
     try {
@@ -73,22 +77,21 @@ export const EnrichmentPage: React.FC = () => {
 
   useEffect(() => {
     setStats(null)
-    setPage(1)
+    goToPage(1)
     setActiveTab('all')
     fetchStats(mediaType)
-  }, [mediaType, fetchStats])
+  }, [mediaType, fetchStats, goToPage])
 
   useEffect(() => {
-    setPage(1)
-    fetchItems(mediaType, activeTab, 1)
+    goToPage(1)
     const params: Record<string, string> = {}
     if (mediaType !== 'movies') params.type = mediaType
     if (activeTab !== 'all') params.status = activeTab
     setSearchParams(params, { replace: true })
-  }, [activeTab, mediaType, fetchItems, setSearchParams])
+  }, [activeTab, mediaType, setSearchParams, goToPage])
 
   useEffect(() => {
-    if (page > 1) fetchItems(mediaType, activeTab, page)
+    fetchItems(mediaType, activeTab, page)
   }, [page, activeTab, mediaType, fetchItems])
 
   const getTabCount = (tab: Tab): number | undefined => {
@@ -105,8 +108,6 @@ export const EnrichmentPage: React.FC = () => {
     }
   }
 
-  const totalPages = Math.ceil(total / PAGE_SIZE)
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -120,8 +121,10 @@ export const EnrichmentPage: React.FC = () => {
       {/* Media type switcher */}
       <div className="flex gap-2">
         {(['movies', 'tv-shows'] as MediaType[]).map((type) => (
-          <button
+          <Button
             key={type}
+            variant="ghost"
+            size="sm"
             onClick={() => setMediaType(type)}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               mediaType === type
@@ -130,7 +133,7 @@ export const EnrichmentPage: React.FC = () => {
             }`}
           >
             {type === 'movies' ? 'Movies' : 'TV Shows'}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -140,8 +143,10 @@ export const EnrichmentPage: React.FC = () => {
           const count = getTabCount(tab) ?? (tab.key === 'all' ? total : undefined)
           const isActive = activeTab === tab.key
           return (
-            <button
+            <Button
               key={tab.key}
+              variant="ghost"
+              size="sm"
               onClick={() => setActiveTab(tab.key)}
               className={`
                 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors
@@ -159,7 +164,7 @@ export const EnrichmentPage: React.FC = () => {
                   {count}
                 </span>
               )}
-            </button>
+            </Button>
           )
         })}
       </div>
@@ -221,23 +226,7 @@ export const EnrichmentPage: React.FC = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-hint">
           <span>{total} total</span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-3 py-1 rounded border border-edge disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              Previous
-            </button>
-            <span className="px-3 py-1">Page {page} of {totalPages}</span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-3 py-1 rounded border border-edge disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              Next
-            </button>
-          </div>
+          <Pagination currentPage={page} totalPages={totalPages} onPageChange={goToPage} />
         </div>
       )}
     </div>

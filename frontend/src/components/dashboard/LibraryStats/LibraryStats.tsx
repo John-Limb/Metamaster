@@ -2,7 +2,7 @@ import React from 'react'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { ProgressBar } from '@/components/common/ProgressBar'
-import { formatFileSize } from '@/utils/helpers'
+import { formatBytes } from '@/utils/formatting'
 
 export interface LibraryStatsProps {
   stats: {
@@ -109,7 +109,7 @@ export function LibraryStats({
     },
     {
       label: 'Storage Used',
-      value: formatFileSize(stats.totalSize),
+      value: formatBytes(stats.totalSize),
       icon: STAT_CONFIG.storage.icon,
       color: STAT_CONFIG.storage.color,
     },
@@ -224,7 +224,7 @@ export function LibraryStats({
               Storage Usage
             </span>
             <span className="text-sm text-hint">
-              {formatFileSize(stats.totalSize)} / {formatFileSize(stats.storageTotal)}
+              {formatBytes(stats.totalSize)} / {formatBytes(stats.storageTotal)}
             </span>
           </div>
           <ProgressBar

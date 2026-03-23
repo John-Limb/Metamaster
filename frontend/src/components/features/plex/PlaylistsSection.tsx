@@ -3,7 +3,7 @@ import type { PlexPlaylist } from '../../../services/plexCollectionService'
 import { Button, AlertMessage } from '@/components/common'
 import { EmptyState } from '@/components/common/EmptyState'
 import { SkeletonTable } from '@/components/common/Skeleton'
-import { PlaylistRow } from './PlaylistRow'
+import { PlexItemRow } from './PlexItemRow'
 
 const TABLE_HEADERS = (
   <tr className="border-b border-edge">
@@ -91,9 +91,9 @@ export function PlaylistsSection({
             <thead>{TABLE_HEADERS}</thead>
             <tbody className="divide-y divide-rule">
               {playlists.map(pl => (
-                <PlaylistRow
+                <PlexItemRow
                   key={pl.id}
-                  playlist={pl}
+                  item={pl}
                   onToggleEnabled={onToggleEnabled}
                   onPush={onPush}
                   onDelete={onDelete}

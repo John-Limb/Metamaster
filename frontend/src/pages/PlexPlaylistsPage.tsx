@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { useEscapeKey } from '@/hooks'
 import { usePlexCollectionStore } from '../stores/plexCollectionStore'
-import { PlaylistRow } from '../components/features/plex/PlaylistRow'
+import { PlexItemRow } from '../components/features/plex/PlexItemRow'
 import { PlaylistDrawer } from '../components/features/plex/PlaylistDrawer'
 import { Button, AlertMessage } from '@/components/common'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -31,13 +32,7 @@ export function PlexPlaylistsPage() {
     setSelectedPlaylistId(null)
   }, [])
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleCloseDrawer()
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [handleCloseDrawer])
+  useEscapeKey(handleCloseDrawer, selectedPlaylistId !== null)
 
   const handleToggleSelect = (id: number, checked: boolean) => {
     setSelectedIds(prev => {
@@ -152,9 +147,9 @@ export function PlexPlaylistsPage() {
               <thead>{tableHeaders}</thead>
               <tbody className="divide-y divide-rule">
                 {playlists.map(pl => (
-                  <PlaylistRow
+                  <PlexItemRow
                     key={pl.id}
-                    playlist={pl}
+                    item={pl}
                     onToggleEnabled={(id, enabled) => updatePlaylist(id, { enabled })}
                     onPush={pushPlaylist}
                     onDelete={deletePlaylist}

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FaCog, FaPalette, FaBell, FaSync, FaFolder, FaServer } from 'react-icons/fa'
-import { CheckboxInput, RadioInput } from '@/components/common'
+import { Button, CheckboxInput, RadioInput } from '@/components/common'
 import { organisationService, type OrganisationPreset } from '@/services/organisationService'
 import { scanScheduleService } from '@/services/configurationService'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { useUIStore } from '@/stores/uiStore'
 import { PlexSettings } from '@/components/features/plex/PlexSettings'
 import { useTheme } from '@/context/ThemeContext'
 
@@ -69,6 +70,7 @@ export const SettingsPage: React.FC = () => {
     updateUserSettings,
     resetUserSettings,
   } = useSettingsStore()
+  const { addToast } = useUIStore()
   const { setTheme: applyTheme, colourTheme, setColourTheme } = useTheme()
 
   // Map between settings store ('auto') and ThemeContext ('system')
@@ -80,9 +82,6 @@ export const SettingsPage: React.FC = () => {
   const [notifications, setNotifications] = useState(userSettings.notifications)
   const [soundEnabled, setSoundEnabled] = useState(userSettings.soundEnabled)
   const [scanSchedule, setScanSchedule] = useState('0 2 * * *')
-  const [scanScheduleSaved, setScanScheduleSaved] = useState(false)
-  const [scanScheduleError, setScanScheduleError] = useState('')
-  const [settingsSaved, setSettingsSaved] = useState(false)
 
   const [orgPreset, setOrgPreset] = useState<OrganisationPreset>('plex')
 
@@ -105,8 +104,7 @@ export const SettingsPage: React.FC = () => {
       soundEnabled,
     })
     applyTheme(toThemeContext(theme))
-    setSettingsSaved(true)
-    setTimeout(() => setSettingsSaved(false), 3000)
+    addToast({ type: 'success', message: 'Settings saved', duration: 3000 })
   }
 
   const handleResetToDefaults = () => {
@@ -121,14 +119,13 @@ export const SettingsPage: React.FC = () => {
   }
 
   const handleSaveScanSchedule = async () => {
-    setScanScheduleError('')
-    setScanScheduleSaved(false)
     try {
       await scanScheduleService.setSchedule(scanSchedule)
-      setScanScheduleSaved(true)
-      setTimeout(() => setScanScheduleSaved(false), 3000)
-    } catch {
-      setScanScheduleError('Invalid cron expression or server error.')
+      addToast({ type: 'success', message: 'Scan schedule saved', duration: 3000 })
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to save schedule'
+      addToast({ type: 'error', message, duration: 4000 })
     }
   }
 
@@ -159,11 +156,13 @@ export const SettingsPage: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Items Per Page
+              <span aria-hidden="true" className="text-red-500 ml-0.5">*</span>
             </label>
             <input
               type="number"
               value={itemsPerPage}
               onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              aria-required="true"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
@@ -189,11 +188,13 @@ export const SettingsPage: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Scan Schedule (cron expression)
+              <span aria-hidden="true" className="text-red-500 ml-0.5">*</span>
             </label>
             <input
               type="text"
               value={scanSchedule}
               onChange={(e) => setScanSchedule(e.target.value)}
+              aria-required="true"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
               placeholder="0 2 * * *"
             />
@@ -201,20 +202,10 @@ export const SettingsPage: React.FC = () => {
               Examples: <code>0 2 * * *</code> = 2AM daily, <code>0 */6 * * *</code> = every 6 hours,{' '}
               <code>*/5 * * * *</code> = every 5 minutes
             </p>
-            {scanScheduleError && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400">{scanScheduleError}</p>
-            )}
-            {scanScheduleSaved && (
-              <p className="mt-1 text-xs text-green-600 dark:text-green-400">Schedule saved.</p>
-            )}
           </div>
-          <button
-            type="button"
-            onClick={handleSaveScanSchedule}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium"
-          >
+          <Button variant="primary" size="sm" onClick={handleSaveScanSchedule}>
             Save Schedule
-          </button>
+          </Button>
         </div>
       </SettingsSection>
 
@@ -340,23 +331,12 @@ export const SettingsPage: React.FC = () => {
 
       {/* Action Buttons */}
       <div className="flex items-center gap-4">
-        <button
-          type="button"
-          onClick={handleSaveSettings}
-          className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-medium"
-        >
+        <Button variant="primary" size="md" onClick={handleSaveSettings}>
           Save Settings
-        </button>
-        <button
-          type="button"
-          onClick={handleResetToDefaults}
-          className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium"
-        >
+        </Button>
+        <Button variant="secondary" size="md" onClick={handleResetToDefaults}>
           Reset to Defaults
-        </button>
-        {settingsSaved && (
-          <span className="text-sm text-green-600 dark:text-green-400">Settings saved.</span>
-        )}
+        </Button>
       </div>
     </div>
   )
