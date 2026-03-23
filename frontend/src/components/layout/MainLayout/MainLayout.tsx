@@ -18,7 +18,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const removeToast = useUIStore((state) => state.removeToast)
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex flex-col h-screen bg-page">
       {/* Header */}
       <Header />
 

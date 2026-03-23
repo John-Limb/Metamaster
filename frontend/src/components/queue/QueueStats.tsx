@@ -14,10 +14,10 @@ export function QueueStats({ className = '' }: QueueStatsProps) {
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
-            className="bg-gray-100 rounded-lg p-4 animate-pulse"
+            className="bg-subtle rounded-lg p-4 animate-pulse"
           >
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
-            <div className="h-8 bg-gray-200 rounded w-3/4" />
+            <div className="h-4 bg-edge rounded w-1/2 mb-2" />
+            <div className="h-8 bg-edge rounded w-3/4" />
           </div>
         ))}
       </div>
@@ -41,7 +41,7 @@ export function QueueStats({ className = '' }: QueueStatsProps) {
     {
       label: 'Total',
       value: stats.totalTasks,
-      color: 'bg-gray-100 text-gray-800',
+      color: 'bg-subtle text-body',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />

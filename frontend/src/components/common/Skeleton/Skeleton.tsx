@@ -17,7 +17,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   className = '',
   animation = 'shimmer',
 }) => {
-  const baseClasses = 'bg-secondary-200 dark:bg-secondary-700'
+  const baseClasses = 'bg-subtle'
 
   const animationClasses = {
     pulse: 'animate-pulse',
@@ -116,7 +116,7 @@ export const SkeletonTable: React.FC<{
   return (
     <div className={`space-y-3 ${className}`} role="status" aria-label="Loading table">
       {showHeader && (
-        <div className="flex gap-4 border-b border-secondary-200 dark:border-secondary-700 pb-2">
+        <div className="flex gap-4 border-b border-edge pb-2">
           {Array.from({ length: columns }).map((_, index) => (
             <Skeleton
               key={index}
@@ -147,13 +147,13 @@ export const SkeletonTable: React.FC<{
 export const SkeletonMovieCard: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
     <div
-      className={`rounded-lg overflow-hidden bg-white dark:bg-secondary-800 ${className}`}
+      className={`rounded-lg overflow-hidden bg-card ${className}`}
       role="status"
       aria-label="Loading movie card"
     >
       {/* Poster placeholder */}
-      <div className="aspect-[2/3] bg-secondary-200 dark:bg-secondary-700 animate-shimmer" />
-      
+      <div className="aspect-[2/3] bg-subtle animate-shimmer" />
+
       {/* Content */}
       <div className="p-4 space-y-3">
         <Skeleton variant="text" width="80%" height="20px" animation="shimmer" />
@@ -170,12 +170,12 @@ export const SkeletonMovieCard: React.FC<{ className?: string }> = ({ className 
 export const SkeletonTVShowCard: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
     <div
-      className={`rounded-lg overflow-hidden bg-white dark:bg-secondary-800 ${className}`}
+      className={`rounded-lg overflow-hidden bg-card ${className}`}
       role="status"
       aria-label="Loading TV show card"
     >
       {/* Poster placeholder */}
-      <div className="aspect-[2/3] bg-secondary-200 dark:bg-secondary-700 animate-shimmer" />
+      <div className="aspect-[2/3] bg-subtle animate-shimmer" />
       
       {/* Content */}
       <div className="p-4 space-y-3">
@@ -193,7 +193,7 @@ export const SkeletonTVShowCard: React.FC<{ className?: string }> = ({ className
 export const SkeletonStatCard: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
     <div
-      className={`p-6 rounded-lg bg-white dark:bg-secondary-800 ${className}`}
+      className={`p-6 rounded-lg bg-card ${className}`}
       role="status"
       aria-label="Loading stat card"
     >
@@ -215,7 +215,7 @@ export const SkeletonDataTableHeader: React.FC<{
 }> = ({ columns, className = '' }) => {
   return (
     <div
-      className={`flex gap-4 p-4 border-b border-secondary-200 dark:border-secondary-700 ${className}`}
+      className={`flex gap-4 p-4 border-b border-edge ${className}`}
       role="rowheader"
       aria-label="Loading table header"
     >
@@ -243,7 +243,7 @@ export const SkeletonList: React.FC<{
         Array.from({ length: items }).map((_, index) => (
           <div
             key={index}
-            className="flex items-center gap-4 p-3 bg-white dark:bg-secondary-800 rounded-lg"
+            className="flex items-center gap-4 p-3 bg-card rounded-lg"
           >
             <SkeletonAvatar size={40} />
             <div className="flex-1 space-y-2">

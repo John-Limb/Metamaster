@@ -39,7 +39,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 }) => {
   if (isImageFile(file)) {
     return (
-      <div className="flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden">
+      <div className="flex items-center justify-center bg-subtle rounded-lg overflow-hidden">
         <img
           src={file.path}
           alt={file.name}
@@ -56,7 +56,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
   if (isVideoFile(file)) {
     return (
-      <div className="flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden">
+      <div className="flex items-center justify-center bg-subtle rounded-lg overflow-hidden">
         <video
           src={file.path}
           style={{ maxWidth: `${maxWidth}px`, maxHeight: `${maxHeight}px` }}
@@ -73,8 +73,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
   if (isAudioFile(file)) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 bg-gray-100 rounded-lg p-6">
-        <FaMusic className="w-12 h-12 text-gray-400" />
+      <div className="flex flex-col items-center justify-center gap-4 bg-subtle rounded-lg p-6">
+        <FaMusic className="w-12 h-12 text-hint" />
         <audio
           src={file.path}
           controls
@@ -90,11 +90,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
   // Default file preview
   return (
-    <div className="flex flex-col items-center justify-center gap-4 bg-gray-100 rounded-lg p-6">
-      <FaFile className="w-12 h-12 text-gray-400" />
+    <div className="flex flex-col items-center justify-center gap-4 bg-subtle rounded-lg p-6">
+      <FaFile className="w-12 h-12 text-hint" />
       <div className="text-center">
-        <p className="text-sm font-medium text-gray-700">{file.name}</p>
-        <p className="text-xs text-gray-500 mt-1">Preview not available</p>
+        <p className="text-sm font-medium text-dim">{file.name}</p>
+        <p className="text-xs text-hint mt-1">Preview not available</p>
       </div>
     </div>
   )

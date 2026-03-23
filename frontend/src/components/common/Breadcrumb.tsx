@@ -18,7 +18,7 @@ interface BreadcrumbProps {
 
 export const Breadcrumb: React.FC<BreadcrumbProps> = ({
   items,
-  separator = <FaChevronRight className="w-4 h-4 text-gray-400" />,
+  separator = <FaChevronRight className="w-4 h-4 text-hint" />,
   className = '',
   showHome = false,
   onHomeClick,
@@ -32,7 +32,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
       <ol className="flex items-center gap-2">
         {displayItems.map((item, index) => (
           <li key={index} className="flex items-center gap-2">
-            {index > 0 && <span className="text-gray-400">{separator}</span>}
+            {index > 0 && <span className="text-hint">{separator}</span>}
             {item.path ? (
               <Link
                 to={item.path}
@@ -50,7 +50,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
                 {item.label}
               </button>
             ) : (
-              <span className="text-gray-700 font-medium flex items-center gap-1">
+              <span className="text-dim font-medium flex items-center gap-1">
                 {index === 0 && showHome && <FaHome className="w-3 h-3" />}
                 {item.label}
               </span>

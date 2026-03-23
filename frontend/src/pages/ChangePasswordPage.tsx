@@ -18,7 +18,7 @@ export const ChangePasswordPage: React.FC = () => {
   // Show loading spinner while checking auth status
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-secondary-50 dark:bg-secondary-900">
+      <div className="min-h-screen flex items-center justify-center bg-page">
         <LoadingSpinner size="lg" message="Loading..." />
       </div>
     )
@@ -36,17 +36,17 @@ export const ChangePasswordPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary-50 dark:bg-secondary-900 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-page px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg mb-4">
             <span className="text-3xl font-bold text-white">M</span>
           </div>
-          <h1 className="text-3xl font-bold text-secondary-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-body">
             Change Password
           </h1>
-          <p className="mt-2 text-sm text-secondary-600 dark:text-secondary-400">
+          <p className="mt-2 text-sm text-dim">
             Update your password to continue
           </p>
         </div>

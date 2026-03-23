@@ -49,7 +49,7 @@ export const Toggle: React.FC<ToggleProps> = ({
           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-secondary-900
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
           ${config.track}
-          ${checked ? 'bg-primary-600' : 'bg-secondary-200 dark:bg-secondary-700'}
+          ${checked ? 'bg-primary-600' : 'bg-subtle'}
         `}
       >
         <span className="sr-only">{label}</span>
@@ -57,7 +57,7 @@ export const Toggle: React.FC<ToggleProps> = ({
           aria-hidden="true"
           className={`
             pointer-events-none inline-block rounded-full
-            bg-white shadow transform transition-transform duration-200 ease-in-out
+            bg-card shadow transform transition-transform duration-200 ease-in-out
             ${config.thumb}
             ${checked ? config.translate : 'translate-x-0'}
           `}
@@ -67,8 +67,8 @@ export const Toggle: React.FC<ToggleProps> = ({
         htmlFor={toggleId}
         className={`ml-3 text-sm font-medium cursor-pointer ${
           disabled
-            ? 'text-secondary-400 dark:text-secondary-600'
-            : 'text-secondary-700 dark:text-secondary-300'
+            ? 'text-hint'
+            : 'text-dim'
         }`}
       >
         {label}

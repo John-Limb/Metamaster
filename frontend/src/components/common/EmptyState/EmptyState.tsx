@@ -52,12 +52,12 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
     >
       <EmptyStateIcon variant="loading" size="lg" className="mb-4" />
       
-      <h3 className="text-lg font-medium text-secondary-900 dark:text-white mb-2">
+      <h3 className="text-lg font-medium text-body mb-2">
         {title}
       </h3>
-      
+
       {description && (
-        <p className="text-sm text-secondary-500 dark:text-secondary-400 mb-4">
+        <p className="text-sm text-hint mb-4">
           {description}
         </p>
       )}
@@ -111,12 +111,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       </div>
 
       {/* Title */}
-      <h3 className="text-lg font-medium text-secondary-900 dark:text-white mb-2">
+      <h3 className="text-lg font-medium text-body mb-2">
         {title}
       </h3>
 
       {/* Description */}
-      <p className="text-sm text-secondary-500 dark:text-secondary-400 max-w-sm mb-6">
+      <p className="text-sm text-hint max-w-sm mb-6">
         {description}
       </p>
 

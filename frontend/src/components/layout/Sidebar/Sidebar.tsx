@@ -103,8 +103,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen: _isOpen = true, onClos
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white dark:bg-gray-900 
-          border-r border-gray-200 dark:border-gray-700 
+          fixed top-16 left-0 h-[calc(100vh-4rem)] bg-card
+          border-r border-edge
           transition-all duration-300 ease-in-out z-40
           ${sidebarWidth}
           ${isMobile 
@@ -134,15 +134,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen: _isOpen = true, onClos
                       flex items-center gap-3 px-3 py-2.5 rounded-lg
                       transition-all duration-150
                       ${active
-                        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-medium'
+                        : 'text-dim hover:bg-subtle'
                       }
                       ${isCollapsed ? 'justify-center' : ''}
-                      focus:outline-none focus:ring-2 focus:ring-indigo-500
+                      focus:outline-none focus:ring-2 focus:ring-primary-500
                     `}
                     aria-current={active ? 'page' : undefined}
                   >
-                    <span className={active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'}>
+                    <span className={active ? 'text-primary-600 dark:text-primary-400' : 'text-hint'}>
                       {item.icon}
                     </span>
                     
@@ -150,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen: _isOpen = true, onClos
                       <>
                         <span className="flex-1">{item.label}</span>
                         {item.badge && (
-                          <span className="px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 rounded-full">
+                          <span className="px-2 py-0.5 text-xs font-medium bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-300 rounded-full">
                             {item.badge}
                           </span>
                         )}
@@ -159,13 +159,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen: _isOpen = true, onClos
 
                     {/* Active indicator for collapsed state */}
                     {isCollapsed && active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 dark:bg-indigo-400 rounded-r" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-600 dark:bg-primary-400 rounded-r" />
                     )}
                   </Link>
 
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && showTooltip === itemKey && (
-                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg whitespace-nowrap z-50 animate-in fade-in duration-150 shadow-lg">
+                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-1.5 bg-popover text-body border border-edge text-sm rounded-lg whitespace-nowrap z-50 animate-in fade-in duration-150 shadow-lg">
                       {item.label}
                     </div>
                   )}
@@ -175,15 +175,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen: _isOpen = true, onClos
           </nav>
 
           {/* Footer */}
-          <div className={`p-3 border-t border-gray-200 dark:border-gray-700 ${isCollapsed ? 'flex justify-center' : ''}`}>
+          <div className={`p-3 border-t border-edge ${isCollapsed ? 'flex justify-center' : ''}`}>
             {/* Collapse Toggle (Desktop only) */}
             {!isMobile && (
               <button
                 onClick={toggleCollapse}
                 className={`
-                  w-full flex items-center gap-3 px-3 py-2 
-                  text-gray-600 dark:text-gray-400 
-                  hover:bg-gray-100 dark:hover:bg-gray-800 
+                  w-full flex items-center gap-3 px-3 py-2
+                  text-dim
+                  hover:bg-subtle
                   rounded-lg transition-colors duration-150
                   ${isCollapsed ? 'justify-center' : ''}
                 `}
@@ -202,7 +202,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen: _isOpen = true, onClos
 
             {/* Version Info */}
             {!isCollapsed && (
-              <div className="flex items-center justify-center gap-2 pt-3 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center justify-center gap-2 pt-3 text-xs text-hint">
                 <FaInfoCircle className="w-3.5 h-3.5" />
                 <span>Metamaster v1.0.0</span>
               </div>

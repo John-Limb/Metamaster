@@ -79,7 +79,7 @@ export function PlexPlaylistsPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-body">
-              Plex Playlists{playlists.length > 0 && <span className="text-slate-400 font-normal text-lg ml-2">({playlists.length})</span>}
+              Plex Playlists{playlists.length > 0 && <span className="text-hint font-normal text-lg ml-2">({playlists.length})</span>}
             </h1>
             <p className="text-hint mt-1">
               Manage playlists synced to your Plex server.

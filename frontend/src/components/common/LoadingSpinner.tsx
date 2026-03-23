@@ -31,7 +31,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   if (fullScreen) {
     return (
       <div className={`fixed inset-0 flex items-center justify-center z-50 ${
-        overlay ? 'bg-white dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75' : ''
+        overlay ? 'bg-card/75' : ''
       }`}>
         {spinner}
       </div>

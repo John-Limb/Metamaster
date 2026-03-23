@@ -93,7 +93,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="relative p-2 text-dim hover:bg-subtle rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500"
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
         aria-haspopup="true"
         aria-expanded={isOpen}
@@ -129,7 +129,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               {notifications.length > 0 && (
                 <button
                   onClick={onClearAll}
-                  className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                  className="p-1 text-hint hover:text-body transition-colors"
                   aria-label="Clear all notifications"
                 >
                   <FaTrash className="w-3.5 h-3.5" />
@@ -159,7 +159,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                         onMarkAsRead(notification.id)
                       }
                     }}
-                    className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-150 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-750 ${
+                    className={`w-full px-4 py-3 text-left hover:bg-subtle transition-colors duration-150 focus:outline-none focus:bg-subtle ${
                       !notification.read ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''
                     }`}
                     role="menuitem"
@@ -191,7 +191,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                           {formatTime(notification.timestamp)}
                         </p>
                       </div>
-                      <FaChevronRight className="flex-shrink-0 w-4 h-4 text-gray-400 self-center" />
+                      <FaChevronRight className="flex-shrink-0 w-4 h-4 text-hint self-center" />
                     </div>
                   </button>
                 ))}

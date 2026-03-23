@@ -50,7 +50,7 @@ function ColourThemeSwatch({ label, chips, active, onClick }: SwatchProps) {
       className={`flex items-center gap-3 px-3 py-2 rounded-lg border-2 transition-colors text-left w-full ${
         active
           ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
-          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+          : 'border-edge hover:border-edge'
       }`}
     >
       <div className="flex gap-1">
@@ -58,7 +58,7 @@ function ColourThemeSwatch({ label, chips, active, onClick }: SwatchProps) {
           <span key={i} className="w-4 h-4 rounded-full border border-white/20" style={{ background: c }} />
         ))}
       </div>
-      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{label}</span>
+      <span className="text-sm font-medium text-body">{label}</span>
       {active && <span className="ml-auto text-xs text-primary-600 font-semibold">Active</span>}
     </button>
   )
@@ -154,7 +154,7 @@ export const SettingsPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-dim mb-2">
               Items Per Page
               <span aria-hidden="true" className="text-red-500 ml-0.5">*</span>
             </label>
@@ -163,7 +163,7 @@ export const SettingsPage: React.FC = () => {
               value={itemsPerPage}
               onChange={(e) => setItemsPerPage(Number(e.target.value))}
               aria-required="true"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-edge bg-card text-body rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -172,7 +172,7 @@ export const SettingsPage: React.FC = () => {
                 checked={autoRefresh}
                 onChange={(checked) => setAutoRefresh(checked)}
               />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Auto-refresh queue</span>
+              <span className="text-sm font-medium text-dim">Auto-refresh queue</span>
             </label>
           </div>
         </div>
@@ -186,7 +186,7 @@ export const SettingsPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-dim mb-2">
               Scan Schedule (cron expression)
               <span aria-hidden="true" className="text-red-500 ml-0.5">*</span>
             </label>
@@ -195,10 +195,10 @@ export const SettingsPage: React.FC = () => {
               value={scanSchedule}
               onChange={(e) => setScanSchedule(e.target.value)}
               aria-required="true"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
+              className="w-full px-3 py-2 border border-edge bg-card text-body rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
               placeholder="0 2 * * *"
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs text-hint">
               Examples: <code>0 2 * * *</code> = 2AM daily, <code>0 */6 * * *</code> = every 6 hours,{' '}
               <code>*/5 * * * *</code> = every 5 minutes
             </p>
@@ -218,7 +218,7 @@ export const SettingsPage: React.FC = () => {
         <div className="space-y-4">
           {/* Colour theme */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Colour Theme</p>
+            <p className="text-sm font-medium text-dim">Colour Theme</p>
             <div className="space-y-2">
               <ColourThemeSwatch
                 label="Default"
@@ -243,10 +243,10 @@ export const SettingsPage: React.FC = () => {
 
           {/* Light / dark mode — only relevant for Default theme */}
           <div className={colourTheme !== 'default' ? 'opacity-40 pointer-events-none select-none' : ''}>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <p className="text-sm font-medium text-dim mb-2">
               Light / Dark Mode
               {colourTheme !== 'default' && (
-                <span className="ml-2 text-xs font-normal text-gray-400">(not available for this theme)</span>
+                <span className="ml-2 text-xs font-normal text-hint">(not available for this theme)</span>
               )}
             </p>
             <div className="space-y-2">
@@ -258,7 +258,7 @@ export const SettingsPage: React.FC = () => {
                     checked={theme === option}
                     onChange={(val) => setTheme(val as 'light' | 'dark' | 'auto')}
                   />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{option}</span>
+                  <span className="text-sm font-medium text-dim capitalize">{option}</span>
                 </label>
               ))}
             </div>
@@ -278,14 +278,14 @@ export const SettingsPage: React.FC = () => {
               checked={notifications}
               onChange={(checked) => setNotifications(checked)}
             />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable notifications</span>
+            <span className="text-sm font-medium text-dim">Enable notifications</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <CheckboxInput
               checked={soundEnabled}
               onChange={(checked) => setSoundEnabled(checked)}
             />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sound enabled</span>
+            <span className="text-sm font-medium text-dim">Sound enabled</span>
           </label>
         </div>
       </SettingsSection>
@@ -298,13 +298,13 @@ export const SettingsPage: React.FC = () => {
       >
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-dim mb-2">
               Naming Preset
             </label>
             <select
               value={orgPreset}
               onChange={(e) => handleOrgPresetChange(e.target.value as OrganisationPreset)}
-              className="w-full sm:w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full sm:w-48 px-3 py-2 border border-edge bg-card text-body rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="plex">Plex</option>
               <option value="jellyfin">Jellyfin</option>

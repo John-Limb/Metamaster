@@ -120,15 +120,15 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
 
   return (
     <div
-      className={`bg-white shadow-lg rounded-lg p-4 ${className}`}
+      className={`bg-card shadow-lg rounded-lg p-4 ${className}`}
       role="region"
       aria-label="Filter panel"
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-medium text-gray-900">Filters</h3>
+        <h3 className="text-lg font-medium text-body">Filters</h3>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+          className="text-hint hover:text-dim focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
           aria-label="Close filter panel"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +142,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
         <div>
           <label
             htmlFor="filter-type"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             Content Type
           </label>
@@ -150,7 +150,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
             id="filter-type"
             value={localFilters.type || ''}
             onChange={(e) => handleFilterChange('type', e.target.value)}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border border-edge bg-card text-body rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
             <option value="">All Types</option>
             <option value="file">Files</option>
@@ -163,7 +163,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
         <div>
           <label
             htmlFor="filter-file-type"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             File Type
           </label>
@@ -171,7 +171,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
             id="filter-file-type"
             value={localFilters.fileType || ''}
             onChange={(e) => handleFilterChange('fileType', e.target.value)}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border border-edge bg-card text-body rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
             <option value="">All File Types</option>
             {FILE_TYPES.map((type) => (
@@ -186,7 +186,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
         <div>
           <label
             htmlFor="filter-date-range"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             Date Range
           </label>
@@ -200,7 +200,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
                 : ''
             }
             onChange={(e) => handleDateRangeChange(e.target.value)}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border border-edge bg-card text-body rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
             <option value="">Any Time</option>
             {DATE_RANGES.map((range) => (
@@ -217,7 +217,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
           <div>
             <label
               htmlFor="filter-date-from"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-dim mb-1"
             >
               From Date
             </label>
@@ -226,7 +226,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
               id="filter-date-from"
               value={localFilters.dateFrom?.split('T')[0] || ''}
               onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-edge bg-card text-body rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
         )}
@@ -236,7 +236,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
           <div>
             <label
               htmlFor="filter-date-to"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-dim mb-1"
             >
               To Date
             </label>
@@ -245,7 +245,7 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
               id="filter-date-to"
               value={localFilters.dateTo?.split('T')[0] || ''}
               onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full border border-edge bg-card text-body rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
         )}
@@ -254,14 +254,14 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
         <div>
           <label
             htmlFor="filter-size-range"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-dim mb-1"
           >
             File Size
           </label>
           <select
             id="filter-size-range"
             onChange={(e) => handleSizeRangeChange(e.target.value)}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border border-edge bg-card text-body rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
           >
             <option value="">Any Size</option>
             {SIZE_RANGES.map((range) => (
@@ -275,8 +275,8 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
 
       {/* Active Filters Summary */}
       {(filters.type || filters.fileType || filters.dateFrom || filters.sizeMin) && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="text-sm text-gray-600 mb-2">Active filters:</p>
+        <div className="mt-4 pt-4 border-t border-edge">
+          <p className="text-sm text-dim mb-2">Active filters:</p>
           <div className="flex flex-wrap gap-2">
             {filters.type && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -298,16 +298,16 @@ export function FilterPanel({ isOpen = true, onClose, className = '' }: FilterPa
       )}
 
       {/* Actions */}
-      <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-3">
+      <div className="mt-4 pt-4 border-t border-edge flex justify-end space-x-3">
         <button
           onClick={handleClearFilters}
-          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="px-4 py-2 border border-edge rounded-md text-sm font-medium text-dim bg-card hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
           Clear All
         </button>
         <button
           onClick={handleApplyFilters}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
           Apply Filters
         </button>

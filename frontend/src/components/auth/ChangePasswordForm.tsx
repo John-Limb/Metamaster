@@ -49,7 +49,7 @@ const PasswordStrengthIndicator: React.FC<{ password: string }> = ({
   const metCount = requirements.filter((r) => r.met).length
   const strengthLevel = metCount === 0 ? 0 : metCount
 
-  const strengthColors = ['bg-secondary-200', 'bg-danger', 'bg-warning', 'bg-info', 'bg-success']
+  const strengthColors = ['bg-subtle', 'bg-danger', 'bg-warning', 'bg-info', 'bg-success']
   const strengthLabels = ['', 'Weak', 'Fair', 'Good', 'Strong']
 
   if (!password) return null
@@ -61,13 +61,13 @@ const PasswordStrengthIndicator: React.FC<{ password: string }> = ({
           <div
             key={level}
             className={`h-1 flex-1 rounded-full transition-colors ${
-              level <= strengthLevel ? strengthColors[strengthLevel] : 'bg-secondary-200 dark:bg-secondary-700'
+              level <= strengthLevel ? strengthColors[strengthLevel] : 'bg-subtle'
             }`}
           />
         ))}
       </div>
       {strengthLevel > 0 && (
-        <p className="text-xs text-secondary-600 dark:text-secondary-400">
+        <p className="text-xs text-dim">
           Password strength: {strengthLabels[strengthLevel]}
         </p>
       )}
@@ -76,7 +76,7 @@ const PasswordStrengthIndicator: React.FC<{ password: string }> = ({
           <li
             key={index}
             className={`flex items-center gap-1.5 ${
-              req.met ? 'text-success dark:text-success-400' : 'text-secondary-500 dark:text-secondary-400'
+              req.met ? 'text-success dark:text-success-400' : 'text-hint'
             }`}
           >
             {req.met ? (
@@ -156,7 +156,7 @@ export const ChangePasswordForm: React.FC = () => {
   if (success) {
     return (
       <div className="w-full max-w-md mx-auto">
-        <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-lg p-8">
+        <div className="bg-card rounded-xl shadow-lg p-8">
           <div className="text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-success-100 dark:bg-success-900/30 mb-4">
               <svg
@@ -175,10 +175,10 @@ export const ChangePasswordForm: React.FC = () => {
                 />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-secondary-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold text-body mb-2">
               Password changed!
             </h1>
-            <p className="text-secondary-600 dark:text-secondary-400">
+            <p className="text-dim">
               Your password has been successfully updated. Redirecting...
             </p>
           </div>
@@ -189,17 +189,17 @@ export const ChangePasswordForm: React.FC = () => {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-lg p-8">
+      <div className="bg-card rounded-xl shadow-lg p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-secondary-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-body mb-2">
             Change your password
           </h1>
           {requiresPasswordChange ? (
-            <p className="text-secondary-600 dark:text-secondary-400">
+            <p className="text-dim">
               You need to change your password before continuing
             </p>
           ) : (
-            <p className="text-secondary-600 dark:text-secondary-400">
+            <p className="text-dim">
               Enter your current password and choose a new one
             </p>
           )}
@@ -245,7 +245,7 @@ export const ChangePasswordForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-[38px] min-h-0 min-w-0 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+                className="absolute right-3 top-[38px] min-h-0 min-w-0 text-hint hover:text-dim focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
                 aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
               >
                 {showCurrentPassword ? (
@@ -296,7 +296,7 @@ export const ChangePasswordForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-[38px] min-h-0 min-w-0 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+                  className="absolute right-3 top-[38px] min-h-0 min-w-0 text-hint hover:text-dim focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
                   aria-label={showNewPassword ? 'Hide password' : 'Show password'}
                 >
                   {showNewPassword ? (
@@ -348,7 +348,7 @@ export const ChangePasswordForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-[38px] min-h-0 min-w-0 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+                className="absolute right-3 top-[38px] min-h-0 min-w-0 text-hint hover:text-dim focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
                 aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
               >
                 {showConfirmPassword ? (

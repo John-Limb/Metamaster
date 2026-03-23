@@ -134,8 +134,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 z-50 transition-shadow duration-200 ${
-        isScrolled ? 'shadow-md dark:shadow-lg' : 'shadow-sm'
+      className={`fixed top-0 left-0 right-0 h-16 bg-card border-b border-edge z-50 transition-shadow duration-200 ${
+        isScrolled ? 'shadow-md' : 'shadow-sm'
       }`}
     >
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
@@ -146,7 +146,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
             <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
               <span className="text-white font-bold text-lg">M</span>
             </div>
-            <span className="hidden sm:inline-block font-bold text-xl text-gray-900 dark:text-white">
+            <span className="hidden sm:inline-block font-bold text-xl text-body">
               Metamaster
             </span>
           </Link>
@@ -171,7 +171,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
                     active
                       ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      : 'text-dim hover:bg-subtle'
                   }`}
                 >
                   {item.icon}
@@ -188,15 +188,15 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
             <div
               className={`relative flex items-center transition-all duration-200 ${
                 isSearchFocused
-                  ? 'bg-card shadow-md ring-2 ring-indigo-500 rounded-xl -ml-2'
-                  : 'bg-gray-100 dark:bg-gray-800 rounded-xl'
+                  ? 'bg-card shadow-md ring-2 ring-primary-500 rounded-xl -ml-2'
+                  : 'bg-subtle rounded-xl'
               }`}
             >
               <FaSearch
                 className={`absolute left-3 w-4 h-4 transition-colors ${
                   isSearchFocused
                     ? 'text-primary-500'
-                    : 'text-gray-400 dark:text-gray-500'
+                    : 'text-hint'
                 }`}
               />
               <input
@@ -207,7 +207,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 onKeyDown={handleSearchKeyDown}
-                className="w-full py-2.5 pl-10 pr-10 bg-transparent border-0 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
+                className="w-full py-2.5 pl-10 pr-10 bg-transparent border-0 text-sm text-body placeholder-hint focus:outline-none"
                 aria-label="Search"
                 aria-expanded={isSearchFocused}
                 aria-controls="search-results"
@@ -218,7 +218,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
                     setSearchQuery('')
                     setSearchResults([])
                   }}
-                  className="absolute right-3 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="absolute right-3 p-1 text-hint hover:text-dim transition-colors"
                   aria-label="Clear search"
                 >
                   <FaTimes className="w-3.5 h-3.5" />
@@ -239,7 +239,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
                       <button
                         key={result.id}
                         role="option"
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-dim hover:bg-subtle transition-colors focus:outline-none focus:bg-subtle"
                         onClick={() => {
                           console.log('Search result clicked:', result)
                           setIsSearchFocused(false)
@@ -255,7 +255,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
                     ))}
                   </div>
                 ) : searchQuery.length > 1 ? (
-                  <div className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <div className="px-4 py-6 text-center text-sm text-hint">
                     No results found for "{searchQuery}"
                   </div>
                 ) : null}
@@ -269,7 +269,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
           {/* Mobile search button */}
           <button
             onClick={() => setIsSearchOpen(!isSearchOpen)}
-            className="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="md:hidden p-2 text-dim hover:bg-subtle rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500"
             aria-label="Open search"
           >
             <FaSearch className="w-5 h-5" />
@@ -279,7 +279,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
           {colourTheme === 'default' && (
             <button
               onClick={toggleTheme}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="p-2 text-dim hover:bg-subtle rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500"
               aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
             >
               {resolvedTheme === 'dark' ? (
@@ -311,7 +311,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
 
       {/* Mobile Search Overlay */}
       {isSearchOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 animate-in fade-in duration-150">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-card border-b border-edge p-4 animate-in fade-in duration-150">
           <div className="relative">
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -319,7 +319,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
               placeholder="Search movies, TV shows, files..."
               value={searchQuery}
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}
-              className="w-full py-2.5 pl-10 pr-10 bg-gray-100 dark:bg-gray-800 border-0 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full py-2.5 pl-10 pr-10 bg-subtle border-0 rounded-lg text-sm text-body placeholder-hint focus:outline-none focus:ring-2 focus:ring-primary-500"
               autoFocus
             />
             {searchQuery && (
@@ -328,7 +328,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick: _onMenuClick }) => 
                   setSearchQuery('')
                   setSearchResults([])
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-hint hover:text-dim"
               >
                 <FaTimes className="w-4 h-4" />
               </button>

@@ -78,8 +78,8 @@ export function QueueItem({
   return (
     <>
       <div
-        className={`bg-white rounded-lg border p-4 hover:shadow-md transition-shadow ${
-          task.status === 'failed' ? 'border-red-200' : 'border-gray-200'
+        className={`bg-card rounded-lg border p-4 hover:shadow-md transition-shadow ${
+          task.status === 'failed' ? 'border-red-200' : 'border-edge'
         }`}
         role="listitem"
         aria-label={`Task ${task.id}: ${TASK_TYPE_LABELS[task.type]} - ${task.status}`}
@@ -102,12 +102,12 @@ export function QueueItem({
                 >
                   {TASK_TYPE_LABELS[task.type]}
                 </span>
-                <span className="text-sm text-gray-500 capitalize">{task.status}</span>
+                <span className="text-sm text-hint capitalize">{task.status}</span>
               </div>
-              <p className="mt-1 text-sm font-medium text-gray-900">
+              <p className="mt-1 text-sm font-medium text-body">
                 Task ID: {task.id}
               </p>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-hint">
                 Created: {formatDate(task.createdAt)}
               </p>
               {task.error && (
@@ -140,7 +140,7 @@ export function QueueItem({
               <button
                 onClick={() => setShowConfirmDialog(true)}
                 disabled={isLoading}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                className="inline-flex items-center px-3 py-1.5 border border-edge text-xs font-medium rounded text-dim bg-card hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
                 aria-label={`Cancel task ${task.id}`}
               >
                 Cancel
@@ -148,7 +148,7 @@ export function QueueItem({
             )}
             <button
               onClick={handleViewDetails}
-              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-3 py-1.5 border border-edge text-xs font-medium rounded text-dim bg-card hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               aria-label={`View details for task ${task.id}`}
             >
               Details

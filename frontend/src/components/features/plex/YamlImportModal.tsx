@@ -39,7 +39,7 @@ export function YamlImportModal({ onClose, onImported }: YamlImportModalProps) {
           </h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            className="text-hint hover:text-dim transition-colors"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,7 +66,7 @@ export function YamlImportModal({ onClose, onImported }: YamlImportModalProps) {
               rows={14}
               value={yamlContent}
               onChange={e => setYamlContent(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-body px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              className="w-full rounded-lg border border-edge bg-card text-body px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
               placeholder="collections:&#10;  Marvel Cinematic Universe:&#10;    description: All MCU films&#10;    builder:&#10;      builder_type: tmdb_collection&#10;      tmdb_collection_id: '86311'"
             />
           </div>
@@ -78,7 +78,7 @@ export function YamlImportModal({ onClose, onImported }: YamlImportModalProps) {
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-600 text-dim hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
+              className="px-4 py-2 rounded-lg text-sm font-medium border border-edge text-dim hover:bg-subtle disabled:opacity-40 transition-colors"
             >
               Cancel
             </button>

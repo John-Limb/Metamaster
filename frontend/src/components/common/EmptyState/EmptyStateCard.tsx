@@ -47,13 +47,13 @@ export const EmptyStateCardSkeleton: React.FC<{ count?: number; minHeight?: numb
         >
           <div className="text-center p-8">
             {/* Icon placeholder */}
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-secondary-200 dark:bg-secondary-700" />
-            
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-subtle" />
+
             {/* Title placeholder */}
-            <div className="h-5 w-32 mx-auto mb-2 rounded bg-secondary-200 dark:bg-secondary-700" />
-            
+            <div className="h-5 w-32 mx-auto mb-2 rounded bg-subtle" />
+
             {/* Description placeholder */}
-            <div className="h-4 w-48 mx-auto rounded bg-secondary-200 dark:bg-secondary-700" />
+            <div className="h-4 w-48 mx-auto rounded bg-subtle" />
           </div>
         </Card>
       ))}
@@ -73,9 +73,9 @@ export const InlineEmptyState: React.FC<Omit<EmptyStateProps, 'illustration' | '
     <div className="flex flex-col items-center justify-center py-8 text-center">
       <div className="flex items-center gap-3 mb-3">
         {/* Small icon */}
-        <div className="w-8 h-8 rounded-full bg-secondary-100 dark:bg-secondary-800 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full bg-subtle flex items-center justify-center">
           <svg
-            className="w-4 h-4 text-secondary-500"
+            className="w-4 h-4 text-hint"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -96,8 +96,8 @@ export const InlineEmptyState: React.FC<Omit<EmptyStateProps, 'illustration' | '
         </div>
         
         <div className="text-left">
-          <p className="text-sm font-medium text-secondary-900 dark:text-white">{title}</p>
-          <p className="text-xs text-secondary-500 dark:text-secondary-400">{description}</p>
+          <p className="text-sm font-medium text-body">{title}</p>
+          <p className="text-xs text-hint">{description}</p>
         </div>
       </div>
 
@@ -106,7 +106,7 @@ export const InlineEmptyState: React.FC<Omit<EmptyStateProps, 'illustration' | '
           {secondaryAction && (
             <button
               onClick={secondaryAction.onClick}
-              className="text-xs px-3 py-1.5 text-secondary-600 dark:text-secondary-400 hover:text-secondary-900 dark:hover:text-white transition-colors"
+              className="text-xs px-3 py-1.5 text-dim hover:text-body transition-colors"
             >
               {secondaryAction.label}
             </button>

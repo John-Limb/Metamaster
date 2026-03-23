@@ -42,7 +42,7 @@ export function SavedSearches({ className = '', onSelect }: SavedSearchesProps) 
     return (
       <div className={`text-center py-8 ${className}`}>
         <svg
-          className="mx-auto h-12 w-12 text-gray-400"
+          className="mx-auto h-12 w-12 text-hint"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -55,8 +55,8 @@ export function SavedSearches({ className = '', onSelect }: SavedSearchesProps) 
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
           />
         </svg>
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No saved searches</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <h3 className="mt-2 text-sm font-medium text-body">No saved searches</h3>
+        <p className="mt-1 text-sm text-hint">
           Save your search filters for quick access later.
         </p>
       </div>
@@ -65,26 +65,26 @@ export function SavedSearches({ className = '', onSelect }: SavedSearchesProps) 
 
   return (
     <div className={className}>
-      <h3 className="text-lg font-medium text-gray-900 mb-4">Saved Searches</h3>
-      <ul className="divide-y divide-gray-200" role="list" aria-label="Saved searches">
+      <h3 className="text-lg font-medium text-body mb-4">Saved Searches</h3>
+      <ul className="divide-y divide-edge" role="list" aria-label="Saved searches">
         {savedSearches.map((search) => (
           <li
             key={search.id}
-            className="py-4 flex items-center justify-between hover:bg-gray-50 px-2 rounded-md transition-colors"
+            className="py-4 flex items-center justify-between hover:bg-subtle px-2 rounded-md transition-colors"
           >
             <div className="flex-1 min-w-0">
               <button
                 onClick={() => handleLoadSearch(search.id)}
-                className="text-left focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1 -ml-1"
+                className="text-left focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-1 -ml-1"
               >
                 <p className="text-sm font-medium text-blue-600 truncate">
                   {search.name}
                 </p>
-                <p className="text-sm text-gray-500 truncate">
+                <p className="text-sm text-hint truncate">
                   {search.filters.query || 'No query'} •{' '}
                   {search.filters.type || 'All types'}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-hint mt-1">
                   Saved on {new Date(search.createdAt).toLocaleDateString()}
                 </p>
               </button>
@@ -92,7 +92,7 @@ export function SavedSearches({ className = '', onSelect }: SavedSearchesProps) 
             <div className="ml-4 flex-shrink-0">
               <button
                 onClick={() => handleDeleteClick(search.id)}
-                className="text-gray-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1"
+                className="text-hint hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1"
                 aria-label={`Delete saved search "${search.name}"`}
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -74,7 +74,7 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
           <button
             onClick={onClose}
             disabled={isRetrying}
-            className="px-4 py-2 text-dim bg-subtle rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="px-4 py-2 text-dim bg-subtle rounded-lg hover:bg-subtle/80 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             Close
           </button>

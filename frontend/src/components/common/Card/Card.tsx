@@ -35,10 +35,10 @@ const paddingClasses = {
 }
 
 const variantClasses = {
-  default: 'bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700',
-  elevated: 'bg-white dark:bg-secondary-800',
-  outlined: 'bg-transparent border border-secondary-200 dark:border-secondary-700',
-  bordered: 'bg-transparent border border-secondary-200 dark:border-secondary-700',
+  default: 'bg-card border border-edge',
+  elevated: 'bg-card',
+  outlined: 'bg-transparent border border-edge',
+  bordered: 'bg-transparent border border-edge',
 }
 
 const variantShadowClasses = {
@@ -124,7 +124,7 @@ export const Card: React.FC<CardProps> & {
 
 Card.Header = ({ children, className = '' }) => (
   <div
-    className={`border-b border-secondary-200 dark:border-secondary-700 pb-4 mb-4 ${className}`}
+    className={`border-b border-edge pb-4 mb-4 ${className}`}
     role="heading"
     aria-level={3}
   >
@@ -137,7 +137,7 @@ Card.Content = ({ children, className = '' }) => (
 )
 
 Card.Footer = ({ children, className = '' }) => (
-  <div className={`border-t border-secondary-200 dark:border-secondary-700 pt-4 mt-4 ${className}`}>
+  <div className={`border-t border-edge pt-4 mt-4 ${className}`}>
     {children}
   </div>
 )

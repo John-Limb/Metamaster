@@ -44,8 +44,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   return (
     <>
       <div
-        className={`flex items-center gap-2 px-2 py-1 hover:bg-gray-100 cursor-pointer transition ${
-          isSelected ? 'bg-blue-50' : ''
+        className={`flex items-center gap-2 px-2 py-1 hover:bg-subtle cursor-pointer transition ${
+          isSelected ? 'bg-primary-50 dark:bg-primary-900/20' : ''
         }`}
         style={{ paddingLeft: `${level * 20 + 8}px` }}
         onClick={() => onSelectFile(node.id)}
@@ -58,12 +58,12 @@ const TreeNode: React.FC<TreeNodeProps> = ({
               e.stopPropagation()
               onToggleExpand(node.id)
             }}
-            className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-gray-200 rounded"
+            className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-subtle rounded"
           >
             {isExpanded ? (
-              <FaChevronDown className="w-3 h-3 text-gray-600" />
+              <FaChevronDown className="w-3 h-3 text-dim" />
             ) : (
-              <FaChevronRight className="w-3 h-3 text-gray-600" />
+              <FaChevronRight className="w-3 h-3 text-dim" />
             )}
           </button>
         ) : (
@@ -73,10 +73,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         {isDirectory ? (
           <FaFolder className="w-4 h-4 text-blue-500 flex-shrink-0" />
         ) : (
-          <FaFile className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <FaFile className="w-4 h-4 text-hint flex-shrink-0" />
         )}
 
-        <span className="text-sm text-gray-900 truncate flex-grow">{node.name}</span>
+        <span className="text-sm text-body truncate flex-grow">{node.name}</span>
       </div>
 
       {isDirectory && isExpanded && hasChildren && (
@@ -132,14 +132,14 @@ export const FileTree: React.FC<FileTreeProps> = ({
   if (files.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-gray-500 text-lg">{emptyMessage}</p>
+        <p className="text-hint text-lg">{emptyMessage}</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="divide-y divide-gray-200">
+    <div className="bg-card rounded-lg border border-edge overflow-hidden">
+      <div className="divide-y divide-edge">
         {files.map((file) => (
           <TreeNode
             key={file.id}

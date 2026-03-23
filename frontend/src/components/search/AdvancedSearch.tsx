@@ -50,10 +50,10 @@ export function AdvancedSearch({
         <div className="flex gap-2">
           <button
             onClick={toggleFilters}
-            className={`px-4 py-2 rounded-lg border font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+            className={`px-4 py-2 rounded-lg border font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
               isFilterOpen
-                ? 'bg-blue-50 border-blue-200 text-blue-700'
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                ? 'bg-primary-50 border-primary-200 text-primary-700 dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-400'
+                : 'bg-card border-edge text-dim hover:bg-subtle'
             }`}
             aria-pressed={isFilterOpen}
             aria-label="Toggle filters"
@@ -70,10 +70,10 @@ export function AdvancedSearch({
           {showSavedSearches && (
             <button
               onClick={toggleSavedSearches}
-              className={`px-4 py-2 rounded-lg border font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+              className={`px-4 py-2 rounded-lg border font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
                 isSavedSearchesOpen
-                  ? 'bg-blue-50 border-blue-200 text-blue-700'
-                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-primary-50 border-primary-200 text-primary-700 dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-400'
+                  : 'bg-card border-edge text-dim hover:bg-subtle'
               }`}
               aria-pressed={isSavedSearchesOpen}
               aria-label="Toggle saved searches"
@@ -101,7 +101,7 @@ export function AdvancedSearch({
 
       {/* Saved Searches Panel */}
       {isSavedSearchesOpen && (
-        <div className="bg-white shadow-lg rounded-lg p-4">
+        <div className="bg-card shadow-lg rounded-lg p-4">
           <SavedSearches
             onSelect={() => {
               setIsSavedSearchesOpen(false)
@@ -114,7 +114,7 @@ export function AdvancedSearch({
       {/* Active Filters Summary */}
       {(filters.type || filters.fileType || filters.dateFrom || filters.sizeMin) && (
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Active filters:</span>
+          <span className="text-sm text-hint">Active filters:</span>
           <div className="flex flex-wrap gap-2">
             {filters.type && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">

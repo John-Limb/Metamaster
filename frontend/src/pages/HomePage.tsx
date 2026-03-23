@@ -53,10 +53,10 @@ export const HomePage: React.FC = () => {
     <div className="space-y-12">
       {/* Hero Section */}
       <section className="text-center py-12">
-        <h1 className="text-4xl sm:text-5xl font-bold text-secondary-900 dark:text-white mb-4">
+        <h1 className="text-4xl sm:text-5xl font-bold text-body mb-4">
           Welcome to Metamaster
         </h1>
-        <p className="text-xl text-secondary-600 dark:text-secondary-400 mb-8 max-w-2xl mx-auto">
+        <p className="text-xl text-dim mb-8 max-w-2xl mx-auto">
           Your powerful media management and file navigation tool. Organize, search, and manage your digital library with ease.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -78,7 +78,7 @@ export const HomePage: React.FC = () => {
 
       {/* Features Grid */}
       <section>
-        <h2 className="text-3xl font-bold text-secondary-900 dark:text-white mb-8 text-center">Features</h2>
+        <h2 className="text-3xl font-bold text-body mb-8 text-center">Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <Link key={index} to={feature.link}>
@@ -88,8 +88,8 @@ export const HomePage: React.FC = () => {
                 className="p-6 h-full transition-all duration-200 hover:shadow-md"
               >
                 <div className="text-primary-500 mb-4">{feature.icon}</div>
-                <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-2">{feature.title}</h3>
-                <p className="text-secondary-600 dark:text-secondary-400 text-sm">{feature.description}</p>
+                <h3 className="text-lg font-semibold text-body mb-2">{feature.title}</h3>
+                <p className="text-dim text-sm">{feature.description}</p>
               </Card>
             </Link>
           ))}
@@ -98,7 +98,7 @@ export const HomePage: React.FC = () => {
 
       {/* Quick Stats - Uses Empty State pattern instead of hardcoded 0 */}
       <Card variant="bordered" className="p-8">
-        <h2 className="text-2xl font-bold text-secondary-900 dark:text-white mb-6">Quick Stats</h2>
+        <h2 className="text-2xl font-bold text-body mb-6">Quick Stats</h2>
         <EmptyState
           iconVariant="noData"
           title="Nothing here, yet"
@@ -115,7 +115,7 @@ export const HomePage: React.FC = () => {
       {/* CTA Section */}
       <Card variant="elevated" className="bg-secondary-900 p-8 text-center">
         <h2 className="text-2xl font-bold text-white mb-4">Ready to get started?</h2>
-        <p className="text-secondary-300 mb-6">
+        <p className="text-dim mb-6">
           Start managing your media library today with Metamaster.
         </p>
         <Button

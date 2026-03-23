@@ -112,17 +112,17 @@ function MoviesSection({
           type="button"
           variant="ghost"
           size="sm"
-          className="flex items-center gap-3 flex-1 px-5 py-3.5 !justify-start hover:bg-slate-50 dark:hover:bg-slate-700/30"
+          className="flex items-center gap-3 flex-1 px-5 py-3.5 !justify-start hover:bg-subtle"
           onClick={onToggleSection}
         >
           {collapsed ? (
-            <FaChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <FaChevronRight className="w-3.5 h-3.5 text-hint shrink-0" />
           ) : (
-            <FaChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <FaChevronDown className="w-3.5 h-3.5 text-hint shrink-0" />
           )}
           <span className="font-semibold text-body">
             Movies
-            <span className="ml-2 text-sm font-normal text-slate-400">({movies.length})</span>
+            <span className="ml-2 text-sm font-normal text-hint">({movies.length})</span>
           </span>
         </Button>
         {movies.length > 0 && !collapsed && (
@@ -162,7 +162,7 @@ function MoviesSection({
               {movies.map((m) => {
                 const key = `movie-${m.file_id}`
                 return (
-                  <tr key={key} className="hover:bg-slate-50 dark:hover:bg-slate-700/20">
+                  <tr key={key} className="hover:bg-subtle">
                     <td className="px-5 py-2">
                       <CheckboxInput
                         checked={selected.has(key)}
@@ -217,7 +217,7 @@ function ShowGroupItem({
   return (
     <div className="border-b border-rule/50 last:border-b-0">
       {/* Show header */}
-      <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50/50 dark:bg-slate-700/20">
+      <div className="flex items-center justify-between px-5 py-2.5 bg-subtle/50">
         <Button
           type="button"
           variant="ghost"
@@ -226,9 +226,9 @@ function ShowGroupItem({
           onClick={() => onToggleShow(group.show_title)}
         >
           {isShowCollapsed ? (
-            <FaChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
+            <FaChevronRight className="w-3 h-3 text-hint shrink-0" />
           ) : (
-            <FaChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+            <FaChevronDown className="w-3 h-3 text-hint shrink-0" />
           )}
           <IndeterminateCheckbox
             keys={allShowKeys}
@@ -238,7 +238,7 @@ function ShowGroupItem({
           />
           <span className="text-sm font-medium text-dim ml-1 truncate">
             {group.show_title}
-            <span className="ml-2 text-xs font-normal text-slate-400">
+            <span className="ml-2 text-xs font-normal text-hint">
               ({allShowKeys.length})
             </span>
           </span>
@@ -273,9 +273,9 @@ function ShowGroupItem({
                   onClick={() => onToggleSeason(seasonKey)}
                 >
                   {isSeasonCollapsed ? (
-                    <FaChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
+                    <FaChevronRight className="w-3 h-3 text-hint shrink-0" />
                   ) : (
-                    <FaChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+                    <FaChevronDown className="w-3 h-3 text-hint shrink-0" />
                   )}
                   <IndeterminateCheckbox
                     keys={sKeys}
@@ -285,7 +285,7 @@ function ShowGroupItem({
                   />
                   <span className="text-xs font-medium text-dim ml-1">
                     Season {String(season.season_number).padStart(2, '0')}
-                    <span className="ml-2 font-normal text-slate-400">
+                    <span className="ml-2 font-normal text-hint">
                       ({season.episodes.length})
                     </span>
                   </span>
@@ -308,7 +308,7 @@ function ShowGroupItem({
                     {season.episodes.map((ep) => {
                       const key = `episode-${ep.file_id}`
                       return (
-                        <tr key={key} className="hover:bg-slate-50 dark:hover:bg-slate-700/20">
+                        <tr key={key} className="hover:bg-subtle">
                           <td className="pl-16 pr-3 py-1.5 w-16">
                             <CheckboxInput
                               checked={selected.has(key)}
@@ -381,17 +381,17 @@ function TVShowsSection({
           type="button"
           variant="ghost"
           size="sm"
-          className="flex items-center gap-3 flex-1 !justify-start hover:text-slate-600 dark:hover:text-slate-300"
+          className="flex items-center gap-3 flex-1 !justify-start hover:text-dim"
           onClick={onToggleSection}
         >
           {collapsed ? (
-            <FaChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <FaChevronRight className="w-3.5 h-3.5 text-hint shrink-0" />
           ) : (
-            <FaChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <FaChevronDown className="w-3.5 h-3.5 text-hint shrink-0" />
           )}
           <span className="font-semibold text-body">
             TV Shows
-            <span className="ml-2 text-sm font-normal text-slate-400">
+            <span className="ml-2 text-sm font-normal text-hint">
               ({episodes.length} episode{episodes.length !== 1 ? 's' : ''},{' '}
               {showGroups.length} show{showGroups.length !== 1 ? 's' : ''})
             </span>

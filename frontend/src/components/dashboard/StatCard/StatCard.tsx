@@ -26,7 +26,7 @@ export interface StatCardProps {
 
 const VARIANT_STYLES = {
   default: {
-    iconBg: 'bg-slate-100 dark:bg-slate-800',
+    iconBg: 'bg-subtle',
     iconColor: 'text-dim',
     badge: 'primary' as const,
   },

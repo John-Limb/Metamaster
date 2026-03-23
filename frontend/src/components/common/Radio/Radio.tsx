@@ -37,7 +37,7 @@ export const RadioInput: React.FC<RadioInputProps> = ({
         className={`pointer-events-none w-full h-full rounded-full border transition-colors flex items-center justify-center ${
           checked
             ? 'bg-primary-500 border-primary-500 dark:bg-primary-400 dark:border-primary-400'
-            : 'bg-card border-slate-300 dark:border-slate-600 group-hover/rb:border-primary-400 dark:group-hover/rb:border-primary-500'
+            : 'bg-card border-edge group-hover/rb:border-primary-400 dark:group-hover/rb:border-primary-500'
         }`}
       >
         {checked && (
@@ -89,8 +89,8 @@ export const Radio: React.FC<RadioProps> = ({
         htmlFor={radioId}
         className={`text-sm font-medium cursor-pointer select-none ${
           disabled
-            ? 'text-slate-400 dark:text-slate-600'
-            : 'text-slate-700 dark:text-slate-300'
+            ? 'text-hint'
+            : 'text-dim'
         }`}
       >
         {label}

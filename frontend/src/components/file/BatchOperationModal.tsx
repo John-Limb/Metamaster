@@ -73,39 +73,39 @@ export const BatchOperationModal: React.FC<BatchOperationModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6 space-y-6">
+      <div className="bg-card rounded-lg shadow-lg max-w-md w-full mx-4 p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {operation === 'delete' && <FaTrash className="w-5 h-5 text-red-600" />}
             {operation === 'move' && <FaArrowRight className="w-5 h-5 text-blue-600" />}
             {operation === 'rename' && <FaEdit className="w-5 h-5 text-yellow-600" />}
-            <h2 className="text-lg font-semibold text-gray-900 capitalize">
+            <h2 className="text-lg font-semibold text-body capitalize">
               Batch {operation}
             </h2>
           </div>
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
+            className="text-hint hover:text-dim disabled:opacity-50"
           >
             <FaTimes className="w-5 h-5" />
           </button>
         </div>
 
         {/* File Count */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <p className="text-sm text-gray-600">
+        <div className="bg-subtle rounded-lg p-4">
+          <p className="text-sm text-dim">
             {files.length} file{files.length !== 1 ? 's' : ''} selected
           </p>
           <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
             {files.slice(0, 5).map((file) => (
-              <p key={file.id} className="text-xs text-gray-700 truncate">
+              <p key={file.id} className="text-xs text-body truncate">
                 • {file.name}
               </p>
             ))}
             {files.length > 5 && (
-              <p className="text-xs text-gray-500">... and {files.length - 5} more</p>
+              <p className="text-xs text-hint">... and {files.length - 5} more</p>
             )}
           </div>
         </div>
@@ -113,7 +113,7 @@ export const BatchOperationModal: React.FC<BatchOperationModalProps> = ({
         {/* Operation-specific inputs */}
         {operation === 'move' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-dim mb-2">
               Destination Path
             </label>
             <input
@@ -122,14 +122,14 @@ export const BatchOperationModal: React.FC<BatchOperationModalProps> = ({
               onChange={(e) => setNewPath(e.target.value)}
               placeholder="/path/to/destination"
               disabled={isProcessing}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-edge bg-card text-body rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-subtle"
             />
           </div>
         )}
 
         {operation === 'rename' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-dim mb-2">
               Name Prefix
             </label>
             <input
@@ -138,9 +138,9 @@ export const BatchOperationModal: React.FC<BatchOperationModalProps> = ({
               onChange={(e) => setNewNamePrefix(e.target.value)}
               placeholder="new_prefix"
               disabled={isProcessing}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-edge bg-card text-body rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-subtle"
             />
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-hint mt-2">
               Files will be renamed to: prefix_filename
             </p>
           </div>
@@ -158,12 +158,12 @@ export const BatchOperationModal: React.FC<BatchOperationModalProps> = ({
         {isProcessing && (
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Progress</span>
-              <span className="text-sm font-medium text-gray-900">{progress}%</span>
+              <span className="text-sm text-dim">Progress</span>
+              <span className="text-sm font-medium text-body">{progress}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-subtle rounded-full h-2 overflow-hidden">
               <div
-                className="bg-blue-500 h-full transition-all duration-300"
+                className="bg-primary-500 h-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -171,11 +171,11 @@ export const BatchOperationModal: React.FC<BatchOperationModalProps> = ({
         )}
 
         {/* Actions */}
-        <div className="flex gap-3 pt-4 border-t border-gray-200">
+        <div className="flex gap-3 pt-4 border-t border-edge">
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition"
+            className="flex-1 px-4 py-2 border border-edge text-dim rounded-lg hover:bg-subtle disabled:opacity-50 transition"
           >
             Cancel
           </button>

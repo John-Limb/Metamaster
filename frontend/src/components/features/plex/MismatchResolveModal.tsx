@@ -14,21 +14,21 @@ const BTN =
 export function MismatchResolveModal({ mismatch, ourTmdbId, onResolve, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 max-w-md w-full mx-4 space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="bg-card rounded-xl shadow-xl p-6 max-w-md w-full mx-4 space-y-4">
+        <h2 className="text-lg font-semibold text-body">
           TMDB ID Mismatch
         </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-dim">
           MetaMaster and Plex have matched this item to different TMDB IDs. Which is correct?
         </p>
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-700">
-            <p className="font-medium text-gray-700 dark:text-gray-300">MetaMaster</p>
-            <p className="text-gray-900 dark:text-white">TMDB #{ourTmdbId}</p>
+          <div className="p-3 rounded-lg bg-subtle">
+            <p className="font-medium text-dim">MetaMaster</p>
+            <p className="text-body">TMDB #{ourTmdbId}</p>
           </div>
-          <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-700">
-            <p className="font-medium text-gray-700 dark:text-gray-300">Plex</p>
-            <p className="text-gray-900 dark:text-white">TMDB #{mismatch.plex_tmdb_id}</p>
+          <div className="p-3 rounded-lg bg-subtle">
+            <p className="font-medium text-dim">Plex</p>
+            <p className="text-body">TMDB #{mismatch.plex_tmdb_id}</p>
           </div>
         </div>
         <div className="flex gap-3 pt-2">
@@ -47,7 +47,7 @@ export function MismatchResolveModal({ mismatch, ourTmdbId, onResolve, onClose }
         </div>
         <button
           onClick={onClose}
-          className="w-full text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          className="w-full text-sm text-hint hover:text-dim"
         >
           Cancel
         </button>

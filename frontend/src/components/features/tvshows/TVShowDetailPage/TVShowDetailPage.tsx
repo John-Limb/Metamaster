@@ -92,14 +92,14 @@ const TVShowDetailPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
+        <div className="h-6 w-32 bg-subtle rounded" />
         <div className="flex gap-6">
-          <div className="w-40 h-56 bg-slate-200 dark:bg-slate-700 rounded-lg flex-shrink-0" />
+          <div className="w-40 h-56 bg-subtle rounded-lg flex-shrink-0" />
           <div className="flex-1 space-y-3">
-            <div className="h-8 w-64 bg-slate-200 dark:bg-slate-700 rounded" />
-            <div className="h-4 w-40 bg-slate-200 dark:bg-slate-700 rounded" />
-            <div className="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded" />
-            <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-8 w-64 bg-subtle rounded" />
+            <div className="h-4 w-40 bg-subtle rounded" />
+            <div className="h-4 w-full bg-subtle rounded" />
+            <div className="h-4 w-3/4 bg-subtle rounded" />
           </div>
         </div>
       </div>
@@ -124,7 +124,7 @@ const TVShowDetailPage: React.FC = () => {
       {/* Back */}
       <button
         onClick={() => navigate('/tv-shows')}
-        className="flex items-center gap-2 text-sm text-hint hover:text-slate-900 dark:hover:text-white transition-colors"
+        className="flex items-center gap-2 text-sm text-hint hover:text-body transition-colors"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5M12 19l-7-7 7-7" />
@@ -143,8 +143,8 @@ const TVShowDetailPage: React.FC = () => {
               className="w-full rounded-lg shadow-md object-cover aspect-[2/3]"
             />
           ) : (
-            <div className="w-full aspect-[2/3] rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-              <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-full aspect-[2/3] rounded-lg bg-subtle flex items-center justify-center">
+              <svg className="w-10 h-10 text-hint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
               </svg>
@@ -211,8 +211,8 @@ const TVShowDetailPage: React.FC = () => {
                     {/* Season row */}
                     <button
                       className="w-full flex items-center justify-between px-4 py-3 text-left
-                        bg-card hover:bg-slate-50 dark:hover:bg-slate-700/50
-                        transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                        bg-card hover:bg-subtle
+                        transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
                       onClick={() => handleToggleSeason(season)}
                     >
                       <div className="flex items-center gap-3">
@@ -235,7 +235,7 @@ const TVShowDetailPage: React.FC = () => {
 
                     {/* Episode list */}
                     {isExpanded && (
-                      <div className="bg-slate-50 dark:bg-slate-900/50">
+                      <div className="bg-subtle">
                         {isLoadingEpisodes ? (
                           <div className="flex items-center justify-center py-8">
                             <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
@@ -334,7 +334,7 @@ const TVShowDetailPage: React.FC = () => {
             placeholder="TMDB ID (e.g. 1396)"
             value={externalIdInput}
             onChange={(e) => setExternalIdInput(e.target.value)}
-            className="flex-1 min-w-0 text-sm px-3 py-1.5 rounded-lg border border-edge bg-card text-body focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 min-w-0 text-sm px-3 py-1.5 rounded-lg border border-edge bg-card text-body focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
           <Button
             variant="primary"

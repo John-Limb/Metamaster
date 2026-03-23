@@ -46,7 +46,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
       return (
         <div className="flex items-center justify-center min-h-screen bg-red-50 dark:bg-red-900/10 p-4">
-          <div className="bg-white dark:bg-secondary-800 p-8 rounded-lg shadow-lg max-w-md w-full">
+          <div className="bg-card p-8 rounded-lg shadow-lg max-w-md w-full">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-shrink-0">
                 <svg
@@ -86,7 +86,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               </button>
               <button
                 onClick={() => window.location.reload()}
-                className="flex-1 bg-secondary-200 dark:bg-secondary-700 text-gray-800 dark:text-white py-2 rounded-lg hover:bg-secondary-300 dark:hover:bg-secondary-600 transition font-medium focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2"
+                className="flex-1 bg-subtle text-body py-2 rounded-lg hover:bg-subtle/80 transition font-medium focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2"
               >
                 Refresh
               </button>

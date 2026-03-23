@@ -32,11 +32,11 @@ export function QuickActions({ actions, className = '' }: QuickActionsProps) {
             className={`
               flex flex-col items-center justify-center gap-2 p-4 rounded-xl
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+              focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
               hover:shadow-md hover:-translate-y-0.5
               ${action.variant === 'primary'
                 ? 'bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-dim'
+                : 'bg-subtle hover:bg-subtle text-dim'
               }
             `}
           >
@@ -44,7 +44,7 @@ export function QuickActions({ actions, className = '' }: QuickActionsProps) {
               className={`p-2 rounded-lg ${
                 action.variant === 'primary'
                   ? 'bg-primary-100 dark:bg-primary-900/50'
-                  : 'bg-slate-200 dark:bg-slate-700'
+                  : 'bg-subtle'
               }`}
             >
               <span className="w-5 h-5 block">{action.icon}</span>

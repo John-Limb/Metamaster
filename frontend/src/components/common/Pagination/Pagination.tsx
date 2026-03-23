@@ -52,9 +52,9 @@ export const Pagination: React.FC<PaginationProps> = ({
           type="button"
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-lg text-secondary-500 hover:text-secondary-700 dark:hover:text-secondary-300
+          className="p-2 rounded-lg text-hint hover:text-dim
                      disabled:opacity-50 disabled:cursor-not-allowed
-                     hover:bg-secondary-100 dark:hover:bg-secondary-800"
+                     hover:bg-subtle"
           aria-label="First page"
         >
           <svg
@@ -77,9 +77,9 @@ export const Pagination: React.FC<PaginationProps> = ({
         type="button"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="p-2 rounded-lg text-secondary-500 hover:text-secondary-700 dark:hover:text-secondary-300
+        className="p-2 rounded-lg text-hint hover:text-dim
                    disabled:opacity-50 disabled:cursor-not-allowed
-                   hover:bg-secondary-100 dark:hover:bg-secondary-800"
+                   hover:bg-subtle"
         aria-label="Previous page"
       >
         <svg
@@ -98,7 +98,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           typeof page === 'string' ? (
             <span
               key={`ellipsis-${index}`}
-              className="px-2 py-1 text-secondary-400"
+              className="px-2 py-1 text-hint"
             >
               ...
             </span>
@@ -111,7 +111,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 ${
                   currentPage === page
                     ? 'bg-primary-600 text-white'
-                    : 'text-secondary-600 hover:bg-secondary-100 dark:text-secondary-400 dark:hover:bg-secondary-800'
+                    : 'text-dim hover:bg-subtle'
                 }
               `}
               aria-current={currentPage === page ? 'page' : undefined}
@@ -125,9 +125,9 @@ export const Pagination: React.FC<PaginationProps> = ({
         type="button"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="p-2 rounded-lg text-secondary-500 hover:text-secondary-700 dark:hover:text-secondary-300
+        className="p-2 rounded-lg text-hint hover:text-dim
                    disabled:opacity-50 disabled:cursor-not-allowed
-                   hover:bg-secondary-100 dark:hover:bg-secondary-800"
+                   hover:bg-subtle"
         aria-label="Next page"
       >
         <svg
@@ -146,9 +146,9 @@ export const Pagination: React.FC<PaginationProps> = ({
           type="button"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-lg text-secondary-500 hover:text-secondary-700 dark:hover:text-secondary-300
+          className="p-2 rounded-lg text-hint hover:text-dim
                      disabled:opacity-50 disabled:cursor-not-allowed
-                     hover:bg-secondary-100 dark:hover:bg-secondary-800"
+                     hover:bg-subtle"
           aria-label="Last page"
         >
           <svg
