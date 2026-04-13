@@ -32,7 +32,7 @@ argon2-cffi>=23.1.0      # Password hashing (Argon2id)
 PyJWT>=2.8.0             # JWT token handling
 
 # Monitoring
-prometheus-client==0.24.1
+prometheus-client==0.25.0
 
 # Testing
 pytest==8.4.2
